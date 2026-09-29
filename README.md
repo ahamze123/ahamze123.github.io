@@ -20,4 +20,7 @@ A two-player brick hero adventure: five connected islands, a rocket to the Moon,
 - 23 city quests from people with a **!** over their heads, plus races, builds, golden bricks and treasure chests.
 - A sticker album and three new daily challenges every day.
 
+## Language
+Tap **🌐 العربية** on the first screen (or Menu → Settings → Language) to play in Arabic.
+
 Progress is saved on each device.
