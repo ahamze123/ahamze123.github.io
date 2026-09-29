@@ -14,9 +14,9 @@ A two-player brick hero adventure: five connected islands, a rocket to the Moon,
 - You can also host or join from the in-game menu under **Online**.
 
 ## The world
-- **Brick City** (the home island), **Sunset Bay**, **Starport**, **Frostpeak** and **Dusty Canyon**, joined by highway bridges.
+- **Brick City** (the home island), **Sunset Bay**, **Star Harbor**, **Frostpeak** and **Cactus Canyon**, joined by highway bridges.
 - Train stations in every town: step up to a station kiosk to ride to any other town.
-- Build the rocket at the Starport space centre and fly to the Moon (low gravity!).
+- Build the rocket at the Star Harbor space center and fly to the Moon (low gravity!).
 - 23 city quests from people with a **!** over their heads, plus races, builds, golden bricks and treasure chests.
 - A sticker album and three new daily challenges every day.
 
