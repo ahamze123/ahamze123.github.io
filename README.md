@@ -1,6 +1,6 @@
 # Block Buddies
 
-A two-player brick hero adventure: five connected islands, a rocket to the Moon, city quests, jobs, power suits, mini-games and online co-op.
+A brick hero adventure: eight heroes to pick from, five connected islands, a rocket to the Moon, city quests, jobs, power suits, build zones, mini-games and online co-op for up to 4 players.
 
 **Play:** https://ahamze123.github.io
 
@@ -8,9 +8,12 @@ A two-player brick hero adventure: five connected islands, a rocket to the Moon,
 1. Open the link in Safari.
 2. Tap **Share → Add to Home Screen** to get a game icon that opens full screen.
 
+## The heroes
+Pick **Boys** or **Girls** on the first screen, then one of four heroes. Each hero has a look of their own, a small special skill (strong, tough, quick or jumpy) and two attacks of their own, from brick blasters and ninja stars to ice shards, rainbow lasers and vine traps.
+
 ## Playing together online
-- Both tablets open the game and tap **Play online** (the same Wi-Fi works best).
-- One player taps **Host a game**; the other taps **Join** next to their friend's name.
+- Up to 4 players: each tablet opens the game and taps **Play online** (the same Wi-Fi works best).
+- One player taps **Host a game**; the others tap **Join** next to the host's name.
 - You can also host or join from the in-game menu under **Online**.
 
 ## The world
