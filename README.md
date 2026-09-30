@@ -16,6 +16,9 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
   - 🔍 find their hidden hero coin (look for a beam of light; the map shows a ❔),
   - 🪙 buy them in the Great Hall of the Hero Castle,
   - 🏅 earn them by playing: levels, races, quests, stickers, trophies and golden bricks.
+- **Every hero moves in their own way.** Only some heroes can fly. The others have a different special move: a super jump, a triple jump, teleporting, climbing walls, a grappling hook, a super dash that runs across water, deep diving or gliding. Tap 🦸 to see each hero's move.
+- Heroes also walk, run, jump and wait in their own style: ninjas sneak, robots march, dancers twirl and big heroes stomp.
+- **Hero challenges**: 13 golden bricks sit on tall towers, inside magic huts, above wind fans, deep under the sea and on far islands. Each one needs a hero with the right move.
 - Some treasures are behind **hero gates** (ice, boulders, thorns and more). Only a hero with the right power can open them.
 
 ## The Hero Castle
@@ -41,7 +44,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 
 ## Moving around
 - **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool) to swim, and jump again to climb out.
-- **Flying** (with the Jet Wings gadget): hold jump to go up and hold **⬇ Down** (**Shift** on a keyboard) to fly down. Tap **🦸 Land** (or press **L**) for a fast super hero landing.
+- **Flying**: flying heroes (like Omar and Ruby) hold jump to go up and hold **⬇ Down** (**Shift** on a keyboard) to fly down. With the Jet Wings gadget, the other heroes can glide. Tap **🦸 Land** (or press **L**) for a fast super hero landing.
 - **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 
 ## Things to do

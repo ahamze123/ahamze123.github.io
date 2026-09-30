@@ -320,6 +320,9 @@ body.ar .small,body.ar .sub{line-height:1.5}
 @keyframes cout{to{opacity:0;transform:translateX(-50%) scale(.7)}}
 .rhod{text-align:center;font:800 12.5px var(--ui);color:#fff6a8}
 .rt .hd{top:5px;left:6px;font-size:14px}
+.rt i.ab{position:absolute;bottom:22px;left:5px;font-style:normal;font-size:14px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.rmove{margin-top:6px;background:rgba(255,255,255,.08);border-radius:10px;padding:6px 9px;display:flex;flex-direction:column;gap:2px}
+.rmove b{font-size:15px}.rmove small{color:#cfcaf7;font-weight:700;font-size:12px}
 .rrec{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
 .rrec span{font:800 12.5px var(--ui);color:#cfcaf5}
 .rrb{width:52px;height:52px;border-radius:50%;border:3px solid #fff;padding:0;overflow:hidden;background:var(--s);cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.3)}
@@ -1939,7 +1942,7 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
   if(A.spin){M4.tr(m,0,.9,0);M4.rx(m,A.spin);M4.tr(m,0,-.9,0);}
   M4.rx(m,A.lean.p);M4.rz(m,A.tilt.p);const sq=A.sq.p;M4.sc(m,1/Math.sqrt(sq),sq,1/Math.sqrt(sq));
   const sw=Math.sin(A.walk)*A.amp,drive=p.drive;
-  for(const s of [-1,1]){MS.push();M4.tr(m,s*.15,.64,0);let lx=sw*s*.95;if(A.fly>.01)lx=.15+s*Math.sin(t*5)*.12;if(p.swim)lx=Math.sin(t*9+s*1.6)*.55;if(p.chute)lx=.22+s*Math.sin(t*2.3)*.07;if(drive)lx=-1.5;if(p.ko>0)lx=.1*s;M4.rx(m,lx);
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.15,.64,0);let lx=sw*s*.95;if(A.fly>.01)lx=.15+s*Math.sin(t*5)*.12;if(p.swim)lx=Math.sin(t*9+s*1.6)*.55;if(p.chute)lx=.22+s*Math.sin(t*2.3)*.07;if(drive)lx=-1.5;if(p.ko>0)lx=.1*s;if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,1,p);if(r!==null&&r!==undefined)lx=r;}M4.rx(m,lx);
     cy(m,0,-.27,0,.23,.52,.23,cos==='pirate'?hex('#3a3a55'):pants,6);rb(m,0,-.56,.05,.28,.19,.37,boot,1,p.gad&&p.gad.boots?.25:0);
     if(p.gad&&p.gad.boots&&(p.airT>.05||A.fly>.1))sp(m,0,-.74,-.02,.16,.18+R()*.22,.16,'#ffb347',1,1);MS.pop();}
   rb(m,0,.7,0,.5,.2,.33,pants,6);
@@ -1955,7 +1958,7 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
     if(p.carry||p.carryF){ax=-2.9;az=s*.25;}if(A.cheer>0){ax=-2.9;az=s*(.35+Math.sin(t*14)*.15);}if(A.wave>0&&s===1){ax=-2.6;az=.6+Math.sin(t*12)*.4;}
     if(A.fly>.1){ax=s===1?-2.7:-.2;az=s*.15;}if(A.slam>0){ax=-2.9+(1-A.slam)*2.6;az=s*.3;}if(A.charge>0){ax=-1.45;az=-s*.25;}if(drive){ax=-1.2;az=-s*.25;}if(p.ko>0){ax=-2.8;az=s*.6;}
     if(p.swim){ax=-2.5+Math.sin(t*6+(s>0?0:Math.PI))*1.3;az=s*.25;}if(p.glide){ax=-1.6;az=s*1.1;}if(p.chute){ax=-2.85;az=s*.42;}if(XS&&XS.chg>0&&s===-1){ax=-1.5;az=.25;}if(XS&&XS.spin>0){ax=-1.55;az=s*1.35;}
-    M4.rx(m,ax);M4.rz(m,az);cy(m,0,-.26,0,.18,.44,.18,cos==='astro'?suit:suit,smat);
+    if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,0,p);if(r){ax=r[0];az=r[1];}}M4.rx(m,ax);M4.rz(m,az);cy(m,0,-.26,0,.18,.44,.18,cos==='astro'?suit:suit,smat);
     const glove=p.gad&&p.gad.gloves;sp(m,0,-.55,0,glove?.32:.21,glove?.3:.21,glove?.32:.21,glove?hex('#7fdcff'):(cos==='knight'||cos==='robot'?suit:skinC),glove?1:6,glove?.2:0);
     if(own&&CC.hx&&s===1&&!(p.dig&&BUILD.on))drawHandX(m,CC,t,A);if(own&&s===1&&typeof drawPickHand==='function')drawPickHand(m,t,A,p);
     if(A.charge>0)sp(m,0,-.62,.05,.25+A.charge*.3,.25+A.charge*.3,.25+A.charge*.3,'#7ef9ff',1,1);
@@ -2281,12 +2284,13 @@ function updateMe(dt,inp){const p=ME,A=p.anim,pr=prof();
     const up=inp.jump?(p.turbo?10:7):inp.down?(p.turbo?-26:-16):-2.6;p.vy+=(up-p.vy)*Math.min(1,dt*(inp.down?6:4));if(p.y>90)p.vy=Math.min(p.vy,0);A.fly=lerp(A.fly,1,dt*5);if(p.ground&&!inp.jump){p.fly=false;p.turbo=false;}
     if(p.turbo&&Math.hypot(p.vx,p.vz)>12&&R()<.7)burst(p.x-p.vx*.03,p.y+1.1,p.z-p.vz*.03,['#7ef9ff','#ffffff'],1,.4,.12,.35);}
   else{A.fly=lerp(A.fly,0,dt*8);
-    if(p.jbuf>0){if(p.coyote>0){p.vy=11.5*(perkOf(prof())==='jumpy'?1.14:1);p.ground=false;p.coyote=0;p.jbuf=0;p.jumps=1;SFX.jump();A.sq.v-=6;burst(p.x,p.y+.1,p.z,'#ffffff',5,1.5,.14,.3);}
+    if(p.jbuf>0){if(p.coyote>0){p.vy=11.5*(perkOf(prof())==='jumpy'?1.14:1);p.ground=false;p.coyote=0;p.jbuf=0;p.jumps=1;SFX.jump();A.sq.v-=6;burst(p.x,p.y+.1,p.z,'#ffffff',5,1.5,.14,.3);if(typeof moveJumped==='function')moveJumped(p);}
+      else if(typeof moveAirJump==='function'&&moveAirJump(p,inp)){p.jbuf=0;}
       else if(p.gad.boots&&p.jumps<2){p.vy=11;p.jumps=2;p.jbuf=0;SFX.djump();burst(p.x,p.y,p.z,'#ffb347',12,2.5,.16,1);}
-      else if(p.gad.wings&&!p.ground){p.fly=true;p.turbo=false;p.flyTap=0;p.jbuf=0;SFX.fly();burst(p.x,p.y+1,p.z,'#7ef9ff',14,3,.16,1);if(!G.flyTip){G.flyTip=1;toast(tr('Flying! Double-tap jump for TURBO speed'));}}}
+      else if((typeof canFly==='function'?canFly(p):p.gad.wings)&&!p.ground){p.fly=true;p.turbo=false;p.flyTap=0;p.jbuf=0;SFX.fly();burst(p.x,p.y+1,p.z,'#7ef9ff',14,3,.16,1);if(!G.flyTip){G.flyTip=1;toast(tr('Flying! Double-tap jump for TURBO speed'));}}}
     if(!inp.jump&&p.vy>3&&!p.tossed&&!(p.xs&&p.xs.pnc))p.vy-=55*dt*gravAt(p.x,p.z);
     // gliders float down slowly while they hold jump
-    p.glide=inp.jump&&!p.ground&&p.vy<-2.3&&!p.swim&&perkOf(pr)==='glide';if(p.glide){p.vy=-2.3;if(R()<.25)burst(p.x,p.y+1.3,p.z,['#bff4ff','#ffd0f0'],1,.6,.1,.8);}}
+    p.glide=inp.jump&&!p.ground&&p.vy<-2.3&&!p.swim&&!p.zip&&(perkOf(pr)==='glide'||(typeof canGlide==='function'&&canGlide(p)));if(p.glide){p.vy=typeof glideVy==='function'?glideVy(p):-2.3;if(R()<.25)burst(p.x,p.y+1.3,p.z,['#bff4ff','#ffd0f0'],1,.6,.1,.8);}}
   // attacks (or building)
   if(BUILD.on){buildInput(inp);}else{
   if(inp.punchP&&p.atkT<=0&&(p.carryF||p.carry)){if(p.carryF)tossFriend();else throwCarry(p);}else if(inp.punchP&&p.atkT<=0&&socKickNear(p)){}else if(!p.carry&&!p.carryF)heroPrimary(p,inp,dt);
@@ -7433,8 +7437,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:20,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:21,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🦸',t:'Every hero is different!',s:'Only some heroes can fly now. Others super jump, triple jump, teleport, climb walls, swing on a hook, run on water, dive deep or glide. Try them all!',act:()=>openRoster()},
+  {ic:'🗼',t:'Hero challenges',s:'Golden bricks on tall towers, in magic huts, above wind fans, deep under the sea and on far islands. Each one needs the right hero',go:()=>{if(!ME||!WORLD.mchal)return null;const L=WORLD.mchal.filter(c=>!G.gb.has(c.gb)).sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const c=L[0];return c?dd({x:c.x,z:c.z,label:tr('Hero challenge'),icon:CHAL[c.k].ic,col:'#ffcf3a'}):null;}},
+  {ic:'🕺',t:'Hero style',s:'Every hero walks, runs, jumps and waits in their own way: ninjas sneak, robots march, dancers twirl'},
   {ic:'⛏️',t:'Dig down!',s:'Every build zone has dirt, stone and shiny ores underneath. Tap 🧱 and hold ⛏️ to dig',go:()=>{if(!ME||!WORLD.plots)return null;const L=WORLD.plots.filter(q=>!inMoonBox(q.x,q.z)).sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const q=L[0];return q?dd({x:q.x,z:q.z0-3,label:tr(q.name),icon:'⛏️',col:'#8fd14f'}):null;}},
   {ic:'⚒️',t:'Crafting',s:'Chop trees for wood, find coal, iron, gold and diamonds, then craft pickaxes, swords, torches, helmets and TNT'},
   {ic:'🧨',t:'TNT!',s:'Craft TNT, put it down in a build zone, then dig it to light it. Run!'},
@@ -7455,9 +7462,9 @@ function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.cast
 function openNews(){let el=$('newsbox');if(!el){el=document.createElement('div');el.id='newsbox';el.className='modal';el.hidden=true;el.style.zIndex=34;document.body.appendChild(el);
     el.addEventListener('pointerdown',e=>{if(e.target===el)closeNews();});}
   const L=newsItems();el.innerHTML=`<div class="mbox"><h2>✨ ${esc(tr('New in Blocktopia!'))}</h2><div class="small" style="text-align:center">${esc(tr('Tap a place and a trail will lead you there'))}</div>`+
-    L.map((q,i)=>{const g=q.go&&q.go();return `<div class="mi" data-i="${i}" style="--c:#ffcf3a;cursor:${g?'pointer':'default'}"><span style="font-size:24px">${q.ic}</span><div><b>${esc(tr(q.t))}</b><small>${esc(tr(q.s))}</small></div><span class="st">${g?'🧭':''}</span></div>`;}).join('')+
+    L.map((q,i)=>{const g=(q.go&&q.go())||q.act;return `<div class="mi" data-i="${i}" style="--c:#ffcf3a;cursor:${g?'pointer':'default'}"><span style="font-size:24px">${q.ic}</span><div><b>${esc(tr(q.t))}</b><small>${esc(tr(q.s))}</small></div><span class="st">${g?'🧭':''}</span></div>`;}).join('')+
     `<button class="mb" id="newsok" style="justify-content:center">${esc(tr("Let's play!"))}</button></div>`;
-  el.hidden=false;if(G.mode==='play')G.mode='menu';el.querySelectorAll('.mi').forEach(r=>r.onclick=()=>{const q=L[+r.dataset.i];const g=q&&q.go&&q.go();if(!g)return;closeNews();navSet({...g,realm:'earth'});toast('🧭 '+tr('Follow the trail!'));});
+  el.hidden=false;if(G.mode==='play')G.mode='menu';el.querySelectorAll('.mi').forEach(r=>r.onclick=()=>{const q=L[+r.dataset.i];if(q&&q.act){closeNews();q.act();return;}const g=q&&q.go&&q.go();if(!g)return;closeNews();navSet({...g,realm:'earth'});toast('🧭 '+tr('Follow the trail!'));});
   $('newsok').onclick=()=>closeNews();}
 function closeNews(){const el=$('newsbox');if(el)el.hidden=true;if(G.mode==='menu'&&$('pause').hidden)G.mode='play';G.newsSeen=NEWS.ver;saveSoon();}
 // show it once to players who already played before this update
@@ -7683,7 +7690,7 @@ function heroLand(p){p.anim.slam=1;p.powT=Math.max(p.powT||0,.5);SFX.slam&&SFX.s
   d.addEventListener('pointerdown',e=>{AU.init();try{d.setPointerCapture(e.pointerId);}catch(_){}TOUCH.b.down=true;d.classList.add('on');e.preventDefault();e.stopPropagation();});
   const up=()=>{TOUCH.b.down=false;d.classList.remove('on');};d.addEventListener('pointerup',up);d.addEventListener('pointercancel',up);d.addEventListener('lostpointercapture',up);tbs.appendChild(d);};}
 const LANDTIP={t:0,shown:false};
-{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&(ME.fly||ME.chute)&&!ME.veh&&G.mode==='play');for(const b of document.querySelectorAll('#touch .tb.land,#touch .tb.down'))if(b.hidden===on){b.hidden=!on;if(!on&&b.classList.contains('down')){TOUCH.b.down=false;b.classList.remove('on');}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&(ME.fly||ME.chute)&&!ME.veh&&G.mode==='play');const dv=!!(ME&&!ME.veh&&ME.swim&&G.mode==='play'&&typeof abOf==='function'&&abOf(ME)==='dive');for(const b of document.querySelectorAll('#touch .tb.land,#touch .tb.down')){const want=b.classList.contains('down')?(on||dv):on;if(b.hidden===want){b.hidden=!want;if(!want&&b.classList.contains('down')){TOUCH.b.down=false;b.classList.remove('on');}}}
   if(on&&!LANDTIP.shown){LANDTIP.t+=dt;if(LANDTIP.t>2.6){LANDTIP.shown=true;toast(tr(TOUCH.on?'Hold ⬇ to fly down. Tap 🦸 to land fast':'Hold Shift to fly down. Press L to land fast'));}}};}
 // the touch buttons always match what you are doing: on foot, in a car, on a ride, building (even after a crash throws you out)
 const TLS={k:null};
@@ -9117,6 +9124,231 @@ MN('Craft torches first (coal + a stick)','اصنع مشاعل أولاً (فح�
 MN('New! Tap 🧱 then hold ⛏️ on the ground to dig down','جديد! اضغط 🧱 ثم اضغط مطولاً على ⛏️ فوق الأرض لتحفر للأسفل');MN('New! Press B, then hold K on the ground to dig down','جديد! اضغط B، ثم اضغط مطولاً على K فوق الأرض لتحفر للأسفل');
 MN('Fill the ground in this zone again','املأ الأرض في هذه المنطقة من جديد');MN('Tap again to fill it. Holes will be gone!','اضغط مرة أخرى لتملأها. ستختفي الحفر!');MN('The ground is back!','عادت الأرض كما كانت!');
 MN('Nothing to build on here','لا يوجد شيء تبني عليه هنا');
+// ================= every hero is different: their own body language, and their own special way of getting around =================
+// Only some heroes fly now. The others glide, super jump, climb walls, dash across water, skate, grapple up to rooftops,
+// teleport through walls, dive deep or triple jump. Hero challenges around the islands need these moves, and each one hides
+// a golden brick, so it pays to collect and switch heroes.
+const MV=(en,ar)=>{if(ar)AR[en]=ar;return en;};
+const ABIL={
+  fly:{ic:'✈️',n:MV('Flying','الطيران'),d:MV('Jump, then jump again in the air to fly','اقفز، ثم اقفز مرة أخرى في الهواء لتطير')},
+  glide:{ic:'🪂',n:MV('Gliding','الانزلاق في الهواء'),d:MV('Hold jump in the air to glide far. Wind fans lift you up!','اضغط مطولاً على القفز في الهواء لتنزلق بعيدًا. مراوح الهواء ترفعك!')},
+  superjump:{ic:'🦘',n:MV('Super jump','القفزة الخارقة'),d:MV('Jump twice for a giant jump, and land with a BOOM','اقفز مرتين لقفزة عملاقة، واهبط مع بوم')},
+  climb:{ic:'🧗',n:MV('Wall climbing','تسلق الجدران'),d:MV('Run into a wall to climb it, even tall buildings','اركض نحو جدار لتتسلقه، حتى المباني العالية')},
+  dash:{ic:'⚡',n:MV('Super dash','الركض الخارق'),d:MV('Keep running to go super fast, even across water','استمر في الركض لتنطلق بسرعة خارقة، حتى فوق الماء')},
+  skate:{ic:'🛹',n:MV('Skating','التزلج'),d:MV('Skates everywhere, super fast, with cool tricks','يتزلج في كل مكان بسرعة كبيرة مع حركات رائعة')},
+  grapple:{ic:'🪝',n:MV('Grappling hook','خطاف التسلق'),d:MV('Jump, then jump again near a rooftop to zip up to it','اقفز، ثم اقفز مرة أخرى قرب سطح لتنطلق إليه')},
+  blink:{ic:'🌀',n:MV('Teleport','الانتقال السحري'),d:MV('Jump, then jump again to teleport forward, even through walls','اقفز، ثم اقفز مرة أخرى لتنتقل إلى الأمام، حتى عبر الجدران')},
+  dive:{ic:'🐬',n:MV('Deep diving','الغوص العميق'),d:MV('In water, hold ⬇ to dive deep and swim super fast','في الماء، اضغط مطولاً على ⬇ لتغوص عميقًا وتسبح بسرعة')},
+  bounce:{ic:'🎈',n:MV('Triple jump','القفزة الثلاثية'),d:MV('Jump three times in a row, higher and higher','اقفز ثلاث مرات متتالية، أعلى فأعلى')}};
+// how each kind of hero carries themselves
+const STP={
+  hero:{n:MV('Hero moves','حركات بطل'),amp:1,bob:.07,lean:.08,sway:0,idle:['hips','look']},
+  stomp:{n:MV('Heavy stomper','خطوات ثقيلة'),amp:.85,bob:.14,lean:.04,sway:.05,idle:['flex','hips'],heavy:1},
+  ninja:{n:MV('Ninja moves','حركات نينجا'),amp:1.15,bob:.03,lean:.3,sway:0,idle:['meditate','look'],flip:1},
+  bouncy:{n:MV('Bouncy','نطّاط'),amp:1.1,bob:.2,lean:.05,sway:.04,idle:['juggle','dance'],tuck:1},
+  dancer:{n:MV('Dancer','راقص'),amp:.9,bob:.06,lean:0,sway:.12,idle:['dance','stretch'],twirl:1},
+  robot:{n:MV('Robot moves','حركات آلية'),amp:.5,bob:.02,lean:0,sway:0,idle:['robotscan','salute'],steam:1},
+  skate:{n:MV('Skater','متزلج'),amp:.12,bob:.01,lean:.12,sway:0,idle:['skatebal','tapfoot'],board:1},
+  float:{n:MV('Floats in the air','يطفو في الهواء'),amp:.3,bob:0,lean:.06,sway:.05,idle:['floaty','look'],hover:.35},
+  beast:{n:MV('Wild animal moves','حركات حيوان بري'),amp:1.25,bob:.1,lean:.38,sway:.03,idle:['flex','look'],pounce:1},
+  royal:{n:MV('Royal','ملكي'),amp:.8,bob:.04,lean:-.05,sway:.02,idle:['hips','salute'],arms:1},
+  cool:{n:MV('Cool swagger','مشية واثقة'),amp:.95,bob:.08,lean:-.02,sway:.11,idle:['guitar','tapfoot'],star:1},
+  sporty:{n:MV('Sporty','رياضي'),amp:1.2,bob:.08,lean:.16,sway:0,idle:['stretch','tapfoot'],tuck:1},
+  swim:{n:MV('Water hero','بطل مائي'),amp:1,bob:.05,lean:.06,sway:.08,idle:['stretch','floaty'],arms:1}};
+const HMOVE={leo:['hero','superjump'],omar:['stomp','fly'],kenji:['ninja','climb'],zayd:['sporty','dash'],mia:['bouncy','blink'],layla:['royal','glide'],ruby:['dancer','fly'],noor:['swim','dive'],
+  rex:['robot','fly'],finn:['cool','dive'],dan:['beast','superjump'],sami:['float','blink'],aya:['float','superjump'],kat:['beast','climb'],fay:['dancer','fly'],nora:['royal','dash'],
+  zak:['skate','skate'],rocky:['cool','bounce'],rayan:['sporty','dash'],comet:['hero','fly'],salem:['sporty','dash'],karim:['bouncy','bounce'],bilal:['stomp','climb'],majid:['cool','blink'],
+  faris:['hero','climb'],robin:['ninja','grapple'],erik:['stomp','superjump'],drake:['beast','fly'],munir:['robot','blink'],zork:['float','fly'],sam:['cool','grapple'],idris:['sporty','grapple'],saif:['swim','dive'],
+  bella:['bouncy','fly'],lulu:['swim','dive'],mira:['float','fly'],wanda:['float','fly'],salma:['skate','skate'],tala:['beast','superjump'],zara:['dancer','bounce'],kira:['ninja','climb'],
+  bushra:['bouncy','bounce'],yasmin:['dancer','grapple'],sama:['float','glide'],lina:['stomp','superjump'],sara:['bouncy','blink'],amira:['royal','glide'],uma:['bouncy','fly'],aisha:['ninja','grapple'],rina:['robot','fly']};
+const heroIdOf=p=>!p?null:p===ME?prof().char:(p.looks?charOfLooks(p.looks,p.hero).id:null);
+const moveOf=p=>HMOVE[heroIdOf(p)]||['hero',null];const abOf=p=>moveOf(p)[1];const stOf=p=>moveOf(p)[0];
+function canFly(p){return abOf(p)==='fly';}
+function canGlide(p){const a=abOf(p);return a==='glide'||(!!(p.gad&&p.gad.wings)&&a!=='fly');}
+function glideVy(p){return abOf(p)==='glide'?-1.3:-2.6;}
+const MOV={sprintT:0,sprint:false,jumpT:-1,flipK:0,blinkCd:0,idleT:0,air:false,airTop:0,super:false,hook:null,hookT:0,stepPh:0,inp:null,tipDone:{},fanT:0};
+// ---------- jumping: each ability changes what the second jump does ----------
+function moveJumped(p){if(p!==ME)return;MOV.jumpT=0;MOV.flipK=1;MOV.super=false;const st=STP[stOf(p)];if(st.steam)for(let k=0;k<6;k++)PARTS.push({x:p.x+Rr(-.3,.3),y:p.y+.1,z:p.z+Rr(-.3,.3),vx:Rr(-1,1),vy:Rr(.5,1.5),vz:Rr(-1,1),life:.6,s:.18,c:hex('#e8eef4'),e:.2,g:-1,k:'deb',rot:0});}
+function moveAirJump(p,inp){if(p!==ME||p.ground)return false;const a=abOf(p);
+  if(a==='superjump'&&p.jumps<2){p.vy=21;p.jumps=2;MOV.super=true;MOV.jumpT=0;SND.play('djump',1,.72);ringFx(p.x,p.y,p.z,'#ffcf3a',2.2);burst(p.x,p.y,p.z,['#ffcf3a','#ffffff'],18,4,.18,1);p.anim.sq.v-=9;return true;}
+  if(a==='bounce'&&p.jumps<3){p.vy=12.5+p.jumps*1.2;p.jumps++;MOV.jumpT=0;MOV.flipK=p.jumps;SND.play('boing',.7,1+.2*p.jumps);burst(p.x,p.y,p.z,['#ff9ec0','#ffffff','#46b0ff'],10,3,.14,1);p.anim.sq.v-=6;return true;}
+  if(a==='blink'&&p.jumps<3&&MOV.blinkCd<=0){if(blinkMe(p)){p.jumps=Math.max(2,p.jumps+1);return true;}}
+  if(a==='grapple'&&MOV.hook&&!p.zip){grappleTo(p,MOV.hook);p.jumps=3;return true;}
+  if(a==='grapple'&&p.jumps<2){p.vy=9.5;p.jumps=2;SND.play('jump',.8,1.2);return true;}
+  if(p.gad&&p.gad.wings&&a!=='fly'&&!p.gad.boots&&!MOV.tipDone.wings){MOV.tipDone.wings=1;toast('🪂 '+tr('Only flying heroes can fly. Your Jet Wings let this hero glide: hold jump!'));}
+  return false;}
+// teleport a few steps forward, even through a wall
+function blinkMe(p){const fx=Math.sin(p.face),fz=Math.cos(p.face);const inside=typeof inInBox==='function'&&inInBox(p.x,p.z);
+  for(const c of WORLD.mchal||[]){if(c.k!=='magic')continue;const dx=c.x-p.x,dz=c.z-p.z,along=dx*fx+dz*fz,side=Math.abs(dx*fz-dz*fx);if(along>1&&along<8.5&&side<1.4&&Math.abs(p.y-c.y)<3){const ox=p.x,oy=p.y,oz=p.z;AU.at(ox,oz,()=>SND.play('orb',1,1.3));burst(ox,oy+1,oz,['#b28dff','#ffffff','#ff9ec0'],20,4,.18,1);p.x=c.x;p.z=c.z;p.y=c.y;p.vy=2;p.safe={x:c.x,y:c.y,z:c.z};burst(c.x,c.y+1,c.z,['#b28dff','#ffffff','#ff9ec0'],24,4,.18,1);MOV.blinkCd=.45;MOV.jumpT=0;return true;}}
+  for(let d=7.5;d>=2;d-=.5){const x=p.x+fx*d,z=p.z+fz*d;if(!inMap(x|0,z|0))continue;if(typeof inInBox==='function'&&inInBox(x,z)!==inside)continue;
+    const g=groundAt(x,z,p.y);if(g>p.y+1.2)continue;const y=Math.max(p.y,g);if(ceilAt(x,z,y)<y+1.85)continue;if(groundAt(x,z,y+.9)>y+1.2)continue;
+    const ox=p.x,oy=p.y,oz=p.z;AU.at(ox,oz,()=>SND.play('orb',1,1.3));burst(ox,oy+1,oz,['#b28dff','#ffffff','#ff9ec0'],20,4,.18,1);p.x=x;p.z=z;p.y=y;p.vy=Math.max(p.vy,5);p.safe={x,y,z};
+    burst(x,y+1,z,['#b28dff','#ffffff','#ff9ec0'],24,4,.18,1);ringFx(x,y+.1,z,'#b28dff',1.8);MOV.blinkCd=.45;MOV.jumpT=0;CAM.tx=lerp(CAM.tx,x,.5);CAM.tz=lerp(CAM.tz,z,.5);return true;}return false;}
+// the grappling hook: find a rooftop ahead, then zip up to it
+function hookTarget(p){if(p.veh||p.swim||(typeof inInBox==='function'&&inInBox(p.x,p.z)))return null;const fx=Math.sin(p.face),fz=Math.cos(p.face);
+  for(let d=2.5;d<=15;d+=.75){const x=p.x+fx*d,z=p.z+fz*d;if(!inMap(x|0,z|0))return null;const i=cid(x|0,z|0);const top=CH[i];
+    if(top>p.y+1.6&&top<p.y+19){const nx=Math.floor(x+fx*.7),nz=Math.floor(z+fz*.7);const t2=inMap(nx,nz)?CH[cid(nx,nz)]:-9;const tx=Math.abs(t2-top)<.6?nx+.5:Math.floor(x)+.5,tz=Math.abs(t2-top)<.6?nz+.5:Math.floor(z)+.5;return {x:tx,z:tz,y:Math.max(top,t2>top-.6?t2:top)};}
+    if(top>p.y+19)return null;}return null;}
+function grappleTo(p,h){const d=Math.hypot(h.x-p.x,h.y-p.y,h.z-p.z);p.zip={sx:p.x,sy:p.y+.2,sz:p.z,cx:(p.x+h.x)/2,cy:Math.max(p.y,h.y)+3.2,cz:(p.z+h.z)/2,ex:h.x,ey:h.y+.15,ez:h.z,t:0,T:Math.max(.35,d/24)};
+  MOV.rope={x:h.x,y:h.y,z:h.z,t:0};SND.play('web',1,.8);SND.play('whoosh',.8,1.2);}
+// ---------- speed: dashers sprint (even on water), skaters roll fast, gliders sail ----------
+{const _hs=heroSpeed;heroSpeed=function(){let s=_hs();const a=abOf(ME);if(a==='dash'&&MOV.sprint)s*=1.8;if(a==='skate'&&ME.ground&&!ME.swim)s*=1.35;if(ME.glide&&a==='glide')s*=1.6;if(ME.swim&&a==='dive')s*=1.9;return s;};}
+// water: dashers run across it, divers go deep
+{const _sw=swimMe;swimMe=function(p,dt){const a=abOf(p);const wl=typeof waterAt==='function'?waterAt(p.x,p.z):WL;
+  if(p===ME&&a==='dash'&&MOV.sprint&&Math.hypot(p.vx,p.vz)>9){p.swim=false;p.y=wl;if(p.vy<0)p.vy=0;p.ground=true;p.coyote=.12;MOV.onWater=true;if(R()<.6)PARTS.push({x:p.x-p.vx*.04,y:wl+.05,z:p.z-p.vz*.04,vx:Rr(-1.5,1.5),vy:Rr(2,4),vz:Rr(-1.5,1.5),life:.5,s:.14,c:hex('#dff6ff'),e:.3,g:12,k:'deb',rot:0});return;}
+  if(p===ME&&a==='dive'){const inp=MOV.inp||{};const floor=groundAt(p.x,p.z,p.y-.5)+.15;const top=wl-1.05;if(!p.swim){_sw(p,dt);}
+    p.swim=true;p.swimT=G.t;p.tossed=false;p.anim.spin=0;p.jumps=0;
+    if(inp.down){p.vy=Math.max(-6,Math.min(p.vy,0)-18*dt);MOV.deep=true;}else if(MOV.deep&&p.y<top-.1){p.vy=Math.min(5,Math.max(p.vy,0)+(inp.jump?20:9)*dt);}else{MOV.deep=false;if(p.y<top){p.y=top;if(p.vy<0)p.vy=0;}}
+    if(p.y<floor){p.y=floor;if(p.vy<0)p.vy=0;}p.ground=!MOV.deep;p.coyote=MOV.deep?0:.12;if(MOV.deep&&R()<.25)burst(p.x,p.y+1.6,p.z,['#dff6ff','#ffffff'],1,.6,.1,.3);
+    if(!MOV.tipDone.dive){MOV.tipDone.dive=1;toast('🐬 '+tr(TOUCH.on?'Hold ⬇ to dive deep!':'Hold Shift to dive deep!'));}return;}
+  MOV.onWater=false;return _sw(p,dt);};}
+// ---------- every frame for me ----------
+{const _um=updateMe;updateMe=function(dt,inp){MOV.inp=inp;const p=ME;const wasG=p.ground,y0=p.y;_um(dt,inp);if(!p||p.veh||p.ko>0){MOV.sprintT=0;MOV.sprint=false;return;}
+  const a=abOf(p),stn=stOf(p),S0=STP[stn];const hs=Math.hypot(p.vx,p.vz);MOV.blinkCd-=dt;if(MOV.jumpT>=0)MOV.jumpT+=dt;
+  // sprinting
+  if(a==='dash'&&(p.ground||MOV.onWater)&&hs>6.2)MOV.sprintT+=dt;else if(hs<5||(!p.ground&&!MOV.onWater&&p.vy<-6))MOV.sprintT=Math.max(0,MOV.sprintT-dt*4);
+  const sp=MOV.sprintT>1;if(sp&&!MOV.sprint){SFX.dash&&SFX.dash();if(!MOV.tipDone.dash){MOV.tipDone.dash=1;toast('⚡ '+tr('Super dash! You can even run across water'));}}MOV.sprint=sp;
+  if(sp&&R()<.7)PARTS.push({x:p.x+Rr(-.2,.2),y:p.y+Rr(.4,1.6),z:p.z+Rr(-.2,.2),vx:-p.vx*.1,vy:0,vz:-p.vz*.1,life:.25,s:.12,c:hex(charOf(prof()).bg||'#ffcf3a'),e:.7,g:0,k:'deb',rot:0});
+  // climbing
+  const push=Math.hypot(inp.mx||0,inp.mz||0)>.3;p.climbing=Math.max(0,(p.climbing||0)-dt);
+  if(a==='climb'&&push&&!p.fly&&!p.swim&&!p.zip&&!BUILD.on&&!(typeof inInBox==='function'&&inInBox(p.x,p.z))){const fx=Math.sin(p.face),fz=Math.cos(p.face);const g=groundAt(p.x+fx*.62,p.z+fz*.62,p.y);
+    if(g>p.y+.02&&g<p.y+80){p.vy=Math.max(p.vy,6.8);p.climbing=.2;p.vx+=fx*.9;p.vz+=fz*.9;if(R()<.12)burst(p.x+fx*.4,p.y+1.2,p.z+fz*.4,['#c8b090','#ffffff'],1,.8,.1,.5);if(!MOV.tipDone.climb){MOV.tipDone.climb=1;toast('🧗 '+tr('Climbing! Keep running into the wall'));}}}
+  // grappling hook target (a hook marker shows where you can zip to)
+  MOV.hookT-=dt;if(a==='grapple'&&MOV.hookT<=0){MOV.hookT=.12;MOV.hook=p.zip?null:hookTarget(p);}if(a!=='grapple')MOV.hook=null;
+  if(MOV.rope){MOV.rope.t+=dt;if(!p.zip||MOV.rope.t>3)MOV.rope=null;}
+  // wind fans lift gliders
+  if(p.glide||(canGlide(p)&&!p.ground&&inp.jump)){for(const F of WORLD.mfans||[]){if(Math.hypot(p.x-F.x,p.z-F.z)<1.6&&p.y<F.top+1.5&&p.y>F.y-1){p.vy=Math.max(p.vy,9);if(R()<.4)burst(p.x,p.y,p.z,['#dff6ff','#ffffff'],1,1,.1,.5);if(!MOV.tipDone.fan){MOV.tipDone.fan=1;toast('🪂 '+tr('Wind! Keep gliding to ride it up'));}}}}
+  // strong currents around the far islands push swimmers away
+  if(p.swim&&WORLD.misles){for(const I of WORLD.misles){const dx=p.x-I.x,dz=p.z-I.z,d=Math.hypot(dx,dz);if(d>3&&d<15){p.vx=lerp(p.vx,dx/d*7,Math.min(1,dt*5));p.vz=lerp(p.vz,dz/d*7,Math.min(1,dt*5));if(!MOV.tipDone.cur){MOV.tipDone.cur=1;toast('🌀 '+tr('The current is too strong to swim! Super fast heroes can run across the water'));}}}}
+  // air time: remember how high we went, and land with style
+  if(!p.ground&&!p.swim){MOV.airTop=Math.max(MOV.airTop,p.y);MOV.air=true;}
+  if(p.ground&&MOV.air){MOV.air=false;const fall=MOV.airTop-p.y;moveLanded(p,fall,S0);MOV.airTop=p.y;MOV.jumpT=-1;MOV.flipK=0;}if(p.ground)MOV.airTop=p.y;
+  // heavy footsteps for stompers
+  if(S0.heavy&&p.ground&&hs>2){const ph=Math.floor(p.anim.walk/Math.PI);if(ph!==MOV.stepPh){MOV.stepPh=ph;shake(.04);if(R()<.6)burst(p.x,p.y+.05,p.z,['#c8b090','#e8e0d0'],3,1.2,.14,.4);}}
+  // idle: after a while every hero does their own thing (and falls asleep in the end)
+  const quiet=p.ground&&hs<.25&&!BUILD.on&&!p.carry&&!p.carryF&&!p.swim&&!DLG&&!(inp.punch||inp.power||inp.jump||inp.interact)&&!p.emote;
+  if(quiet)MOV.idleT+=dt;else MOV.idleT=0;const A=p.anim;
+  let pose=null;if(p.climbing>0)pose='climb';else if(p.glide&&S0.arms)pose='glideArms';else if(MOV.idleT>4){const L=S0.idle;pose=MOV.idleT>32?'sleep':L[Math.floor((MOV.idleT-4)/7)%L.length];if(pose==='sleep'&&R()<dt*1.2)floatText(p.x,p.y+1.6,p.z,'💤','white');}A.pose=pose;
+  // first time with a hero: say what their special move is
+  const id=prof().char;if(a&&!MOV.tipDone['h_'+id]&&G.mode==='play'&&!DLG){MOV.tipDone['h_'+id]=1;const Ab=ABIL[a];setTimeout(()=>toast(Ab.ic+' '+tr(Ab.n)+': '+tr(Ab.d)),1200);}};}
+function moveLanded(p,fall,S0){const A=p.anim;
+  if(MOV.super&&fall>4){MOV.super=false;shake(.35);ringFx(p.x,p.y+.1,p.z,'#ffcf3a',3.6);burst(p.x,p.y+.2,p.z,['#ffcf3a','#c8b090','#ffffff'],26,6,.2,.8);SND.play('slam',.8);
+    for(const e of EN)if(!e.dead&&d2(e.x,e.z,p.x,p.z)<3.6&&Math.abs(e.y-p.y)<3)hitEnemy(e,3+Math.floor(prof().level/3),(e.x-p.x)*3,(e.z-p.z)*3);return;}
+  if(fall<1.2)return;
+  if(S0.heavy||S0.pounce){shake(Math.min(.25,.06+fall*.02));ringFx(p.x,p.y+.08,p.z,'#e8e0d0',1.5+Math.min(2,fall*.2));burst(p.x,p.y+.1,p.z,['#c8b090','#e8e0d0'],10,2.5,.16,.5);SND.play('thud',.8,.85);A.sq.v-=6;}
+  else if(S0.steam){SND.play('clang',.5,1.4);burst(p.x,p.y+.1,p.z,['#ffcf3a','#ffffff'],6,2,.1,1);}
+  else if(S0.board){SND.play('place',.9,.7);}
+  else if(S0.hover){burst(p.x,p.y+.2,p.z,['#b28dff','#ffffff'],8,1.5,.12,1);}
+  else if(S0.tuck||stOf(p)==='bouncy'){A.sq.v-=9;}}
+// a different jump sound for each kind of hero
+{const _j=SFX.jump;SFX.jump=function(){const st=ME?stOf(ME):'hero';if(!AU.ctx||!AU.sfx)return;AU.setup();const r={stomp:.75,beast:.85,bouncy:1.3,robot:.9,ninja:1.15,float:1.1,dancer:1.2,skate:1,royal:1.05,cool:.95,sporty:1.05,swim:1.1}[st]||1;
+  SND.play('jump',1,r);if(st==='robot')SND.play('clang',.35,1.6);else if(st==='ninja')SND.play('whoosh',.6,1.3);else if(st==='float')SND.play('sparkle',.6);else if(st==='skate')SND.play('place',.8,.8);};}
+// ---------- body language: poses and walks ----------
+const POSEF={
+  hips:(s,t,k)=>k?null:[.35,s*.6],look:(s,t,k)=>k?null:(s===1?[-2.35,.35]:[.05,s*.15]),flex:(s,t,k)=>k?null:[-1.9-.15*Math.sin(t*3),s*1.25],
+  meditate:(s,t,k)=>k?-1.5:[-.7,s*.55],juggle:(s,t,k)=>k?null:[-1.1+Math.sin(t*9+(s>0?0:Math.PI))*.55,s*.25],
+  dance:(s,t,k)=>k?Math.sin(t*6+(s>0?0:Math.PI))*.35:[-1.4+Math.sin(t*6)*.6*s,s*(.7+.4*Math.sin(t*6))],stretch:(s,t,k)=>k?null:[-2.95+Math.sin(t*2)*.1,s*.25],
+  robotscan:(s,t,k)=>k?null:[-.12,s*.05],salute:(s,t,k)=>k?null:(s===1?[-2.5,.95]:[.05,-.1]),skatebal:(s,t,k)=>k?s*.12:[-.2+Math.sin(t*3+s)*.15,s*1.3],
+  tapfoot:(s,t,k)=>k?(s===1?-.3*Math.max(0,Math.sin(t*10)):0):[-1.25,-s*.75],floaty:(s,t,k)=>k?.25+s*.08*Math.sin(t*2):[-.35+Math.sin(t*2+s)*.12,s*.55],
+  guitar:(s,t,k)=>k?(s===1?-.15:0):(s===1?[-.95+Math.sin(t*22)*.28,.15]:[-1.35,-.55]),sleep:(s,t,k)=>k?-1.5:[-.2,s*.35],
+  climb:(s,t,k)=>k?Math.sin(t*12+(s>0?0:Math.PI))*.7:[-2.7+Math.sin(t*12+(s>0?Math.PI:0))*.4,s*.3],glideArms:(s,t,k)=>k?.3:[-.2,s*1.45],star:(s,t,k)=>k?s*.5:[-.5,s*1.9]};
+{const _dh=drawHero;drawHero=function(p,t){const A=p.anim;if(!A||!A.lean||!A.tilt)return _dh(p,t);const stn=stOf(p),S0=STP[stn]||STP.hero;
+  const sv={lp:A.lean.p,tp:A.tilt.p,bob:A.bob,amp:A.amp,face:p.face,spin:A.spin,walk:A.walk,pose:A.pose};const drive=p.drive||p.veh;
+  if(!drive&&!p.fly&&!(p.ko>0)&&!p.chute){A.amp*=S0.amp;A.lean.p+=S0.lean*Math.min(1,sv.amp*1.5);A.tilt.p+=S0.sway*Math.sin(A.walk)*sv.amp;
+    if(p.ground&&!p.swim)A.bob=A.bob*(S0.bob/.07);if(S0.hover&&!p.swim)A.bob+=S0.hover+Math.sin(t*2.2+(p.x||0)*.3)*.08;if(stn==='robot')A.walk=Math.round(A.walk/(Math.PI/3))*(Math.PI/3);
+    if(A.pose==='meditate'||A.pose==='sleep')A.bob-=.52;if(A.pose==='robotscan')p.face+=Math.round(Math.sin(t*.8)*3)*.35;if(A.pose==='look')p.face+=Math.sin(t*.9)*.5;
+    if(p===ME&&abOf(p)==='dash'&&MOV.sprint)A.lean.p+=.25;
+    if(p===ME&&!p.ground&&!p.swim&&!p.zip&&MOV.jumpT>=0&&MOV.jumpT<.8){const u=MOV.jumpT;
+      if(abOf(p)==='bounce'&&MOV.flipK>1)A.spin=Math.min(1,u/.45)*TAU*(MOV.flipK===3?-1:1);
+      else if(S0.flip)A.spin=Math.min(1,u/.55)*TAU;else if(S0.tuck&&u<.5)A.spin=Math.min(1,u/.5)*TAU;else if(S0.twirl)p.face+=Math.min(1,u/.6)*TAU;
+      else if(S0.star&&u<.45)A.pose='star';else if(S0.arms)A.pose='glideArms';else if(S0.pounce)A.lean.p+=.5;}
+    if(p===ME&&MOV.super&&!p.ground)A.lean.p-=.2;}
+  try{_dh(p,t);}finally{A.lean.p=sv.lp;A.tilt.p=sv.tp;A.bob=sv.bob;A.amp=sv.amp;p.face=sv.face;A.spin=sv.spin;A.walk=sv.walk;A.pose=sv.pose;}
+  if(S0.board&&!drive&&!p.swim&&!p.fly&&!(p.ko>0))try{drawBoard(p,t,S0,sv);}catch(e){}};}
+function drawBoard(p,t,S0,sv){const m=MS.cur;OUT=p===ME?CHR:DYN;const C=CHARBY[heroIdOf(p)]||{};MS.reset();M4.tr(m,p.x,p.y+(p.yv||0)+sv.bob+.07,p.z);M4.ry(m,p.face);
+  if(p===ME&&!p.ground&&MOV.jumpT>=0&&MOV.jumpT<.5)M4.rz(m,MOV.jumpT/.5*TAU);rb(m,0,0,0,.5,.07,1.25,C.bg||'#9be22d',1,.1);rb(m,0,.04,0,.44,.02,1.1,'#23232f',6);
+  for(const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1]]){MS.push();M4.tr(m,a*.19,-.08,b*.42);M4.rz(m,Math.PI/2);cy(m,0,0,0,.12,.07,.12,'#ffcf3a',1,.2);MS.pop();}OUT=DYN;}
+// the rope of the grappling hook, and the hook marker
+function drawMoves(t){const m=MS.cur;OUT=DYN;const p=ME;if(!p)return;
+  if(MOV.rope&&p.zip){const R0=MOV.rope;const hx=p.x,hy=p.y+1.3,hz=p.z;for(let k=0;k<=12;k++){const u=k/12;MS.reset();M4.tr(m,lerp(hx,R0.x,u),lerp(hy,R0.y+.2,u),lerp(hz,R0.z,u));sp(m,0,0,0,.07,.07,.07,'#8a5a3a',6);}
+    MS.reset();M4.tr(m,R0.x,R0.y+.2,R0.z);sp(m,0,0,0,.22,.22,.22,'#8e939c',3);}
+  if(MOV.hook&&!p.zip){const h=MOV.hook;drawMarkerRing(h.x,h.y+.06,h.z,t,'#ffcf3a');MS.reset();M4.tr(m,h.x,h.y+.8+Math.sin(t*4)*.12,h.z);M4.ry(m,t*2);co(m,0,0,0,.18,.34,.18,'#ffcf3a',1,.6);}}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawMoves(t);drawChallenges(t);}catch(e){noteErr('moves',e);}};}
+// the ⬇ button shows up while swimming for divers
+// ---------- gap cells: floating platforms and roofed huts you can walk under ----------
+const GAPC=new Map();
+function gapSet(x,z,segs){const i=cid(x,z);segs.sort((a,b)=>a[0]-b[0]);GAPC.set(i,segs);CH[i]=segs[segs.length-1][1];}
+{const _g=groundAt;groundAt=function(x,z,y){if(!GAPC.size)return _g(x,z,y);const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=N||zi>=N)return _g(x,z,y);const segs=GAPC.get(xi+zi*N);if(!segs)return _g(x,z,y);
+    if(y===undefined)return segs[segs.length-1][1];let g0=-6;for(const q of segs){if(q[1]<=y+1.05)g0=Math.max(g0,q[1]);else if(q[0]<y+1.75)return q[1];}return g0;};}
+{const _c=ceilAt;ceilAt=function(x,z,y){if(!GAPC.size)return _c(x,z,y);const xi=Math.floor(x),zi=Math.floor(z);const segs=(xi>=0&&zi>=0&&xi<N&&zi<N)?GAPC.get(xi+zi*N):null;if(!segs)return _c(x,z,y);for(const q of segs)if(q[0]>=y+1.2)return q[0];return 1e9;};}
+{const _mb=moveBody;moveBody=function(e,dt,r,grav){if(e.vy>0&&GAPC.size){const i=cid(clamp(Math.floor(e.x),0,N-1),clamp(Math.floor(e.z),0,N-1));if(GAPC.has(i)){const y0=e.y;const res=_mb(e,dt,r,grav);
+      const c=Math.min(ceilAt(e.x-r,e.z-r,y0),ceilAt(e.x+r,e.z-r,y0),ceilAt(e.x-r,e.z+r,y0),ceilAt(e.x+r,e.z+r,y0));if(e.y+1.8>c){e.y=Math.max(y0,c-1.8);e.vy=Math.min(e.vy,0);}return res;}}return _mb(e,dt,r,grav);};}
+// ---------- hero challenges: golden bricks that need special moves ----------
+// 🗼 tall towers (fly, super jump, climb, grapple), 🐬 deep water (dive), 🔮 magic walls (teleport),
+// 🌬️ wind fans under floating platforms (glide, fly, climb, grapple), 🌊 little islands far out at sea (dash, fly)
+const CHAL={tower:{ic:'🗼',ab:['fly','superjump','climb','grapple','bounce']},deep:{ic:'🐬',ab:['dive']},magic:{ic:'🔮',ab:['blink']},fan:{ic:'🌬️',ab:['glide','fly','climb','grapple']},isle:{ic:'🌊',ab:['dash','fly']}};
+function challengesBuild(){const W=WORLD;W.mchal=[];W.mfans=[];const add=(k,x,z,y,gy)=>{const id=W.gblocks.length;W.gblocks.push({x,z,y:gy,hint:'Hero challenge'});W.mchal.push({k,x,z,y,gb:'w'+id});};
+  // a spot must be open ground: no roads, pavements, lots, buildings, plots, the home for sale, parked cars, trees, chests or other bricks
+  const near=(L,x,z,r)=>{for(const q of L||[])if(q&&q.x!==undefined&&Math.abs(q.x-x)<r&&Math.abs(q.z-z)<r)return true;return false;};
+  const busy=(x,z,r)=>{const H0=W.home;if(H0&&x>H0.x0-7-r&&x<H0.x1+8+r&&z>H0.z0-7-r&&z<H0.z1+7+r)return true;
+    return near(W.parked,x,z,8+r)||near(W.brk,x,z,3.5+r)||near(W.gblocks,x,z,4+r)||near(W.mtables,x,z,4+r)||near(W.chests,x,z,3.5+r)||near(W.npcs,x,z,5+r)||near(W.mchal,x,z,14+r)||near(W.plots,x,z,6+r);};
+  const hard=i=>!(RD[i]||PLT[i]||(TM[i]===T.PLATE&&BIO[i]!==B.PARK)||TM[i]===T.ROAD||BIO[i]===B.CITY||CH[i]>H[i]+.1||H[i]<WL+.3||(typeof MINE!=='undefined'&&MINE.cell[i]));
+  // inner cells (the footprint and a step around it) must also be free of trees and props; the outer ring only of roads, water and buildings
+  const area=(x,z,a0,a1,b0,b1)=>{const h0=H[cid(x|0,z|0)];for(let a=a0;a<=a1;a++)for(let b=b0;b<=b1;b++){const xx=(x|0)+a,zz=(z|0)+b;if(!inMap(xx,zz))return false;const i=cid(xx,zz);if(!hard(i)||Math.abs(H[i]-h0)>1.2)return false;
+      if(a>a0&&a<a1&&b>b0&&b<b1&&(OCC[i]||NRD[i]))return false;}
+    return !busy(x+(a0+a1)/2,z+(b0+b1)/2,Math.max(a1-a0,b1-b0)/2);};
+  const land=(x,z,r)=>{const L=landNear(x,z,r);return L&&!RD[cid(L.x|0,L.z|0)]?L:null;};const free2=(x,z)=>area(x,z,-2,3,-2,3);const free5=(x,z)=>area(x,z,-2,6,-2,4);
+  const spot=(x,z,r0,seed,ok=free2)=>{const g=mulberry(seed);for(let t=0;t<660;t++){const r=r0*(t<220?1:t<440?1.7:2.5),a=g()*TAU,d=Math.sqrt(g())*r;const px=Math.floor(x+Math.cos(a)*d),pz=Math.floor(z+Math.sin(a)*d);if(!inMap(px,pz)||(typeof inInBox==='function'&&inInBox(px,pz)))continue;if(ok(px,pz))return {x:px,z:pz};}return null;};
+  const tc=id=>{const T0=townById(id);return T0?{x:(T0.X[0]+T0.X[T0.X.length-1])/2,z:(T0.Z[0]+T0.Z[T0.Z.length-1])/2}:null;};
+  // towers: a stone tower 8 m tall with a golden brick on top
+  const towers=[[LOC.camp.x-16,LOC.camp.z-24,25,501],tc('sunset')?[tc('sunset').x,tc('sunset').z,60,502]:null,tc('frost')?[tc('frost').x,tc('frost').z,60,503]:null,[LOC.forest.x,LOC.forest.z,30,504]];
+  for(const T0 of towers){if(!T0)continue;const s=spot(T0[0],T0[1],T0[2],T0[3]);if(!s)continue;const h=H[cid(s.x,s.z)],top=h+8;
+    sbox(s.x,h,s.z,2,8,2,'#9aa3b3',13);sbox(s.x-.1,top-.3,s.z-.1,2.2,.3,2.2,'#7a8290',13);for(let k=1;k<4;k++)sbox(s.x-.02,h+k*2,s.z-.02,2.04,.12,2.04,'#c8ccd4',3);solid(s.x,s.z,s.x+2,s.z+2,top);add('tower',s.x+1,s.z+1,top,top+.9);}
+  // deep water: a golden brick near the sea floor, with a buoy above it
+  for(const [id,seed] of [['sunset',511],['star',512],['canyon',513]]){const c=tc(id);if(!c)continue;const g=mulberry(seed);let best=null;for(let t=0;t<3000&&!best;t++){const a=g()*TAU,d=40+g()*110;const x=Math.floor(c.x+Math.cos(a)*d),z=Math.floor(c.z+Math.sin(a)*d);if(!inMap(x,z))continue;const h=H[cid(x,z)];if(h<=WL-4.5&&h>=WL-9)best={x,z,h};}
+    if(best)add('deep',best.x+.5,best.z+.5,WL,best.h+1.1);}
+  // magic walls: a glowing hut with no door; only teleporters get in
+  for(const T1 of [[LOC.farm.x+20,LOC.farm.z+14,30,521],[LOC.forest.x+18,LOC.forest.z-20,30,522],tc('canyon')?[tc('canyon').x,tc('canyon').z,60,523]:null]){if(!T1)continue;const [x,z,r,seed]=T1;const s=spot(x,z,r,seed);if(!s)continue;const h=H[cid(s.x,s.z)];
+    for(const [a,b] of [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]]){sbox(s.x+a,h,s.z+b,1,3,1,'#8a4ff0',1,.35);solid(s.x+a,s.z+b,s.x+a+1,s.z+b+1,h+3.3);}sbox(s.x-1.05,h+3,s.z-1.05,3.1,.3,3.1,'#b28dff',1,.5);
+    gapSet(s.x,s.z,[[h-20,h],[h+3,h+3.3]]);add('magic',s.x+.5,s.z+.5,h,h+.9);}
+  // wind fans: a floating platform 12 m up, with a pole and a fan under it
+  for(const T1 of [[LOC.camp.x,LOC.camp.z+52,30,531],tc('star')?[tc('star').x,tc('star').z,70,532]:null,tc('sunset')?[tc('sunset').x+30,tc('sunset').z,70,533]:null]){if(!T1)continue;const [x,z,r,seed]=T1;const s=spot(x,z,r,seed,free5);if(!s)continue;const h=H[cid(s.x,s.z)],top=h+12;
+    sbox(s.x,top-.4,s.z,3,.4,3,'#46b0ff',1,.2);for(let a=0;a<3;a++)for(let b=0;b<3;b++)gapSet(s.x+a,s.z+b,[[h-20,H[cid(s.x+a,s.z+b)]],[top-.4,top]]);sbox(s.x+.1,H[cid(s.x,s.z)],s.z+.1,.8,top-.4-H[cid(s.x,s.z)],.8,'#c8ccd4',3);GAPC.delete(cid(s.x,s.z));solid(s.x,s.z,s.x+1,s.z+1,top);
+    const fx0=s.x+4,fz0=s.z+1;sbox(fx0-.8,H[cid(fx0,fz0)],fz0-.8,1.6,.3,1.6,'#3a3f4d',3);W.mfans.push({x:fx0,z:fz0,y:H[cid(fx0,fz0)],top});add('fan',s.x+1.5,s.z+1.5,top,top+.9);}
+  // far islands: a tiny sand island out at sea
+  for(const [id,seed] of [['sunset',541],['frost',542]]){const c=tc(id);if(!c)continue;const g=mulberry(seed);let best=null;for(let t=0;t<3000&&!best;t++){const a=g()*TAU,d=70+g()*90;const x=Math.floor(c.x+Math.cos(a)*d),z=Math.floor(c.z+Math.sin(a)*d);if(!inMap(x,z))continue;let ok=true;for(let q=-4;q<=4&&ok;q++)for(let w=-4;w<=4;w++){const j=cid(clamp(x+q,0,N-1),clamp(z+w,0,N-1));if(H[j]>WL-1.5){ok=false;break;}}if(ok)best={x,z};}
+    if(best){(W.misles=W.misles||[]).push({x:best.x+.5,z:best.z+.5});const y=WL+.4;sbox(best.x-1,WL-2,best.z-1,3,2.4,3,'#e8d59a',9);solid(best.x-1,best.z-1,best.x+2,best.z+2,y);sput('cyl',mat4At(best.x+.5,y,best.z+.5),0,1.2,0,.18,2.4,.18,'#8a5a3a',6);sput('cone',mat4At(best.x+.5,y+2.4,best.z+.5),0,.3,0,1.8,.7,1.8,'#56c05a',7);add('isle',best.x+.5,best.z+.5,y,y+.9);}}}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{challengesBuild();}catch(e){noteErr('chal',e);console.error(e);}};}
+function drawChallenges(t){const W=WORLD;if(!W.mchal||camRealm()!=='earth')return;const m=MS.cur;OUT=DYN;for(const I of W.misles||[]){if(Math.abs(I.x-CAM.tx)>110||Math.abs(I.z-CAM.tz)>110)continue;for(let k=0;k<22;k++){const a2=k/22*TAU+t*.8,r2=9+Math.sin(t*2+k)*.6;MS.reset();M4.tr(m,I.x+Math.cos(a2)*r2,WL+.06,I.z+Math.sin(a2)*r2);M4.ry(m,-a2);bx(m,0,0,0,.9,.05,.3,'#ffffff',1,.4);}}for(const F of W.mfans||[]){if(Math.abs(F.x-CAM.tx)>80||Math.abs(F.z-CAM.tz)>80||!inView(F.x,F.z))continue;MS.reset();M4.tr(m,F.x,F.y+.35,F.z);M4.ry(m,t*9);
+    for(let k=0;k<3;k++){MS.push();M4.ry(m,k*2.094);bx(m,.35,0,0,.7,.04,.22,'#dfe3ea',3);MS.pop();}if(R()<.3)PARTS.push({x:F.x+Rr(-.6,.6),y:F.y+.5,z:F.z+Rr(-.6,.6),vx:0,vy:Rr(5,9),vz:0,life:1,s:.08,c:hex('#ffffff'),e:.6,g:0,k:'deb',rot:0});}
+  // the magic hut: glowing runes on every wall, a floating crystal on top and sparkles around it
+  for(const c of W.mchal)if(c.k==='magic'&&Math.abs(c.x-CAM.tx)<80&&Math.abs(c.z-CAM.tz)<80&&inView(c.x,c.z)){const got=G.gb.has(c.gb),y0=c.y,pul=.55+.45*Math.sin(t*2.2);
+    for(let k=0;k<4;k++){MS.reset();M4.tr(m,c.x,y0,c.z);M4.ry(m,k*Math.PI/2);MS.push();M4.tr(m,0,1.75,1.53);M4.rz(m,Math.PI/4);bx(m,0,0,0,.44,.44,.04,'#fff2a8',1,pul);MS.pop();
+      bx(m,0,1.75,1.545,.08,.95,.03,'#b9f3ff',1,1.05-pul*.5);bx(m,-.62,.75,1.535,.14,.14,.03,'#ff9ec0',1,pul);bx(m,.62,.75,1.535,.14,.14,.03,'#ff9ec0',1,pul);bx(m,0,2.72,1.535,2.9,.06,.03,'#e7d6ff',1,.8);}
+    MS.reset();M4.tr(m,c.x,y0+4.4+Math.sin(t*1.6)*.18,c.z);M4.ry(m,t*1.2);co(m,0,.32,0,.5,.64,.5,got?'#ffcf3a':'#d2b6ff',1,.9);MS.push();M4.rx(m,Math.PI);co(m,0,.32,0,.5,.64,.5,got?'#ffb300':'#9b6bff',1,.9);MS.pop();
+    if(!got)for(let k=0;k<6;k++){const a2=t*1.8+k*TAU/6;MS.reset();M4.tr(m,c.x+Math.cos(a2)*1.15,y0+4.4+Math.sin(t*3+k)*.45,c.z+Math.sin(a2)*1.15);sp(m,0,0,0,.1,.1,.1,k%2?'#ffffff':'#ff9ec0',1,1);}}
+  for(const c of W.mchal)if(c.k==='deep'&&!G.gb.has(c.gb)&&Math.abs(c.x-CAM.tx)<90&&Math.abs(c.z-CAM.tz)<90&&inView(c.x,c.z)){MS.reset();M4.tr(m,c.x,WL+Math.sin(t*1.5)*.08,c.z);M4.rz(m,Math.sin(t*1.2)*.08);cy(m,0,.3,0,.6,.8,.6,'#ff4f6d',1,.1);cy(m,0,.75,0,.45,.2,.45,'#ffffff',1);cy(m,0,1.1,0,.08,.6,.08,'#3a3f4d',3);sp(m,0,1.45,0,.14,.14,.14,'#ffcf3a',1,Math.sin(t*4)>0?1:.2);}}
+function challengeLabels(){const W=WORLD;if(!W.mchal||!ME)return;for(const c of W.mchal){if(G.gb.has(c.gb))continue;if(d2(c.x,c.z,ME.x,ME.z)>26)continue;const C0=CHAL[c.k];
+    label('chal'+c.gb,c.x,(c.k==='deep'?WL+2.2:c.k==='magic'?c.y+5.8:c.y+2.3),c.z,`${C0.ic} ${esc(tr('Hero challenge'))}<br><span style="font-size:18px">${C0.ab.map(a=>ABIL[a].ic).join(' ')}</span>`,'sign gr');}}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{challengeLabels();}catch(e){}};}
+MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!WORLD.mchal)return;for(const c of WORLD.mchal){if(G.gb.has(c.gb))continue;const C0=CHAL[c.k];add({id:'chal_'+c.gb,cat:'fun',x:c.x,z:c.z,ic:C0.ic,col:'#ffcf3a',t:tr('Hero challenge'),s:C0.ab.map(a=>ABIL[a].ic+' '+tr(ABIL[a].n)).join(' · '),pr:5});}});
+// near a challenge with the wrong hero: a gentle hint that opens the heroes who can do it
+const CHALT={t:0,last:''};
+{const _su2=statusUpdate;statusUpdate=function(dt){_su2(dt);try{if(!ME||G.mode!=='play'||!WORLD.mchal)return;CHALT.t-=dt;if(CHALT.t>0)return;CHALT.t=1;const a=abOf(ME);for(const c of WORLD.mchal){if(G.gb.has(c.gb))continue;if(d2(c.x,c.z,ME.x,ME.z)>9)continue;const C0=CHAL[c.k];
+    if(!C0.ab.includes(a)&&CHALT.last!==c.gb){CHALT.last=c.gb;toast(C0.ic+' '+trf('This one needs a hero with {0}',C0.ab.map(k=>ABIL[k].ic+' '+tr(ABIL[k].n)).join(', ')));}break;}}catch(e){}};}
+// ---------- the roster shows each hero's move and style ----------
+{const _rd=rosterDetail;rosterDetail=function(){_rd();try{const D=$('rdet');if(!D)return;const C=CHARBY[ROS.sel]||charOf(prof());const mv=HMOVE[C.id];if(!mv)return;const Ab=ABIL[mv[1]],S0=STP[mv[0]];
+    const el=document.createElement('div');el.className='rmove';el.innerHTML=`<b>${Ab?Ab.ic+' '+esc(tr(Ab.n)):''}</b><small>${Ab?esc(tr(Ab.d)):''}</small><small>🕺 ${esc(tr(S0.n))}</small>`;(D.querySelector('.ri')||D).appendChild(el);}catch(e){}};}
+{const _rr=renderRoster;renderRoster=function(){_rr();try{document.querySelectorAll('#rbox .rt[data-c]').forEach(b=>{const mv=HMOVE[b.dataset.c];if(!mv||!ABIL[mv[1]]||b.querySelector('.ab'))return;const i=document.createElement('i');i.className='ab';i.textContent=ABIL[mv[1]].ic;b.appendChild(i);});}catch(e){}};}
+// the Jet Wings now let heroes who can't fly glide
+{const _pl2=typeof playHero==='function'?playHero:null;if(_pl2)playHero=function(id){const r=_pl2(id);try{if(r&&ME&&ME.fly&&!canFly(ME)){ME.fly=false;ME.turbo=false;}}catch(e){}return r;};}
+MV('Super dash! You can even run across water','ركض خارق! تستطيع حتى الركض فوق الماء');MV('Climbing! Keep running into the wall','تسلّق! استمر في الركض نحو الجدار');MV('Wind! Keep gliding to ride it up','ريح! استمر في الانزلاق لترتفع معها');
+MV('Hold ⬇ to dive deep!','اضغط مطولاً على ⬇ لتغوص عميقًا!');MV('Hold Shift to dive deep!','اضغط Shift مطولاً لتغوص عميقًا!');MV('Hero challenge','تحدي الأبطال');MV('This one needs a hero with {0}','هذا يحتاج إلى بطل لديه {0}');
+MV('The current is too strong to swim! Super fast heroes can run across the water','التيار قوي جدًا للسباحة! الأبطال السريعون جدًا يستطيعون الركض فوق الماء');MV('Only flying heroes can fly. Your Jet Wings let this hero glide: hold jump!','الأبطال الطائرون وحدهم يستطيعون الطيران. أجنحتك النفاثة تجعل هذا البطل ينزلق في الهواء: اضغط مطولاً على القفز!');
+MV('Every hero is different!','كل بطل مختلف!');MV('Hero challenges','تحديات الأبطال');MV('Hero style','أسلوب البطل');
+MV('Only some heroes can fly now. Others super jump, triple jump, teleport, climb walls, swing on a hook, run on water, dive deep or glide. Try them all!','بعض الأبطال فقط يستطيعون الطيران الآن. آخرون يقفزون قفزة خارقة، أو ثلاث قفزات، أو ينتقلون فجأة، أو يتسلقون الجدران، أو يتأرجحون بالخطّاف، أو يركضون فوق الماء، أو يغوصون عميقًا، أو ينزلقون في الهواء. جرّبهم كلهم!');
+MV('Golden bricks on tall towers, in magic huts, above wind fans, deep under the sea and on far islands. Each one needs the right hero','طوب ذهبي فوق أبراج عالية، وداخل أكواخ سحرية، وفوق مراوح الريح، وفي أعماق البحر، وعلى جزر بعيدة. كل واحد يحتاج البطل المناسب');
+MV('Every hero walks, runs, jumps and waits in their own way: ninjas sneak, robots march, dancers twirl','كل بطل يمشي ويركض ويقفز وينتظر بطريقته: النينجا يتسللون، والروبوتات تسير كالجنود، والراقصون يدورون');
 // ================= start =================
 boot();
 </script>
