@@ -1,6 +1,6 @@
 # Block Buddies
 
-A brick hero adventure for kids. It has 50 heroes to collect, five connected islands, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and nearly 60 quests. Up to 4 players can play together online.
+A brick hero adventure for kids. It has 50 heroes to collect, five connected islands, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
 
 **Play:** https://ahamze123.github.io
 
@@ -40,11 +40,14 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - **Places to go inside**: the Hero Castle, Pizza Palace, the Fire Station, Brick Bank, Scoops Ice Cream, Toy Town, the Dino Museum, the Space Museum, the Spooky Manor, the Moon Greenhouse and the Hall of Heroes. Each has missions that fit the place.
 
 ## Moving around
-- **Swimming**: every hero can swim. Jump into the sea to swim, and jump again to climb out.
-- **Flying** (with the Jet Wings gadget): hold jump to go up. Tap **🪂 Land** (or press **L**) to stop flying. If you are high up, a parachute opens.
+- **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool) to swim, and jump again to climb out.
+- **Flying** (with the Jet Wings gadget): hold jump to go up and hold **⬇ Down** (**Shift** on a keyboard) to fly down. Tap **🦸 Land** (or press **L**) for a fast super hero landing.
+- **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 
 ## Things to do
-- Nearly 60 quests from people with a **!** over their heads, or pick one on the castle's Quest Board.
+- About 100 quests from people with a **!** over their heads, or pick one on the castle's Quest Board.
+- **New missions** all over the islands: catch runaway chickens, kittens and baby dinos, put out forest fires (only a water hero can), melt frozen fountains (only a fire hero can), take photos, train like a knight, a sea swimming race, sunken treasure and more. Each one has its own prize: 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks.
+- **Combos**: keep hitting baddies without a break for bonus coins. The **hero of the day** earns 50% more coins.
 - **Obstacle courses**: Rainbow Steps, Sky Tower and Iceberg Hop. Beat your best time.
 - **Boss of the Week** at the Champion Arena. There is a new boss every Monday.
 - **Festivals** on special dates (Eid Lanterns, Pumpkin Festival, Winter Lights, Green Day, Flower Festival), with hidden things to find and prize hats. There are fireworks on festival and weekend nights.

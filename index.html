@@ -263,6 +263,9 @@ body.ar .small,body.ar .sub{line-height:1.5}
 .chmore{grid-column:1/-1;text-align:center;font:800 12px var(--ui);color:#fff;opacity:.8;padding:4px 0 2px}
 .tb.land{right:14px;bottom:168px;background:#ff8a4f;box-shadow:inset 0 -4px 0 rgba(0,0,0,.3),0 0 0 3px rgba(255,255,255,.55)}
 .tb.land[hidden]{display:none}
+.tb.down{right:96px;bottom:168px;background:#46b0ff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.3),0 0 0 3px rgba(255,255,255,.55)}
+.tb.down[hidden]{display:none}
+.tb.down.on,.tb.land:active{transform:scale(.92)}
 .rbox.rbig{width:min(1180px,100%)}
 .rtabs{display:flex;gap:8px;justify-content:center}
 .rtab{flex:1;max-width:260px;border:0;border-radius:14px;padding:9px 10px;background:var(--panel2);color:#fff;font:900 15px var(--ui);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);cursor:pointer}
@@ -277,6 +280,22 @@ body.ar .small,body.ar .sub{line-height:1.5}
 .rprog i{display:block;height:100%;background:linear-gradient(90deg,#ffcf3a,#ff8a1f)}
 .rhow{font-weight:800;color:#fff6c8}
 @media (max-width:760px){.rlay{grid-template-columns:1fr}.rlay .rgrid{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));max-height:44vh}.rlay .rdet{position:static}.rlay .rdet canvas{width:110px;height:110px}}
+#combo{position:absolute;left:50%;top:calc(104px + env(safe-area-inset-top,0px));transform:translateX(-50%);font-family:var(--display);font-size:24px;color:#fff;background:linear-gradient(180deg,#ff8a1f,#e8343f);border-radius:14px;padding:3px 14px;box-shadow:0 4px 0 #a02030,0 8px 18px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap;z-index:5}
+#combo.hot{background:linear-gradient(180deg,#ffcf3a,#ff5a1a);color:#2a1a00;box-shadow:0 4px 0 #b0441a,0 8px 18px rgba(0,0,0,.25)}
+#combo.pop{animation:cpop .25s cubic-bezier(.2,1.6,.4,1)}
+#combo.out{animation:cout .3s forwards}
+@keyframes cpop{from{transform:translateX(-50%) scale(1.35)}to{transform:translateX(-50%) scale(1)}}
+@keyframes cout{to{opacity:0;transform:translateX(-50%) scale(.7)}}
+.rhod{text-align:center;font:800 12.5px var(--ui);color:#fff6a8}
+.rt .hd{top:5px;left:6px;font-size:14px}
+.rrec{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.rrec span{font:800 12.5px var(--ui);color:#cfcaf5}
+.rrb{width:52px;height:52px;border-radius:50%;border:3px solid #fff;padding:0;overflow:hidden;background:var(--s);cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+.rrb canvas{width:100%;height:100%;display:block}
+.modal:not([hidden])>.mbox{animation:mpop .24s cubic-bezier(.2,1.4,.4,1)}
+@keyframes mpop{from{transform:scale(.9)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.modal:not([hidden])>.mbox,#combo.pop{animation:none}}
+.ftxt.big{font-size:30px;color:#ffe066}
 </style>
 <canvas id="gl" tabindex="0"></canvas>
 <div id="tags"></div>
@@ -334,7 +353,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
       <div class="small" id="pickhint" data-i18n>Boys lift cars and pull handles, girls charge power sockets. In solo you can swap between your boy and girl hero any time.</div>
       <div class="tbtns"><button class="big" id="bplay" data-i18n>Play solo</button><button class="big mint" id="bonline" data-i18n>Play online</button></div>
       <div class="small" id="savehint"></div>
-      <div class="keys" id="keyshelp"><b>Move</b><span><kbd>W A S D</kbd> · camera <kbd>←</kbd><kbd>→</kbd> or drag mouse</span><b>Actions</b><span><kbd>Space</kbd> jump · <kbd>J</kbd>/click attack · <kbd>K</kbd> power · <kbd>E</kbd> interact · <kbd>L</kbd> stop flying</span><b>More</b><span><kbd>Tab</kbd> swap hero · <kbd>M</kbd> map · <kbd>T</kbd> emotes · <kbd>B</kbd> build · <kbd>C</kbd> photo · <kbd>Esc</kbd> menu</span></div>
+      <div class="keys" id="keyshelp"><b>Move</b><span><kbd>W A S D</kbd> · camera <kbd>←</kbd><kbd>→</kbd> or drag mouse</span><b>Actions</b><span><kbd>Space</kbd> jump · <kbd>J</kbd>/click attack · <kbd>K</kbd> power · <kbd>E</kbd> interact · <kbd>Shift</kbd> fly down · <kbd>L</kbd> land</span><b>More</b><span><kbd>Tab</kbd> swap hero · <kbd>M</kbd> map · <kbd>T</kbd> emotes · <kbd>B</kbd> build · <kbd>C</kbd> photo · <kbd>Esc</kbd> menu</span></div>
     </div>
     <div class="tcard" id="tonline" hidden>
       <div class="pt" style="font-size:24px" data-i18n>Play online</div>
@@ -1028,14 +1047,24 @@ Object.assign(AR,{'Skater Zak':'زاك المتزلّج','Rocky Rockstar':'رو�
 '50 heroes!':'50 بطلاً!','34 new heroes: find hidden hero coins, buy heroes in the castle, and earn more by playing':'34 بطلاً جديدًا: ابحث عن عملات الأبطال المخفية، واشترِ أبطالاً في القلعة، واكسب المزيد باللعب',
 'Hidden hero coins':'عملات الأبطال المخفية','15 glowing coins are hidden around Blocktopia. Look for a beam of light!':'15 عملة مضيئة مخبأة في أنحاء بلوكتوبيا. ابحث عن شعاع الضوء!',
 'The Hall of Heroes is bigger':'قاعة الأبطال أكبر الآن','Room for all 50 hero statues':'مكان لتماثيل الأبطال الخمسين'});
+// ---- v18: combos, hero of the day, recent heroes ----
+Object.assign(AR,{'{0} hits!':'{0} ضربات!','Combo x{0}!':'سلسلة x{0}!','Combo King':'ملك السلاسل','Hit baddies 25 times in a row':'اضرب الأشرار 25 مرة متتالية','Hero of the day: {0} earns +50% coins!':'بطل اليوم: {0} يربح عملات أكثر بنسبة 50%!',
+'Play again:':'العب مجددًا:','Level {0} unlocks {1}!':'المستوى {0} يفتح {1}!'});
+// ---- v18: flying down, hero landing, pools ----
+Object.assign(AR,{'40 new missions!':'40 مهمة جديدة!','Catch runaway animals, put out fires, take photos, train like a knight and more':'أمسك الحيوانات الهاربة، وأطفئ النيران، والتقط الصور، وتدرّب مثل الفرسان، والمزيد',
+'New prizes':'جوائز جديدة','Win 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks':'اربح 12 قبعة و4 حيوانات أليفة (كتكوت وثعلب وفقمة صغيرة وكائن فضائي صغير) وتعابير وطوبًا ذهبيًا',
+'Fly down fast':'انزل بسرعة أثناء الطيران','Hold ⬇ to fly down. Tap 🦸 Land for a super hero landing':'اضغط مطولاً على ⬇ لتنزل. اضغط 🦸 هبوط لهبوط الأبطال الخارق',
+'Combos':'السلاسل','Keep hitting baddies without a break for bonus coins':'استمر في ضرب الأشرار دون توقف لتربح عملات إضافية','Hero of the day':'بطل اليوم','A different hero earns +50% coins every day':'بطل مختلف يربح عملات أكثر بنسبة 50% كل يوم',
+'Pool party':'حفلة المسبح','The pool in Sunset Bay is real water now. Dive in!':'المسبح في خليج الغروب فيه ماء حقيقي الآن. اقفز فيه!','Pool':'المسبح',
+'Down':'نزول','Hero landing!':'هبوط الأبطال!','Hold ⬇ to fly down. Tap 🦸 to land fast':'اضغط مطولاً على ⬇ لتنزل. اضغط 🦸 لتهبط بسرعة','Hold Shift to fly down. Press L to land fast':'اضغط Shift مطولاً لتنزل. اضغط L لتهبط بسرعة'});
 const I18N_ORIG=new WeakMap();
 function setLang(l){LANG=l==='ar'?'ar':'en';try{localStorage.setItem('bb2_lang',LANG);}catch(e){}applyLang();}
 // put every visible text in the current language (static page text, key help, open menus)
 function applyLang(){const ar=LANG==='ar';document.body.classList.toggle('ar',ar);document.documentElement.lang=LANG;
   document.querySelectorAll('[data-i18n]').forEach(el=>{if(!I18N_ORIG.has(el))I18N_ORIG.set(el,el.textContent);el.textContent=tr(I18N_ORIG.get(el));});
   document.querySelectorAll('[data-i18n-attr]').forEach(el=>{let o=I18N_ORIG.get(el);if(!o){o={};for(const a of el.dataset.i18nAttr.split(','))o[a]=el.getAttribute(a)||'';I18N_ORIG.set(el,o);}for(const a in o)el.setAttribute(a,tr(o[a]));});
-  const kh=document.getElementById('keyshelp');if(kh)kh.innerHTML=ar?`<b>تحرك</b><span><kbd>W A S D</kbd> · الكاميرا <kbd>←</kbd><kbd>→</kbd> أو اسحب بالفأرة</span><b>أفعال</b><span><kbd>Space</kbd> قفز · <kbd>J</kbd>/نقرة هجوم · <kbd>K</kbd> قوة · <kbd>E</kbd> استخدم · <kbd>L</kbd> أوقف الطيران</span><b>المزيد</b><span><kbd>Tab</kbd> بدّل البطل · <kbd>M</kbd> خريطة · <kbd>T</kbd> تعابير · <kbd>B</kbd> بناء · <kbd>C</kbd> صورة · <kbd>Esc</kbd> قائمة</span>`
-    :`<b>Move</b><span><kbd>W A S D</kbd> · camera <kbd>←</kbd><kbd>→</kbd> or drag mouse</span><b>Actions</b><span><kbd>Space</kbd> jump · <kbd>J</kbd>/click attack · <kbd>K</kbd> power · <kbd>E</kbd> interact · <kbd>L</kbd> stop flying</span><b>More</b><span><kbd>Tab</kbd> swap hero · <kbd>M</kbd> map · <kbd>T</kbd> emotes · <kbd>B</kbd> build · <kbd>C</kbd> photo · <kbd>Esc</kbd> menu</span>`;
+  const kh=document.getElementById('keyshelp');if(kh)kh.innerHTML=ar?`<b>تحرك</b><span><kbd>W A S D</kbd> · الكاميرا <kbd>←</kbd><kbd>→</kbd> أو اسحب بالفأرة</span><b>أفعال</b><span><kbd>Space</kbd> قفز · <kbd>J</kbd>/نقرة هجوم · <kbd>K</kbd> قوة · <kbd>E</kbd> استخدم · <kbd>Shift</kbd> انزل أثناء الطيران · <kbd>L</kbd> هبوط</span><b>المزيد</b><span><kbd>Tab</kbd> بدّل البطل · <kbd>M</kbd> خريطة · <kbd>T</kbd> تعابير · <kbd>B</kbd> بناء · <kbd>C</kbd> صورة · <kbd>Esc</kbd> قائمة</span>`
+    :`<b>Move</b><span><kbd>W A S D</kbd> · camera <kbd>←</kbd><kbd>→</kbd> or drag mouse</span><b>Actions</b><span><kbd>Space</kbd> jump · <kbd>J</kbd>/click attack · <kbd>K</kbd> power · <kbd>E</kbd> interact · <kbd>Shift</kbd> fly down · <kbd>L</kbd> land</span><b>More</b><span><kbd>Tab</kbd> swap hero · <kbd>M</kbd> map · <kbd>T</kbd> emotes · <kbd>B</kbd> build · <kbd>C</kbd> photo · <kbd>Esc</kbd> menu</span>`;
   const lb=document.getElementById('blang');if(lb){lb.textContent='🌐 '+(ar?'English':'العربية');lb.setAttribute('aria-label',ar?'Switch to English':'التبديل إلى العربية');}
   const q=id=>{const e=document.getElementById(id);return e&&!e.hidden;};
   try{if(typeof refreshTitle==='function')refreshTitle();if(typeof touchLabels==='function')touchLabels();if(typeof UI!=='undefined'&&UI.lobbyStatus){UI.lastSig=null;UI.lobbyStatus();}
@@ -2211,7 +2240,7 @@ function updateMe(dt,inp){const p=ME,A=p.anim,pr=prof();
   p.coyote=p.ground?.12:p.coyote-dt;p.jbuf=inp.jumpP?.15:p.jbuf-dt;
   if(p.fly){// double-tap jump while flying switches turbo on and off
     if(inp.jumpP){if(p.flyTap>0&&G.t-p.flyTap<.45){p.turbo=!p.turbo;p.flyTap=0;if(p.turbo){SFX.dash();burst(p.x,p.y+1,p.z,['#7ef9ff','#ffffff','#ffcf3a'],22,5,.18,1);if(!G.turboTip){G.turboTip=1;toast(tr('TURBO! Double-tap jump again to slow down'));}}else SFX.whoosh();}else p.flyTap=G.t;}
-    const up=inp.jump?(p.turbo?10:7):-2.6;p.vy+=(up-p.vy)*Math.min(1,dt*4);if(p.y>90)p.vy=Math.min(p.vy,0);A.fly=lerp(A.fly,1,dt*5);if(p.ground&&!inp.jump){p.fly=false;p.turbo=false;}
+    const up=inp.jump?(p.turbo?10:7):inp.down?(p.turbo?-26:-16):-2.6;p.vy+=(up-p.vy)*Math.min(1,dt*(inp.down?6:4));if(p.y>90)p.vy=Math.min(p.vy,0);A.fly=lerp(A.fly,1,dt*5);if(p.ground&&!inp.jump){p.fly=false;p.turbo=false;}
     if(p.turbo&&Math.hypot(p.vx,p.vz)>12&&R()<.7)burst(p.x-p.vx*.03,p.y+1.1,p.z-p.vz*.03,['#7ef9ff','#ffffff'],1,.4,.12,.35);}
   else{A.fly=lerp(A.fly,0,dt*8);
     if(p.jbuf>0){if(p.coyote>0){p.vy=11.5*(perkOf(prof())==='jumpy'?1.14:1);p.ground=false;p.coyote=0;p.jbuf=0;p.jumps=1;SFX.jump();A.sq.v-=6;burst(p.x,p.y+.1,p.z,'#ffffff',5,1.5,.14,.3);}
@@ -4102,8 +4131,18 @@ function funPark(tw,x0,z0){const cx=x0+6,cz=z0+6;const m=mat4At(cx-1.5,4,cz);for
   sput('box',m,0,.3,0,7,.6,4,'#ff7aa2',1);solid(cx-5,cz-2.2,cx+2,cz+2.2,5);(WORLD.ferris=WORLD.ferris||[]).push({x:cx-1.5,y:4+10.4,z:cz,r:8,n:10});
   const cm=mat4At(x0+10,4,z0+10);sput('cyl',cm,0,.2,0,4.6,.4,4.6,'#ffe8b3',1);sput('cyl',cm,0,1.9,0,.3,3.4,.3,'#ffcf3a',3);sput('cone',cm,0,4,0,5,1.4,5,'#ff5d73',1);solid(x0+8,z0+8,x0+12,z0+12,6);(WORLD.carousels=WORLD.carousels||[]).push({x:x0+10,y:4.4,z:z0+10,r:1.8});
   addBrk('cart',x0+2,z0+10,0);addBrk('cart',x0+2,z0+2,Math.PI);}
-function poolBlock(tw,x0,z0){sbox(x0+1,4,z0+1,10,.35,10,'#f4f4f4',1);sbox(x0+2,4.1,z0+2.5,8,.3,6,'#3fc7ff',8,.3);for(let k=0;k<3;k++){const m=mat4At(x0+3+k*3,4.35,z0+10);sput('box',m,0,.15,0,.9,.3,2,pick(BEACHT),1);}
-  beachUmbrella(x0+1.6,z0+10.4);const lm=mat4At(x0+10.5,4.35,z0+1.5);sput('box',lm,0,1.6,0,.1,3.2,.1,'#ffffff',1);sput('box',lm,0,3.2,0,1,.1,1,'#ff5d73',1);sput('box',lm,0,3.8,0,1.2,1.2,1.2,'#ffffff',1);solid(x0+10,z0+1,x0+11,z0+2,8);solid(x0+1,z0+1,x0+11,z0+11,4.35);}
+// swimming pools are real water: dig the hole, fill it, and remember the water level so heroes can swim in it
+const POOLS=[];const poolAt=(x,z)=>{for(const q of POOLS)if(x>=q.x0&&x<q.x1&&z>=q.z0&&z<q.z1)return q;return null;};
+function poolBlock(tw,x0,z0){const X0=x0+2,X1=x0+10,Z0=z0+3,Z1=z0+8,wl=4.22,fl=2.7;const deck='#f4f4f4';
+  sbox(x0+1,4,z0+1,10,.35,Z0-z0-1,deck,1);sbox(x0+1,4,Z1,10,.35,z0+11-Z1,deck,1);sbox(x0+1,4,Z0,X0-x0-1,.35,Z1-Z0,deck,1);sbox(X1,4,Z0,x0+11-X1,.35,Z1-Z0,deck,1);
+  for(let z=Z0;z<Z1;z++)for(let x=X0;x<X1;x++){const i=cid(x,z);H[i]=fl;CH[i]=fl;TM[i]=T.STONE;TC[i]=pal(((x+z)&1)?'#bfe9ff':'#a8dcf5');OCC[i]=1;NRD[i]=1;}
+  for(const [a,b,c,d] of [[X0,Z0,X1-X0,.06],[X0,Z1-.06,X1-X0,.06],[X0,Z0,.06,Z1-Z0],[X1-.06,Z0,.06,Z1-Z0]])sbox(a,fl,b,c,4-fl,d,'#e8f7ff',1);
+  sbox(X0,wl-.3,Z0,(X1-X0)*.3,.3,Z1-Z0,'#4cc9f5',8,.2);sbox(X0+(X1-X0)*.3,wl-.3,Z0,(X1-X0)*.7,.3,Z1-Z0,'#1fa3e6',8,.16);for(let k=1;k<3;k++)sbox(X0,wl+.01,Z0+k*(Z1-Z0)/3-.04,X1-X0,.06,.08,k%2?'#ff5d73':'#ffffff',1,.2);
+  POOLS.push({x0:X0,z0:Z0,x1:X1,z1:Z1,wl,fl});
+  solid(x0+1,z0+1,x0+11,Z0,4.35);solid(x0+1,Z1,x0+11,z0+11,4.35);solid(x0+1,Z0,X0,Z1,4.35);solid(X1,Z0,x0+11,Z1,4.35);
+  for(const s of [-1,1]){const lx=s<0?X0+.4:X1-.4;sbox(lx-.05,4.35,Z0-.35,.1,1,.1,'#c8ccd4',3);sbox(lx-.05,4.35,Z0-.05,.1,1,.1,'#c8ccd4',3);}
+  const _unused=0;{for(let k=0;k<3;k++){const m=mat4At(x0+3+k*3,4.35,z0+10);sput('box',m,0,.15,0,.9,.3,2,pick(BEACHT),1);}
+  beachUmbrella(x0+1.6,z0+10.4);const lm=mat4At(x0+10.5,4.35,z0+1.5);sput('box',lm,0,1.6,0,.1,3.2,.1,'#ffffff',1);sput('box',lm,0,3.2,0,1,.1,1,'#ff5d73',1);sput('box',lm,0,3.8,0,1.2,1.2,1.2,'#ffffff',1);solid(x0+10,z0+1,x0+11,z0+2,8);}}
 function palmPark(tw,x0,z0){for(const [a,b] of [[1.5,1.5],[10.5,1.5],[1.5,10.5],[10.5,10.5],[6,2]])palm(x0+a,z0+b);const m=mat4At(x0+6,4,z0+7);sput('cyl',m,0,.4,0,5,.8,5,'#f2e3c6',1);sput('cyl',m,0,.72,0,4.2,.1,4.2,'#5fd3ea',8,.35);sput('cyl',m,0,1.5,0,.7,2.4,.7,'#f2e3c6',1);sput('sph',m,0,3,0,.9,.9,.9,'#ff7aa2',3,.3);solid(x0+3.5,z0+4.5,x0+8.5,z0+9.5,4.8);
   addBrk('bench',x0+2,z0+6,-Math.PI/2);addBrk('bench',x0+10,z0+6,Math.PI/2);}
 function iceCreamShop(tw,x0,z0){beachShop(tw,x0+1,z0+1,10,10,[0,1]);const m=mat4At(x0+6,4+7.2,z0+6);sput('cone',m,0,2,0,3,4,3,'#e0a860',1);sput('sph',m,0,4.4,0,3.4,3,3.4,'#ffb3d1',1);sput('sph',m,.3,6,.2,2.4,2,2.4,'#fff3c4',1);sput('sph',m,0,7.2,0,.6,.6,.6,'#ff3b4f',1,.2);}
@@ -6341,7 +6380,7 @@ function rideTip(v){G.rideTips=G.rideTips||{};if(G.rideTips[v.type])return;G.rid
   const t=S.air?(v.type==='plane'?'Speed up on the ground, then hold jump to take off. Jump = up, power = down':'Hold jump to fly up, power to go down'):S.sub?'Hold jump to go up, power to dive down. Bubble = sonar ping':S.water?'Drive on the water! Jump to hop over waves, power to go faster':'Ride! Jump to leap, power to gallop faster';
   setTimeout(()=>toast(tr(t)),600);}
 // parachutes: fall slowly, steer a little
-{const _um=updateMe;updateMe=function(dt,inp){const p=ME;_um(dt,inp);if(p.chute){if(p.ground||p.veh||p.fly||inWater(p.x,p.z,p.y)){p.chute=false;}else{p.vy=Math.max(p.vy,-3.4);p.anim.cheer=0;}}};}
+{const _um=updateMe;updateMe=function(dt,inp){const p=ME;_um(dt,inp);if(p.chute){if(p.ground||p.veh||p.fly||inWater(p.x,p.z,p.y)){p.chute=false;}else{p.vy=Math.max(p.vy,inp&&inp.down?-15:-3.4);p.anim.cheer=0;}}};}
 // labels on the touch buttons follow what you are riding
 {const _tl=touchLabels;touchLabels=function(){_tl();const T=$('touch');if(!T||!ME||!ME.veh||BUILD.on)return;const v=ME.veh,S=VS(v);const set=(k,ic,lb)=>{const b=T.querySelector('.tb.'+k);if(b){b.querySelector('.ic').textContent=ic;b.querySelector('.lb').textContent=tr(lb);}};
   if(S.air||S.sub){set('jump','⬆','Up');set('power','⬇','Down');set('punch',S.sub?'📡':'📯',S.sub?'Sonar':'Horn');}
@@ -6598,7 +6637,7 @@ PLACE_BUILD.hall=function(K){const gold='#ffcf3a';K.rug(15,15,4,27,'#b8323c','#d
   place(boys,5.4,2.2,Math.PI/2);place(girls,24.6,27.8,-Math.PI/2);
   // the trophy shelf on the north wall and the golden brick wall above it
   K.box(7,0,.15,16,1.05,1,'#7a4a2a',6);K.box(6.95,1.05,.1,16.1,.08,1.1,gold,3,.2);K.box(7,1.9,.15,16,.1,.9,'#7a4a2a',6);K.box(6.95,2,.1,16.1,.06,1,gold,3,.2);
-  HALL.tro=[];const tk=Object.keys(TROPHIES);for(let k=0;k<16;k++){const row=k<8?0:1;const lx=8+(k%8)*2;HALL.tro.push({x:K.X+lx,z:K.Z+.65,y:FY+(row?2.06:1.13),k:tk[k]||null});}
+  HALL.tro=[];const tk=Object.keys(TROPHIES);const per=Math.min(10,Math.max(8,Math.ceil(tk.length/2))),gap=14/(per-1);for(let k=0;k<per*2;k++){const row=k<per?0:1;const lx=8+(k%per)*gap;HALL.tro.push({x:K.X+lx,z:K.Z+.65,y:FY+(row?2.06:1.13),k:tk[k]||null});}
   K.box(8,2.7,.1,14,.08,.06,gold,3,.3);K.box(8,5.1,.1,14,.08,.06,gold,3,.3);HALL.wall={x:K.X+8.3,y:FY+2.85,z:K.Z+.2};
   // the big statue in the middle, plants, banners and a bench
   K.put('cyl',15,0,13,0,0,.25,0,4.2,.5,4.2,'#e8e0d0',3);K.put('cyl',15,0,13,0,0,.52,0,3.6,.06,3.6,gold,3,.2);K.solid(13,11,17,15,.55);HALL.mid={x:K.X+15,z:K.Z+13,y:FY+.55};
@@ -7356,14 +7395,17 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:17,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:18,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'⭐',t:'40 new missions!',s:'Catch runaway animals, put out fires, take photos, train like a knight and more',go:()=>{if(!ME||typeof MP==='undefined')return null;const L=MP.ids.map(qDef).filter(q=>q&&qAvailable(q)).map(q=>NPCS.find(n=>n.id===q.giver)).filter(n=>n&&!inInBox(n.x,n.z)&&realmAt(n.x,n.z)==='earth').sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const n=L[0];return n?dd({x:n.x,z:n.z,label:tr(n.name),icon:'⭐',col:'#ffcf3a'}):null;}},
+  {ic:'🎁',t:'New prizes',s:'Win 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks'},
+  {ic:'⬇️',t:'Fly down fast',s:'Hold ⬇ to fly down. Tap 🦸 Land for a super hero landing'},
+  {ic:'🔥',t:'Combos',s:'Keep hitting baddies without a break for bonus coins'},
+  {ic:'☀️',t:'Hero of the day',s:'A different hero earns +50% coins every day'},
+  {ic:'🏊',t:'Pool party',s:'The pool in Sunset Bay is real water now. Dive in!',go:()=>{const P=typeof POOLS!=='undefined'&&POOLS[0];return P?dd({x:(P.x0+P.x1)/2,z:P.z0-1.5,label:tr('Pool'),icon:'🏊',col:'#46b0ff'}):null;}},
   {ic:'🦸',t:'50 heroes!',s:'34 new heroes: find hidden hero coins, buy heroes in the castle, and earn more by playing'},
   {ic:'❔',t:'Hidden hero coins',s:'15 glowing coins are hidden around Blocktopia. Look for a beam of light!',go:()=>{if(typeof HTOK==='undefined'||!ME)return null;const L=HTOK.list.filter(q=>!heroOK(q.id)&&q.key!=='sky'&&realmAt(q.x,q.z)==='earth').sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const q=L[0];return q?dd({x:q.x,z:q.z,label:tr('Hidden hero coin'),icon:'❔',col:CHARBY[q.id].bg}):null;}},
-  {ic:'🏆',t:'The Hall of Heroes is bigger',s:'Room for all 50 hero statues',go:()=>PLACEBY.hall&&PLACEBY.hall.door&&dd({x:PLACEBY.hall.door.x,z:PLACEBY.hall.door.z,label:tr('Hall of Heroes'),icon:'🏆',col:'#ffcf3a'})},
   {ic:'🏰',t:'The Hero Castle',s:'Hero HQ is a castle now! Walk in for the Pet Shop, the Armory, the Training Room and more',go:()=>CD&&dd({x:CD.x,z:CD.z,label:tr('Hero Castle'),icon:'🏰',col:'#b28dff'})},
-  {ic:'🏊',t:'Everyone can swim',s:'Jump into the sea and swim. Jump again to climb out'},
-  {ic:'🪂',t:'Stop flying any time',s:'Tap the 🪂 Land button while you fly'},
   {ic:'☁️',t:'The Sky Kingdom',s:'Take the hot-air balloon from the Sky Port up to the floating islands',go:()=>SKY.launch&&dd({x:SKY.launch.x,z:SKY.launch.z,label:tr('Sky Port'),icon:'🎈',col:'#ff8a4f'})},
   {ic:'🦖',t:'Dino Valley',s:'Friendly dinosaurs and a volcano in Cactus Canyon',go:()=>DV.ok&&dd({x:DV.x,z:DV.z,label:tr('Dino Valley'),icon:'🦖',col:'#7ed957'})},
 ];}
@@ -7405,7 +7447,9 @@ NPC_LOOKS.mechanic={shirt:'#2f6bff',pants:'#2f6bff',skin:'#e0a67a',hair:'#3b2a20
 // ---------- building the hall ----------
 PLACE_BUILD.castle=function(K){const gold='#ffcf3a',stone='#d9cdb6',cap='#c9a86a';
   // zone floors
-  for(const Z of ZONES){const cx=Z.c*20+10,cz=Z.r*20+10,c=hex(Z.col),fl=hex('#ebe2d2');K.rug(cx,cz,15,15,mixc(c,fl,.25),mixc(c,fl,.5));}
+  for(const Z of ZONES){if(Z.id==='garage')continue;const cx=Z.c*20+10,cz=Z.r*20+10,c=hex(Z.col),fl=hex('#ebe2d2');K.rug(cx,cz,15,15,mixc(c,fl,.25),mixc(c,fl,.5));}
+  // carpets lie on top of the zone rugs (a little higher so they never flicker)
+  const carpet=(cx,cz,w,d,c1,c2)=>{K.box(cx-w/2,.05,cz-d/2,w,.04,d,c1,6);K.box(cx-w/2+.3,.065,cz-d/2+.3,w-.6,.04,d-.6,c2,6);};
   // low walls between the zones, with wide openings
   const seg=(x0,z0,x1,z1)=>{const w=Math.max(.6,x1-x0),d=Math.max(.6,z1-z0);K.box(x0,0,z0,w,1.1,d,stone,1);K.box(x0-.05,1.1,z0-.05,w+.1,.14,d+.1,cap,3,.1);K.solid(x0,z0,x0+w,z0+d,1.15);};
   for(const x of [20,40])for(let r=0;r<3;r++){const z0=r*20,op=r===1?[6,14]:[7,13];seg(x-.3,z0+.3,x+.3,z0+op[0]);seg(x-.3,z0+op[1],x+.3,z0+19.7);}
@@ -7418,7 +7462,7 @@ PLACE_BUILD.castle=function(K){const gold='#ffcf3a',stone='#d9cdb6',cap='#c9a86a
   // ---- Throne Room: a dais, the throne and the quest board ----
   K.box(24,0,.6,12,.35,6,'#c8323c',6);K.box(25,.35,.6,10,.35,4.5,gold,3,.15);K.solid(24,.6,36,6.6,.35);K.solid(25,.6,35,5.1,.7);K.put('box',30,.7,2,0,0,.5,0,1.8,1,1.6,'#c8323c',6);K.put('box',30,.7,2,0,0,2,-.75,2,3,.3,gold,3,.25);
   for(const s of [-1,1]){K.put('box',30,.7,2,0,s*.95,1,0,.2,.7,1.6,gold,3,.25);K.put('sph',30,.7,2,0,s*.95,3.6,-.75,.35,.35,.35,'#e8343f',1,.5);}K.put('sph',30,.7,2,0,0,3.75,-.75,.45,.45,.2,'#46e6ff',8,.8);K.solid(29,1,31,3,1.8);
-  K.rug(30,12.5,3.2,14,'#c8323c','#e8454f');for(const [x,c] of [[24.5,'#2f6bff'],[35.5,'#1faa5c']])K.box(x-.7,1.5,.05,1.4,3.6,.06,c,1,.1);
+  carpet(30,12.5,3.2,14,'#c8323c','#e8454f');for(const [x,c] of [[24.5,'#2f6bff'],[35.5,'#1faa5c']])K.box(x-.7,1.5,.05,1.4,3.6,.06,c,1,.1);
   K.npc('king','King Brickley',31.8,4.4,'king');
   K.box(21.2,0,8,.3,3.2,5,'#8a5a3a',6);K.box(21.5,.9,8.3,.06,2,4.4,'#d9b88a',6);for(let k=0;k<8;k++)K.box(21.58,1.1+Math.floor(k/4)*.9,8.6+(k%4)*1.05,.04,.6,.8,['#ffffff','#fff2a8','#ffd6e8','#dff6ff'][k%4],1,.1);K.solid(21.2,8,21.5,13,3.2);
   CASTLE.spots.board={x:K.X+23,z:K.Z+10.5};
@@ -7431,7 +7475,7 @@ PLACE_BUILD.castle=function(K){const gold='#ffcf3a',stone='#d9cdb6',cap='#c9a86a
   K.npc('mo','Map Maker Mo',47.5,14,'mapper');
   // ---- Pet Shop: pens with pets to meet, and the counter ----
   const PK=PETS.filter(p=>p.p>0).map(p=>p.id);CASTLE.pens=[];for(let k=0;k<8;k++){const col=k%4,row=Math.floor(k/4);const px=1.6+col*4.3,pz=21.6+row*5.2;
-    for(const [x,z,w,d] of [[px,pz,3.8,.2],[px,pz+3.8,3.8,.2],[px,pz,.2,4],[px+3.6,pz,.2,4]])K.box(x,0,z,w,.55,d,'#b27a4a',6);K.box(px+.1,0,pz+.1,3.6,.05,3.7,k%2?'#e8f7d8':'#fdf2d8',6);K.solid(px,pz,px+3.8,pz+4,.6);
+    for(const [x,z,w,d] of [[px,pz,3.8,.2],[px,pz+3.8,3.8,.2],[px,pz,.2,4],[px+3.6,pz,.2,4]])K.box(x,0,z,w,.55,d,'#b27a4a',6);K.box(px+.1,.07,pz+.1,3.6,.05,3.7,k%2?'#e8f7d8':'#fdf2d8',6);K.solid(px,pz,px+3.8,pz+4,.6);
     CASTLE.pens.push({kind:PK[k]||null,show:PK[k]?null:PETS.filter(q=>q.p<0).map(q=>q.id),x:K.X+px+1.9,z:K.Z+pz+2,o:null});}
   K.counter(3,33,12,1.4,1.05,'#ff9ec0','#fff6ea');K.npc('penny','Pet Keeper Penny',9,35.6,'petkeeper');CASTLE.spots.pets={x:K.X+9,z:K.Z+32};
   // ---- Great Hall: fountain, hero pedestal and chandeliers ----
@@ -7447,12 +7491,12 @@ PLACE_BUILD.castle=function(K){const gold='#ffcf3a',stone='#d9cdb6',cap='#c9a86a
   for(const z of [48,53])K.box(.2,.2,z,.1,3.2,3,'#dff6ff',8,.15);for(const [x,z] of [[16.5,50],[16.5,53]]){K.put('cyl',x,0,z,0,0,.9,0,.12,1.8,.12,'#6b4226',6);for(let k=0;k<3;k++)K.put('sph',x,0,z,0,Math.cos(k*2.1)*.35,1.7+k*.05,Math.sin(k*2.1)*.35,.36,.24,.36,['#8a4ff0','#e8343f','#ffcf3a'][k],1,.1);}
   K.counter(4,56,11,1.3,1.05,'#ff8a4f','#fff6ea');K.npc('tess','Tailor Tess',9.5,58.3,'tailor');CASTLE.spots.style={x:K.X+9.5,z:K.Z+54.8};
   // ---- Entrance Hall: red carpet, guards and a snack bar ----
-  K.rug(30,50,4.2,20,'#c8323c','#e8454f');K.npc('guard1','Castle Guard',27.2,56.5,'knight');K.npc('guard2','Castle Guard',32.8,56.5,'knight');
+  carpet(30,50,4.2,20,'#c8323c','#e8454f');K.npc('guard1','Castle Guard',27.2,56.5,'knight');K.npc('guard2','Castle Guard',32.8,56.5,'knight');
   K.counter(21.2,44,6,1.3,1.05,'#ffcf3a','#fff6ea');for(let k=0;k<4;k++){K.put('cyl',22+k*1.4,1.15,44.6,0,0,.18,0,.8,.36,.8,['#ff9ec0','#8a5a3a','#fff2a8','#ff5fa8'][k],1,.1);K.put('sph',22+k*1.4,1.15,44.6,0,0,.45,0,.22,.22,.22,'#e8343f',1,.3);}
   K.table(24,51,'#b27a4a','#ffffff');K.chair(22.8,51,Math.PI/2,'#ff9ec0');K.chair(25.2,51,-Math.PI/2,'#ff9ec0');K.table(24,55.5,'#b27a4a','#ffffff');K.chair(22.8,55.5,Math.PI/2,'#46b0ff');K.chair(25.2,55.5,-Math.PI/2,'#46b0ff');
   K.npc('coco','Chef Coco',24,42.8,'baker');CASTLE.spots.cafe={x:K.X+24,z:K.Z+46.4};for(const z of [46,52])K.box(37,0,z,2,.5,.8,'#8a5a3a',6);K.plant(38.5,58.5,1.2);K.plant(21.5,58.5,1.2);
   // ---- Garage: two hero cars, a tool wall and a tyre stack ----
-  K.box(41,0,41,18,.03,18,'#5a6272',1);for(let k=0;k<4;k++)K.box(43+k*4,.035,47,.3,.02,7,'#ffcf3a',1,.3);CASTLE.cars=[{type:'herocar',x:K.X+46,z:K.Z+51,h:.5,col:'#ffcf3a'},{type:'sports',x:K.X+54,z:K.Z+51,h:-.5,col:'#2f6bff'}];
+  K.box(41,0,41,18,.03,18,'#5a6272',1);for(let k=0;k<4;k++)K.box(43+k*4,.04,47,.3,.02,7,'#ffcf3a',1,.3);CASTLE.cars=[{type:'herocar',x:K.X+46,z:K.Z+51,h:.5,col:'#ffcf3a'},{type:'sports',x:K.X+54,z:K.Z+51,h:-.5,col:'#2f6bff'}];
   K.box(58.8,1,43,.3,2.4,8,'#8a8f9c',3);for(let k=0;k<6;k++)K.box(58.6,1.4+(k%2)*.8,43.6+k*1.2,.2,.5,.2,['#e8343f','#ffcf3a','#46b0ff'][k%3],3,.2);for(let k=0;k<4;k++)K.put('cyl',57.4,k*.42,57.4,0,0,.2,0,1.1,.4,1.1,'#23232f',1);K.solid(56.8,56.8,58,58,1.7);
   K.npc('rico','Mechanic Rico',44.6,44.2,'mechanic');CASTLE.spots.garage={x:K.X+46.2,z:K.Z+45.6};
   // ---- banners along the walls ----
@@ -7575,15 +7619,29 @@ STICKERS.push({id:'v_castle',ic:'🏰',n:'Royal Visitor',d:'Go inside the Hero C
   {id:'f_dummy',ic:'🎯',n:'Target Practice',d:'Hit the practice dummies 50 times',f:()=>sv('dummy'),t:50});
 // ================= v16 fixes: stop flying whenever you like (a Land button, or L), and a tip for it =================
 // High up, stopping opens a parachute so you float down gently. Low down you just drop to the ground (or into the water and swim).
-function stopFly(){const p=ME;if(!p||!p.fly||p.veh)return;p.fly=false;p.turbo=false;p.flyTap=0;const g=Math.max(chAt(p.x,p.z),WL);SFX.whoosh&&SFX.whoosh();
-  burst(p.x,p.y+1,p.z,['#ffffff','#7ef9ff'],10,2,.14,.6);if(p.y-g>6){p.chute=true;SFX.chute&&SFX.chute();toast(tr('Parachute! Float down slowly'));}}
+// v18: high up, Land is a super-fast hero dive that ends in a hero landing (no more slow parachute)
+function stopFly(){const p=ME;if(!p||!(p.fly||p.chute)||p.veh)return;p.fly=false;p.turbo=false;p.flyTap=0;const g=Math.max(chAt(p.x,p.z),WL);SFX.whoosh&&SFX.whoosh();
+  burst(p.x,p.y+1,p.z,['#ffffff','#7ef9ff'],10,2,.14,.6);if(p.y-g>4){p.dive=true;p.heroDive=true;p.chute=false;p.vy=-32;p.anim.slam=1;if(!G.diveTip){G.diveTip=1;toast('🦸 '+tr('Hero landing!'));}}}
 addEventListener('keydown',e=>{if(e.code==='KeyL'&&!e.repeat&&G.mode==='play'&&!(typeof PHOTO!=='undefined'&&PHOTO.on))stopFly();});
+// fly down: Shift on a keyboard, the left trigger on a gamepad, the ⬇ button on a tablet
+{const _ri=readInput;readInput=function(dt){const I=_ri(dt);let dn=KEYS.has('ShiftLeft')||KEYS.has('ShiftRight')||!!TOUCH.b.down;
+  try{const pads=navigator.getGamepads?[...navigator.getGamepads()].filter(Boolean):[];for(const pad of pads)if(pad.buttons[6]&&pad.buttons[6].pressed)dn=true;}catch(e){}I.down=dn;return I;};}
+// the hero landing: a shock wave that pushes baddies away (it never breaks your buildings)
+function heroLand(p){p.anim.slam=1;p.powT=Math.max(p.powT||0,.5);SFX.slam&&SFX.slam();shake(.45);ringFx(p.x,p.y+.15,p.z,'#7ef9ff',5);ringFx(p.x,p.y+.1,p.z,'#ffffff',3);
+  burst(p.x,p.y+.2,p.z,['#ffffff','#7ef9ff','#ffcf3a'],26,7,.2,.8);smokePuff&&smokePuff(p.x,p.y+.3,p.z,1.4,'#d8d0c4');netEvent('fx','slam',+p.x.toFixed(1),+p.y.toFixed(1),+p.z.toFixed(1),5);
+  for(const e of EN){if(e.dead)continue;const dx=e.x-p.x,dz=e.z-p.z,l=Math.hypot(dx,dz);if(l<5&&Math.abs(e.y-p.y)<4)hitEnemy(e,2+Math.floor(prof().level/4),dx/(l||1)*14,dz/(l||1)*14);}}
+{const _ds=doSlam;doSlam=function(p,big){if(p&&p.heroDive){p.heroDive=false;heroLand(p);return;}return _ds(p,big);};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const p=ME;if(p&&p.dive&&(p.swim||p.fly||p.veh)){if(p.swim){SFX.splash&&SFX.splash();burst(p.x,waterAt?waterAt(p.x,p.z):WL,p.z,['#bff4ff','#ffffff'],30,6,.2,.5);ringFx(p.x,(waterAt?waterAt(p.x,p.z):WL)+.05,p.z,'#e8f7ff',4);}p.dive=false;p.heroDive=false;}};}
 {const _bt=buildTouch;buildTouch=function(){_bt();const T=$('touch');if(!T||T.hidden)return;const tbs=T.querySelector('.tbs');if(!tbs||tbs.querySelector('.tb.land'))return;
-  const b=document.createElement('button');b.className='tb land';b.hidden=true;b.innerHTML=`<span class="ic">🪂</span><span class="lb">${esc(tr('Land'))}</span>`;
-  b.addEventListener('pointerdown',e=>{AU.init();e.preventDefault();e.stopPropagation();stopFly();});tbs.appendChild(b);};}
+  const b=document.createElement('button');b.className='tb land';b.hidden=true;b.innerHTML=`<span class="ic">🦸</span><span class="lb">${esc(tr('Land'))}</span>`;
+  b.addEventListener('pointerdown',e=>{AU.init();e.preventDefault();e.stopPropagation();stopFly();});tbs.appendChild(b);
+  // hold ⬇ to fly down (as fast as you like, and stop at any height)
+  const d=document.createElement('button');d.className='tb down';d.hidden=true;d.innerHTML=`<span class="ic">⬇</span><span class="lb">${esc(tr('Down'))}</span>`;
+  d.addEventListener('pointerdown',e=>{AU.init();try{d.setPointerCapture(e.pointerId);}catch(_){}TOUCH.b.down=true;d.classList.add('on');e.preventDefault();e.stopPropagation();});
+  const up=()=>{TOUCH.b.down=false;d.classList.remove('on');};d.addEventListener('pointerup',up);d.addEventListener('pointercancel',up);d.addEventListener('lostpointercapture',up);tbs.appendChild(d);};}
 const LANDTIP={t:0,shown:false};
-{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&ME.fly&&!ME.veh&&G.mode==='play');const b=document.querySelector('#touch .tb.land');if(b&&b.hidden===on)b.hidden=!on;
-  if(on&&!LANDTIP.shown){LANDTIP.t+=dt;if(LANDTIP.t>2.6){LANDTIP.shown=true;toast(tr(TOUCH.on?'Tap 🪂 Land to stop flying':'Press L to stop flying'));}}};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&(ME.fly||ME.chute)&&!ME.veh&&G.mode==='play');for(const b of document.querySelectorAll('#touch .tb.land,#touch .tb.down'))if(b.hidden===on){b.hidden=!on;if(!on&&b.classList.contains('down')){TOUCH.b.down=false;b.classList.remove('on');}}
+  if(on&&!LANDTIP.shown){LANDTIP.t+=dt;if(LANDTIP.t>2.6){LANDTIP.shown=true;toast(tr(TOUCH.on?'Hold ⬇ to fly down. Tap 🦸 to land fast':'Hold Shift to fly down. Press L to land fast'));}}};}
 // the touch buttons always match what you are doing: on foot, in a car, on a ride, building (even after a crash throws you out)
 const TLS={k:null};
 {const _su=statusUpdate;statusUpdate=function(dt){_su(dt);if(!ME)return;let k='';try{k=(ME.veh?ME.veh.type:'-')+'|'+(BUILD.on?1:0)+'|'+charOf(prof()).id+'|'+psuit(ME);}catch(e){}if(k!==TLS.k){TLS.k=k;try{touchLabels();}catch(e){}}};}
@@ -7704,7 +7762,7 @@ renderRoster=function(){const B=$('rbox');const pr=prof();const n=CHARS.filter(c
   const selC=CHARBY[ROS.sel]||charOf(pr);if(!ROS.tab)ROS.tab=selC.g;const tab=ROS.tab;if(selC.g!==tab){const f=CHARS.find(c=>c.g===tab&&heroOK(c.id))||CHARS.find(c=>c.g===tab);ROS.sel=f.id;}
   const cnt=g=>`${CHARS.filter(c=>c.g===g&&heroOK(c.id)).length}/${CHARS.filter(c=>c.g===g).length}`;
   const tile=c=>{const ok=heroOK(c.id),cur=pr.char===c.id,hl=ROS.tag&&heroTags(c).includes(ROS.tag);return `<button class="rt ${ok?'':'lock'} ${cur?'on':''} ${ROS.sel===c.id?'sel':''} ${hl?'hl':''}" data-c="${c.id}" style="--s:${ok?c.bg:'#2a2550'}" aria-label="${esc(ok?tr(c.n):'???')}"><canvas width="112" height="112"></canvas><b>${ok?esc(tr(c.n)):'???'}</b>${ok?'':`<i class="lk">${howIc(c.id)}</i>`}${hl?`<i class="tg">${TAGS[ROS.tag].ic}</i>`:''}${cur?'<i class="me">★</i>':''}</button>`;};
-  B.innerHTML=`<button class="xbtn" id="rosx" aria-label="${esc(tr('Close'))}">✕</button><h2>🦸 ${tr('Heroes')}</h2><div class="small" style="text-align:center">${trf('{0} of {1} heroes unlocked',n,CHARS.length)}${ROS.tag?' · '+trf('Heroes with {0} can open this',TAGS[ROS.tag].ic+' '+tr(TAGS[ROS.tag].n)):''}</div>
+  B.innerHTML=`<button class="xbtn" id="rosx" aria-label="${esc(tr('Close'))}">✕</button><h2>🦸 ${tr('Heroes')}</h2><div class="small" style="text-align:center">${trf('{0} of {1} heroes unlocked',n,CHARS.length)}${ROS.tag?' · '+trf(ROS.tagTxt||'Heroes with {0} can open this',TAGS[ROS.tag].ic+' '+tr(TAGS[ROS.tag].n)):''}</div>
     <div class="rtabs"><button class="rtab ${tab==='boy'?'on':''}" data-g="boy">${esc(tr('Boys'))} · ${cnt('boy')}</button><button class="rtab ${tab==='girl'?'on':''}" data-g="girl">${esc(tr('Girls'))} · ${cnt('girl')}</button></div>
     <div class="rkey">⭐ ${esc(tr('mission'))} · 🔍 ${esc(tr('hidden coin'))} · 🪙 ${esc(tr('castle shop'))} · 🏅 ${esc(tr('earn it'))}</div>
     <div class="rlay"><div class="rgrid">${CHARS.filter(c=>c.g===tab).map(tile).join('')}</div><div class="rdet" id="rdet"></div></div>`;
@@ -8096,6 +8154,354 @@ function hood(m,col,rim){rb(m,0,.62,-.02,.74,.2,.7,col,6);rb(m,0,.28,-.32,.74,.7
   if(C.hx==='brush'){L(84,98,92,74,2.6,'#8a5a3a');E(93,71,2.6,4.5,.3,'#46b0ff');}
   if(sil){x.globalCompositeOperation='source-atop';x.fillStyle='#0b0a1c';x.fillRect(0,0,S,S);x.globalCompositeOperation='source-over';
     x.fillStyle='rgba(255,255,255,.6)';x.font=`900 ${32*u}px Nunito,system-ui,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText('?',50*u,48*u);}};}
+// ================= game feel: hit combos, a hero of the day, recent heroes, level-up hints, swimming ripples =================
+// ---------- combos: keep hitting baddies without a break ----------
+const COMBO={n:0,t:0,el:null,pop:0};
+function comboEl(){if(COMBO.el)return COMBO.el;const el=document.createElement('div');el.id='combo';el.hidden=true;const hud=$('hud')||document.body;hud.appendChild(el);return COMBO.el=el;}
+{const _he=hitEnemy;hitEnemy=function(e,dmg,kx,kz){const alive=e&&!e.dead;const nf=FLOATS.length;const r=_he(e,dmg,kx,kz);if(FLOATS.length>nf&&dmg>=6){const f=FLOATS[FLOATS.length-1];if(f&&f.txt==='-'+dmg&&!f.el)f.cls=dmg>=12?'gold big':'orange';}if(alive&&G.mode==='play'&&ME){COMBO.n++;COMBO.t=2.4;const s=ST();if(COMBO.n>(s.combobest||0))s.combobest=COMBO.n;
+    if(COMBO.n>=3){const el=comboEl();el.hidden=false;el.textContent=`🔥 ${trf('{0} hits!',COMBO.n)}`;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');el.classList.toggle('hot',COMBO.n>=10);}
+    const bonus={10:50,25:200,50:500,100:1500}[COMBO.n];if(bonus&&e.type!=='dummy'){addCoins(bonus);floatText(ME.x,ME.y+2.8,ME.z,trf('Combo x{0}!',COMBO.n),'orange');SFX.gold&&SFX.gold();burst(ME.x,ME.y+2,ME.z,['#ffcf3a','#ff8a1f','#ffffff'],24,5,.18,1);}}return r;};}
+function comboUpdate(dt){if(COMBO.n<=0)return;COMBO.t-=dt;if(COMBO.t<=0||(ME&&ME.ko>0)){COMBO.n=0;const el=COMBO.el;if(el){el.classList.add('out');setTimeout(()=>{if(COMBO.n<3){el.hidden=true;el.classList.remove('out');}},320);}}}
+STICKERS.push({id:'h_combo',ic:'🔥',n:'Combo King',d:'Hit baddies 25 times in a row',f:()=>sv('combobest'),t:25});
+// ---------- hero of the day: a different hero each day earns +50% coins ----------
+const dayNo=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5);
+function heroOfDay(g){const L=CHARS.filter(c=>c.g===g&&heroOK(c.id));if(!L.length)return null;return L[(dayNo()*7+(g==='girl'?3:0))%L.length];}
+{const _ac=addCoins;addCoins=function(n){if(n>0&&ME){const h=heroOfDay(G.hero);if(h&&charOf(prof()).id===h.id)n=Math.round(n*1.5);}return _ac(n);};}
+const HOD={t:0,told:false};
+function hodTell(dt){if(HOD.told||G.mode!=='play'||!ME||DLG||G.cine)return;HOD.t+=dt;if(HOD.t<9)return;HOD.told=true;if(G.hodDay===dayNo())return;G.hodDay=dayNo();const h=heroOfDay(G.hero);if(!h)return;
+  toast('☀️ '+trf('Hero of the day: {0} earns +50% coins!',tr(h.n)));}
+// ---------- recently played heroes, one tap away in the roster ----------
+G.recentH=G.recentH||[];
+{const _ph=playHero;playHero=function(id){const r=_ph(id);if(r){G.recentH=[id,...(G.recentH||[]).filter(q=>q!==id)].slice(0,8);}return r;};}
+{const _rr=renderRoster;renderRoster=function(){_rr();const B=$('rbox');if(!B)return;const pr=prof(),tabs=B.querySelector('.rtabs');const h=heroOfDay(ROS.tab||G.hero);
+    if(tabs&&h){const d=document.createElement('div');d.className='rhod';d.textContent='☀️ '+trf('Hero of the day: {0} earns +50% coins!',tr(h.n));tabs.after(d);const t=B.querySelector(`.rt[data-c="${h.id}"]`);if(t){const i=document.createElement('i');i.className='hd';i.textContent='☀️';t.appendChild(i);}}
+    const L=(G.recentH||[]).filter(id=>CHARBY[id]&&heroOK(id)&&CHARBY[id].g===G.hero&&id!==pr.char).slice(0,5);if(!L.length||!tabs)return;
+    const row=document.createElement('div');row.className='rrec';row.innerHTML=`<span>${esc(tr('Play again:'))}</span>`+L.map(id=>`<button class="rrb" data-c="${id}" style="--s:${CHARBY[id].bg}" aria-label="${esc(tr(CHARBY[id].n))}"><canvas width="96" height="96"></canvas></button>`).join('');
+    tabs.before(row);row.querySelectorAll('.rrb').forEach(b=>{const C=CHARBY[b.dataset.c];drawPortrait(b.querySelector('canvas'),C,false);b.onclick=()=>{if(performance.now()-(G.uiT||0)<300)return;if(playHero(C.id))closeRoster();};});};}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.rh=(G.recentH||[]).slice(0,8);o.hd=G.hodDay|0;return o;};
+  extraLoad=function(x){_el(x);G.recentH=x&&Array.isArray(x.rh)?x.rh.filter(id=>typeof id==='string'&&CHARBY[id]).slice(0,8):[];G.hodDay=x&&typeof x.hd==='number'?x.hd:0;};}
+// ---------- level up: say which hero the next level brings ----------
+{const _ax=addXP;addXP=function(n){const pr=prof(),l0=pr.level;const r=_ax(n);if(pr.level>l0&&typeof HU3!=='undefined'){const top=Math.max(PROF.boy?PROF.boy.level:1,PROF.girl?PROF.girl.level:1);
+    const nx=Object.keys(HU3).filter(id=>HU3[id].ach&&HU3[id].ach.k==='lv'&&!heroOK(id)&&HU3[id].ach.n>top).sort((a,b)=>HU3[a].ach.n-HU3[b].ach.n)[0];
+    if(nx&&(G.lvHint!==nx||G.t-(G.lvHintT||-99)>60)){G.lvHint=nx;G.lvHintT=G.t;setTimeout(()=>toast('🏅 '+trf('Level {0} unlocks {1}!',HU3[nx].ach.n,tr(CHARBY[nx].n))),2800);}}return r;};}
+// ---------- swimming: ripples around every swimmer and a little wake ----------
+const RIP={t:0};
+function rippleUpdate(dt){RIP.t-=dt;if(RIP.t>0)return;RIP.t=.42;for(const p of [ME,...netFriends()]){if(!p||!p.swim||!inView(p.x,p.z))continue;const wl=waterAt(p.x,p.z);ringFx(p.x,wl+.03,p.z,'#e8f7ff',1.3+Math.min(1,Math.hypot(p.vx||0,p.vz||0)/5));
+  if(Math.hypot(p.vx||0,p.vz||0)>2)for(let k=0;k<3;k++)PARTS.push({x:p.x-(p.vx||0)*.12+Rr(-.3,.3),y:wl+.1,z:p.z-(p.vz||0)*.12+Rr(-.3,.3),vx:Rr(-1,1),vy:Rr(1,2.4),vz:Rr(-1,1),life:.5,s:.14,c:hex('#ffffff'),e:.4,g:8,k:'deb',rot:0});}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{comboUpdate(dt);hodTell(dt);rippleUpdate(dt);}catch(e){noteErr('feel',e);}};}
+// ---------- torches on the castle gate (they glow brighter at night) ----------
+function castleTorches(t){if(camRealm()!=='earth')return;const P=PLACEBY.castle;const d=P&&P.door;if(!d||Math.abs(d.x-CAM.tx)>120||Math.abs(d.z-CAM.tz)>120)return;const m=MS.cur;OUT=DYN;const nt=DN.night||0;
+  for(const s of [-1,1]){const x=d.x+s*2.8,z=d.z-.02,y=d.y+2.6;MS.reset();M4.tr(m,x,y,z);bx(m,0,-.35,.12,.12,.5,.24,'#3a2a20',6);cy(m,0,0,.25,.2,.2,.2,'#6b4226',6);const f=1+Math.sin(t*17+s)*.12+Math.sin(t*29+s*2)*.08;
+    co(m,0,.32*f,.25,.28*f,.5*f,.28*f,'#ff8a1f',1,1);co(m,0,.26*f,.25,.16*f,.34*f,.16*f,'#fff2a8',1,1);if(R()<.15+nt*.3)PARTS.push({x:x+Rr(-.08,.08),y:y+.5,z:z+.25,vx:Rr(-.2,.2),vy:Rr(.8,1.6),vz:Rr(-.2,.2),life:.6,s:.08,c:hex('#ffcf3a'),e:1,g:-.5,k:'deb',rot:0});}}
+// sunny sparkles dancing on the pool water
+function poolSparkles(t){if(camRealm()!=='earth'||typeof POOLS==='undefined')return;const m=MS.cur;for(const P of POOLS){if(Math.abs((P.x0+P.x1)/2-CAM.tx)>70||Math.abs((P.z0+P.z1)/2-CAM.tz)>70||!inView((P.x0+P.x1)/2,(P.z0+P.z1)/2))continue;OUT=DYN;
+    for(let k=0;k<14;k++){const ph=t*.9+k*1.37,cyc=Math.floor(ph),f=ph-cyc,a=Math.sin(f*Math.PI);if(a<.15)continue;const h1=Math.abs(Math.sin((cyc+1)*12.9898+k*78.233)*43758.5453)%1,h2=Math.abs(Math.sin((cyc+1)*39.346+k*11.135)*24634.634)%1;
+      MS.reset();M4.tr(m,P.x0+.4+h1*(P.x1-P.x0-.8),P.wl+.02,P.z0+.4+h2*(P.z1-P.z0-.8));bx(m,0,0,0,.34*a,.02,.07*a,'#ffffff',1,.9);bx(m,0,0,0,.07*a,.02,.3*a,'#ffffff',1,.9);}}}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{castleTorches(t);poolSparkles(t);}catch(e){noteErr('torch',e);}};}
+// ---------- swimming pools are real water too ----------
+const waterAt=(x,z)=>{const q=poolAt(x,z);return q?q.wl:WL;};
+{const _iw=inWater;inWater=function(x,z,y){if(_iw(x,z,y))return true;const q=poolAt(x,z);return !!q&&y<q.wl+.2;};}
+swimMe=function(p,dt){const wl=waterAt(p.x,p.z),top=wl-1.05;if(!p.swim){p.swim=true;SFX.splash&&SFX.splash();burst(p.x,wl,p.z,'#bff4ff',14,3,.16,.4);if(!G.swimTip){G.swimTip=1;toast(tr('You can swim! Jump to climb out'));}}
+  p.swimT=G.t;if(p.y<top){p.y=top;if(p.vy<0)p.vy=0;}p.ground=true;p.coyote=.12;p.tossed=false;p.anim.spin=0;p.jumps=0;if(Math.hypot(p.vx,p.vz)>2&&R()<.35)burst(p.x-p.vx*.05,wl+.05,p.z-p.vz*.05,['#dff6ff','#ffffff'],2,1,.12,.3);};
+// ================= the big mission pack: 41 new quests all over Blocktopia =================
+// New kinds of goals:
+//   catch  — runaway animals flee from you; run into them to catch them
+//   photo  — go to a spot and take a photo there with 📸
+//   stat   — do something a number of times (hit the practice dummies, pet your pet...)
+//   fix + tag — only a hero with the right power can do it (💧 water puts out fires, 🔥 fire melts ice, ⚔️ cuts vines...)
+// Every line is written in English and Arabic right here (A() fills in the Arabic dictionary).
+const MA=(en,ar)=>{if(ar)AR[en]=ar;return en;};
+const MP={ids:[],crit:null,critKey:'',photoTip:''};
+// ---------- the people who give the new missions ----------
+Object.assign(NPC_LOOKS,{m_fatima:{shirt:'#7ed957',pants:'#6b5a2e',skin:'#c68a5a',hair:'#221b25',hs:1,hat:'straw',dress:1},m_rami:{shirt:'#4a7a3a',pants:'#6b5a2e',skin:'#e0a67a',hair:'#3b2a20',hat:'ranger'},
+  m_yusuf:{shirt:'#ff8a1f',pants:'#2f6bff',skin:'#f7d6bf',hair:'#c8462d',hat:'cap',hatc:'#1faa5c',scale:.8},m_hana:{shirt:'#ff5d73',pants:'#12b0b0',skin:'#f2c29b',hair:'#221b25',hs:1,hat:'cap',hatc:'#ffffff'},
+  m_ingrid:{shirt:'#ff5fa8',coat:'#ffffff',pants:'#2b2d42',skin:'#f7d6bf',hair:'#f2c14e',hs:1,hat:'beanie',hatc:'#46b0ff'},m_pete:{shirt:'#c07a3a',pants:'#3f4a6a',skin:'#f2c29b',hair:'#aaaaaa',hat:'cowboy',hatc:'#8a5a2e',beard:1},
+  m_eli:{shirt:'#ff8a1f',pants:'#2f3a59',skin:'#8d5a3b',hair:'#221b25',hat:'cap',hatc:'#ffcf3a',goggles:1},m_gia:{shirt:'#56e07a',pants:'#e8eef4',skin:'#f2c29b',hair:'#c8462d',hs:3,hat:'astro'},
+  m_cyrus:{shirt:'#dff4ff',coat:'#b28dff',pants:'#6a7ab8',skin:'#e0a67a',hair:'#f4f4f4',hat:'helmet',hatc:'#ffffff'},m_kofi:{shirt:'#e0a060',pants:'#6b5a2e',skin:'#8d5a3b',hair:'#221b25',hat:'ranger',goggles:1}});
+MA('Farmer Fatima','المزارعة فاطمة');MA('Ranger Rami','الحارس رامي');MA('Little Yusuf','يوسف الصغير');MA('Swim Coach Hana','مدربة السباحة هناء');MA('Snow Artist Ingrid','الفنانة إنغريد');MA('Prospector Pete','المنقّب بيت');
+MA('Engineer Eli','المهندس إيلي');MA('Moon Gardener Gia','جيا بستانية القمر');MA('Cloud Knight Cyrus','سايروس فارس الغيوم');MA('Dino Keeper Kofi','كوفي حارس الديناصورات');
+// ---------- new things to pick up ----------
+{const _dqi=drawQItem;drawQItem=function(it,i,m,t){
+  if(it==='pumpkin'){sp(m,0,.1,0,.8,.62,.8,'#ff8a1f',1,.15);for(let k=0;k<4;k++){MS.push();M4.ry(m,k*.8);sp(m,0,.1,0,.3,.6,.84,'#e8751a',1,.1);MS.pop();}cy(m,0,.5,0,.1,.2,.1,'#3b7a2e',6);}
+  else if(it==='kite'){M4.rz(m,.3);MS.push();M4.rz(m,Math.PI/4);bx(m,0,.5,0,.8,.8,.05,['#ff4f6d','#46b0ff','#ffcf3a','#7ed957','#b28dff'][i%5],1,.2);MS.pop();for(let k=0;k<4;k++)bx(m,Math.sin(k)*.1,-.2-k*.25,0,.12,.08,.04,k%2?'#ffffff':'#ff4f6d',1);}
+  else if(it==='jewel'){M4.rz(m,Math.PI/4);M4.rx(m,Math.PI/4);rb(m,0,.4,0,.46,.46,.46,['#ff4f8a','#46e6ff','#7ed957','#ffd23f','#b28dff'][i%5],8,.8);}
+  else if(it==='beachball'){M4.rx(m,t*2);for(let k=0;k<4;k++){MS.push();M4.ry(m,k*.785);cy(m,0,.3,0,.72,.14,.72,['#ff4f6d','#ffffff','#46b0ff','#ffcf3a'][k],1,.1);MS.pop();}sp(m,0,.3,0,.66,.66,.66,'#ffffff',1,.05);}
+  else if(it==='treasure'){rb(m,0,.3,0,.9,.55,.6,'#a4652f',6);bx(m,0,.3,0,.94,.1,.64,GOLD,3,.3);sp(m,0,.62,0,.3,.14,.3,'#ffcf3a',3,.8);}
+  else if(it==='snowpart'){const k=i%5;if(k===0)sp(m,0,.3,0,.7,.7,.7,'#ffffff',6);else if(k===1){M4.rx(m,Math.PI/2);co(m,0,0,0,.18,.6,.18,'#ff8a1f',6);}else if(k===2){cy(m,0,.2,0,.8,.06,.8,'#23232f',1);cy(m,0,.45,0,.5,.5,.5,'#23232f',1);}else if(k===3)rb(m,0,.3,0,1,.2,.3,'#e8343f',6);else for(let q=0;q<3;q++)cy(m,0,q*.3,0,.2,.08,.2,'#23232f',1);}
+  else if(it==='meteorite'){rb(m,0,.35,0,.7,.6,.6,'#5a4a4a',6,.1);for(let k=0;k<3;k++)sp(m,Math.cos(k*2)*.2,.4+k*.08,Math.sin(k*2)*.2,.2,.2,.2,'#ff8a1f',1,1);}
+  else if(it==='moonrock'){rb(m,0,.3,0,.7,.5,.6,'#c8ccd4',3,.1);sp(m,.12,.5,.1,.2,.2,.2,'#46e6ff',8,.8);}
+  else if(it==='fern'){for(let k=0;k<5;k++){MS.push();M4.ry(m,k/5*TAU);M4.rx(m,-.5);bx(m,0,.4,.2,.18,.8,.04,'#56b85a',6);MS.pop();}}
+  else if(it==='shell'){M4.rx(m,-.4);for(let k=-2;k<=2;k++){MS.push();M4.rz(m,k*.3);co(m,0,.3,0,.14,.6,.08,['#ffd6e8','#fff2d0','#ffe9c8'][i%3],1,.2);MS.pop();}}
+  else return _dqi(it,i,m,t);};}
+// ---------- new things to fix (and who can fix them) ----------
+const MPLOOK=new Set(['scarecrow','fire','hiker','fishhole','iceblock','cactus','alienpal','vines','junk','lamp2','coral']);
+function drawFixLook(look,x,y,z,ok,t,i,m){MS.reset();M4.tr(m,x,y,z);
+  if(look==='scarecrow'){cy(m,0,1,0,.12,2,.12,'#8a5a3a',6);bx(m,0,1.5,0,1.4,.1,.1,'#8a5a3a',6);if(ok){rb(m,0,1.35,0,.6,.6,.3,'#c8403a',6);sp(m,0,1.9,0,.4,.4,.4,'#e8c07a',6);cy(m,0,2.15,0,.7,.05,.7,'#e8c45a',1);}else{MS.push();M4.rz(m,.6);rb(m,.3,.6,0,.6,.6,.3,'#c8403a',6);MS.pop();}}
+  else if(look==='fire'){if(!ok){const f=1+Math.sin(t*12+i)*.12;co(m,0,.6*f,0,1.1*f,1.3*f,1.1*f,'#ff5a1a',1,1);co(m,0,.5*f,0,.6*f,.9*f,.6*f,'#ffcf3a',1,1);if(R()<.3)PARTS.push({x:x+Rr(-.4,.4),y:y+1.2,z:z+Rr(-.4,.4),vx:0,vy:Rr(1,2.4),vz:0,life:.5,s:.2,c:hex('#ff8a1f'),e:1,g:-1,k:'deb',rot:0});}else{cy(m,0,.05,0,1.2,.1,1.2,'#3a3a3a',6);if(R()<.05)smokePuff(x,y+.5,z,1,'#c8ccd4');}}
+  else if(look==='hiker'){OUT=MOB;drawPerson({x,y,z,face:t*.3+i,anim:{wave:ok||Math.sin(t*2+i)>0?1:0,cheer:ok?1:0,punch:0,walk:0,amp:0},hy:0},t,{shirt:['#ff8a1f','#46b0ff','#ff5fa8'][i%3],pants:'#3f4a6a',skin:['#f2c29b','#c68a5a','#8d5a3b'][i%3],hair:'#3b2a20',hat:'ranger'});OUT=DYN;if(!ok){MS.reset();M4.tr(m,x,y+2.4+Math.sin(t*3)*.1,z);sp(m,0,0,0,.35,.35,.35,'#ff8fb0',1,1);}}
+  else if(look==='fishhole'){cy(m,0,.02,0,1.4,.05,1.4,'#1a4a7a',1,.2);cy(m,0,.03,0,1.6,.04,1.6,'#e8f6ff',1);if(ok){MS.push();M4.tr(m,0,.5+Math.abs(Math.sin(t*4))*.3,0);M4.rz(m,Math.sin(t*6)*.5);sp(m,0,0,0,.5,.24,.18,'#ff8a1f',1,.2);co(m,-.3,0,0,.2,.3,.1,'#ff8a1f',1);MS.pop();}}
+  else if(look==='iceblock'){if(!ok){rb(m,0,.7,0,1.3,1.4,1.3,'#bfefff',8,.3);sp(m,0,.7,0,.5,.5,.5,'#ffffff',1,.3);}else{cy(m,0,.2,0,1.2,.4,1.2,'#dff4ff',1);cy(m,0,.8,0,.2,1,.2,'#dff4ff',1);if(R()<.3)PARTS.push({x,y:y+1.4,z,vx:Rr(-1,1),vy:Rr(2,3.5),vz:Rr(-1,1),life:.6,s:.12,c:hex('#9fd8ff'),e:.4,g:10,k:'deb',rot:0});}}
+  else if(look==='cactus'){cy(m,0,.8,0,.5,1.6,.5,ok?'#3fae4a':'#9aa65a',6);for(const s of [-1,1]){MS.push();M4.tr(m,s*.35,.9,0);M4.rz(m,s*(ok?.2:-.4));cy(m,0,.3,0,.3,.6,.3,ok?'#3fae4a':'#9aa65a',6);MS.pop();}if(ok)for(let k=0;k<3;k++)sp(m,Math.cos(k*2)*.2,1.65,Math.sin(k*2)*.2,.18,.14,.18,['#ff5fa8','#ffcf3a','#ff8a1f'][k],1,.4);}
+  else if(look==='alienpal'){OUT=MOB;drawPerson({x,y,z,face:t*.5+i,anim:{wave:1,cheer:ok?1:0,punch:0,walk:0,amp:0}},t,{shirt:'#b28dff',pants:'#7ed957',skin:'#8fe07a',hair:'#8fe07a',hat:'antenna',scale:.7});OUT=DYN;}
+  else if(look==='vines'){if(!ok)for(let k=0;k<6;k++){MS.push();M4.ry(m,k*1.05);M4.rz(m,.4+Math.sin(t*2+k)*.05);cy(m,0,.8,0,.14,1.6,.14,'#2f8f4a',7);co(m,0,1.1,.1,.1,.3,.1,'#1f5f30',1);MS.pop();}else cy(m,0,.05,0,1.2,.1,1.2,'#56c05a',7);}
+  else if(look==='junk'){if(!ok){for(const [a,b,c,s] of [[0,.4,0,.9],[.4,.2,.3,.5],[-.35,.25,-.2,.6],[.1,.9,.1,.5]])rb(m,a,b,c,s,s*.8,s,['#8f98a8','#6a7280','#a4652f','#c8ccd4'][Math.floor((a+2)*3)%4],3,.05);}else{bx(m,0,.45,0,.9,.9,.9,'#8f98a8',3,.1);bx(m,0,.92,0,.95,.06,.95,'#ffcf3a',1,.3);}}
+  else if(look==='lamp2'){cy(m,0,1.4,0,.14,2.8,.14,'#3a3f4d',3);sp(m,0,2.9,0,.5,.5,.5,ok?'#fff6a8':'#4a4f5a',ok?1:3,ok?1:0);if(ok&&R()<.06)burst(x,y+2.9,z,['#fff6a8'],1,.5,.08,1);}
+  else if(look==='coral'){for(let k=0;k<5;k++){MS.push();M4.ry(m,k*1.26);M4.rz(m,.3);cy(m,0,.5,0,.16,1,.16,ok?['#ff5fa8','#ff8a1f','#b28dff','#ffcf3a','#46e6b0'][k]:'#c8c0b8',1,ok?.3:0);MS.pop();}}}
+{const _dq=drawQuest;drawQuest=function(t){_dq(t);const st=qStepDef();if(!st)return;OUT=DYN;const m=MS.cur;
+  if(st.k==='fix'&&MPLOOK.has(st.look))st.pts.forEach((q,i)=>{if(Math.abs(q[0]-CAM.tx)>90||Math.abs(q[1]-CAM.tz)>90||!inView(q[0],q[1]))return;drawFixLook(st.look,q[0],q[2],q[1],!!(QS.bits&(1<<i)),t,i,m);});
+  if(st.k==='catch')mpDrawCrit(t);
+  if(st.k==='photo'&&inView(st.x,st.z)){drawMarkerRing(st.x,chAt(st.x,st.z)+.05,st.z,t,'#ff5fa8');MS.reset();M4.tr(m,st.x,chAt(st.x,st.z)+2.6+Math.sin(t*2)*.15,st.z);M4.ry(m,t);bx(m,0,0,0,.8,.55,.3,'#23232f',1);cy(m,0,0,.2,.3,.1,.3,'#46e6ff',8,.6);bx(m,.25,.33,0,.2,.1,.2,'#23232f',1);}};}
+// ---------- heroes with the right power ----------
+{const _qi=questInteract;questInteract=function(cand,p){const st=qStepDef();if(!(st&&st.k==='fix'&&st.tag)||heroTags(charOf(prof())).includes(st.tag))return _qi(cand,p);
+  _qi((o,k,...a)=>{if(k==='qfix')return;cand(o,k,...a);},p);const T0=TAGS[st.tag];st.pts.forEach((q,i)=>{if(QS.bits&(1<<i))return;cand({x:q[0],z:q[1],y:q[2]},'qneed',`${T0.ic} ${trf('Needs a hero with {0}',tr(T0.n))}`,2.6,5,{fn:()=>{SFX.nope&&SFX.nope();toast(T0.ic+' '+trf('Needs a hero with {0}',tr(T0.n)));setTimeout(()=>openRoster(st.tag,'Heroes with {0} can do this'),500);}});});};}
+MA('Needs a hero with {0}','تحتاج إلى بطل لديه {0}');MA('Heroes with {0} can do this','الأبطال الذين لديهم {0} يستطيعون فعل هذا');
+{const _or=openRoster;openRoster=function(tag,txt){ROS.tagTxt=tag&&txt?txt:null;return _or(tag);};}
+// ---------- runaway animals to catch ----------
+function mpCritSync(){const st=qStepDef();if(!st||st.k!=='catch'){MP.crit=null;MP.critKey='';return null;}const key=QS.act+':'+QS.step;if(MP.critKey===key&&MP.crit)return MP.crit;
+  const g=qrng((QS.act.length*977+QS.step*131)>>>0);const L=[];for(let k=0;k<st.n;k++){let x=st.x,z=st.z;for(let t=0;t<40;t++){const a=g()*TAU,d=Math.sqrt(g())*st.r;const px=st.x+Math.cos(a)*d,pz=st.z+Math.sin(a)*d;const i=cid(px|0,pz|0);if(inMap(px|0,pz|0)&&H[i]>=WL+.3&&CH[i]<=H[i]+.05){x=px;z=pz;break;}}
+    L.push({x,z,y:chAt(x,z),face:g()*TAU,walk:0,vx:0,vz:0,wt:g()*2,hop:0});}MP.crit=L;MP.critKey=key;return L;}
+function mpCritUpdate(dt){const st=qStepDef();const L=mpCritSync();if(!L)return;const pl=[ME,...netFriends()];
+  L.forEach((c,i)=>{if(QS.bits&(1<<i))return;let nd=1e9,np=null;for(const p of pl){const d=d2(p.x,p.z,c.x,c.z);if(d<nd){nd=d;np=p;}}let sp=0,dx=0,dz=0;
+    if(np&&nd<7){dx=c.x-np.x;dz=c.z-np.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;sp=st.fast||4.4;c.face=Math.atan2(dx,dz)+Math.sin(G.t*9+i)*.4;}else{c.wt-=dt;if(c.wt<=0){c.wt=1+R()*2;c.face=R()*TAU;}if(Math.sin(G.t*.9+i*2)>0){dx=Math.sin(c.face);dz=Math.cos(c.face);sp=1.2;}}
+    if(sp>0){let nx=c.x+dx*sp*dt,nz=c.z+dz*sp*dt;const rr=Math.hypot(nx-st.x,nz-st.z);if(rr>st.r){const a=Math.atan2(nz-st.z,nx-st.x)+Math.PI/2;nx=c.x+Math.cos(a)*sp*dt;nz=c.z+Math.sin(a)*sp*dt;c.face=Math.atan2(nx-c.x,nz-c.z);}
+      const i2=cid(clamp(nx|0,0,N-1),clamp(nz|0,0,N-1));if(H[i2]>=WL+.3&&CH[i2]<=Math.max(c.y,H[i2])+.6&&CH[i2]<=H[i2]+.6){c.x=nx;c.z=nz;c.y=lerp(c.y,chAt(nx,nz),Math.min(1,dt*12));c.walk+=dt*sp*3;}else c.face+=Math.PI*.6;}
+    c.hop=Math.max(0,Math.sin(G.t*(sp>2?14:5)+i))*(sp>2?.25:.06);
+    if(ME&&d2(ME.x,ME.z,c.x,c.z)<1.3&&Math.abs(ME.y-c.y)<2){if(NET.role==='guest'){if(!c.sent||c.sent<G.t){c.sent=G.t+1;netEvent('qact','catch',i);}}else mpCatch(i);}});}
+function mpCatch(i){const st=qStepDef();if(!st||st.k!=='catch'||(QS.bits&(1<<i)))return;QS.bits|=1<<i;QS.cnt++;const c=MP.crit&&MP.crit[i];if(c){burst(c.x,c.y+.8,c.z,['#ff8fb0','#ffffff','#ffcf3a'],16,3,.16,1);floatText(c.x,c.y+1.6,c.z,'❤️','gold');}
+  SFX.animal&&SFX.animal(st.kind==='chicken'?'chicken':st.kind==='kitten'?'cat':'chick');SFX.coin&&SFX.coin(100);if(QS.cnt>=st.n)qNext();}
+function mpDrawCrit(t){const st=qStepDef();const L=MP.crit;if(!L)return;OUT=MOB;L.forEach((c,i)=>{if(QS.bits&(1<<i)||!inView(c.x,c.z)||Math.abs(c.x-CAM.tx)>90||Math.abs(c.z-CAM.tz)>90)return;const k=st.kind;
+    if(k==='chicken'||k==='pig'||k==='sheep')drawAnimal({kind:k,x:c.x,y:c.y,z:c.z,face:c.face,walk:c.walk,hop:c.hop,amp:1},t);else drawPet({kind:k,x:c.x,y:c.y+c.hop,z:c.z,face:c.face,walk:c.walk,amp:1,happy:0,hop:0},t);});OUT=DYN;}
+// ---------- photo spots ----------
+{const _pg=photoGrab;photoGrab=function(...a){const r=_pg(...a);try{const st=qStepDef();if(st&&st.k==='photo'&&ME&&d2(ME.x,ME.z,st.x,st.z)<st.r){if(NET.role==='guest')netEvent('qact','photo',QS.step);else setTimeout(()=>{const s2=qStepDef();if(s2===st)qNext();},600);}}catch(e){}return r;};}
+// ---------- do-it-a-number-of-times goals ----------
+{const _si=stInc;stInc=function(k,n=1){_si(k,n);try{const st=qStepDef();if(st&&st.k==='stat'&&st.stat===k){if(NET.role==='guest')netEvent('qact','stat',n);else{QS.cnt+=n;if(QS.cnt>=st.n)qNext();}}}catch(e){}};}
+// ---------- guests tell the host, the host keeps score ----------
+{const _qh=questHostEvent;questHostEvent=function(k,i){const st=qStepDef();if(st){if(k==='catch'&&st.k==='catch'){mpCatch(i);return;}if(k==='photo'&&st.k==='photo'&&i===QS.step){qNext();return;}if(k==='stat'&&st.k==='stat'){QS.cnt+=i|0;if(QS.cnt>=st.n)qNext();return;}}return _qh(k,i);};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{mpCritUpdate(dt);mpPhotoTip();}catch(e){noteErr('mp',e);}};}
+function mpPhotoTip(){const st=qStepDef();if(!st||st.k!=='photo'||!ME)return;const key=QS.act+':'+QS.step;if(MP.photoTip===key||d2(ME.x,ME.z,st.x,st.z)>st.r)return;MP.photoTip=key;toast('📸 '+tr('Tap 📸 and take a photo here!'));}
+MA('Tap 📸 and take a photo here!','اضغط 📸 والتقط صورة هنا!');
+{const _qo=questObjective;questObjective=function(){const r=_qo();const Q=qDef(QS.act);const st=Q?Q.steps[QS.step]:null;if(!r||!st||!ME)return r;let t=null;
+  if(st.k==='catch'){r.text=tr(st.text)+` (${Math.min(QS.cnt,st.n)}/${st.n})`;let best=null,bd=1e9;(MP.crit||[]).forEach((c,i)=>{if(QS.bits&(1<<i))return;const d=d2(c.x,c.z,ME.x,ME.z);if(d<bd){bd=d;best=c;}});t=best?{x:best.x,z:best.z,y:best.y}:{x:st.x,z:st.z};}
+  else if(st.k==='photo'){t={x:st.x,z:st.z};}
+  else if(st.k==='stat'){r.text=tr(st.text)+` (${Math.min(QS.cnt,st.n)}/${st.n})`;if(st.x!==undefined)t={x:st.x,z:st.z};}
+  if(t){const v=viaDoor(t);r.t=v;if(v!==t){if(v.place)r.text+=' · '+trf('in {0}',tr(v.place.name));else r.text=tr('Go outside')+' · '+r.text;}}
+  if(st.k==='fix'&&st.tag&&!heroTags(charOf(prof())).includes(st.tag))r.text+=' · '+TAGS[st.tag].ic+' '+tr('needs the right hero');return r;};}
+MA('needs the right hero','يحتاج البطل المناسب');
+// ---------- building the missions ----------
+function mpWater(cx,cz,R,lo,hi,n,seed,gap){const g=qrng(seed);const out=[];for(let t=0;t<n*400&&out.length<n;t++){const a=g()*TAU,d=Math.sqrt(g())*R;const x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d;if(!inMap(x|0,z|0))continue;const i=cid(x|0,z|0);
+  if(H[i]<WL-hi||H[i]>WL-lo||inInBox(x,z))continue;if(out.some(q=>Math.hypot(q[0]-x,q[1]-z)<(gap||6)))continue;out.push([x,z,H[i]]);}return out;}
+function mpWaterPath(cx,cz,R,lo,hi,n,seed){const g=qrng(seed);const ok=(x,z)=>{if(!inMap(x|0,z|0)||inInBox(x,z))return false;const h=H[cid(x|0,z|0)];return h>=WL-hi&&h<=WL-lo&&Math.hypot(x-cx,z-cz)<R;};
+  let st=null;for(let r=0;r<R&&!st;r+=2)for(let k=0;k<24&&!st;k++){const a=k/24*TAU;const x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r;if(ok(x,z))st=[x,z];}if(!st)return [];
+  const out=[[st[0],st[1],WL-1.9]];let dir=Math.atan2(st[1]-cz,st[0]-cx);
+  for(let k=1;k<n;k++){let got=null;for(let t=0;t<120&&!got;t++){const a=dir+(g()-.5)*(t<50?1.8:TAU),d=12+g()*7;const x=out[k-1][0]+Math.cos(a)*d,z=out[k-1][1]+Math.sin(a)*d;if(!ok(x,z)||out.some(q=>Math.hypot(q[0]-x,q[1]-z)<9))continue;got=[x,z,WL-1.9];dir=a;}if(!got)break;out.push(got);}return out;}
+function mpCells(cells,top,n,seed,gap){const g=qrng(seed);const out=[];const free=(x,z)=>{for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const i=cid(x+a,z+b);if(Math.abs(CH[i]-top)>.1)return false;}return true;};
+  for(let t=0;t<n*200&&out.length<n;t++){const c=cells[Math.floor(g()*cells.length)];if(!c)break;if(!free(c[0],c[1]))continue;const x=c[0]+.5,z=c[1]+.5;if(out.some(q=>Math.hypot(q[0]-x,q[1]-z)<(gap||4)))continue;out.push([x,z,top]);}return out;}
+function mpRing(cx,cz,R,n){const out=[];for(let k=0;k<n;k++){const a=k/n*TAU;let x=cx+Math.cos(a)*R,z=cz+Math.sin(a)*R;const p=landNear(x,z,8);if(p){x=p.x;z=p.z;}out.push([x,z,hAt(x,z)]);}return out;}
+function missionPack(){const W=WORLD;const Q=[];const npc=(id,name,p,look)=>{if(!p)return false;W.npcs.push({id,name,x:p.x,z:p.z,look:look||id});return true;};const tc=id=>{const T0=townById(id);return T0?{x:(T0.X[0]+T0.X[T0.X.length-1])/2,z:(T0.Z[0]+T0.Z[T0.Z.length-1])/2}:null;};
+  const add=q=>{if(!q.steps.every(s=>!s.pts||s.pts.length))return;Q.push(q);};
+  // ===== Brick City farm =====
+  const Fm=LOC.farm;if(npc('m_fatima','Farmer Fatima',landNear(Fm.x+5,Fm.z+7,14))){
+    add({id:'mp_chickens',giver:'m_fatima',title:MA('Runaway Chickens','الدجاجات الهاربة'),col:'#ffcf3a',coins:4000,xp:300,
+      intro:[MA('Oh dear! Someone left the gate open and my chickens ran away!','يا إلهي! ترك أحدهم البوابة مفتوحة فهربت دجاجاتي!'),MA('Run into them to catch them. They are quick, so be quicker!','اركض نحوها لتمسكها. إنها سريعة، فكن أسرع!')],
+      steps:[{k:'catch',kind:'chicken',n:6,x:Fm.x,z:Fm.z,r:20,text:MA('Catch the runaway chickens','أمسك الدجاجات الهاربة')},{k:'talk',npc:'m_fatima',text:MA('Tell Farmer Fatima','أخبر المزارعة فاطمة')}],done:[MA('Cluck cluck! Every chicken is home. Thank you!','كاك كاك! عادت كل الدجاجات إلى البيت. شكرًا لك!')]});
+    add({id:'mp_pumpkins',giver:'m_fatima',need:['mp_chickens'],title:MA('Pumpkin Picking','قطف اليقطين'),col:'#ff8a1f',coins:4500,xp:320,
+      intro:[MA('The pumpkins are ready for the harvest fair!','اليقطين جاهز لمهرجان الحصاد!'),MA('Pick 8 of the biggest pumpkins in my fields.','اقطف 8 من أكبر حبات اليقطين في حقولي.')],
+      steps:[{k:'collect',item:'pumpkin',pts:qPts(9101,Fm.x,Fm.z,28,8,{gap:5}),text:MA('Pick 8 pumpkins','اقطف 8 حبات يقطين')},{k:'talk',npc:'m_fatima',text:MA('Bring them to Fatima','أحضرها إلى فاطمة')}],done:[MA('What a harvest! These will win first prize!','يا له من حصاد! ستفوز بالجائزة الأولى!')]});
+    add({id:'mp_crows',giver:'m_fatima',need:['mp_pumpkins'],title:MA('Crow Patrol','دورية الغربان'),col:'#8a5a3a',coins:6000,xp:450,
+      intro:[MA('Robot crows knocked over my scarecrows!','غربان آلية أوقعت فزّاعاتي!'),MA('Stand them back up, then chase the robot crows away.','أوقفها من جديد، ثم اطرد الغربان الآلية.')],
+      steps:[{k:'fix',look:'scarecrow',verb:MA('Hold to fix the scarecrow','اضغط مطولاً لتصلح الفزّاعة'),pts:qPts(9102,Fm.x,Fm.z,24,3,{gap:10}),text:MA('Fix the 3 scarecrows','أصلح الفزّاعات الثلاث')},
+        {k:'defeat',etype:'drone',n:6,x:Fm.x,z:Fm.z,r:16,text:MA('Chase away the robot crows','اطرد الغربان الآلية')}],done:[MA('My fields are safe. You are the best farm hero!','حقولي آمنة. أنت أفضل بطل مزرعة!')]});}
+  // ===== the forest =====
+  const Fo=LOC.forest;if(npc('m_rami','Ranger Rami',landNear(Fo.x-6,Fo.z-10,14))){
+    add({id:'mr_fire',giver:'m_rami',need:['mr_hikers'],title:MA('Forest Fire!','حريق في الغابة!'),col:'#ff5a1a',coins:6000,xp:450,
+      intro:[MA('Smoke! Small fires started in the forest!','دخان! اشتعلت نيران صغيرة في الغابة!'),MA('Only a hero with water or ice power can put them out. Hurry!','وحده بطل لديه قوة الماء أو الجليد يستطيع إطفاءها. أسرع!')],
+      steps:[{k:'fix',look:'fire',tag:'cool',verb:MA('Hold to put out the fire','اضغط مطولاً لتطفئ النار'),pts:qPts(9103,Fo.x,Fo.z,32,5,{gap:9}),text:MA('Put out the 5 fires','أطفئ النيران الخمس')},{k:'talk',npc:'m_rami',text:MA('Tell Ranger Rami','أخبر الحارس رامي')}],done:[MA('The forest is safe. The animals thank you!','الغابة آمنة. الحيوانات تشكرك!')]});
+    add({id:'mr_hikers',giver:'m_rami',title:MA('Lost Hikers','المتنزّهون التائهون'),col:'#46b0ff',coins:5500,xp:400,
+      intro:[MA('Three hikers got lost in the big forest.','ضلّ ثلاثة متنزّهين طريقهم في الغابة الكبيرة.'),MA('Find them and show them the way to my cabin.','ابحث عنهم ودلّهم على الطريق إلى كوخي.')],
+      steps:[{k:'fix',look:'hiker',verb:MA('Hold to help','اضغط مطولاً لتساعد'),pts:qPts(9104,Fo.x+8,Fo.z+6,42,3,{gap:16}),text:MA('Find the 3 lost hikers','ابحث عن المتنزّهين الثلاثة')},{k:'go',x:LOC.cabin.x,z:LOC.cabin.z,r:7,text:MA('Lead them to the cabin','قُدهم إلى الكوخ')}],done:[MA('Everyone is safe and warm. Great job!','الجميع بأمان ودفء. عمل رائع!')]});
+    add({id:'mr_photo',giver:'m_rami',need:['mr_fire'],title:MA('Nature Photographer','مصوّر الطبيعة'),col:'#56c05a',coins:3500,xp:300,
+      intro:[MA('The pond is so pretty today!','البركة جميلة جدًا اليوم!'),MA('Take a photo at the forest pond for my nature book.','التقط صورة عند بركة الغابة لكتابي عن الطبيعة.')],
+      steps:[{k:'photo',x:LOC.fpond.x,z:LOC.fpond.z,r:16,text:MA('Take a photo at the forest pond','التقط صورة عند بركة الغابة')},{k:'talk',npc:'m_rami',text:MA('Show Ranger Rami','أرِ الحارس رامي')}],done:[MA('Beautiful! This goes on the first page.','رائعة! ستكون في الصفحة الأولى.')]});}
+  // ===== the city park =====
+  const Pk=LOC.park;if(npc('m_yusuf','Little Yusuf',landNear(Pk.x-6,Pk.z+6,12))){
+    add({id:'mt_kites',giver:'m_yusuf',title:MA('Kite Rescue','إنقاذ الطائرات الورقية'),col:'#ff4f6d',coins:3500,xp:250,
+      intro:[MA('A big wind blew all our kites away!','ريح قوية طيّرت كل طائراتنا الورقية!'),MA('Can you find 5 kites around the city?','هل تستطيع أن تجد 5 طائرات ورقية في أنحاء المدينة؟')],
+      steps:[{k:'collect',item:'kite',pts:qPts(9105,Pk.x,Pk.z,50,5,{gap:14}),text:MA('Find 5 kites','اعثر على 5 طائرات ورقية')},{k:'talk',npc:'m_yusuf',text:MA('Bring them to Yusuf','أحضرها إلى يوسف')}],done:[MA('Yay! Now we can fly them again!','يا سلام! الآن نستطيع أن نطيّرها من جديد!')]});
+    add({id:'mt_kittens',giver:'m_yusuf',need:['mt_kites'],title:MA('Kitten Hide and Seek','لعبة الغمّيضة مع القطط'),col:'#ff9ec0',coins:4000,xp:300,
+      intro:[MA('My kittens want to play hide and seek!','قططي الصغيرة تريد أن تلعب الغمّيضة!'),MA('Catch all 5 of them. They run fast!','أمسكها كلها الخمس. إنها تركض بسرعة!')],
+      steps:[{k:'catch',kind:'kitten',n:5,x:Pk.x,z:Pk.z,r:16,text:MA('Catch the kittens','أمسك القطط الصغيرة')},{k:'talk',npc:'m_yusuf',text:MA('Tell Yusuf','أخبر يوسف')}],done:[MA('You found them all! They like you!','وجدتها كلها! إنها تحبك!')]});
+    add({id:'mt_race',giver:'m_yusuf',need:['mt_kittens'],title:MA('Park Race','سباق الحديقة'),col:'#46e6b0',coins:4000,xp:320,
+      intro:[MA('Let\'s race around the park!','هيا نتسابق حول الحديقة!'),MA('Run through all the rings before the time runs out.','مُرّ عبر كل الحلقات قبل أن ينتهي الوقت.')],
+      steps:[{k:'rings',pts:mpRing(Pk.x,Pk.z,26,8),time:75,text:MA('Run through the rings','اركض عبر الحلقات')}],done:[MA('Whoa, you are so fast!','واو، أنت سريع جدًا!')]});}
+  // ===== the Hero Castle =====
+  const Cs=PLACEBY.castle;if(Cs&&NPCS&&W.npcs.some(n=>n.id==='king')){const cin={x:Cs.x0+30,z:Cs.z0+34};
+    add({id:'mk_jewels',giver:'king',title:MA('The Crown Jewels','جواهر التاج'),col:'#ff4f8a',coins:7000,xp:500,
+      intro:[MA('Oh no! A sneaky thief dropped my crown jewels all over Brick City!','يا للمصيبة! لص ماكر أسقط جواهر تاجي في كل أنحاء مدينة الطوب!'),MA('Find all 5 and bring them back to my throne.','ابحث عنها كلها الخمس وأعدها إلى عرشي.')],
+      steps:[{k:'collect',item:'jewel',pts:qPts(9106,C,C,110,5,{gap:40,rid:RID[cid(Pk.x|0,Pk.z|0)]}),text:MA('Find the 5 crown jewels','اعثر على جواهر التاج الخمس')},{k:'talk',npc:'king',text:MA('Bring them to King Brickley','أحضرها إلى الملك بريكلي')}],done:[MA('My jewels! You are a true royal hero!','جواهري! أنت بطل ملكي حقيقي!')]});
+    add({id:'mk_mice',giver:'king',need:['mk_jewels'],title:MA('Castle Mice','فئران القلعة'),col:'#c8ccd4',coins:5000,xp:380,
+      intro:[MA('Eek! Mice are running around my Great Hall!','إيك! فئران تركض في قاعتي الكبرى!'),MA('Chase them out of the castle, please!','أخرجها من القلعة من فضلك!')],
+      steps:[{k:'defeat',etype:'mouse',n:8,x:cin.x,z:cin.z,r:12,text:MA('Chase away the castle mice','اطرد فئران القلعة')},{k:'talk',npc:'king',text:MA('Tell King Brickley','أخبر الملك بريكلي')}],done:[MA('Peace and quiet at last. Thank you!','هدوء وسكينة أخيرًا. شكرًا لك!')]});
+    add({id:'mk_knight',giver:'king',need:['mk_mice'],title:MA('Knight Training','تدريب الفرسان'),col:'#8a4ff0',coins:6000,xp:500,rw:[{t:'trophy',id:'castle'}],
+      intro:[MA('Every hero of my castle must train like a knight.','كل بطل في قلعتي يجب أن يتدرّب مثل الفرسان.'),MA('Hit the practice dummies in the Training Room 30 times!','اضرب دمى التدريب في غرفة التدريب 30 مرة!')],
+      steps:[{k:'stat',stat:'dummy',n:30,x:Cs.x0+10,z:Cs.z0+5.5,text:MA('Hit the practice dummies','اضرب دمى التدريب')},{k:'talk',npc:'king',text:MA('Report to King Brickley','ارجع إلى الملك بريكلي')}],done:[MA('I name you a Knight of the Hero Castle!','أمنحك لقب فارس قلعة الأبطال!')]});
+    add({id:'mk_vines',giver:'king',need:['mk_jewels'],title:MA('The Thorny Garden','الحديقة الشائكة'),col:'#2f8f4a',coins:5500,xp:420,
+      intro:[MA('Thorny vines grew all over the city park!','نمت كروم شائكة في كل حديقة المدينة!'),MA('Only a hero with slicing power can cut them.','وحده بطل لديه قوة القطع يستطيع قطعها.')],
+      steps:[{k:'fix',look:'vines',tag:'cut',verb:MA('Hold to cut the vines','اضغط مطولاً لتقطع الكروم'),pts:qPts(9107,Pk.x,Pk.z,22,4,{gap:8}),text:MA('Cut the 4 thorny vines','اقطع الكروم الشائكة الأربع')},{k:'talk',npc:'king',text:MA('Tell King Brickley','أخبر الملك بريكلي')}],done:[MA('The park is lovely again!','عادت الحديقة جميلة!')]});
+    add({id:'mk_junk',giver:'king',need:['mk_vines'],title:MA('Magnet Cleanup','تنظيف بالمغناطيس'),col:'#8f98a8',coins:6000,xp:450,
+      intro:[MA('The old factory is full of heavy metal junk.','المصنع القديم مليء بالخردة المعدنية الثقيلة.'),MA('A hero with pulling power can pull it into neat piles.','بطل لديه قوة السحب يستطيع أن يجمعها في أكوام مرتبة.')],
+      steps:[{k:'fix',look:'junk',tag:'pull',verb:MA('Hold to pull the junk','اضغط مطولاً لتسحب الخردة'),pts:qPts(9108,LOC.factory.x,LOC.factory.z,24,3,{gap:9}),text:MA('Clean up the 3 junk piles','نظّف أكوام الخردة الثلاثة')},{k:'talk',npc:'king',text:MA('Tell King Brickley','أخبر الملك بريكلي')}],done:[MA('Spotless! Magnificent work!','نظيف تمامًا! عمل رائع!')]});
+    add({id:'mk_lights',giver:'king',need:['mk_junk'],title:MA('Lights Out','انطفأت الأضواء'),col:'#fff066',coins:6000,xp:450,
+      intro:[MA('The street lamps by the plaza went dark!','انطفأت مصابيح الشارع قرب الساحة!'),MA('A hero with energy power can light them again.','بطل لديه قوة الطاقة يستطيع إضاءتها من جديد.')],
+      steps:[{k:'fix',look:'lamp2',tag:'light',verb:MA('Hold to light the lamp','اضغط مطولاً لتضيء المصباح'),pts:qPts(9109,LOC.plaza.x,LOC.plaza.z,26,4,{gap:8}),text:MA('Light the 4 lamps','أضئ المصابيح الأربعة')},{k:'talk',npc:'king',text:MA('Tell King Brickley','أخبر الملك بريكلي')}],done:[MA('The city shines bright again!','تتلألأ المدينة من جديد!')]});}
+  // ===== Sunset Bay =====
+  const S=tc('sunset'),pool=POOLS[0];if(S&&pool&&npc('m_hana','Swim Coach Hana',{x:pool.x0+1,z:pool.z0-1.6})){
+    add({id:'mh_buoys',giver:'m_hana',town:'sunset',title:MA('Swim Race','سباق السباحة'),col:'#12b0b0',coins:4500,xp:350,
+      intro:[MA('Every hero can swim now. Let\'s have a race!','كل الأبطال يستطيعون السباحة الآن. هيا نتسابق!'),MA('Swim through the rings in the sea before the time runs out.','اسبح عبر الحلقات في البحر قبل أن ينتهي الوقت.')],
+      steps:[{k:'rings',pts:mpWaterPath(S.x,S.z,150,1,3.5,7,9110),time:120,text:MA('Swim through the sea rings','اسبح عبر حلقات البحر')}],done:[MA('Splash! You swim like a dolphin!','رشّة! تسبح مثل الدلفين!')]});
+    add({id:'mh_balls',giver:'m_hana',town:'sunset',need:['mh_buoys'],title:MA('Beach Ball Hunt','البحث عن كرات الشاطئ'),col:'#ff5d73',coins:4000,xp:300,
+      intro:[MA('The pool party needs beach balls!','حفلة المسبح تحتاج إلى كرات شاطئ!'),MA('Find 6 of them on the beach.','اعثر على 6 منها على الشاطئ.')],
+      steps:[{k:'collect',item:'beachball',pts:(()=>{const L=[];const g=qrng(9111);for(let t=0;t<4000&&L.length<6;t++){const x=S.x+Rr0(g)*110,z=S.z+Rr0(g)*110;if(!inMap(x|0,z|0))continue;const i=cid(x|0,z|0);if(TM[i]!==T.SAND||H[i]<WL+.3||CH[i]>H[i]+.05||RD[i])continue;if(L.some(q=>Math.hypot(q[0]-x,q[1]-z)<10))continue;L.push([x,z,H[i]]);}return L;})(),text:MA('Find 6 beach balls','اعثر على 6 كرات شاطئ')},{k:'talk',npc:'m_hana',text:MA('Bring them to Coach Hana','أحضرها إلى المدربة هناء')}],done:[MA('Party time! Thank you!','حان وقت الحفلة! شكرًا لك!')]});
+    add({id:'mh_dive',giver:'m_hana',town:'sunset',need:['mh_balls'],title:MA('Sunken Treasure','الكنز الغارق'),col:'#ffcf3a',coins:7000,xp:520,
+      intro:[MA('Old sailors say treasure chests sank near the beach.','يقول البحّارة القدامى إن صناديق كنز غرقت قرب الشاطئ.'),MA('Swim out and find 3 of them!','اسبح وابحث عن 3 منها!')],
+      steps:[{k:'collect',item:'treasure',pts:mpWater(S.x,S.z,170,.7,2.4,3,9112,12),text:MA('Find the 3 sunken treasure chests','اعثر على صناديق الكنز الغارقة الثلاثة')},{k:'talk',npc:'m_hana',text:MA('Show Coach Hana','أرِ المدربة هناء')}],done:[MA('Gold coins! You are a real treasure diver!','عملات ذهبية! أنت غوّاص كنوز حقيقي!')]});}
+  // ===== Frostpeak =====
+  const F=tc('frost'),Lk=W.iceLake;if(F&&npc('m_ingrid','Snow Artist Ingrid',landNear(F.x-9,F.z+9,20))){
+    add({id:'ms_snowman',giver:'m_ingrid',town:'frost',title:MA('Build a Snowman','اصنع رجل ثلج'),col:'#dff4ff',coins:4000,xp:300,
+      intro:[MA('I want to build the best snowman ever!','أريد أن أصنع أفضل رجل ثلج على الإطلاق!'),MA('Find a snowball, a carrot nose, a hat, a scarf and buttons.','اعثر على كرة ثلج وأنف جزر وقبعة ووشاح وأزرار.')],
+      steps:[{k:'collect',item:'snowpart',pts:qPts(9113,F.x,F.z,55,5,{gap:12}),text:MA('Find the 5 snowman parts','اعثر على أجزاء رجل الثلج الخمسة')},{k:'talk',npc:'m_ingrid',text:MA('Bring them to Ingrid','أحضرها إلى إنغريد')}],done:[MA('He is perfect! I will call him Mr. Frosty.','إنه رائع! سأسميه السيد الصقيع.')]});
+    if(Lk)add({id:'ms_fish',giver:'m_ingrid',town:'frost',need:['ms_snowman'],title:MA('Ice Fishing','الصيد على الجليد'),col:'#46b0ff',coins:4500,xp:340,
+      intro:[MA('Let\'s go ice fishing on the frozen lake!','هيا نصطاد على البحيرة المتجمدة!'),MA('Catch a fish from each of the 3 fishing holes.','اصطد سمكة من كل حفرة من حفر الصيد الثلاث.')],
+      steps:[{k:'fix',look:'fishhole',verb:MA('Hold to fish','اضغط مطولاً لتصطاد'),pts:qPts(9114,Lk.x,Lk.z,Lk.r-4,3,{gap:8}),text:MA('Fish at the 3 ice holes','اصطد عند الحفر الجليدية الثلاث')},{k:'talk',npc:'m_ingrid',text:MA('Show Ingrid your fish','أرِ إنغريد أسماكك')}],done:[MA('Three fish! We will have a feast tonight!','ثلاث سمكات! سنقيم وليمة الليلة!')]});
+    add({id:'ms_melt',giver:'m_ingrid',town:'frost',need:['ms_snowman'],title:MA('Frozen Fountains','النوافير المتجمدة'),col:'#ff8a1f',coins:5500,xp:420,
+      intro:[MA('It was so cold that the fountains froze into ice blocks!','كان الجو باردًا جدًا حتى تجمدت النوافير وصارت كتل جليد!'),MA('A hero with fire power can melt them.','بطل لديه قوة النار يستطيع إذابتها.')],
+      steps:[{k:'fix',look:'iceblock',tag:'fire',verb:MA('Hold to melt the ice','اضغط مطولاً لتذيب الجليد'),pts:qPts(9115,F.x,F.z,36,3,{gap:12}),text:MA('Melt the 3 frozen fountains','أذب النوافير المتجمدة الثلاث')},{k:'talk',npc:'m_ingrid',text:MA('Tell Ingrid','أخبر إنغريد')}],done:[MA('Splish splash! The fountains are working again!','طرطشة! عادت النوافير تعمل!')]});
+    const yp=qPts(9116,F.x,F.z,60,1,{gap:10})[0];if(yp)add({id:'ms_yeti',giver:'m_ingrid',town:'frost',need:['ms_melt'],title:MA('The Grumpy Yeti','اليتي الغاضب'),col:'#9fdcff',coins:9000,xp:700,
+      intro:[MA('A grumpy yeti is throwing snowballs at everyone!','يتي غاضب يرمي كرات الثلج على الجميع!'),MA('Stop him, and maybe he will cheer up.','أوقفه، ربما يصبح سعيدًا.')],
+      steps:[{k:'boss',etype:'yeti2',x:yp[0],z:yp[1],text:MA('Stop the Grumpy Yeti','أوقف اليتي الغاضب')},{k:'talk',npc:'m_ingrid',text:MA('Tell Ingrid','أخبر إنغريد')}],done:[MA('He just needed a hug. Well done, hero!','كان يحتاج فقط إلى عناق. أحسنت أيها البطل!')]});}
+  // ===== Cactus Canyon =====
+  const Cn=tc('canyon');if(Cn&&npc('m_pete','Prospector Pete',landNear(Cn.x+11,Cn.z-8,20))){const stn=(W.stations||[]).find(s=>s.town==='canyon');
+    add({id:'mp_gold',giver:'m_pete',town:'canyon',title:MA('Gold Rush','حمّى الذهب'),col:'#ffcf3a',coins:5000,xp:380,
+      intro:[MA('Yee-haw! I found a gold map!','ياهوو! وجدت خريطة ذهب!'),MA('Help me dig up 8 gold nuggets around the canyon.','ساعدني في جمع 8 قطع ذهب حول الوادي.')],
+      steps:[{k:'collect',item:'nugget',pts:qPts(9117,Cn.x,Cn.z,75,8,{gap:12}),text:MA('Find 8 gold nuggets','اعثر على 8 قطع ذهب')},{k:'talk',npc:'m_pete',text:MA('Bring them to Pete','أحضرها إلى بيت')}],done:[MA('We\'re rich! Well, a little bit rich.','أصبحنا أغنياء! حسنًا، أغنياء قليلاً.')]});
+    if(stn)add({id:'mp_robbers',giver:'m_pete',town:'canyon',need:['mp_gold'],title:MA('Train Robbers','لصوص القطار'),col:'#e8343f',coins:7000,xp:520,
+      intro:[MA('Sneaky robbers are at the train station!','لصوص ماكرون في محطة القطار!'),MA('They will run away when they see you. Catch 5 of them!','سيهربون عندما يرونك. أمسك 5 منهم!')],
+      steps:[{k:'defeat',etype:'thief',n:5,x:stn.x,z:stn.z+10,r:16,text:MA('Catch the train robbers','أمسك لصوص القطار')},{k:'talk',npc:'m_pete',text:MA('Tell Pete','أخبر بيت')}],done:[MA('The train is safe. You\'re the fastest hero in the west!','القطار بأمان. أنت أسرع بطل في الغرب!')]});
+    add({id:'mp_rodeo',giver:'m_pete',town:'canyon',need:['mp_gold'],title:MA('Canyon Rodeo','مسابقة الوادي'),col:'#ff8a1f',coins:5000,xp:380,
+      intro:[MA('Time for the big canyon race!','حان وقت سباق الوادي الكبير!'),MA('Ride a horse or run through all the rings!','اركب حصانًا أو اركض عبر كل الحلقات!')],
+      steps:[{k:'rings',pts:mpRing(Cn.x,Cn.z,40,8),time:100,text:MA('Race through the canyon rings','تسابق عبر حلقات الوادي')}],done:[MA('Now that\'s some fancy riding!','هذا ركوب رائع!')]});
+    add({id:'mp_cactus',giver:'m_pete',town:'canyon',need:['mp_rodeo'],title:MA('Thirsty Cactus','الصبّار العطشان'),col:'#3fae4a',coins:5500,xp:420,
+      intro:[MA('My cactus garden is so thirsty it forgot how to bloom.','حديقة الصبّار عطشى جدًا حتى نسيت كيف تزهر.'),MA('A hero with water power can give them a drink.','بطل لديه قوة الماء يستطيع أن يسقيها.')],
+      steps:[{k:'fix',look:'cactus',tag:'cool',verb:MA('Hold to water the cactus','اضغط مطولاً لتسقي الصبّار'),pts:qPts(9118,Cn.x,Cn.z,45,4,{gap:10}),text:MA('Water the 4 cactuses','اسقِ نبتات الصبّار الأربع')},{k:'talk',npc:'m_pete',text:MA('Tell Pete','أخبر بيت')}],done:[MA('Look at those flowers! Pretty as a sunset.','انظر إلى تلك الأزهار! جميلة مثل الغروب.')]});}
+  // ===== Star Harbor =====
+  const St=tc('star');if(St&&npc('m_eli','Engineer Eli',landNear(St.x-9,St.z+7,20))){const bp=qPts(9120,St.x,St.z,40,1)[0];
+    add({id:'me_beacons',giver:'m_eli',town:'star',title:MA('Radio Beacons','منارات الراديو'),col:'#46e6ff',coins:4500,xp:340,
+      intro:[MA('Our radio beacons stopped beeping!','توقفت منارات الراديو عن الصفير!'),MA('Please fix the 3 beacons so the rockets can find home.','أصلح المنارات الثلاث لكي تجد الصواريخ طريق العودة.')],
+      steps:[{k:'fix',pts:qPts(9119,St.x,St.z,55,3,{gap:14}),text:MA('Fix the 3 radio beacons','أصلح منارات الراديو الثلاث')},{k:'talk',npc:'m_eli',text:MA('Tell Engineer Eli','أخبر المهندس إيلي')}],done:[MA('Beep beep! Signal is strong!','بيب بيب! الإشارة قوية!')]});
+    add({id:'me_meteor',giver:'m_eli',town:'star',need:['me_beacons'],title:MA('Meteor Shower','زخّة الشهب'),col:'#ff8a1f',coins:5000,xp:380,
+      intro:[MA('Last night there was a meteor shower!','كانت هناك زخّة شهب الليلة الماضية!'),MA('Collect 6 space rocks for the Space Museum.','اجمع 6 صخور فضائية لمتحف الفضاء.')],
+      steps:[{k:'collect',item:'meteorite',pts:qPts(9121,St.x,St.z,65,6,{gap:12}),text:MA('Collect 6 meteorites','اجمع 6 نيازك')},{k:'talk',npc:'m_eli',text:MA('Bring them to Eli','أحضرها إلى إيلي')}],done:[MA('Real space rocks! The museum will love them.','صخور فضائية حقيقية! سيحبها المتحف.')]});
+    if(bp)add({id:'me_bots',giver:'m_eli',town:'star',need:['me_meteor'],title:MA('Robot Rebellion','تمرّد الروبوتات'),col:'#8a4ff0',coins:9000,xp:700,
+      intro:[MA('The test robots have gone haywire!','جُنّت روبوتات الاختبار!'),MA('Beat the robots, then the Mega Bot leading them.','اهزم الروبوتات، ثم الروبوت العملاق الذي يقودها.')],
+      steps:[{k:'defeat',etype:'bot',n:8,x:bp[0],z:bp[1],r:16,text:MA('Beat the haywire robots','اهزم الروبوتات المجنونة')},{k:'boss',etype:'mega',x:bp[0],z:bp[1],text:MA('Beat the Mega Bot','اهزم الروبوت العملاق')},{k:'talk',npc:'m_eli',text:MA('Tell Engineer Eli','أخبر المهندس إيلي')}],done:[MA('Systems back to normal. Thank you, hero!','عادت الأنظمة إلى طبيعتها. شكرًا لك أيها البطل!')]});}
+  // ===== the Moon =====
+  const M=W.moonBase;if(M&&npc('m_gia','Moon Gardener Gia',landNear(M.x+10,M.z+9,20))){
+    add({id:'mg_rocks',giver:'m_gia',town:'moon',title:MA('Moon Rocks','صخور القمر'),col:'#c8ccd4',coins:5000,xp:380,
+      intro:[MA('Space plants love sparkly moon rocks!','النباتات الفضائية تحب صخور القمر اللامعة!'),MA('Bring me 6 of them for my greenhouse.','أحضر لي 6 منها لبيتي الزجاجي.')],
+      steps:[{k:'collect',item:'moonrock',pts:qPts(9122,M.x,M.z,45,6,{gap:10}),text:MA('Collect 6 moon rocks','اجمع 6 صخور قمرية')},{k:'talk',npc:'m_gia',text:MA('Bring them to Gia','أحضرها إلى جيا')}],done:[MA('My plants are glowing with joy!','نباتاتي تتوهج من الفرح!')]});
+    add({id:'mg_aliens',giver:'m_gia',town:'moon',need:['mg_rocks'],title:MA('Alien Friends','أصدقاء من الفضاء'),col:'#8fe07a',coins:5500,xp:420,
+      intro:[MA('Four little aliens landed nearby and they look shy.','هبط أربعة كائنات فضائية صغيرة قريبًا ويبدو أنهم خجولون.'),MA('Go and say hello to each of them!','اذهب وقل مرحبًا لكل واحد منهم!')],
+      steps:[{k:'fix',look:'alienpal',verb:MA('Hold to say hello','اضغط مطولاً لتقول مرحبًا'),pts:qPts(9123,M.x,M.z,38,4,{gap:10}),text:MA('Say hello to the 4 aliens','قل مرحبًا للكائنات الفضائية الأربعة')},{k:'talk',npc:'m_gia',text:MA('Tell Gia','أخبر جيا')}],done:[MA('Now they want to be your friends forever!','الآن يريدون أن يكونوا أصدقاءك إلى الأبد!')]});
+    add({id:'mg_slime',giver:'m_gia',town:'moon',need:['mg_aliens'],title:MA('Slime Trouble','مشكلة الهلام'),col:'#56e07a',coins:6500,xp:500,
+      intro:[MA('Moon slimes are sliding into my greenhouse!','هلام القمر ينزلق إلى بيتي الزجاجي!'),MA('Bounce 8 of them away.','اطرد 8 منها بعيدًا.')],
+      steps:[{k:'defeat',etype:'moonslime',n:8,x:M.x+14,z:M.z+12,r:16,text:MA('Stop the moon slimes','أوقف هلام القمر')},{k:'talk',npc:'m_gia',text:MA('Tell Gia','أخبر جيا')}],done:[MA('Squishy problem solved! Thank you!','انحلّت المشكلة اللزجة! شكرًا لك!')]});}
+  // ===== the Sky Kingdom =====
+  if(SKY.ok&&SKY.isl.length>=2){const I0=SKY.isl[0],I1=SKY.isl[1],I2=SKY.isl[2]||SKY.isl[1];const cy=mpCells(I0.cells.filter(c=>Math.hypot(c[0]-I0.x-5,c[1]-I0.z-4)<5),I0.top,1,9132,1)[0]||mpCells(I0.cells,I0.top,1,9133,1)[0];
+    if(cy&&npc('m_cyrus','Cloud Knight Cyrus',{x:cy[0],z:cy[1]})){const from=mpCells(I0.cells,I0.top,1,9124,1)[0],to=mpCells(I2.cells,I2.top,1,9125,1)[0];
+      if(from&&to)add({id:'mc_mail',giver:'m_cyrus',town:'sky',title:MA('Sky Mail','بريد السماء'),col:'#b28dff',coins:5000,xp:380,
+        intro:[MA('The queen has an important letter for the far island.','لدى الملكة رسالة مهمة للجزيرة البعيدة.'),MA('Pick it up and carry it across the clouds!','خذها واحملها عبر الغيوم!')],
+        steps:[{k:'deliver',from:[from[0],from[1]],to:[to[0],to[1]],text:MA('Deliver the royal letter','أوصل الرسالة الملكية')},{k:'talk',npc:'m_cyrus',text:MA('Tell Cloud Knight Cyrus','أخبر فارس الغيوم سايروس')}],done:[MA('Delivered with a smile. Splendid!','وصلت مع ابتسامة. رائع!')]});
+      const kp=[...mpCells(I0.cells,I0.top,2,9126,6),...mpCells(I1.cells,I1.top,2,9127,6),...mpCells(I2.cells,I2.top,1,9128,6)];
+      add({id:'mc_kites',giver:'m_cyrus',town:'sky',need:['mc_mail'],title:MA('Cloud Kites','طائرات الغيوم الورقية'),col:'#46b0ff',coins:5500,xp:420,
+        intro:[MA('The sky children lost their kites in the clouds.','أضاع أطفال السماء طائراتهم الورقية بين الغيوم.'),MA('Find all 5 on the floating islands.','ابحث عنها كلها الخمس على الجزر الطائرة.')],
+        steps:[{k:'collect',item:'kite',pts:kp,text:MA('Find the 5 cloud kites','اعثر على طائرات الغيوم الخمس')},{k:'talk',npc:'m_cyrus',text:MA('Bring them to Cyrus','أحضرها إلى سايروس')}],done:[MA('The sky is full of kites again!','امتلأت السماء بالطائرات الورقية من جديد!')]});
+      add({id:'mc_storm',giver:'m_cyrus',town:'sky',need:['mc_kites'],title:MA('Thunder Clouds','غيوم الرعد'),col:'#6a7ab8',coins:7000,xp:520,
+        intro:[MA('Grumpy thunder clouds are back!','عادت غيوم الرعد الغاضبة!'),MA('Chase 6 of them away from the kingdom.','اطرد 6 منها بعيدًا عن المملكة.')],
+        steps:[{k:'defeat',etype:'storm',n:6,x:I0.x,z:I0.z,r:24,text:MA('Chase away the thunder clouds','اطرد غيوم الرعد')},{k:'talk',npc:'m_cyrus',text:MA('Tell Cyrus','أخبر سايروس')}],done:[MA('Blue skies! You are a champion of the clouds!','سماء زرقاء! أنت بطل الغيوم!')]});}}
+  // ===== Dino Valley =====
+  if(DV.ok&&npc('m_kofi','Dino Keeper Kofi',landNear(DV.x-11,DV.z+13,16))){
+    add({id:'md_snacks',giver:'m_kofi',town:'dino',title:MA('Dino Snacks','وجبات الديناصورات'),col:'#56b85a',coins:4500,xp:340,
+      intro:[MA('The plant-eating dinos are hungry!','الديناصورات آكلة النباتات جائعة!'),MA('Gather 6 big ferns for their lunch.','اجمع 6 سراخس كبيرة لغدائها.')],
+      steps:[{k:'collect',item:'fern',pts:qPts(9129,DV.x,DV.z,30,6,{gap:8}),text:MA('Gather 6 ferns','اجمع 6 سراخس')},{k:'talk',npc:'m_kofi',text:MA('Bring them to Kofi','أحضرها إلى كوفي')}],done:[MA('Munch munch! Happy dinos!','قضم قضم! ديناصورات سعيدة!')]});
+    add({id:'md_babies',giver:'m_kofi',town:'dino',need:['md_snacks'],title:MA('Baby Dino Roundup','جمع الديناصورات الصغيرة'),col:'#ff9ec0',coins:5500,xp:420,
+      intro:[MA('The baby dinos escaped from the nursery!','هربت الديناصورات الصغيرة من الحضانة!'),MA('Catch all 5 before they get lost.','أمسكها كلها الخمس قبل أن تضيع.')],
+      steps:[{k:'catch',kind:'babydino',n:5,x:DV.x,z:DV.z,r:22,text:MA('Catch the baby dinos','أمسك الديناصورات الصغيرة')},{k:'talk',npc:'m_kofi',text:MA('Tell Kofi','أخبر كوفي')}],done:[MA('All tucked in for a nap. Thank you!','كلها نائمة الآن في قيلولة. شكرًا لك!')]});
+    add({id:'md_photo',giver:'m_kofi',town:'dino',need:['md_babies'],title:MA('Photo Safari','رحلة تصوير'),col:'#ff8a1f',coins:4000,xp:320,
+      intro:[MA('I need a great photo of the volcano for my dino book.','أحتاج إلى صورة رائعة للبركان لكتابي عن الديناصورات.'),MA('Go close to the volcano and take a photo!','اقترب من البركان والتقط صورة!')],
+      steps:[{k:'photo',x:DV.vol.x,z:DV.vol.z+DV.vol.R+6,r:14,text:MA('Take a photo near the volcano','التقط صورة قرب البركان')},{k:'talk',npc:'m_kofi',text:MA('Show Kofi','أرِ كوفي')}],done:[MA('What a shot! You are a real explorer!','يا لها من لقطة! أنت مستكشف حقيقي!')]});}
+  // ===== Coral Cove =====
+  if(W.npcs.some(n=>n.id==='dina')){
+    add({id:'mc2_shells',giver:'dina',town:'cove',need:['c_rings'],title:MA('Shell Collector','جامع الأصداف'),col:'#ffd6e8',coins:4500,xp:340,
+      intro:[MA('Coral Cove has the prettiest shells in the world!','خليج المرجان فيه أجمل الأصداف في العالم!'),MA('Help me find 8 of them on the beach.','ساعدني في العثور على 8 منها على الشاطئ.')],
+      steps:[{k:'collect',item:'shell',pts:qPts(9130,COVE.x,COVE.z,COVE.r,8,{rid:COVE.rid,gap:4}),text:MA('Find 8 shells','اعثر على 8 أصداف')},{k:'talk',npc:'dina',text:MA('Bring them to Dina','أحضرها إلى دينا')}],done:[MA('Ooh, a spiral one! My favourite!','أوه، صدفة حلزونية! المفضلة لدي!')]});
+    const cp=mpWater(COVE.x,COVE.z,COVE.r+16,.6,2.2,4,9131,8);
+    add({id:'mc2_coral',giver:'dina',town:'cove',need:['mc2_shells'],title:MA('Coral Garden','حديقة المرجان'),col:'#ff5fa8',coins:6000,xp:450,
+      intro:[MA('Some of the baby corals lost their colours.','فقدت بعض الشعاب المرجانية الصغيرة ألوانها.'),MA('A hero with water power can help them grow bright again.','بطل لديه قوة الماء يستطيع أن يساعدها لتعود زاهية.')],
+      steps:[{k:'fix',look:'coral',tag:'cool',verb:MA('Hold to help the coral','اضغط مطولاً لتساعد المرجان'),pts:cp,text:MA('Help the 4 baby corals','ساعد الشعاب المرجانية الصغيرة الأربع')},{k:'talk',npc:'dina',text:MA('Tell Dina','أخبر دينا')}],done:[MA('Look at all those colours! The fish are dancing!','انظر إلى كل تلك الألوان! الأسماك ترقص!')]});}
+  // heights: new islands (like Coral Cove) only get their final heights after this runs, so lift every point onto the ground under it
+  for(const q of Q)for(const st of q.steps)if(st.pts&&st.k!=='rings')for(const pt of st.pts){const i=cid(clamp(pt[0]|0,0,N-1),clamp(pt[1]|0,0,N-1));if(pt[2]<H[i])pt[2]=H[i];}
+  for(const q of Q)if(MPRW[q.id])q.rw=MPRW[q.id].map(r=>({...r}));
+  MP.ids=Q.map(q=>q.id);QUESTS.push(...Q);}
+// ---------- a different prize for every mission: hats, pets, emotes, golden bricks and boosts ----------
+const MPRW={mp_chickens:[{t:'pet',id:'chick'}],mp_pumpkins:[{t:'hat',id:'beeband'}],mp_crows:[{t:'emote',id:'🐔'}],
+  mr_hikers:[{t:'pet',id:'fox'}],mr_fire:[{t:'gb',id:'mp_fire'}],mr_photo:[{t:'hat',id:'beret'}],
+  mt_kites:[{t:'emote',id:'🪁'}],mt_kittens:[{t:'hat',id:'bunny'}],mt_race:[{t:'hat',id:'racer'}],
+  mk_jewels:[{t:'hat',id:'tiara'}],mk_mice:[{t:'emote',id:'🐭'}],mk_knight:[{t:'trophy',id:'castle'},{t:'boost',id:'power'}],mk_vines:[{t:'emote',id:'🌹'}],mk_junk:[{t:'hat',id:'hardhat'}],mk_lights:[{t:'boost',id:'speed'}],
+  mh_buoys:[{t:'emote',id:'🏊'}],mh_balls:[{t:'emote',id:'🏐'}],mh_dive:[{t:'gb',id:'mp_dive'},{t:'coins',n:3000}],
+  ms_snowman:[{t:'hat',id:'earmuffs'}],ms_fish:[{t:'pet',id:'seal'}],ms_melt:[{t:'boost',id:'xp2'}],ms_yeti:[{t:'hat',id:'viking'}],
+  mp_gold:[{t:'gb',id:'mp_gold'}],mp_robbers:[{t:'hat',id:'cowboy'}],mp_rodeo:[{t:'emote',id:'🤠'}],mp_cactus:[{t:'emote',id:'🌵'}],
+  me_beacons:[{t:'boost',id:'speed'}],me_meteor:[{t:'emote',id:'☄️'}],me_bots:[{t:'gb',id:'mp_bots'}],
+  mg_rocks:[{t:'boost',id:'power'}],mg_aliens:[{t:'pet',id:'alien'}],mg_slime:[{t:'emote',id:'👽'}],
+  mc_mail:[{t:'hat',id:'feather'}],mc_kites:[{t:'hat',id:'unicorn'}],mc_storm:[{t:'boost',id:'xp2'}],
+  md_snacks:[{t:'emote',id:'🌿'}],md_babies:[{t:'gb',id:'mp_babies'}],md_photo:[{t:'emote',id:'🌋'}],
+  mc2_shells:[{t:'hat',id:'shell'}],mc2_coral:[{t:'emote',id:'🐠'}]};
+// the hero hats can now be won and worn by any hero
+for(const [id,n,ar,ic] of [['racer','Racing Helmet','خوذة السباق','🏁'],['hardhat','Hard Hat','خوذة العمّال','👷'],['feather','Feather Cap','قبعة الريشة','🪶'],['viking','Viking Helmet','خوذة الفايكنغ','🛡️'],
+  ['cowboy','Cowboy Hat','قبعة رعاة البقر','🤠'],['beeband','Bee Headband','عصابة النحلة','🐝'],['shell','Seashell Crown','تاج الأصداف','🐚'],['earmuffs','Fluffy Earmuffs','غطاء الأذنين','🎧'],
+  ['bunny','Bunny Ears','أذنا الأرنب','🐰'],['beret','Artist Beret','قبعة الفنان','🎨'],['tiara','Royal Tiara','التاج الملكي','👑'],['unicorn','Unicorn Horn','قرن اليونيكورن','🦄']]){if(!HATS.some(h=>h.id===id))HATS.push({id,n:MA(n,ar),p:-1});REWARD_HATS.add(id);HAT_ICON[id]=ic;}
+// ---------- four new pets ----------
+PETS.push({id:'chick',n:MA('Peep the Chick','بيب الكتكوت'),p:-1,i:'🐤',d:MA('A fluffy chick from Farmer Fatima','كتكوت ناعم من المزارعة فاطمة')},{id:'fox',n:MA('Rusty the Fox','رستي الثعلب'),p:-1,i:'🦊',d:MA('A clever fox from the forest','ثعلب ذكي من الغابة')},
+  {id:'seal',n:MA('Pip the Seal Pup','بيب صغير الفقمة'),p:-1,i:'🦭',d:MA('A happy seal pup from Frostpeak','فقمة صغيرة سعيدة من قمة الصقيع')},{id:'alien',n:MA('Zip the Little Alien','زيب الفضائي الصغير'),p:-1,i:'👽',d:MA('A friendly alien from the Moon','كائن فضائي لطيف من القمر')});
+{const _dp=drawPet;drawPet=function(o,t){const k=o.kind;if(k!=='chick'&&k!=='fox'&&k!=='seal'&&k!=='alien')return _dp(o,t);
+  if(k==='chick'){drawAnimal({kind:'chick',x:o.x,y:o.y,z:o.z,face:o.face||0,walk:o.walk||0,amp:o.amp||0},t);return;}
+  const m=MS.cur;MS.reset();const w=Math.sin(o.walk||0),a=o.amp||0,h=o.happy>0;M4.tr(m,o.x,o.y+Math.abs(w)*.05*a,o.z);M4.ry(m,o.face||0);
+  if(k==='fox'){const c='#ff8a3a',wh='#fff4e6',bk='#3a2a2a';for(const [x,z] of [[-.12,.17],[.12,.17],[-.12,-.17],[.12,-.17]])cy(m,x,.1+((x*z>0)?w:-w)*.04*a,z,.08,.22,.08,bk,6);
+    sp(m,0,.32,0,.36,.3,.58,c,6);sp(m,0,.28,.12,.26,.2,.3,wh,6);MS.push();M4.tr(m,0,.5,.3);M4.rz(m,Math.sin(t*1.5)*.08);sp(m,0,0,0,.32,.28,.3,c,6);sp(m,0,-.05,.13,.16,.12,.16,wh,6);sp(m,0,-.02,.23,.06,.05,.05,bk,1);
+      for(const s of [-1,1]){co(m,s*.1,.2,-.02,.1,.2,.06,c,6);co(m,s*.1,.19,0,.05,.12,.03,bk,6);sp(m,s*.07,.05,.13,.045,.06,.03,h?bk:'#3a7a2a',1);}MS.pop();
+    MS.push();M4.tr(m,0,.36,-.28);M4.rx(m,-.7+Math.sin(t*4)*.2);sp(m,0,.18,0,.16,.36,.16,c,6);sp(m,0,.44,0,.1,.12,.1,wh,6);MS.pop();}
+  else if(k==='seal'){const c='#8f98a8',lt='#c8ccd4';M4.rz(m,Math.sin(o.walk||0)*.1*a);sp(m,0,.24,0,.4,.3,.72,c,6);sp(m,0,.2,.08,.3,.2,.5,lt,6);MS.push();M4.tr(m,0,.42,.32);M4.rx(m,-.2+Math.sin(t*2)*.08);sp(m,0,0,0,.3,.28,.3,c,6);
+      sp(m,0,-.04,.14,.16,.12,.12,lt,6);sp(m,0,.0,.21,.05,.04,.04,'#23232f',1);for(const s of [-1,1]){sp(m,s*.08,.05,.13,.05,.06,.03,'#23232f',1);bx(m,s*.1,-.03,.18,.12,.01,.01,'#ffffff',1);}MS.pop();
+    for(const s of [-1,1]){MS.push();M4.tr(m,s*.2,.1,.12);M4.rz(m,s*(.5+(h?Math.sin(t*14)*.4:w*.3)));rb(m,s*.06,0,0,.18,.05,.14,c,6);MS.pop();}MS.push();M4.tr(m,0,.14,-.36);M4.ry(m,Math.sin(t*3)*.3);rb(m,0,0,-.06,.26,.04,.16,c,6);MS.pop();}
+  else{const c='#8fe07a';const hv=.25+Math.sin(t*3)*.06;sp(m,0,hv+.3,0,.42,.44,.4,c,6,.2);sp(m,0,hv+.24,.1,.3,.26,.26,'#b6f0a8',6);for(const s of [-1,1]){sp(m,s*.1,hv+.4,.16,.11,.14,.06,'#ffffff',1);sp(m,s*.1,hv+.4,.2,.06,.08,.03,'#23232f',1);
+      MS.push();M4.tr(m,s*.1,hv+.52,0);M4.rz(m,s*.3);cy(m,0,.12,0,.02,.24,.02,'#6abf5a',1);sp(m,0,.26,0,.06,.06,.06,h?'#ffcf3a':'#ff5fa8',1,1);MS.pop();cy(m,s*.1,hv+.02,0,.06,.16,.06,c,6);}
+    if(R()<.04)burst(o.x,o.y+hv+.1,o.z,['#8fe07a','#ffffff'],1,.4,.08,.6);}};}
+{const _ps=petSound;petSound=function(k){if(k==='chick'){AU.tone(1500,.06,'triangle',.04,1.3);AU.tone(1700,.06,'triangle',.04,1.3,.09);return;}if(k==='fox'){AU.tone(760,.1,'sawtooth',.03,1.5);return;}
+  if(k==='seal'){AU.tone(300,.14,'sawtooth',.04,1.4);AU.tone(340,.14,'sawtooth',.04,1.4,.18);return;}if(k==='alien'){AU.tone(1200,.05,'sine',.05,.6);AU.tone(1800,.05,'sine',.05,1.8,.07);AU.tone(900,.06,'sine',.05,1.2,.14);return;}_ps(k);};}
+function Rr0(g){return g()*2-1;}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{missionPack();}catch(e){noteErr('mpack',e);console.error(e);}};}
+// ---------- rewards for finishing lots of them ----------
+TROPHIES.castle={ic:'🏰',n:MA('Knight of the Castle Cup','كأس فارس القلعة')};TROPHIES.helper={ic:'🤝',n:MA('Blocktopia Helper Cup','كأس مساعد بلوكتوبيا')};
+{const _qc=qComplete;qComplete=function(){const id=QS.act;_qc();try{if(MP.ids.includes(id)){stInc('mpack');if(MP.ids.every(qDone))giveRewards({rw:[{t:'trophy',id:'helper'}]});}}catch(e){}};}
+STICKERS.push({id:'q_pack10',ic:'🗺️',n:MA('Mission Maker','صانع المهمات'),d:MA('Finish 10 of the new missions','أنهِ 10 من المهمات الجديدة'),f:()=>MP.ids.filter(qDone).length,t:10},
+  {id:'q_pack30',ic:'🌟',n:MA('Super Helper','المساعد الخارق'),d:MA('Finish 30 of the new missions','أنهِ 30 من المهمات الجديدة'),f:()=>MP.ids.filter(qDone).length,t:30});
+// ================= v18 polish: tidy messages, and a little party every time you finish a quest =================
+// never more than 4 messages on the screen at once, and never the same one twice
+{const _t=toast;toast=function(msg){const box=$('toasts');const txt=tr(msg);if(box&&!$('hud').hidden&&[...box.children].some(c=>c.textContent===txt))return;_t(msg);if(box)while(box.children.length>4)box.firstChild.remove();};}
+// finishing a quest: confetti, sparkles, and your hero cheers (the person who asked cheers too)
+function questParty(){if(!ME)return;const C0=['#ff4f6d','#ffcf3a','#46b0ff','#7ed957','#b28dff','#ff8a1f','#ffffff'];ME.anim.cheer=1.6;
+  for(let k=0;k<3;k++)setTimeout(()=>{if(!ME)return;burst(ME.x,ME.y+2.4,ME.z,C0,26,6,.16,1);ringFx(ME.x,ME.y+.1,ME.z,C0[k*2],2.5+k);},k*260);
+  for(let k=0;k<40;k++)PARTS.push({x:ME.x+Rr(-2.5,2.5),y:ME.y+Rr(3,5),z:ME.z+Rr(-2.5,2.5),vx:Rr(-1,1),vy:Rr(-.5,1.5),vz:Rr(-1,1),life:Rr(1.4,2.2),s:Rr(.09,.15),c:hex(C0[k%C0.length]),e:.6,g:2.2,k:'deb',rot:R()*6});
+  for(const n of NPCS)if(d2(n.x,n.z,ME.x,ME.z)<14&&n.anim)n.anim.cheer=1.4;}
+{const _bn=banner;banner=function(t,...a){const r=_bn(t,...a);if(t==='Quest complete!'||t===tr('Quest complete!'))try{questParty();}catch(e){noteErr('party',e);}return r;};}
 // ================= start =================
 boot();
 </script>
