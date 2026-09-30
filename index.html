@@ -7612,8 +7612,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:26,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:27,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🎵',t:'Calm new music',s:'Soft strings, piano and harp in every place, and a gentle pulse in boss fights'},
   {ic:'📷',t:'A new camera',s:'The camera is further back and follows your hero. Pinch with two fingers to zoom, or change it in Settings'},
   {ic:'🎨',t:'A calmer city',s:'Softer colours, fewer lamp posts, and faces without lines'},
   {ic:'✋',t:'Helping is easier',s:'When you hold ✋ Use, a ring fills up so you can see it working. Tapping it again and again works too'},
@@ -10297,7 +10298,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='23.5';window.BB_VER=BB_VER;
+const BB_VER='23.6';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -10556,6 +10557,118 @@ function lookSave(){try{localStorage.setItem('bb2_camd',String(G.camD));localSto
 MV('Camera: {0}','الكاميرا: {0}');MV('Close','قريبة');MV('Far','بعيدة');MV('Camera follows me: {0}','الكاميرا تتبعني: {0}');
 MV('A new camera','كاميرا جديدة');MV('The camera is further back and follows your hero. Pinch with two fingers to zoom, or change it in Settings','الكاميرا أبعد قليلًا وتتبع بطلك. قرّب أو بعّد بإصبعين، أو غيّرها من الإعدادات');
 MV('A calmer city','مدينة أهدأ');MV('Softer colours, fewer lamp posts, and faces without lines','ألوان أهدأ، وأعمدة إنارة أقل، ووجوه بلا خطوط');
+// ================= v23.6: calm, gentle music (a small orchestra made in code) =================
+// The background songs used to be pop and dance beats. Now they are soft strings, harp, piano and bells with a flute or
+// horn tune, slow and relaxing, like music for exploring a big world. Fights keep a steady pulse, played on soft timpani
+// and brushes instead of loud drums. Every tune is original and made in code (the melodies come from each song's own seed).
+// ---------- new instruments: harp, soft piano, pizzicato strings, timpani and brushes (rendered once) ----------
+{const _mb=MUS.makeBufs.bind(MUS);MUS.makeBufs=function(c){_mb(c);const B=this.buf,T=2*Math.PI,rnd=()=>Math.random()*2-1;
+  // harp: a mellow plucked string at C4
+  B.harp=this.mk(c,3.2,(d,sr,n)=>{const L=Math.round(sr/261.63),ring=new Float32Array(L);let s=0;for(let i=0;i<L;i++){s+=(rnd()-s)*.22;ring[i]=s;}let p=0,lp=0;
+    for(let i=0;i<n;i++){const a=ring[p],b=ring[(p+1)%L];ring[p]=(a+b)*.5*.9983;lp+=(a-lp)*.45;d[i]=lp*Math.min(1,i/(sr*.004));p=(p+1)%L;}});
+  // piano: a soft felt piano note at C4
+  B.piano=this.mk(c,3.4,(d,sr,n)=>{const f=261.63,P=[[1,1,1.1],[2,.42,1.7],[3,.2,2.4],[4,.11,3.1],[5,.05,3.9],[6,.025,4.6]];for(let i=0;i<n;i++){const t=i/sr;let v=0;
+      for(const [k,a,dc] of P)v+=a*Math.sin(T*f*k*(1+.0004*k*k)*t)*Math.exp(-t*dc);d[i]=v*Math.min(1,t*420)+(t<.004?rnd()*.05:0);}});
+  // pizzicato strings: short and round, at G3
+  B.pizz=this.mk(c,.8,(d,sr,n)=>{const L=Math.round(sr/196),ring=new Float32Array(L);let s=0;for(let i=0;i<L;i++){s+=(rnd()-s)*.3;ring[i]=s;}let p=0;
+    for(let i=0;i<n;i++){const a=ring[p],b=ring[(p+1)%L];ring[p]=(a+b)*.5*.993;d[i]=a*Math.exp(-i/sr*4.5);p=(p+1)%L;}});
+  // timpani: a soft, deep drum
+  B.timp=this.mk(c,1.8,(d,sr,n)=>{let ph=0,lp=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(64+12*Math.exp(-t*9))/sr;lp+=(rnd()-lp)*.06;
+      d[i]=(Math.sin(ph)+.3*Math.sin(ph*1.5)*Math.exp(-t*4))*Math.exp(-t*2.4)*Math.min(1,t*240)+lp*Math.exp(-t*12)*.6;}});
+  // brush: a soft swish on the snare
+  B.brush=this.mk(c,.34,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*.3;d[i]=lp*Math.min(1,t/.025)*Math.exp(-t*14);}});
+  Object.assign(this.base,{harp:261.63,piano:261.63,pizz:196});};}
+// ---------- in the calm songs, the drums become soft orchestra drums ----------
+{const _hit=MUS.hit.bind(MUS);MUS.hit=function(name,t,vel,rate,rev,dly,pan){const S=this.S;if(S&&S.orch){
+    if(name==='kick'){name='timp';vel*=.4;rev=Math.max(rev||0,.3);}
+    else if(name==='clap'||name==='snare'){name='brush';vel*=.55;rev=Math.max(rev||0,.3);}
+    else if(name==='hat'||name==='ohat')return;
+    else if(name==='shaker')vel*=.4;
+    else if(name==='rim')vel*=.45;
+    else if(name==='tom'){name='timp';vel*=.55;rate=(rate||1)*.85;}
+    else if(name==='harp'){vel*=.72;dly=Math.min(dly||0,.2);rev=Math.max(rev||0,.4);}else if(name==='piano'){vel*=.75;rev=Math.max(rev||0,.4);}}
+  return _hit(name,t,vel,rate,rev,dly,pan);};}
+// ---------- a string section instead of the synth pad ----------
+{const _pad=MUS.pad.bind(MUS);MUS.pad=function(t,notes,dur,vel,bright){if(!(this.S&&this.S.orch))return _pad(t,notes,dur,vel,bright);const c=this.c;
+  const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=(bright||1400)*.8;f.Q.value=.4;const g=c.createGain();const att=Math.min(2.2,dur*.35),v=vel*1.7;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+att);g.gain.setValueAtTime(v,t+Math.max(att+.05,dur-.1));g.gain.exponentialRampToValueAtTime(.0004,t+dur+1.9);
+  f.connect(g);g.connect(this.bus);const r=c.createGain();r.gain.value=.9;g.connect(r);r.connect(this.revIn);
+  const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=4.7;lg.gain.value=6;lfo.connect(lg);lfo.start(t);lfo.stop(t+dur+2);
+  const sw=c.createGain();sw.gain.value=.3;sw.connect(f);
+  for(const m of notes)for(const [dt,ty] of [[-6,'triangle'],[6,'triangle'],[0,'sawtooth']]){const o=c.createOscillator();o.type=ty;o.frequency.value=MIDI(m);o.detune.value=dt;lg.connect(o.detune);o.connect(ty==='sawtooth'?sw:f);o.start(t);o.stop(t+dur+2);}};}
+// ---------- flute and horn tunes ----------
+{const _ld=MUS.lead.bind(MUS);MUS.lead=function(t,m,dur,vel,kind){if(kind!=='flute'&&kind!=='horn')return _ld(t,m,dur,vel,kind);const c=this.c,fr=MIDI(m),horn=kind==='horn';
+  const o=c.createOscillator();o.type=horn?'sawtooth':'triangle';o.frequency.value=fr;const o2=c.createOscillator();o2.type='sine';o2.frequency.value=horn?fr/2:fr*2;const g2=c.createGain();g2.gain.value=horn?.35:.12;o2.connect(g2);
+  const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=horn?4.8:5.2;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(fr*(horn?.004:.006),t+Math.min(.5,dur*.6));lfo.connect(lg);lg.connect(o.frequency);
+  const f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(horn?480:2200,t);f.frequency.linearRampToValueAtTime(horn?1250:3000,t+.25);f.Q.value=horn?1.1:.5;
+  const g=c.createGain(),att=horn?.12:.07,v=vel*(horn?1.25:1.7);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+att);g.gain.setValueAtTime(v*.9,t+Math.max(att+.02,dur*.85));g.gain.exponentialRampToValueAtTime(.0004,t+dur+.35);
+  o.connect(f);g2.connect(f);f.connect(g);g.connect(this.bus);const r=c.createGain();r.gain.value=.5;g.connect(r);r.connect(this.revIn);const e=c.createGain();e.gain.value=.14;g.connect(e);e.connect(this.dlyIn);
+  o.start(t);o2.start(t);lfo.start(t);o.stop(t+dur+.4);o2.stop(t+dur+.4);lfo.stop(t+dur+.4);};}
+// ---------- cello and pizzicato bass ----------
+{const _bs=MUS.bass.bind(MUS);MUS.bass=function(t,m,dur,vel,type){if(type==='pizz'){this.note('pizz',t,m+12,vel*.9,.25,0);return;}if(type!=='cello')return _bs(t,m,dur,vel,type);
+  const c=this.c,fr=MIDI(m),D=dur>=this.spb*7.5?this.spb*15:dur;const o=c.createOscillator();o.type='sawtooth';o.frequency.value=fr;const s=c.createOscillator();s.type='sine';s.frequency.value=fr;
+  const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=540;f.Q.value=.7;const g=c.createGain(),att=Math.min(.2,D*.3);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel*.85,t+att);g.gain.setValueAtTime(vel*.75,t+Math.max(att+.02,D*.85));g.gain.exponentialRampToValueAtTime(.0004,t+D+.45);
+  o.connect(f);const sg=c.createGain();sg.gain.value=.8;s.connect(sg);sg.connect(f);f.connect(g);g.connect(this.bus);const r=c.createGain();r.gain.value=.3;g.connect(r);r.connect(this.revIn);
+  o.start(t);s.start(t);o.stop(t+D+.5);s.stop(t+D+.5);};}
+// ---------- slow, singable tunes (made from each song's own seed, so every place has its own) ----------
+const CALMRH=['x.......x...x...','x...........x...','x.....x.x.......','x...x...x.......','x.......x.x.x...','x...x.x.x.......'];
+function calmMelody(S){const key='calm_'+S.name;if(MUS.mel[key])return MUS.mel[key];const rng=mulberry([...S.name].reduce((a,c)=>a*31+c.charCodeAt(0),11)>>>0);
+  const sc=S.minor?[0,3,5,7,10]:[0,2,4,7,9],base=S.key+(S.leadOct||12),ext=[];for(let o=-1;o<=1;o++)for(const d of sc)ext.push(base+o*12+d);
+  const bp=S.barsPer||1,nb=bp>1?8:4,rA=CALMRH[Math.floor(rng()*CALMRH.length)],rB=CALMRH[Math.floor(rng()*CALMRH.length)];const bars=[];let prev=Math.floor(ext.length/2);
+  for(let b=0;b<nb;b++){const ch=S.prog[Math.floor(b/bp)%S.prog.length],root=((S.key+ch[0])%12+12)%12,pcs=(CHORD[ch[1]]||CHORD.M).map(i=>(root+i)%12);const last=b===nb-1;
+    // a tune in two halves: the second half starts like the first, then ends on the home note
+    const rh=last?'x.......x.......':(b%(nb/2)<nb/4?rA:rB);const bar=[];
+    for(let st=0;st<16;st++){if(rh[st]!=='x')continue;let len=1;while(st+len<16&&rh[st+len]==='.')len++;let idx;
+      if(st%8===0||last){let best=prev,bd=1e9;for(let i=0;i<ext.length;i++){const pc=((ext[i]%12)+12)%12;if(!pcs.includes(pc))continue;const dd=Math.abs(i-prev)+(last&&st>=8&&pc!==root?4:0);if(dd<bd){bd=dd;best=i;}}idx=best;}
+      else idx=clamp(prev+[-1,1,-2,2,-1,1][Math.floor(rng()*6)],0,ext.length-1);prev=idx;bar.push({st,len:Math.min(len,12),m:ext[idx]});}
+    bars.push(bar);}
+  for(let b=nb/2;b<nb/2+Math.min(2,nb/4);b++){const src=bars[b-nb/2];if(src&&b<nb-1)bars[b]=src.map(n=>({...n}));}
+  MUS.mel[key]=bars;return bars;}
+// in the calm songs the tune is played here (the old tune maker skips them)
+{const _sec=MUS.section.bind(MUS);MUS.section=function(bar){const s=_sec(bar);if(this._orchPlay){this._leadOn=/(^| )lead( |$)/.test(s.l);s.l=s.l.replace(/(^| )lead(?= |$)/g,' ');}return s;};}
+{const _pl=MUS.play.bind(MUS);MUS.play=function(st,t){const S=this.S;if(!(S&&S.orch))return _pl(st,t);this._orchPlay=true;this._leadOn=false;try{_pl(st,t);}finally{this._orchPlay=false;}
+  if(this._leadOn&&S.lead){const bars=calmMelody(S),mb=bars[this.bar%bars.length];for(const n of mb)if(n.st===st){if(this.base[S.lead])this.note(S.lead,t,n.m,S.lead==='bell'?.055:S.lead==='piano'?.11:.085,.45,.18);else this.lead(t,n.m,this.spb*n.len,.034,S.lead);}}};}
+// ---------- the songs ----------
+const CALM={
+  // Brick City: a warm, slow theme (strings, a few harp notes, a quiet flute that comes and goes)
+  city:{bpm:66,key:60,minor:0,barsPer:2,prog:[[0,'add9'],[-3,'m7'],[5,'M7'],[7,'s2']],pad:1150,lead:'piano',keys:'piano',arp:'harp',bassType:'cello',vol:.14,
+    bassP:'x...............',keysP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp keys'],[8,'pad bass arp lead'],[8,'pad bass keys'],[8,'pad arp']]},
+  // Sunset Bay: soft harp by the sea
+  beach:{bpm:64,key:65,minor:0,barsPer:2,prog:[[0,'M7'],[5,'M7'],[2,'m7'],[7,'s2']],pad:1100,lead:'harp',keys:'',arp:'harp',bassType:'cello',vol:.14,
+    bassP:'x...............',arpP:'x.......x...x...',form:[[8,'pad arp'],[8,'pad bass arp'],[8,'pad bass arp lead'],[8,'pad bass arp']]},
+  // Frostpeak: slow bells and strings in the snow
+  frost:{bpm:60,key:62,minor:0,barsPer:2,prog:[[0,'add9'],[-3,'m7'],[5,'M7'],[7,'s2']],pad:1100,lead:'bell',keys:'',arp:'harp',bassType:'cello',vol:.15,
+    bassP:'x...............',arpP:'x...............',form:[[8,'pad arp'],[8,'pad bass arp lead'],[8,'pad bass arp'],[8,'pad']]},
+  // Cactus Canyon: a slow guitar and a soft flute
+  canyon:{bpm:64,key:52,minor:1,barsPer:2,prog:[[0,'m'],[-2,'M'],[-4,'M'],[-5,'7']],pad:900,lead:'harp',leadOct:12,keys:'pluck',strum:1,arp:'',bassType:'cello',vol:.16,
+    bassP:'x...............',keysP:'x...............',form:[[8,'pad keys'],[8,'pad bass keys lead'],[8,'pad bass keys'],[8,'pad keys']]},
+  // Star Harbor: starry bells over soft strings
+  space:{bpm:62,key:57,minor:1,barsPer:2,prog:[[0,'m9'],[-4,'M7'],[3,'add9'],[-2,'s2']],pad:1400,lead:'bell',keys:'',arp:'harp',bassType:'cello',vol:.15,
+    bassP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp lead'],[8,'pad bass arp'],[8,'pad']]},
+  // shops and cafes: a little, slow piano tune
+  cafe:{bpm:72,key:65,minor:0,barsPer:1,prog:[[0,'M7'],[-3,'m7'],[2,'m7'],[7,'7']],pad:1000,lead:'piano',keys:'piano',arp:'',bassType:'pizz',vol:.18,
+    bassP:'x...............',keysP:'x.......x.......',form:[[8,'pad keys'],[8,'pad bass keys'],[8,'pad bass keys lead'],[8,'pad keys']]},
+  // the spooky manor: quiet and a little mysterious
+  spooky:{bpm:60,key:57,minor:1,barsPer:2,prog:[[0,'m'],[5,'m'],[-4,'M'],[-5,'7']],pad:800,lead:'bell',keys:'',arp:'pizz',bassType:'cello',vol:.15,
+    bassP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp'],[8,'pad bass arp lead'],[8,'pad']]},
+  // the Sky Kingdom: floating and dreamy
+  sky:{bpm:60,key:64,minor:0,barsPer:2,prog:[[0,'add9'],[5,'M7'],[-3,'m9'],[7,'s2']],pad:1250,lead:'bell',keys:'',arp:'harp',bassType:'cello',vol:.15,
+    bassP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp lead'],[8,'pad bass arp'],[8,'pad']]},
+  // Dino Valley: soft, slow marimba
+  dino:{bpm:70,key:55,minor:1,barsPer:2,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'M7']],pad:900,lead:'marimba',keys:'marimba',arp:'',bassType:'cello',vol:.16,
+    bassP:'x...............',keysP:'x.......x.......',form:[[8,'pad keys'],[8,'pad bass keys'],[8,'pad bass keys lead'],[8,'pad keys']]},
+  // the Hero Castle: a gentle royal theme on a soft horn
+  castle:{bpm:66,key:62,minor:0,barsPer:2,prog:[[0,'M'],[5,'M'],[7,'M'],[0,'add9']],pad:1100,lead:'piano',keys:'piano',arp:'harp',bassType:'cello',vol:.14,
+    bassP:'x...............',keysP:'x...............',arpP:'x.......x.......',form:[[8,'pad keys'],[8,'pad bass keys arp'],[8,'pad bass arp lead'],[8,'pad bass keys']]},
+  // boss fights: a steady, soft pulse on strings and timpani (still calm, just a little more tense)
+  boss:{bpm:92,key:50,minor:1,barsPer:1,prog:[[0,'m'],[-4,'M'],[-2,'M'],[-5,'M']],pad:1200,lead:'piano',keys:'',arp:'pizz',bassType:'cello',vol:.12,
+    kick:'x...............',bassP:'x.......x.......',arpP:'x...x...x...x...',form:[[4,'pad bass kick'],[8,'pad bass kick arp'],[8,'pad bass kick arp lead']]}};
+for(const k in CALM){const o=CALM[k];SONGS[k]=Object.assign({orch:1,name:k,leadOct:12,kick:'',clap:'',hat:'',oh:'',shk:'',rim:'',keysP:'',arpP:'',snare:'clap'},o);}
+// the Moon keeps its quiet space music, now with the soft drums too
+if(SONGS.moon){SONGS.moon.orch=1;SONGS.moon.vol=.3;}
+
+MV('Calm new music','موسيقى هادئة جديدة');MV('Soft strings, piano and harp in every place, and a gentle pulse in boss fights','أوتار ناعمة وبيانو وقيثارة في كل مكان، ونبض هادئ في معارك الزعماء');
 // ================= start =================
 boot();
 </script>
