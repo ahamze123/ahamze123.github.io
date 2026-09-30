@@ -21,6 +21,11 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
 - **Hero challenges**: 13 golden bricks sit on tall towers, inside magic huts, above wind fans, deep under the sea and on far islands. Each one needs a hero with the right move.
 - Some treasures are behind **hero gates** (ice, boulders, thorns and more). Only a hero with the right power can open them.
 
+## Golden Gates
+Golden bricks open giant golden gates to new islands. A golden force field covers each island until its gate opens, and each island hides a big prize.
+- **Titan Island** (20 golden bricks): Titan is a gentle giant made of living rock, with a tiny bird living in a nest on his head. Walk up and wake him, and he becomes a hero that boys and girls can both play. He is slow and heavy: the ground shakes when he runs, his punch sends baddies flying, and his quake throws everything nearby into the air. Before his gate opens you can spot him around the islands lifting a car, carrying two cows and lifting a boulder. On his island, **Titan's Workout** (smash 8 training boulders as Titan) wins a bird nest hat.
+- **Dragon Peak** (35 golden bricks): a volcano island where **Blaze the Dragon** sleeps on her nest. Wake her and she becomes a ride: hold jump to flap up, let go to glide down, hold power to breathe fire and tap attack to roar. Warm her three eggs with her fire and a baby dragon hatches to be your pet.
+
 ## The Hero Castle
 Hero HQ in Brick City is now a castle. Walk through the big wooden door to find nine zones:
 - **Throne Room**: King Brickley and the **Quest Board**. Tap a quest and a trail leads you there.
@@ -74,6 +79,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 ## Playing together online
 - Up to 4 players. Each tablet opens the game and taps **Play online** (the same Wi-Fi works best).
 - One player taps **Host a game**; the others tap **Join** next to the host's name.
+- The host sees a card saying how many heroes are playing and how friends join. If the lobby says it is connecting, wait a few seconds: the host's name appears with a **Join** button.
 - You can also host or join from the in-game menu under **Online**.
 
 ## Language

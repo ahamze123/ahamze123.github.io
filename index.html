@@ -331,6 +331,10 @@ body.ar .small,body.ar .sub{line-height:1.5}
 @keyframes mpop{from{transform:scale(.9)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.modal:not([hidden])>.mbox,#combo.pop{animation:none}}
 .ftxt.big{font-size:30px;color:#ffe066}
+#gbv small.ggn{font-size:.62em;opacity:.8;margin-left:1px;font-weight:800}
+#gmhud{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top));transform:translateX(-50%);z-index:12;background:rgba(26,22,66,.88);color:#ffe27a;font:800 17px/1 system-ui,sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 3px 0 rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}
+#gmhud.low{color:#ff8a9a;animation:gmpulse .6s infinite alternate}@keyframes gmpulse{to{transform:translateX(-50%) scale(1.06)}}
+#hostcard{order:3;max-width:290px;padding:8px 12px;cursor:pointer}#hostcard .hc b{display:block;font-size:14px}#hostcard .hc small{display:block;font-size:12.5px;line-height:1.3;margin-top:3px;opacity:.92}#hostcard .hc .x{opacity:.55;font-size:11px}
 </style>
 <canvas id="gl" tabindex="0"></canvas>
 <div id="tags"></div>
@@ -1107,7 +1111,7 @@ function applyLang(){const ar=LANG==='ar';document.body.classList.toggle('ar',ar
     :`<b>Move</b><span><kbd>W A S D</kbd> · camera <kbd>←</kbd><kbd>→</kbd> or drag mouse</span><b>Actions</b><span><kbd>Space</kbd> jump · <kbd>J</kbd>/click attack · <kbd>K</kbd> power · <kbd>E</kbd> interact · <kbd>Shift</kbd> fly down · <kbd>L</kbd> land</span><b>More</b><span><kbd>Tab</kbd> swap hero · <kbd>M</kbd> map · <kbd>T</kbd> emotes · <kbd>B</kbd> build · <kbd>C</kbd> photo · <kbd>Esc</kbd> menu</span>`;
   const lb=document.getElementById('blang');if(lb){lb.textContent='🌐 '+(ar?'English':'العربية');lb.setAttribute('aria-label',ar?'Switch to English':'التبديل إلى العربية');}
   const q=id=>{const e=document.getElementById(id);return e&&!e.hidden;};
-  try{if(typeof refreshTitle==='function')refreshTitle();if(typeof touchLabels==='function')touchLabels();if(typeof UI!=='undefined'&&UI.lobbyStatus){UI.lastSig=null;UI.lobbyStatus();}
+  try{if(typeof refreshTitle==='function')refreshTitle();if(typeof touchLabels==='function')touchLabels();if(typeof UI!=='undefined'&&UI.lobbyStatus){UI.lastSig=null;UI.lastOn=undefined;UI.lobbyStatus();}
     if(q('shop')&&typeof renderShop==='function')renderShop();if(q('garage')&&typeof renderGarage==='function')renderGarage();if(q('bigmap')&&typeof drawBigMap==='function')drawBigMap();
     if(typeof DLG!=='undefined'&&DLG&&typeof dlgText==='function'){DLG.n=-1;DLG.shown=1e9;dlgText();}}catch(e){console.error(e);}}
 'use strict';
@@ -2764,7 +2768,7 @@ function myCol(){return NET.role==='solo'?(G.hero==='boy'?'#e8343f':'#8a4ff0'):s
 async function netInit(){let room=null;try{if(window.__mockRoom)room=window.__mockRoom;else if(window.__peerRoom)room=window.__peerRoom;else if(window.claude&&window.claude.use)room=await window.claude.use('room');}catch(e){room=null;}
   if(!room){NET.avail=false;UI.lobbyStatus();return;}NET.room=room;NET.avail=true;
   try{room.onPeers(ch=>{NET.lobby=ch.peers.filter(p=>!p.sameTab&&p.kind==='viewer'&&p.presence&&p.presence.bb===3);UI.lobbyStatus();},()=>{NET.avail=false;UI.lobbyStatus();});
-    room.onConnection(c=>{NET.lobbyConn=c;UI.lastSig=null;UI.lobbyStatus();});lobbyPresence('menu');}catch(e){NET.avail=false;}UI.lobbyStatus();}
+    room.onConnection(c=>{NET.lobbyConn=c;if(c)NET.lastOn=performance.now();UI.lobbyStatus();});lobbyPresence('menu');}catch(e){NET.avail=false;}UI.lobbyStatus();}
 function lobbyPresence(st){if(!NET.room)return;const pr=PROF[G.hero]||{name:'Hero'};const np=playerCount();if(st==='host'&&np>=MAXP)st='full';
   try{NET.room.presence({bb:3,st,code:NET.code||null,n:String(pr.name||'Hero').slice(0,14),h:G.hero,np}).catch(()=>{});}catch(e){}}
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<5;i++)s+=a[Math.floor(R()*a.length)];return s;}
@@ -2794,7 +2798,7 @@ function netSend(dt){if(!NET.game||NET.role==='solo')return;NET.sendT-=dt;if(NET
   if(NET.role==='host'){const fs=netFriends();
     if(WORLD.pitch&&SOC.b&&(SOC.near||friendsNear(WORLD.pitch.x,WORLD.pitch.z,70))){const b=SOC.b;o.bl=[f2(b.x),f2(b.y),f2(b.z)];o.sc=SOC.score;}
     o.pl=netSlots();
-    o.q=[QS.act,QS.step,QS.cnt,QS.bits,+QS.t.toFixed(1),QS.idx|0,QS.carry?1:0,QS.spawned?1:0];o.w={i:WS.intro,a:WS.act,s:WS.step,c:WS.cnt,d:WS.done,pu:WS.pups,be:WS.beac,co:WS.cores,bl:WS.bld,bp:Object.entries(WS.bp).map(([k,v2])=>[+k,f2(v2)]),so:[f2(WS.sock[0]),f2(WS.sock[1])],ha:f2(WS.hand),cr:WS.cry?[f2(WS.cry.x),f2(WS.cry.y),f2(WS.cry.z),MORDER.indexOf(WS.cry.m)]:0,g:WS.gate,wn:WS.won,dn:Math.round(DN.t*1000)/1000,wx:DN.wx,hm:WS.home};
+    o.q=[QS.act,QS.step,QS.cnt,QS.bits,+QS.t.toFixed(1),QS.idx|0,QS.carry?1:0,QS.spawned?1:0];o.w={i:WS.intro,a:WS.act,s:WS.step,c:WS.cnt,d:WS.done,pu:WS.pups,be:WS.beac,co:WS.cores,bl:WS.bld,bp:Object.entries(WS.bp).map(([k,v2])=>[+k,f2(v2)]),so:[f2(WS.sock[0]),f2(WS.sock[1])],ha:f2(WS.hand),cr:WS.cry?[f2(WS.cry.x),f2(WS.cry.y),f2(WS.cry.z),MORDER.indexOf(WS.cry.m)]:0,g:WS.gate,wn:WS.won,dn:Math.round(DN.t*1000)/1000,wx:DN.wx,hm:WS.home,gg:G.ggo?[...G.ggo]:[]};
     // the baddies closest to any guest (bosses and the getaway van always)
     const dmin=e=>{let m=1e9;for(const r of fs)m=Math.min(m,d2(e.x,e.z,r.x,r.z));return m;};
     const list=EN.filter(e=>!e.dead).map(e=>({e,d:e.boss||e.type==='van'?0:dmin(e)})).sort((a,b)=>a.d-b.d).slice(0,26);
@@ -2866,7 +2870,7 @@ function applyEvent(type,a,rp){const host=NET.role==='host';const fromHost=!!(rp
 function applyQuest(q){if(!Array.isArray(q))return;const a=typeof q[0]==='string'&&(q[0]===''||qDef(q[0]))?q[0]:'';QS.act=a;QS.step=num(q[1]);QS.cnt=num(q[2]);QS.bits=num(q[3]);QS.t=num(q[4]);QS.idx=num(q[5]);QS.carry=!!q[6];QS.spawned=!!q[7];}
 function applyWorld(w){const actChanged=w.a!==WS.act;WS.intro=Math.max(WS.intro,num(w.i));WS.act=typeof w.a==='string'&&(MDEF[w.a]||w.a==='')?w.a:'';WS.step=num(w.s);WS.cnt=num(w.c);WS.done|=num(w.d);
   WS.pups=actChanged?num(w.pu):(WS.pups|num(w.pu));WS.beac=actChanged?num(w.be):(WS.beac|num(w.be));WS.cores=actChanged?num(w.co):(WS.cores|num(w.co));WS.bld|=num(w.bl);WS.bp={};if(Array.isArray(w.bp))for(const q of w.bp)if(Array.isArray(q))WS.bp[num(q[0])]=num(q[1]);
-  if(Array.isArray(w.so)){WS.sock[0]=num(w.so[0]);WS.sock[1]=num(w.so[1]);}WS.hand=num(w.ha);WS.cry=Array.isArray(w.cr)?{x:num(w.cr[0]),y:num(w.cr[1]),z:num(w.cr[2]),m:MORDER[num(w.cr[3])]||'bank'}:null;WS.gate=num(w.g);WS.won=num(w.wn);if(typeof w.dn==='number')DN.t=clamp(w.dn,0,.999);if(w.wx===0||w.wx===1||w.wx===2)DN.wx=w.wx;WS.home=num(w.hm);}
+  if(Array.isArray(w.gg)&&typeof GGBY!=='undefined')for(const id of w.gg)if(GGBY[id]&&!G.ggo.has(id)){G.ggo.add(id);GG.fade[id]=0;}if(Array.isArray(w.so)){WS.sock[0]=num(w.so[0]);WS.sock[1]=num(w.so[1]);}WS.hand=num(w.ha);WS.cry=Array.isArray(w.cr)?{x:num(w.cr[0]),y:num(w.cr[1]),z:num(w.cr[2]),m:MORDER[num(w.cr[3])]||'bank'}:null;WS.gate=num(w.g);WS.won=num(w.wn);if(typeof w.dn==='number')DN.t=clamp(w.dn,0,.999);if(w.wx===0||w.wx===1||w.wx===2)DN.wx=w.wx;WS.home=num(w.hm);}
 function applyEnemies(list,t){const seen=new Set();for(const q of list){if(!Array.isArray(q))continue;const id=num(q[0]);const tp=ETYPES[num(q[1],-1)];if(!tp)continue;seen.add(id);let e=EN.find(x=>x.id===id);
     if(!e){const T0=ETYPE[tp];e={id,type:tp,mirror:true,samples:[],x:num(q[2]),y:num(q[3]),z:num(q[4]),face:num(q[5]),size:T0.size,rad:T0.rad,hgt:T0.hgt,col:T0.col,fx:T0.fx,boss:!!T0.boss,hp:num(q[6]),maxHp:T0.hp,hitT:0,sq:1,walk:0};EN.push(e);}
     e.samples.push({t,x:num(q[2]),y:num(q[3]),z:num(q[4]),f:num(q[5])});if(e.samples.length>12)e.samples.shift();e.hp=num(q[6]);if(e.hpLocal!==undefined&&e.hp<=e.hpLocal+.01)e.hpLocal=undefined;const fl=num(q[7]);if(fl&1)e.hitT=Math.max(e.hitT,.1);e.angry=!!(fl&2);e.atk=fl&4?.3:0;e.shield=!!(fl&8);if(fl&16)e.frozen=Math.max(e.frozen||0,.3);if(fl&32)e.webbed=Math.max(e.webbed||0,.3);e.stk=fl&128?'stun':fl&256?'vine':fl&4096?'sleep':'';if(fl&512)e.frog=Math.max(e.frog||0,.3);if(fl&1024)e.lev=Math.max(e.lev||0,.3);if(fl&2048)e.fear=Math.max(e.fear||0,.3);if(fl&64)e.burn=Math.max(e.burn||0,.3);if(q[8])e.maxHp=num(q[8],e.maxHp);if(typeof q[9]==='string')e.col=q[9];}
@@ -3081,7 +3085,7 @@ function updateHUD(dt){if(G.mode==='title'||G.mode==='boot')return;const pr=prof
   setH(me.querySelector('.av'),'mav',esc(pr.name.slice(0,1).toUpperCase()));setH(me.querySelector('.n'),'mn',esc(pr.name));setH(me.querySelector('.lv'),'ml',tr('Lv')+' '+pr.level);setH(me.querySelector('.hearts'),'mh',heartsHTML(p.hp,maxHp(pr)));me.querySelector('.xpf').style.width=(pr.xp/xpNeed(pr.level)*100)+'%';
   const rp=NET.remote;friendCards();
   HUD.shownCoins+=(G.coins-HUD.shownCoins)*Math.min(1,dt*8);if(Math.abs(G.coins-HUD.shownCoins)<1)HUD.shownCoins=G.coins;$('coinv').textContent=fmt(HUD.shownCoins);HUD.coinPop=Math.max(0,HUD.coinPop-dt);$('coins').classList.toggle('pop',HUD.coinPop>0);
-  $('gbv').textContent=G.gb.size;setH($('crys'),'cr',Object.keys(CRYC).map(k=>`<i class="cry ${WS.done&MBIT[k]?'got':''}" style="--c:${CRYC[k]}"></i>`).join(''));
+  {const el=$('gbv'),h=typeof ggHudHTML==='function'?ggHudHTML():String(G.gb.size);if(el._h!==h){el._h=h;el.innerHTML=h;}}setH($('crys'),'cr',Object.keys(CRYC).map(k=>`<i class="cry ${WS.done&MBIT[k]?'got':''}" style="--c:${CRYC[k]}"></i>`).join(''));
   $('bswap').hidden=NET.role!=='solo';
   const ob=(typeof navObjective==='function'&&navObjective())||G.obj,oe=$('obj');oe.hidden=!ob;if(ob){const d=ob.t?Math.round(d2(ob.t.x,ob.t.z,p.x,p.z)):0;setH(oe,'ob',`${esc(tr(ob.text))}${ob.t?`<small>${esc(trf('{0} m away',d))}</small>`:''}`);oe.style.setProperty('--c',ob.col);}
   const boss=EN.find(e=>e.boss&&!e.dead&&d2(e.x,e.z,p.x,p.z)<70)||EN.find(e=>e.type==='van'&&!e.dead);$('boss').hidden=!boss;if(boss){setH($('bossn'),'bn',esc(tr(ETYPE[boss.type].name||'Boss')));$('bossf').style.width=Math.max(0,(boss.hpLocal??boss.hp)/(boss.maxHp||ETYPE[boss.type].hp)*100)+'%';}
@@ -3185,7 +3189,7 @@ function renderShop(){const pr=prof(),S=$('shop').querySelector('.panel');const 
   else if(shopTab==='gadgets')items=GADGETS.map(g=>{const own=pr.gad[g.id];return `<button class="it ${own?'own':''}" data-k="g" data-id="${g.id}"><span class="ico">${g.i}</span><b>${tr(g.n)}</b><small>${tr(g.d)}</small><span class="pr">${own?tr('Owned ✓'):`<i class="cn"></i>${fmt(g.p)}`}</span></button>`;}).join('');
   else if(shopTab==='home')items=FURN.filter(f=>f.p>0).map(f=>{const own=G.furn.has(f.id);return `<button class="it ${own?'own':''}" data-k="furn" data-id="${f.id}"><span class="ico">${f.i}</span><b>${tr(f.n)}</b><small>${tr('For build mode')}</small><span class="pr">${own?tr('Owned ✓'):`<i class="cn"></i>${fmt(f.p)}`}</span></button>`;}).join('');
   else if(shopTab==='pets')items=PETS.filter(q=>q.p>=0||pr.pets.includes(q.id)).map(q=>{const own=pr.pets.includes(q.id);const on=pr.pet===q.id;return `<button class="it ${own?'own':''} ${on?'wear':''}" data-k="pet" data-id="${q.id}"><span class="ico">${q.i}</span><b>${tr(q.n)}</b><small>${tr(q.d)}</small><span class="pr">${on?tr('With you ✓'):own?tr('Take along'):`<i class="cn"></i>${fmt(q.p)}`}</span></button>`;}).join('');
-  else if(shopTab==='costume')items=COSTUMES.map(c=>{const ok=G.gb.size>=c.need;const wear=pr.looks.costume===c.id;return `<button class="it ${ok?'own':'lock'} ${wear?'wear':''}" data-k="costume" data-id="${c.id}"><span class="ico">${({none:'🦸',ninja:'🥷',astro:'👨‍🚀',knight:'🛡️',robot:'🤖',dino:'🦖',pirate:'🏴‍☠️',gold:'🌟'})[c.id]}</span><b>${tr(c.n)}</b><span class="pr">${wear?tr('Wearing'):ok?tr('Wear it'):`<i class="gbi" style="width:14px;height:11px;margin:0"></i>${trf('{0} bricks',c.need)}`}</span></button>`;}).join('');
+  else if(shopTab==='costume')items=COSTUMES.map(c=>{const ok=G.gb.size>=c.need;const wear=pr.looks.costume===c.id;return `<button class="it ${ok?'own':'lock'} ${wear?'wear':''}" data-k="costume" data-id="${c.id}"><span class="ico">${(({none:'🦸',ninja:'🥷',astro:'👨‍🚀',knight:'🛡️',robot:'🤖',dino:'🦖',pirate:'🏴‍☠️',gold:'🌟'})[c.id]||(typeof COS_ICON!=='undefined'&&COS_ICON[c.id])||'✨')}</span><b>${tr(c.n)}</b><span class="pr">${wear?tr('Wearing'):ok?tr('Wear it'):`<i class="gbi" style="width:14px;height:11px;margin:0"></i>${trf('{0} bricks',c.need)}`}</span></button>`;}).join('');
   else{const T=LOOKTABS.find(t=>t.id===shopTab);items=T.list.filter(o=>!(o.p<0)||(pr.owned[T.id]||[]).includes(o.id)).map(o=>{const own=pr.owned[T.id].includes(o.id)||o.id==='none';const wear=pr.looks[T.id]===o.id;const price=T.price(o.id);
     const vis=T.id==='hat'?`<span class="ico">${HAT_ICON[o.id]||'✨'}</span>`:T.id==='mask'&&o.id!=='none'?`<span class="ico">${o.id==='shades'?'🕶️':o.id==='visor'?'🥽':'🦸'}</span>`:o.id==='none'?'<span class="ico">🚫</span>':`<span class="sw" style="--s:${o.id==='rainbow'?'linear-gradient(90deg,#ff5fa8,#ffd23f,#46e6b0,#2f6bff)':o.c}"></span>`;
     return `<button class="it ${own?'own':''} ${wear?'wear':''}" data-k="${T.id}" data-id="${o.id}">${vis}<b>${esc(tr(o.n||cap(o.id)))}</b><span class="pr">${wear?tr('Wearing'):own?tr('Wear it'):`<i class="cn"></i>${fmt(price)}`}</span></button>`;}).join('');}
@@ -3239,8 +3243,8 @@ function renderPause(){const B=$('pbox');const rp=NET.remote;
     $('pm_back').onclick=()=>{PTAB='main';renderPause();};$('pg_race').onclick=()=>{closePause();const r=WORLD.races[0];teleport(r.start.x+Math.cos(r.start.h)*6,r.start.z-Math.sin(r.start.h)*6);};
     $('pg_soc').onclick=()=>{if(!WORLD.pitch)return;closePause();const P=WORLD.pitch;teleport(P.x-4,P.z-P.hz+2);ME.face=Math.PI/2;CAM.yaw=ME.face+Math.PI;};
     if($('pg_hs'))$('pg_hs').onclick=()=>{closePause();hsStart();};if($('pg_hsq'))$('pg_hsq').onclick=()=>{netEvent('hsq');hsEnd([tr('Hide and seek stopped'),'']);closePause();};}
-  else if(PTAB==='online'){let body='';const SA=!!(NET.room&&NET.room.standalone);if(!NET.avail||(SA&&!NET.room.connected()))body=`<p class="small">${SA?tr('Connecting to the online lobby… Online play needs the internet.'):tr('Online play works when this game is opened inside Claude and you are signed in on both devices. It isn\'t available here.')}</p>`;
-    else if(NET.role==='solo'){const hosts=NET.lobby.filter(p=>p.presence&&p.presence.st==='host'&&typeof p.presence.code==='string');
+  else if(PTAB==='online'){let body='';const SA=!!(NET.room&&NET.room.standalone);if(!lobbyOnline())body=`<p class="small">${SA?tr('Connecting to the online lobby… Online play needs the internet.'):tr('Online play works when this game is opened inside Claude and you are signed in on both devices. It isn\'t available here.')}</p>`;
+    else if(NET.role==='solo'){const hosts=UI.hostSeen.size?[...UI.hostSeen.values()].map(v=>v.p):NET.lobby.filter(p=>p.presence&&p.presence.st==='host'&&typeof p.presence.code==='string');
       body=(hosts.length?hosts.map(p=>`<div class="game"><span>${esc(String(p.presence.n||'Friend').slice(0,14))} ${tr('is hosting')} <span class="pill2" dir="ltr">${clamp(num(p.presence.np,1),1,MAXP)}/${MAXP}</span></span><button class="big sm mint pm_join" data-code="${esc(p.presence.code)}" data-h="${p.presence.h==='girl'?'girl':'boy'}">${tr('Join')}</button></div>`).join(''):'')+`<p class="small">${tr('Host a game and your friend can join from their own device: they open this same game, tap Play online, then tap your name.')}</p><button class="big mint" id="pm_host">${tr('Host an online game')}</button>`;}
     else body=`<p class="small">${tr(NET.role==='host'?'You are hosting.':'You joined a game.')} ${netFriends().length?trf('Playing with {0}.','<b>'+netFriends().map(r=>esc(r.name)).join(', ')+'</b>'):tr('Waiting for your friend to join…')}</p><div class="plist">${playerRows()}</div>${NET.role==='host'&&playerCount()<MAXP?`<p class="small">${trf('Up to {0} heroes can play together. More friends can join now!',MAXP)}</p>`:''}<p class="small">${tr('Game code:')} <b style="font-size:18px;color:var(--gold)">${esc(NET.code)}</b></p><button class="mb warn" id="pm_leave">${tr('Leave online game')}</button>`;
     B.innerHTML=`<h2>${tr('Online')}</h2>${body}<button class="big sm" id="pm_back">${tr('Back')}</button>`;$('pm_back').onclick=()=>{PTAB='main';renderPause();};if($('pm_host'))$('pm_host').onclick=async()=>{if(await netHost()){toast('Online game open! Your friend can join now.');renderPause();}};if($('pm_leave'))$('pm_leave').onclick=async()=>{await netLeave();becomeSolo();renderPause();};B.querySelectorAll('.pm_join').forEach(b=>b.onclick=()=>joinFromMenu(b.dataset.code,b.dataset.h));}
@@ -3280,11 +3284,20 @@ function syncTitle(){if(typeof titlePicker==='function')titlePicker();}
 document.querySelectorAll('.hcard').forEach(c=>c.addEventListener('click',e=>{if(e.target.tagName!=='INPUT'){titleHero=c.dataset.g;syncTitle();SFX.click();}}));
 $('bplay').onclick=()=>startGame('solo');$('bonline').onclick=()=>{AU.init();$('tmain').hidden=true;$('tonline').hidden=false;UI.lobbyStatus();};$('bback').onclick=()=>{$('tmain').hidden=false;$('tonline').hidden=true;};
 $('bhost').onclick=()=>startGame('host');
-const UI={lobbyStatus(){const st=$('onstat');if(!st)return;const SA=!!(NET.room&&NET.room.standalone);
-  if(!NET.avail||(SA&&!NET.room.connected())){UI.lastSig=null;st.textContent=SA?tr('Connecting to the online lobby… Online play needs the internet. Both tablets on the same Wi-Fi works best.'):tr('Online play needs both players signed in to Claude (the same account on both devices is fine). It does not work from a public link or when signed out, but you can still play solo.');$('bhost').disabled=true;$('games').innerHTML='';return;}
-  $('bhost').disabled=false;st.textContent=SA?tr('One player taps Host a game. Up to 3 friends open Block Buddies on their tablets, tap Play online and join.'):tr('Pick your hero on the first screen, then host a game. Up to 3 friends open this same game on their devices, tap Play online and join you.');
-  const hosts=NET.lobby.filter(p=>p.presence.st==='host'&&typeof p.presence.code==='string');const sig=hosts.map(p=>p.peer+p.presence.code+p.presence.n+p.presence.h+p.presence.np).join('|');if(sig===UI.lastSig)return;UI.lastSig=sig;if(G.mode==='menu'&&PTAB==='online'&&!$('pause').hidden&&NET.role==='solo')renderPause();$('games').innerHTML=hosts.length?hosts.map(p=>`<div class="game"><span>${esc(String(p.presence.n||'Friend').slice(0,14))} <span class="pill2" dir="ltr">👥 ${clamp(num(p.presence.np,1),1,MAXP)}/${MAXP}</span></span><button class="big sm mint" data-code="${esc(p.presence.code)}" data-h="${p.presence.h==='girl'?'girl':'boy'}">${tr('Join')}</button></div>`).join(''):`<div class="small">${tr('No one is hosting yet. When your friend hosts, their game shows up here.')}</div>`;
+// The lobby can blink off for a moment while the connection re-opens. The screen only changes after it has really been
+// gone for a few seconds, and hosts stay in the list for a few seconds after we last heard from them, so buttons never flicker.
+function lobbyOnline(){if(!NET.avail)return false;const SA=!!(NET.room&&NET.room.standalone);if(!SA)return true;const now=performance.now();if(NET.room.connected()){NET.lastOn=now;return true;}return !!NET.lastOn&&now-NET.lastOn<9000;}
+const UI={hostSeen:new Map(),lobbyStatus(){const st=$('onstat');if(!st)return;const SA=!!(NET.room&&NET.room.standalone);const on=lobbyOnline();
+  if(!on){if(UI.lastOn!==false){UI.lastOn=false;UI.lastSig=null;st.textContent=!NET.avail&&!SA?tr('Online play needs both players signed in to Claude (the same account on both devices is fine). It does not work from a public link or when signed out, but you can still play solo.'):tr('Connecting to the online lobby… Online play needs the internet. Both tablets on the same Wi-Fi works best.');$('bhost').disabled=true;$('games').innerHTML='';}return;}
+  if(UI.lastOn!==true){UI.lastOn=true;$('bhost').disabled=false;st.textContent=SA?tr('One player taps Host a game. Up to 3 friends open Block Buddies on their tablets, tap Play online and join.'):tr('Pick your hero on the first screen, then host a game. Up to 3 friends open this same game on their devices, tap Play online and join you.');}
+  const now=performance.now();for(const p of NET.lobby)if(p.presence&&p.presence.st==='host'&&typeof p.presence.code==='string')UI.hostSeen.set(p.peer,{p,t:now});for(const [k,v] of UI.hostSeen)if(now-v.t>7000)UI.hostSeen.delete(k);
+  const hosts=[...UI.hostSeen.values()].map(v=>v.p);const sig=hosts.map(p=>p.peer+p.presence.code+p.presence.n+p.presence.h).join('|');
+  // the player count updates in place, without rebuilding the buttons
+  for(const p of hosts){const el=document.querySelector(`#games .game[data-peer="${CSS&&CSS.escape?CSS.escape(p.peer):p.peer}"] .pill2`);if(el)el.textContent='👥 '+clamp(num(p.presence.np,1),1,MAXP)+'/'+MAXP;}
+  if(sig===UI.lastSig)return;UI.lastSig=sig;if(G.mode==='menu'&&PTAB==='online'&&!$('pause').hidden&&NET.role==='solo')renderPause();$('games').innerHTML=hosts.length?hosts.map(p=>`<div class="game" data-peer="${esc(p.peer)}"><span>${esc(String(p.presence.n||'Friend').slice(0,14))} <span class="pill2" dir="ltr">👥 ${clamp(num(p.presence.np,1),1,MAXP)}/${MAXP}</span></span><button class="big sm mint" data-code="${esc(p.presence.code)}" data-h="${p.presence.h==='girl'?'girl':'boy'}">${tr('Join')}</button></div>`).join(''):`<div class="small">${tr('No one is hosting yet. When your friend hosts, their game shows up here.')}</div>`;
   $('games').querySelectorAll('button').forEach(b=>b.onclick=()=>startGame('guest',b.dataset.code,b.dataset.h));}};
+// check again every second while the online screen is showing
+setInterval(()=>{try{if(!$('tonline').hidden||(G.mode==='menu'&&PTAB==='online'&&!$('pause').hidden))UI.lobbyStatus();}catch(e){}},1000);
 function enterGuestWorld(){G.myQS={a:QS.act,s:QS.step};QS.act='';QS.step=0;EN.length=0;G.myBST=bstSave();G.myWS={intro:WS.intro,done:WS.done,bld:WS.bld,won:WS.won,home:WS.home};bstClearAll();Object.assign(WS,{intro:0,act:'',step:0,cnt:0,done:0,pups:0,beac:0,fac:0,cores:0,bp:{},sock:[0,0],hand:0,won:0,cry:null,gate:0,home:0});}
 // join a friend's game from the pause menu without going back to the title screen
 async function joinFromMenu(code,hostHero){if(NET.role!=='solo')return;if(ME.veh)exitVeh(ME);if(ME.carry)dropCarry(ME);if(JOB.id)quitJob();if(G.race)G.race=null;
@@ -5147,6 +5160,8 @@ const CHARS=[
 const CHARBY={};for(const c of CHARS)CHARBY[c.id]=c;
 const PERKS={strong:{ic:'💪',n:'Strong: hits 20% harder'},tough:{ic:'🛡️',n:'Tough: 2 extra hearts'},quick:{ic:'👟',n:'Quick: runs faster'},jumpy:{ic:'🦘',n:'Jumpy: jumps higher'}};
 if(!HAIRS.some(h=>h.id==='dark'))HAIRS.push({id:'dark',c:'#3b2a20'});
+// a few legendary heroes (like Titan) can be played by boys and girls
+const gOK=(c,g)=>!!c&&(c.g===g||c.g==='both');
 const charOf=pr=>CHARBY[pr&&pr.char]||(pr&&pr.hero==='girl'?CHARBY.mia:CHARBY.leo);
 const charOfLooks=(L,hero)=>CHARBY[L&&L.ch]||(hero==='girl'?CHARBY.mia:CHARBY.leo);
 function perkOf(pr){return charOf(pr).perk;}
@@ -5246,8 +5261,8 @@ function isHeroName(v){return CHARS.some(q=>q.n===v||AR[q.n]===v);}
 function titlePicker(){const box=$('chars');if(!box)return;const g=titleHero==='girl'?'girl':'boy';const pr=PROF[g];ensureChar(pr);
   document.querySelectorAll('.gtab').forEach(b=>b.classList.toggle('on',b.dataset.g===g));
   // only the heroes you have unlocked are shown here (the rest wait in the game's hero roster)
-  const locked=CHARS.filter(c=>c.g===g&&!heroOK(c.id)).length;
-  box.innerHTML=CHARS.filter(c=>c.g===g&&heroOK(c.id)).map(c=>{const ok=heroOK(c.id);return `<button class="chc ${pr.char===c.id?'on':''} ${ok?'':'lock'}" data-c="${c.id}" style="--s:${ok?c.bg:'#2a2550'}" aria-label="${esc(tr(c.n))}"><canvas width="120" height="120"></canvas><b>${ok?esc(tr(c.n)):'???'}</b>${ok?`<span class="chp">${PERKS[c.perk].ic}</span><span class="chs">${SHOTDEF[c.a].ic}${SHOTDEF[c.b].ic}</span>`:'<span class="chp">🔒</span><span class="chs">❔</span>'}</button>`;}).join('')+(locked?`<div class="chmore">🔒 ${esc(trf('{0} more heroes to unlock in the game!',locked))}</div>`:'');
+  const locked=CHARS.filter(c=>gOK(c,g)&&!heroOK(c.id)).length;
+  box.innerHTML=CHARS.filter(c=>gOK(c,g)&&heroOK(c.id)).map(c=>{const ok=heroOK(c.id);return `<button class="chc ${pr.char===c.id?'on':''} ${ok?'':'lock'}" data-c="${c.id}" style="--s:${ok?c.bg:'#2a2550'}" aria-label="${esc(tr(c.n))}"><canvas width="120" height="120"></canvas><b>${ok?esc(tr(c.n)):'???'}</b>${ok?`<span class="chp">${PERKS[c.perk].ic}</span><span class="chs">${SHOTDEF[c.a].ic}${SHOTDEF[c.b].ic}</span>`:'<span class="chp">🔒</span><span class="chs">❔</span>'}</button>`;}).join('')+(locked?`<div class="chmore">🔒 ${esc(trf('{0} more heroes to unlock in the game!',locked))}</div>`:'');
   box.querySelectorAll('.chc').forEach(b=>{const C0=CHARBY[b.dataset.c];drawPortrait(b.querySelector('canvas'),C0,!heroOK(C0.id));b.onclick=()=>{const c=CHARBY[b.dataset.c];const inp=$(g==='boy'?'n0':'n1');
     if(!heroOK(c.id)){const info=$('chinfo');if(info)info.innerHTML=`🔒 <b>${esc(tr(c.n))}</b> · ${SHOTDEF[c.a].ic}${SHOTDEF[c.b].ic}<br>${esc(heroHint(c.id))}`;SFX.nope&&SFX.nope();return;}
     // a hero's own name follows the pick; a name the player typed stays
@@ -6222,7 +6237,7 @@ function heroQuests(){const W=WORLD;
   rewardInfo=function(r){if(r&&r.t==='hero'){const C=CHARBY[r.id];return {ic:'🦸',k:'New hero!',n:C?C.n:r.id,d:'Play as them from the 🦸 Heroes button'};}return _ri(r);};}
 rqNext=function(){const el=$('rcard');const c=RQ.shift();if(!c||!el){rqBusy=false;return;}rqBusy=true;clearTimeout(rqNext.t);
   const done=()=>{el.onclick=null;clearTimeout(rqNext.t);el.classList.remove('show');setTimeout(()=>{el.hidden=true;rqNext();},260);};
-  if(c.hero){const C=CHARBY[c.hero];const can=C.g===G.hero||NET.role==='solo';
+  if(c.hero){const C=CHARBY[c.hero];const can=gOK(C,G.hero)||NET.role==='solo';
     el.innerHTML=`<div class="rc-in hc"><div class="rc-k">${esc(tr('New hero unlocked!'))}</div><canvas class="rc-hp" width="200" height="200" style="background:${C.bg}"></canvas><div class="rc-n">${esc(tr(C.n))}</div><div class="rc-d">${PERKS[C.perk].ic} ${esc(tr(PERKS[C.perk].n))}<br>${SHOTDEF[C.a].ic} ${esc(tr(SHOTDEF[C.a].n))} · ${SHOTDEF[C.b].ic} ${esc(tr(SHOTDEF[C.b].n))}</div><div class="rc-bt">${can?`<button class="big sm" id="rc_play">${esc(trf('Play as {0}!',tr(C.n)))}</button>`:''}<button class="big sm alt" id="rc_later">${esc(tr(can?'Later':'OK'))}</button></div></div>`;
     drawPortrait(el.querySelector('canvas'),C);el.hidden=false;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');SFX.heroUnlock();
     if(ME)for(let k=0;k<4;k++)setTimeout(()=>burst(ME.x,ME.y+3,ME.z,[C.bg,'#ffcf3a','#ffffff','#46e6b0'],26,7,.2,1),k*250);
@@ -6232,7 +6247,7 @@ rqNext=function(){const el=$('rcard');const c=RQ.shift();if(!c||!el){rqBusy=fals
 // ---------- switching heroes ----------
 function playHero(id){const C=CHARBY[id];if(!C)return false;if(!heroOK(id)){toast(tr('This hero is still locked'));return false;}
   if(ME.veh){toast(tr('Get out of the car first'));return false;}if(ME.carry||ME.carryF){toast(tr('Put it down first'));return false;}
-  if(C.g!==G.hero){if(NET.role!=='solo'){toast(tr(C.g==='girl'?'Girl heroes are for girl players online':'Boy heroes are for boy players online'));return false;}swapHero();}
+  if(!gOK(C,G.hero)){if(NET.role!=='solo'){toast(tr(C.g==='girl'?'Girl heroes are for girl players online':'Boy heroes are for boy players online'));return false;}swapHero();}
   const pr=prof();if(pr.char===id)return true;const nm=pr.name;applyChar(pr,C);if(!nm||isHeroName(nm))pr.name=tr(C.n);syncMeProfile();ME.xs=null;ME.swim=false;ME.hp=Math.min(ME.hp,maxHp(pr));
   burst(ME.x,ME.y+1,ME.z,[C.bg,'#ffffff','#ffcf3a'],34,6,.2,1);smokePuff(ME.x,ME.y+1,ME.z,8,'#ffffff');SFX.fly&&SFX.fly();ME.anim.cheer=1;touchLabels();toast(trf('Now playing as {0}!',tr(C.n)));saveSoon();return true;}
 function heroHint(id){const U=HERO_UNLOCK[id];const Q=U&&qDef(U.q);if(!Q)return '';if(QS.act===Q.id)return trf('You are doing "{0}" now!',tr(Q.title));const P=Q.place&&PLACEBY[Q.place];const g=NPCS.find(n=>n.id===Q.giver);
@@ -6254,7 +6269,7 @@ function renderRoster(){const B=$('rbox');const pr=prof();const n=CHARS.filter(c
   $('rosx').onclick=closeRoster;rosterDetail();}
 function rosterDetail(){const D=$('rdet');if(!D)return;const C=CHARBY[ROS.sel]||charOf(prof());const ok=heroOK(C.id),pr=prof(),cur=pr.char===C.id;
   const tags=heroTags(C).map(t=>`<span class="rtag">${TAGS[t].ic} ${esc(tr(TAGS[t].n))}</span>`).join('');let btn='';
-  if(ok){if(cur)btn=`<button class="big sm" disabled>✓ ${esc(tr('Playing now'))}</button>`;else if(C.g===G.hero)btn=`<button class="big sm" id="rd_play">${esc(trf('Play as {0}!',tr(C.n)))}</button>`;
+  if(ok){if(cur)btn=`<button class="big sm" disabled>✓ ${esc(tr('Playing now'))}</button>`;else if(gOK(C,G.hero))btn=`<button class="big sm" id="rd_play">${esc(trf('Play as {0}!',tr(C.n)))}</button>`;
     else if(NET.role==='solo')btn=`<button class="big sm mint" id="rd_play">${esc(trf('Swap to {0} and play',PROF[C.g].name))}</button>`;else btn=`<div class="small">${esc(tr(C.g==='girl'?'Girl heroes are for girl players online':'Boy heroes are for boy players online'))}</div>`;}
   else btn=`<div class="small">🔒 ${esc(heroHint(C.id))}</div><button class="big sm mint" id="rd_way">🧭 ${esc(tr('Show me the way'))}</button>`;
   D.innerHTML=`<canvas width="220" height="220" style="background:${ok?C.bg:'#2a2550'}"></canvas><div class="ri"><div class="rn">${esc(tr(C.n))}</div><div class="ratk">${PERKS[C.perk].ic} ${esc(tr(PERKS[C.perk].n))}</div>
@@ -7437,8 +7452,12 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:21,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:22,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🔓',t:'Golden Gates!',s:'Golden bricks now open giant golden gates to two new islands, and each island hides a big prize',go:()=>{if(typeof GGATES==='undefined')return null;const g=GGATES.find(q=>!ggOpen(q.id))||GGATES[0];const s=g.gate;return s?dd({x:ggOpen(g.id)?g.x:s.x,z:ggOpen(g.id)?g.z:s.z,label:tr(g.n),icon:ggOpen(g.id)?g.ic:'🔒',col:g.col}):null;}},
+  {ic:'💪',t:'Titan',s:'A gentle giant made of living rock. Open Titan Island with 20 golden bricks and wake him up. Boys and girls can both play him!',go:()=>{if(typeof GGBY==='undefined')return null;const g=GGBY.titan,s=g.gate;if(!s)return null;return ggOpen('titan')?dd({x:TNPC.x,z:TNPC.z+3,label:tr('Titan'),icon:'💪',col:g.col}):dd({x:s.x,z:s.z,label:tr(g.n),icon:'🔒',col:g.col});}},
+  {ic:'🐉',t:'Blaze the Dragon',s:'Open Dragon Peak with 35 golden bricks and wake Blaze. Fly her, breathe fire and roar!',go:()=>{if(typeof GGBY==='undefined')return null;const g=GGBY.dragon,s=g.gate;if(!s)return null;return ggOpen('dragon')&&BLZ.nest?dd({x:BLZ.nest.x,z:BLZ.nest.z+4,label:tr('Blaze the Dragon'),icon:'🐉',col:g.col}):dd({x:s.x,z:s.z,label:tr(g.n),icon:'🔒',col:g.col});}},
+  {ic:'🥚',t:'Dragon eggs',s:"Warm the three eggs on Dragon Peak with Blaze's fire, and a baby dragon hatches to be your pet"},
   {ic:'🦸',t:'Every hero is different!',s:'Only some heroes can fly now. Others super jump, triple jump, teleport, climb walls, swing on a hook, run on water, dive deep or glide. Try them all!',act:()=>openRoster()},
   {ic:'🗼',t:'Hero challenges',s:'Golden bricks on tall towers, in magic huts, above wind fans, deep under the sea and on far islands. Each one needs the right hero',go:()=>{if(!ME||!WORLD.mchal)return null;const L=WORLD.mchal.filter(c=>!G.gb.has(c.gb)).sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const c=L[0];return c?dd({x:c.x,z:c.z,label:tr('Hero challenge'),icon:CHAL[c.k].ic,col:'#ffcf3a'}):null;}},
   {ic:'🕺',t:'Hero style',s:'Every hero walks, runs, jumps and waits in their own way: ninjas sneak, robots march, dancers twirl'},
@@ -7805,17 +7824,17 @@ function castleGuide(){const P=PLACEBY.castle;if(!P||!P.door)return false;const 
 {const _hg=heroGuide;heroGuide=function(id){const U=HU3[id];if(U&&U.buy)return castleGuide();return _hg(id);};}
 // ---------- the bigger hero roster: boys and girls tabs, how to unlock each hero ----------
 ROS.tab=null;
-const howIc=id=>{const U=HU3[id];if(!U)return HERO_UNLOCK[id]?'⭐':'🔒';return U.tok?'🔍':U.buy?'🪙':'🏅';};
+const howIc=id=>{const U=HU3[id];if(!U)return HERO_UNLOCK[id]?'⭐':'🔒';return U.gate?'🔓':U.tok?'🔍':U.buy?'🪙':'🏅';};
 function unlockLine(id){const U=HU3[id];if(!U)return '';if(U.tok)return '🔍 '+trf('Find the hidden hero coin {0}',tr(HTOK.where[U.tok]||''));
   if(U.buy)return '🪙 '+trf('Sold in the Great Hall of the Hero Castle · {0} coins',fmt(U.buy));const A=ACH3[U.ach.k];return '🏅 '+trf(A.n,U.ach.n)+` · ${Math.min(A.cur(),U.ach.n)}/${U.ach.n}`;}
 renderRoster=function(){const B=$('rbox');const pr=prof();const n=CHARS.filter(c=>heroOK(c.id)).length;B.classList.add('rbig');
-  const selC=CHARBY[ROS.sel]||charOf(pr);if(!ROS.tab)ROS.tab=selC.g;const tab=ROS.tab;if(selC.g!==tab){const f=CHARS.find(c=>c.g===tab&&heroOK(c.id))||CHARS.find(c=>c.g===tab);ROS.sel=f.id;}
-  const cnt=g=>`${CHARS.filter(c=>c.g===g&&heroOK(c.id)).length}/${CHARS.filter(c=>c.g===g).length}`;
+  const selC=CHARBY[ROS.sel]||charOf(pr);if(!ROS.tab||ROS.tab==='both')ROS.tab=selC.g==='both'?G.hero:selC.g;const tab=ROS.tab;if(!gOK(selC,tab)){const f=CHARS.find(c=>gOK(c,tab)&&heroOK(c.id))||CHARS.find(c=>gOK(c,tab));ROS.sel=f.id;}
+  const cnt=g=>`${CHARS.filter(c=>gOK(c,g)&&heroOK(c.id)).length}/${CHARS.filter(c=>gOK(c,g)).length}`;
   const tile=c=>{const ok=heroOK(c.id),cur=pr.char===c.id,hl=ROS.tag&&heroTags(c).includes(ROS.tag);return `<button class="rt ${ok?'':'lock'} ${cur?'on':''} ${ROS.sel===c.id?'sel':''} ${hl?'hl':''}" data-c="${c.id}" style="--s:${ok?c.bg:'#2a2550'}" aria-label="${esc(ok?tr(c.n):'???')}"><canvas width="112" height="112"></canvas><b>${ok?esc(tr(c.n)):'???'}</b>${ok?'':`<i class="lk">${howIc(c.id)}</i>`}${hl?`<i class="tg">${TAGS[ROS.tag].ic}</i>`:''}${cur?'<i class="me">★</i>':''}</button>`;};
   B.innerHTML=`<button class="xbtn" id="rosx" aria-label="${esc(tr('Close'))}">✕</button><h2>🦸 ${tr('Heroes')}</h2><div class="small" style="text-align:center">${trf('{0} of {1} heroes unlocked',n,CHARS.length)}${ROS.tag?' · '+trf(ROS.tagTxt||'Heroes with {0} can open this',TAGS[ROS.tag].ic+' '+tr(TAGS[ROS.tag].n)):''}</div>
     <div class="rtabs"><button class="rtab ${tab==='boy'?'on':''}" data-g="boy">${esc(tr('Boys'))} · ${cnt('boy')}</button><button class="rtab ${tab==='girl'?'on':''}" data-g="girl">${esc(tr('Girls'))} · ${cnt('girl')}</button></div>
     <div class="rkey">⭐ ${esc(tr('mission'))} · 🔍 ${esc(tr('hidden coin'))} · 🪙 ${esc(tr('castle shop'))} · 🏅 ${esc(tr('earn it'))}</div>
-    <div class="rlay"><div class="rgrid">${CHARS.filter(c=>c.g===tab).map(tile).join('')}</div><div class="rdet" id="rdet"></div></div>`;
+    <div class="rlay"><div class="rgrid">${CHARS.filter(c=>gOK(c,tab)).map(tile).join('')}</div><div class="rdet" id="rdet"></div></div>`;
   B.querySelectorAll('.rtab').forEach(b=>b.onclick=()=>{if(ROS.tab===b.dataset.g)return;ROS.tab=b.dataset.g;SFX.click&&SFX.click();renderRoster();});
   B.querySelectorAll('.rt').forEach(b=>{const C=CHARBY[b.dataset.c];drawPortrait(b.querySelector('canvas'),C,!heroOK(C.id));b.onclick=()=>{ROS.sel=C.id;SFX.click&&SFX.click();B.querySelectorAll('.rt').forEach(q=>q.classList.toggle('sel',q===b));rosterDetail();};});
   $('rosx').onclick=closeRoster;rosterDetail();const sel=B.querySelector('.rt.sel');if(sel&&sel.scrollIntoView)try{sel.scrollIntoView({block:'nearest'});}catch(e){}};
@@ -7823,6 +7842,7 @@ renderRoster=function(){const B=$('rbox');const pr=prof();const n=CHARS.filter(c
   const tags=heroTags(C).map(t=>`<span class="rtag">${TAGS[t].ic} ${esc(tr(TAGS[t].n))}</span>`).join('');let btn='';
   if(U.tok)btn=`<button class="big sm mint" id="rd_way">🧭 ${esc(tr('Show me the way'))}</button>`;
   else if(U.buy)btn=inCastle()?`<button class="big sm" id="rd_buy" ${G.coins<U.buy?'style="opacity:.55"':''}>🪙 ${esc(trf('Buy {0} · {1}',tr(C.n),fmt(U.buy)))}</button>`:`<button class="big sm mint" id="rd_way">🏰 ${esc(tr('Take me to the castle'))}</button>`;
+  else if(U.gate&&typeof GGBY!=='undefined'){const g=GGBY[U.gate],c=Math.min(G.gb.size,g.need);btn=`<div class="rprog"><i style="width:${Math.round(c/g.need*100)}%"></i></div><button class="big sm mint" id="rd_way">🧭 ${esc(tr('Show me the way'))}</button>`;}
   else{const A=ACH3[U.ach.k],c=Math.min(A.cur(),U.ach.n);btn=`<div class="rprog"><i style="width:${Math.round(c/U.ach.n*100)}%"></i></div>`;}
   D.innerHTML=`<canvas width="220" height="220" style="background:#2a2550"></canvas><div class="ri"><div class="rn">${esc(tr(C.n))}</div><div class="ratk">${PERKS[C.perk].ic} ${esc(tr(PERKS[C.perk].n))}</div>
     <div class="ratk">${SHOTDEF[C.a].ic} <b>${esc(tr(SHOTDEF[C.a].n))}</b> · ${esc(tr(SHOTDESC[C.a]||''))}</div><div class="ratk">${SHOTDEF[C.b].ic} <b>${esc(tr(SHOTDEF[C.b].n))}</b> · ${esc(tr(SHOTDESC[C.b]||''))}</div><div class="rtags">${tags}</div>
@@ -8215,7 +8235,7 @@ function comboUpdate(dt){if(COMBO.n<=0)return;COMBO.t-=dt;if(COMBO.t<=0||(ME&&ME
 STICKERS.push({id:'h_combo',ic:'🔥',n:'Combo King',d:'Hit baddies 25 times in a row',f:()=>sv('combobest'),t:25});
 // ---------- hero of the day: a different hero each day earns +50% coins ----------
 const dayNo=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5);
-function heroOfDay(g){const L=CHARS.filter(c=>c.g===g&&heroOK(c.id));if(!L.length)return null;return L[(dayNo()*7+(g==='girl'?3:0))%L.length];}
+function heroOfDay(g){const L=CHARS.filter(c=>gOK(c,g)&&heroOK(c.id));if(!L.length)return null;return L[(dayNo()*7+(g==='girl'?3:0))%L.length];}
 {const _ac=addCoins;addCoins=function(n){if(n>0&&ME){const h=heroOfDay(G.hero);if(h&&charOf(prof()).id===h.id)n=Math.round(n*1.5);}return _ac(n);};}
 const HOD={t:0,told:false};
 function hodTell(dt){if(HOD.told||G.mode!=='play'||!ME||DLG||G.cine)return;HOD.t+=dt;if(HOD.t<9)return;HOD.told=true;if(G.hodDay===dayNo())return;G.hodDay=dayNo();const h=heroOfDay(G.hero);if(!h)return;
@@ -8225,7 +8245,7 @@ G.recentH=G.recentH||[];
 {const _ph=playHero;playHero=function(id){const r=_ph(id);if(r){G.recentH=[id,...(G.recentH||[]).filter(q=>q!==id)].slice(0,8);}return r;};}
 {const _rr=renderRoster;renderRoster=function(){_rr();const B=$('rbox');if(!B)return;const pr=prof(),tabs=B.querySelector('.rtabs');const h=heroOfDay(ROS.tab||G.hero);
     if(tabs&&h){const d=document.createElement('div');d.className='rhod';d.textContent='☀️ '+trf('Hero of the day: {0} earns +50% coins!',tr(h.n));tabs.after(d);const t=B.querySelector(`.rt[data-c="${h.id}"]`);if(t){const i=document.createElement('i');i.className='hd';i.textContent='☀️';t.appendChild(i);}}
-    const L=(G.recentH||[]).filter(id=>CHARBY[id]&&heroOK(id)&&CHARBY[id].g===G.hero&&id!==pr.char).slice(0,5);if(!L.length||!tabs)return;
+    const L=(G.recentH||[]).filter(id=>CHARBY[id]&&heroOK(id)&&gOK(CHARBY[id],G.hero)&&id!==pr.char).slice(0,5);if(!L.length||!tabs)return;
     const row=document.createElement('div');row.className='rrec';row.innerHTML=`<span>${esc(tr('Play again:'))}</span>`+L.map(id=>`<button class="rrb" data-c="${id}" style="--s:${CHARBY[id].bg}" aria-label="${esc(tr(CHARBY[id].n))}"><canvas width="96" height="96"></canvas></button>`).join('');
     tabs.before(row);row.querySelectorAll('.rrb').forEach(b=>{const C=CHARBY[b.dataset.c];drawPortrait(b.querySelector('canvas'),C,false);b.onclick=()=>{if(performance.now()-(G.uiT||0)<300)return;if(playHero(C.id))closeRoster();};});};}
 {const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.rh=(G.recentH||[]).slice(0,8);o.hd=G.hodDay|0;return o;};
@@ -9349,6 +9369,414 @@ MV('Every hero is different!','كل بطل مختلف!');MV('Hero challenges','�
 MV('Only some heroes can fly now. Others super jump, triple jump, teleport, climb walls, swing on a hook, run on water, dive deep or glide. Try them all!','بعض الأبطال فقط يستطيعون الطيران الآن. آخرون يقفزون قفزة خارقة، أو ثلاث قفزات، أو ينتقلون فجأة، أو يتسلقون الجدران، أو يتأرجحون بالخطّاف، أو يركضون فوق الماء، أو يغوصون عميقًا، أو ينزلقون في الهواء. جرّبهم كلهم!');
 MV('Golden bricks on tall towers, in magic huts, above wind fans, deep under the sea and on far islands. Each one needs the right hero','طوب ذهبي فوق أبراج عالية، وداخل أكواخ سحرية، وفوق مراوح الريح، وفي أعماق البحر، وعلى جزر بعيدة. كل واحد يحتاج البطل المناسب');
 MV('Every hero walks, runs, jumps and waits in their own way: ninjas sneak, robots march, dancers twirl','كل بطل يمشي ويركض ويقفز وينتظر بطريقته: النينجا يتسللون، والروبوتات تسير كالجنود، والراقصون يدورون');
+// ================= golden gates: golden bricks open giant gates to two new islands, and each island hides a big prize =================
+// Titan Island (20 golden bricks): Titan, a gentle giant made of living rock, becomes a hero anyone can play.
+// Dragon Peak (35 golden bricks): Blaze the Dragon becomes a ride you can fly, with fire breath.
+// A golden force field covers each island until its gate opens. Titan and Blaze are seen around the world before that,
+// so everyone knows what waits behind the gates.
+const GG={cine:null,msgT:0,fade:{},tease:[],pushT:0};G.ggo=G.ggo||new Set();
+const GGATES=[
+  {id:'titan',need:20,x:392,z:118,r:34,R:44,seed:65,col:'#ff9a3c',ic:'💪',n:MV('Titan Island','جزيرة تايتن'),prize:MV('Titan','تايتن'),
+    road:{hw:'EB',at:[364,200],pts:[[368,185],[372,168],[377,152],[383,138]]}},
+  {id:'dragon',need:35,x:405,z:750,r:36,R:46,seed:66,col:'#ff5a3c',ic:'🐉',n:MV('Dragon Peak','قمة التنين'),prize:MV('Blaze the Dragon','التنين بليز'),
+    road:{hw:'FC',at:[405,628],pts:[[405,652],[405,678],[405,702],[405,726]]}}];
+const GGBY={};for(const g of GGATES){GGBY[g.id]=g;g.ga=Math.atan2(g.road.pts[1][0]-g.x,g.road.pts[1][1]-g.z);}
+const ggOpen=id=>G.ggo.has(id);
+const DOMEY=WL-4;// the dome's centre sits under the sea, so it meets the water in a wide circle
+// ---------- the islands ----------
+REG.push({id:'titan',name:'Titan Island',x:392,z:118,r:34,seed:65,col:'#ff9a3c',idx:5},{id:'dragon',name:'Dragon Peak',x:405,z:750,r:36,seed:66,col:'#ff5a3c',idx:6});
+// Titan Island: tall striped red-rock buttes around a flat stone arena, with a gap where the road comes in
+const TBUTTES=(()=>{const g=GGBY.titan,q=mulberry(651),L=[];for(let k=0;k<9;k++){const a=g.ga+.8+k*(TAU-1.6)/8+(q()-.5)*.22,d=19.5+q()*6.5;L.push({x:g.x+Math.sin(a)*d,z:g.z+Math.cos(a)*d,r:3.4+q()*2.6,h:7+q()*10});}return L;})();
+REGH.titan=(x,z)=>{const I=GGBY.titan,d=Math.hypot(x-I.x,z-I.z);let h=5+fbm(x*.045,z*.045,95,2)*.8;
+  for(const b of TBUTTES){const dd=Math.hypot(x-b.x,z-b.z)+fbm(x*.25,z*.25,96,2)*.9;if(dd<b.r+1.8){const k=1-smooth(b.r-.3,b.r+1.5,dd);h=Math.max(h,5+k*b.h);}}
+  if(d<12)h=lerp(6,h,smooth(9,12,d));return [h,B.DESERT];};
+// Dragon Peak: a volcano with a glowing crater, and a wide ledge on the north side where the dragon sleeps
+REGH.dragon=(x,z)=>{const I=GGBY.dragon,d=Math.hypot(x-I.x,z-I.z);let h=4.6+fbm(x*.05,z*.05,97,2)*.7;const cone=Math.max(0,1-d/27);
+  h+=Math.pow(cone,1.35)*30+ridge(x*.08,z*.08,98,2)*2.5*cone;if(d<5.5)h-=(1-d/5.5)*(1-d/5.5)*9;
+  const nd=Math.hypot(x-I.x,z-(I.z-17));if(nd<8.5)h=lerp(9,h,smooth(6,8.5,nd));return [h,B.ISLE];};
+// three lava streams run down the volcano
+const LAVA=[[[405,744],[398,736],[392,726],[386,716]],[[410,754],[418,764],[426,772],[434,778]],[[400,755],[391,766],[384,778]]].map(L=>chaikin(L,2));
+function lavaDist(x,z){let b=1e9;for(const L of LAVA)for(let k=0;k<L.length-1;k++){const [ax,az]=L[k],[bx,bz]=L[k+1];const vx=bx-ax,vz=bz-az,l2=vx*vx+vz*vz;const t=clamp(((x-ax)*vx+(z-az)*vz)/l2,0,1);b=Math.min(b,Math.hypot(x-ax-vx*t,z-az-vz*t));}return b;}
+{const _rp=regionPaint;regionPaint=function(){_rp();for(const g of GGATES){const I=g,r1=I.r*1.25;for(let z=Math.floor(I.z-r1);z<=I.z+r1;z++)for(let x=Math.floor(I.x-r1);x<=I.x+r1;x++){if(!inMap(x,z))continue;const i=cid(x,z);if(RID[i]!==(g.id==='titan'?5:6)||RD[i])continue;
+    const h=H[i];if(h<WL-.25)continue;const t=hash2(x,z,5);let mx=0;for(const [a,c] of [[1,0],[-1,0],[0,1],[0,-1]]){const nh=inMap(x+a,z+c)?H[cid(x+a,z+c)]:-6;mx=Math.max(mx,Math.abs(nh-h));}const d=Math.hypot(x+.5-I.x,z+.5-I.z);
+    if(g.id==='titan'){if(h<3.7){TM[i]=T.SAND;TC[i]=pal(t<.5?'#f0cf95':'#ebc88a');}else if(h>=8||mx>=1.6){TM[i]=T.MESA;const band=Math.floor(h/1.4)%3;TC[i]=pal(band===0?(t<.5?'#c9653a':'#c05f36'):band===1?(t<.5?'#e08a52':'#d9824b'):(t<.5?'#f0b07a':'#e8a56c'));}
+      else if(d<11.5){TM[i]=T.STONE;const ring=Math.floor(d/2.3)%2;TC[i]=pal(ring?(t<.5?'#e3d3b4':'#dccaa8'):(t<.5?'#d2bf9c':'#cbb794'));}else{TM[i]=T.DIRT;TC[i]=pal(t<.5?'#d2a46c':'#c99a62');}}
+    else{const lv=lavaDist(x+.5,z+.5);if(h<3.5){TM[i]=T.SAND;TC[i]=pal(t<.5?'#4a4550':'#433e49');}else if(d<6.2){TM[i]=T.ROCK;TC[i]=pal(t<.5?'#ff6a1f':'#ff8a2a');}else if(lv<1.3){TM[i]=T.ROCK;TC[i]=pal(lv<.6?'#ffb13a':t<.5?'#ff5a1f':'#ff7a24');}
+      else if(lv<2.2){TM[i]=T.ROCK;TC[i]=pal('#2c2830');}else if(h>21){TM[i]=T.ROCK;TC[i]=pal(t<.5?'#77707c':'#6d6672');}else{TM[i]=T.ROCK;TC[i]=pal(mx>=1.6?(t<.5?'#3a3440':'#35303b'):(t<.5?'#4d4656':'#453f4c'));}}}}};}
+// ---------- the roads: causeway bridges from the nearest highway, like the other islands ----------
+const GGHW=GGATES.map(g=>({id:'gg_'+g.id,gid:g.id,pts:[g.road.at,...g.road.pts]}));
+{const _rn=reserveNewRoads;reserveNewRoads=function(){_rn();for(const hw of GGHW){const pts=chaikin(hw.pts,3);for(let k=0;k<pts.length-1;k++){const [ax,az]=pts[k],[bx,bz]=pts[k+1];const L=Math.hypot(bx-ax,bz-az);for(let t=0;t<=L;t+=.5){const x=ax+(bx-ax)*t/L,z=az+(bz-az)*t/L;
+    for(let c=Math.floor(z-7);c<=z+7;c++)for(let a=Math.floor(x-7);a<=x+7;a++)if(inMap(a,c)&&Math.hypot(a+.5-x,c+.5-z)<6.6)NRD[cid(a,c)]=1;}}}};}
+{const _cn=carveNewHighways;carveNewHighways=function(){_cn();for(const hw of GGHW){const S0=WORLD.hwSamples[GGBY[hw.gid].road.hw];
+    // start exactly on the highway it branches from
+    if(S0){let b=null,bd=1e9;for(const s of S0){const d=Math.hypot(s[0]-hw.pts[0][0],s[1]-hw.pts[0][1]);if(d<bd){bd=d;b=s;}}if(b)hw.pts[0]=[b[0],b[1]];}
+    try{carveHW(hw);}catch(e){noteErr('ggroad',e);}}};}
+{const _br=bridgeRails;bridgeRails=function(){_br();for(const hw of GGHW){const S=WORLD.hwSamples[hw.id];if(!S)continue;for(let k=2;k<S.length-2;k+=2){const [x,z]=S[k],[nx,nz]=S[k+2];const L=Math.hypot(nx-x,nz-z)||1;const fx=(nx-x)/L,fz=(nz-z)/L;
+      let sea=false;for(const s of [-7,7])if(hAt(x-fz*s,z+fx*s)<WL-.5)sea=true;if(!sea)continue;const y=hAt(x,z);
+      for(const s of [-1,1]){const px=x-fz*s*3.35,pz=z+fx*s*3.35;const m=mat4At(px,y,pz,Math.atan2(fx,fz));sput('box',m,0,.45,0,.22,.9,1.1,'#fff3c4',1);sput('box',m,0,.95,.55,.18,.14,2.2,'#ffcf3a',3);solid(px-.2,pz-.2,px+.2,pz+.2,y+1.1);}
+      if(k%10===0)for(const s of [-1,1]){const lm=mat4At(x-fz*s*3.35,y,z+fx*s*3.35);sput('cyl',lm,0,2.6,0,.16,5.2,.16,'#c9a227',3);sput('sph',lm,0,5.3,0,.5,.5,.5,'#ffe27a',1,.9);}}}};}
+// ---------- the gates: where each road meets the force field ----------
+function ggGateSpot(g){const S=WORLD.hwSamples['gg_'+g.id];if(!S)return null;for(let k=1;k<S.length;k++){const [x,z]=S[k];const y=hAt(x,z);if(Math.hypot(x-g.x,y-DOMEY,z-g.z)<g.R+.2){const [px,pz]=S[Math.max(0,k-3)];const y0=hAt(px,pz);
+    return {x:px,z:pz,y:y0,f:Math.atan2(x-px,z-pz)};}}return null;}
+function ggBuild(){for(const g of GGATES){const s=ggGateSpot(g);g.gate=s;if(!s)continue;const m=mat4At(s.x,s.y,s.z,s.f);const gold='#f3b61f',dk='#c98f12';
+    // two tall pillars, a lintel, and the prize's crest on top
+    for(const sd of [-1,1]){sput('box',m,sd*4.9,4.6,0,1.5,9.2,1.5,gold,3);sput('box',m,sd*4.9,.3,0,2.1,.6,2.1,dk,3);sput('box',m,sd*4.9,9.35,0,1.9,.5,1.9,dk,3);sput('sph',m,sd*4.9,10.1,0,1,1,1,'#fff1a8',3,.35);
+      for(let k=0;k<3;k++)sput('box',m,sd*4.9,2.2+k*2.4,.77,.9,.18,.06,'#fff6c8',1,.3);const px=s.x+Math.cos(s.f)*sd*4.9,pz=s.z-Math.sin(s.f)*sd*4.9;solid(px-.8,pz-.8,px+.8,pz+.8,s.y+9.6);}
+    sput('box',m,0,8.9,0,11.4,1.1,1.7,gold,3);sput('box',m,0,9.6,0,8,.35,1.3,dk,3);sput('cyl',mat4At(s.x,s.y+10.9,s.z,s.f),0,0,0,2.6,.5,2.6,gold,3);
+    const cm=M4.id();M4.tr(cm,s.x,s.y+11.7,s.z);M4.ry(cm,s.f);M4.rx(cm,Math.PI/2);sput('cyl',cm,0,0,0,2.2,.3,2.2,'#fff1a8',3,.25);}}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{ggBuild();}catch(e){noteErr('ggbuild',e);console.error(e);}};}
+// ---------- saving ----------
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.gg=[...G.ggo];return o;};extraLoad=function(x){_el(x);G.ggo=new Set(x&&Array.isArray(x.gg)?x.gg.filter(id=>GGBY[id]):[]);};}
+// ---------- the force field: nothing gets in until the gate opens ----------
+function ggDomeK(g){if(!ggOpen(g.id))return 1;const f=GG.fade[g.id];return f===undefined?0:f;}
+function ggPush(o,isVeh){for(const g of GGATES){if(ggDomeK(g)<.5)continue;const dx=o.x-g.x,dy=(o.y||0)+1-DOMEY,dz=o.z-g.z,d=Math.hypot(dx,dy,dz);if(d>=g.R+.4)continue;
+    const nx=dx/d,ny=dy/d,nz=dz/d,out=g.R+.45-d;o.x+=nx*out;o.z+=nz*out;if(!isVeh&&ny>.3)o.y+=ny*out;
+    if(isVeh){o.spd=-Math.sign(o.spd||0)*Math.min(4,Math.abs(o.spd||0)*.4);if(o.vy!==undefined&&ny>.3)o.vy=Math.max(o.vy,3);}else{const vn=(o.vx||0)*nx+(o.vz||0)*nz;if(vn<0){o.vx-=nx*vn*1.8;o.vz-=nz*vn*1.8;}if(ny>.3&&o.vy<0)o.vy=4;}
+    if(GG.pushT<=0){GG.pushT=.35;AU.at(o.x,o.z,()=>{AU.tone(520,.18,'sine',.06,1.6);AU.tone(780,.22,'triangle',.04,1.4,.05);});burst(o.x-nx*.6,(o.y||0)+1.2,o.z-nz*.6,['#ffe27a','#ffffff','#ffcf3a'],14,3.5,.16,1);}
+    if(GG.msgT<=0){GG.msgT=4;const n=G.gb.size;toast('🔒 '+trf('The golden force field! {0} opens when you have {1} golden bricks (you have {2})',tr(g.n),g.need,n));}return g;}return null;}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);GG.msgT-=dt;GG.pushT-=dt;if(!ME||G.mode!=='play')return;try{if(camRealm()!=='earth')return;if(ME.veh&&ME.veh.drv!==2)ggPush(ME.veh,true);else ggPush(ME,false);ggNearGate(dt);}catch(e){noteErr('ggpush',e);}};}
+// ---------- opening a gate ----------
+function ggNearGate(dt){if(GG.cine)return;for(const g of GGATES){const s=g.gate;if(!s||ggOpen(g.id))continue;if(d2(s.x,s.z,ME.x,ME.z)>7.5)continue;if(G.gb.size>=g.need)ggOpenGate(g);return;}}
+function ggOpenGate(g,quiet){if(ggOpen(g.id))return;G.ggo.add(g.id);GG.fade[g.id]=1;saveSoon();if(quiet)return;if(ME.veh)exitVeh(ME);
+  GG.cine={g,t:0};ME.vx=ME.vz=0;SFX.gold();G.stats.gg=(G.stats.gg||0)+1;}
+function ggCine(dt){const C=GG.cine;if(!C)return;const g=C.g,s=g.gate;const t0=C.t;C.t+=dt;const t=C.t;
+  // the bricks fly from the hero to the lock
+  if(t<1.2&&Math.floor(t0*14)!==Math.floor(t*14)){const k=Math.random();PARTS.push({x:ME.x+Rr(-.4,.4),y:ME.y+1.2,z:ME.z+Rr(-.4,.4),vx:(s.x-ME.x)*1.1,vy:9+k*3,vz:(s.z-ME.z)*1.1,life:1,s:.3,c:hex('#ffcf3a'),e:.9,g:12,k:'deb',rot:k*6});AU.tone(880+Math.floor(t*14)*60,.08,'triangle',.04,1.2);}
+  if(t0<1.2&&t>=1.2){SFX.win();shake(.35);burst(s.x,s.y+5,s.z,['#ffcf3a','#ffffff','#fff1a8'],60,9,.26,1.4);ringFx(s.x,s.y+.3,s.z,'#ffcf3a',9);}
+  if(t0<1.9&&t>=1.9){AU.tone(392,.5,'sawtooth',.05,1,0);AU.tone(523,.5,'sawtooth',.05,1,.14);AU.tone(659,.5,'sawtooth',.05,1,.28);AU.tone(784,.9,'sawtooth',.06,1,.42);AU.tone(1568,.9,'sine',.03,1,.42);
+    for(let k=0;k<160;k++){const a=Math.random()*TAU,b=Math.random()*Math.PI*.5;const nx=Math.cos(a)*Math.cos(b),ny=Math.sin(b),nz=Math.sin(a)*Math.cos(b);PARTS.push({x:g.x+nx*g.R,y:DOMEY+ny*g.R,z:g.z+nz*g.R,vx:nx*4,vy:ny*4+2,vz:nz*4,life:2.2,s:.4,c:hex(k%3?'#ffe27a':'#ffffff'),e:1,g:-1,k:'deb',rot:0});}}
+  if(t>=1.9)GG.fade[g.id]=Math.max(0,1-(t-1.9)/1.1);
+  if(t0<3.1&&t>=3.1){banner(trf('{0} is open!',tr(g.n)),g.id==='titan'?tr('Go and wake up Titan!'):tr('Go and meet Blaze the Dragon!'),g.col);SFX.heroUnlock&&SFX.heroUnlock();const P=ggPrizeSpot(g);if(P)navSet({x:P.x,z:P.z,label:tr(g.prize),icon:g.ic,col:g.col,realm:'earth'});}
+  if(t>=3.8){GG.cine=null;GG.fade[g.id]=0;}}
+function ggPrizeSpot(g){if(g.id==='titan')return {x:g.x,z:g.z};const I=g;return {x:I.x,z:I.z-17};}
+{const _ri=readInput;readInput=function(){const r=_ri.apply(this,arguments);if(GG.cine)return Object.assign({},NOINP);return r;};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{ggCine(dt);}catch(e){noteErr('ggcine',e);GG.cine=null;}};}
+// the camera watches the gate while it opens
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);const C=GG.cine;if(!C||!C.g.gate)return;const s=C.g.gate,g=C.g;const k=smooth(0,.8,C.t);const back=-(15+C.t*3.5);
+  const ex=s.x+Math.sin(s.f)*back+Math.cos(s.f)*6,ez=s.z+Math.cos(s.f)*back-Math.sin(s.f)*6,ey=s.y+5+C.t*1.2;const tx=lerp(s.x,g.x,smooth(1.6,3.4,C.t)*.35),tz=lerp(s.z,g.z,smooth(1.6,3.4,C.t)*.35),ty=s.y+5.5;
+  CAM.eye=[lerp(CAM.eye[0],ex,k),lerp(CAM.eye[1],ey,k),lerp(CAM.eye[2],ez,k)];CAM.tx=lerp(CAM.tx,tx,k);CAM.ty=lerp(CAM.ty,ty,k);CAM.tz=lerp(CAM.tz,tz,k);};}
+// ---------- drawing: the gate doors, the lock, and the golden dome ----------
+function drawGates(t){const m=MS.cur;for(const g of GGATES){const s=g.gate;if(!s||Math.abs(s.x-CAM.tx)>120||Math.abs(s.z-CAM.tz)>120)continue;const open=ggOpen(g.id);
+    const oa=open?(GG.cine&&GG.cine.g===g?smooth(1.2,2.4,GG.cine.t):1):0;const gold='#f3b61f';
+    for(const sd of [-1,1]){MS.reset();M4.tr(m,s.x,s.y,s.z);M4.ry(m,s.f);M4.tr(m,sd*4.15,0,0);M4.ry(m,-sd*oa*1.75);
+      for(let k=0;k<5;k++)bx(m,-sd*(.42+k*.84),3.9,0,.2,7.4,.2,gold,3);for(const y of [.5,3.9,7.4])bx(m,-sd*2.1,y,0,4.2,.3,.34,'#e0a418',3);
+      for(let k=0;k<4;k++)sp(m,-sd*(.84+k*.84),7.9,0,.2,.2,.2,'#fff1a8',3,.2);bx(m,-sd*2.1,3.9,-.05,4.1,7.2,.04,'#ffe27a',1,.16);}
+    if(!open){MS.reset();M4.tr(m,s.x,s.y+4,s.z);M4.ry(m,s.f);M4.tr(m,0,0,.3);const pul=.5+.5*Math.sin(t*3);rb(m,0,0,0,1.8,1.3,.6,'#ffcf3a',3,.2+pul*.25);for(const sd of [-.5,.5])cy(m,sd,.82,0,.42,.3,.42,'#ffcf3a',3);
+      cy(m,0,1.05,0,.9,.18,.18,'#c98f12',3);sp(m,0,-.05,.31,.28,.28,.05,'#3a2a10',1);bx(m,0,-.32,.31,.14,.35,.05,'#3a2a10',1);}
+    // the prize's crest, turning slowly
+    MS.reset();M4.tr(m,s.x,s.y+12.6+Math.sin(t*1.5)*.15,s.z);M4.ry(m,t*.8);drawCrest(m,g,t);}
+  // the domes (glassy, in the see-through pass), with sparkles running up them
+  for(const g of GGATES){const k=ggDomeK(g);if(k<=.01)continue;if(Math.abs(g.x-CAM.tx)>260||Math.abs(g.z-CAM.tz)>260)continue;const Rd=g.R*(1+(1-k)*.08);MS.reset();M4.tr(m,g.x,DOMEY,g.z);M4.ry(m,t*.05);
+    TRN.sph.put(m,0,0,0,Rd*2,Rd*2,Rd*2,hex('#ffd54a'),PK(1,0));if(k<1)continue;
+    if(ME&&Math.hypot(ME.x-g.x,ME.z-g.z)<g.R+40&&R()<.5){const a=R()*TAU,b=R()*1.2;PARTS.push({x:g.x+Math.cos(a)*Math.cos(b)*g.R,y:DOMEY+Math.sin(b)*g.R,z:g.z+Math.sin(a)*Math.cos(b)*g.R,vx:0,vy:1.5,vz:0,life:1.6,s:.22,c:hex('#ffe27a'),e:1,g:0,k:'deb',rot:0});}}}
+function drawCrest(m,g,t){if(g.id==='titan'){bx(m,0,0,0,1.6,1.6,.5,'#e08a52',0);for(let k=0;k<4;k++)rb(m,-.6+k*.4,.7,.1,.34,.4,.5,'#d27a45',0);rb(m,.95,-.1,.1,.42,.8,.5,'#d27a45',0);bx(m,0,-.2,.28,1.2,.08,.05,'#8a4a2a',1);}
+  else{sp(m,0,0,0,1.2,1,1.4,'#e8343f',1,.1);sp(m,0,.1,.7,.8,.6,.8,'#e8343f',1,.1);for(const sd of [-1,1]){co(m,sd*.35,.75,.3,.2,.6,.2,'#fff1a8',1);sp(m,sd*.25,.3,1.02,.14,.14,.08,'#ffe27a',1,1);}
+    for(const sd of [-1,1]){MS.push();M4.tr(m,sd*.6,.2,-.2);M4.rz(m,sd*(.5+Math.sin(t*4)*.3));bx(m,sd*.8,0,0,1.6,.08,1.1,'#ff7a5a',1,.1);MS.pop();}}}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{if(camRealm()==='earth'){const prev=OUT;OUT=DYN;drawGates(t);OUT=prev;}}catch(e){noteErr('ggdraw',e);}};}
+// ---------- signs over the gates, and pins on the map ----------
+function ggLabels(){if(!ME)return;for(const g of GGATES){const s=g.gate;if(!s)continue;const d=d2(s.x,s.z,ME.x,ME.z);if(d>70)continue;const open=ggOpen(g.id),n=G.gb.size;
+    label('gg'+g.id,s.x,s.y+14.2,s.z,open?`${g.ic} ${esc(tr(g.n))}`:`🔒 ${esc(tr(g.n))}<br><span style="font-size:17px">🧱 ${Math.min(n,g.need)} / ${g.need}</span>${n>=g.need?`<br><span style="font-size:14px">🔓 ${esc(tr('Walk up to open it!'))}</span>`:''}`,open?'sign gr':'sign or');}}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{ggLabels();}catch(e){}};}
+MAPX.prov.push((add,realm)=>{if(realm!=='earth')return;for(const g of GGATES){if(!g.gate)continue;const open=ggOpen(g.id);
+  add({id:'gg_'+g.id,cat:'place',x:open?g.x:g.gate.x,z:open?g.z:g.gate.z,ic:open?g.ic:'🔒',col:g.col,t:tr(g.n),s:open?trf('{0} lives here',tr(g.prize)):trf('Golden Gate: {0} golden bricks open it',g.need),pr:6});}});
+MV('The golden force field! {0} opens when you have {1} golden bricks (you have {2})','الدرع الذهبي! {0} تُفتح عندما يكون لديك {1} طوبة ذهبية (لديك {2})');MV('{0} is open!','{0} مفتوحة!');
+MV('Go and wake up Titan!','اذهب وأيقظ تايتن!');MV('Go and meet Blaze the Dragon!','اذهب وقابل التنين بليز!');MV('{0} lives here','{0} يعيش هنا');MV('Golden Gate: {0} golden bricks open it','البوابة الذهبية: {0} طوبة ذهبية تفتحها');
+// ---------- every golden brick brings a gate closer ----------
+function ggNext(){const n=G.gb.size;return GGATES.find(q=>!ggOpen(q.id)&&n<=q.need)||null;}
+function ggReady(){const n=G.gb.size;return GGATES.find(q=>!ggOpen(q.id)&&n>=q.need)||null;}
+function ggCallout(g){banner(trf('You can open the Golden Gate to {0}!',tr(g.n)),trf('{0} is waiting behind it',tr(g.prize)),g.col);if(g.gate)navSet({x:g.gate.x,z:g.gate.z,label:tr(g.n),icon:'🔓',col:g.col,realm:'earth'});}
+{const _cg=collectGB;collectGB=function(id,x,y,z){const had=G.gb.has(id);_cg(id,x,y,z);if(had)return;try{const n=G.gb.size;const g=GGATES.find(q=>!ggOpen(q.id)&&n===q.need);if(g){setTimeout(()=>ggCallout(g),1800);return;}
+  const nx=ggNext();if(nx)setTimeout(()=>toast(`🔒 ${tr(nx.n)}: 🧱 ${n}/${nx.need}`),900);}catch(e){}};}
+// players who already have enough bricks hear about it once, soon after they start playing
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);if(GG.told||G.mode!=='play'||!ME)return;GG.tellT=(GG.tellT||0)+dt;if(GG.tellT<8)return;GG.told=1;const g=ggReady();if(g)ggCallout(g);};}
+MV('You can open the Golden Gate to {0}!','تستطيع فتح البوابة الذهبية إلى {0}!');MV('{0} is waiting behind it','{0} ينتظر خلفها');
+// the golden brick counter shows how many the next gate needs
+function ggHudHTML(){const n=G.gb.size;const g=ggNext()||ggReady();return g?`${n}<small class="ggn">/${g.need}${n>=g.need?' 🔓':''}</small>`:String(n);}
+MV('Walk up to open it!','اقترب لتفتحها!');
+// ================= Titan: the gentle giant behind the first golden gate =================
+// A giant made of living red rock, with glowing cracks, moss on his shoulders and a tiny bird who lives in a nest on his
+// head. Boys and girls can both play him. He is slow and heavy: the ground shakes when he runs, he lands with a boom,
+// his punch sends baddies flying and his quake throws everything nearby into the air.
+// Before his gate opens he is seen around the islands doing funny strong things, and he sleeps on his throne on Titan Island.
+CHARS.push({id:'titan',u:1,bg:'#ff9a3c',g:'both',n:MV('Titan','تايتن'),skin:'#dd8f52',hs:'short',hair:'brown',suit:'orange',cs:'#c8783f',ca:'#f3b61f',cape:'none',acc:'',em:'brick',perk:'strong',a:'tpunch',b:'quake',big:1});
+CHARBY.titan=CHARS[CHARS.length-1];HMOVE.titan=['stomp','superjump'];HU3.titan={gate:'titan'};VPROF.Titan={p:.62,r:.86,f:0,v:1};
+mkCone('tpunch',{s:MV('Punch','لكمة'),n:MV('Titan Punch','لكمة تايتن'),ic:'👊',cd:.6,mul:1.6,desc:MV('A giant punch. The shockwave sends baddies flying!','لكمة عملاقة. موجتها ترمي الأشرار بعيدًا!'),R:7.5,cos:.55,kb:22,st:'stun',stT:.7,sfxI:'smash',cols:['#ffb347','#f0cf95','#ffffff'],parts:30,shake:.3});
+mkRing('quake',{s:MV('Quake','زلزال'),n:MV('Titan Quake','زلزال تايتن'),ic:'🌋',cd:2.2,mul:2,desc:MV('Slam the ground so hard that every baddie nearby flies up','اضرب الأرض بقوة حتى يطير كل الأشرار القريبين'),R:9,kb:14,st:'stun',stT:1.6,sfxI:'smash',
+  cols:['#ff9a3c','#e8c08a','#ffffff'],parts:44,anim:'slam',shake:.7,fx:(x,y,z)=>{for(let k=0;k<8;k++){const a=k/8*TAU+R()*.3;BEAMS.push({pts:zigzag([x,y+.12,z],[x+Math.cos(a)*7,y+.12,z+Math.sin(a)*7],6),t:.8,col:'#5a3420',w:.16});}for(let k=0;k<14;k++){const a=R()*TAU,d=Rr(1,6);smokePuff(x+Math.cos(a)*d,y+.3,z+Math.sin(a)*d,2,'#e8c08a');}}});
+const isTitan=p=>!!p&&heroIdOf(p)==='titan';
+// ---------- the model ----------
+const TT={st:'#c8783f',sl:'#dd8f52',sd:'#9a5530',cl:'#2f8a8a',gd:'#f3b61f',mo:'#6cb84a',vein:'#ffb347'};
+function titanScale(p){if(p.tscale)return p.tscale;const ins=typeof inInBox==='function'&&inInBox(p.x,p.z);return p.drive?1.15:ins?1.25:1.7;}
+function drawTitan(p,t){const m=MS.cur;MS.reset();const A=p.anim;if(p.invT>0&&p.ko<=0&&Math.floor(t*16)%2===0)return;const S=titanScale(p),Q=TT;
+  const sw=Math.sin(A.walk)*A.amp,sit=p.sit||0,sleep=p.sleep||0;
+  M4.tr(m,p.x,p.y+(p.yv||0)+A.bob*.6,p.z);M4.ry(m,p.face);M4.sc(m,S,S,S);if(p.ko>0){M4.rx(m,-1.45);M4.tr(m,0,.4,0);}if(A.fly>.01)M4.rx(m,A.fly*1.1);
+  if(A.spin){M4.tr(m,0,.9,0);M4.rx(m,A.spin);M4.tr(m,0,-.9,0);}M4.rx(m,A.lean.p*.7+.06-sit*.12);M4.rz(m,A.tilt.p+sw*.07);const sq=A.sq.p;M4.sc(m,1/Math.sqrt(sq),sq,1/Math.sqrt(sq));
+  // legs: short and thick
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.23,.62,0);let lx=sw*s*.72;if(p.swim)lx=Math.sin(t*6+s*1.6)*.45;if(p.drive||sit)lx=-1.5;if(p.chute||A.fly>.1)lx=.2+s*.1;if(p.ko>0)lx=.1*s;
+    if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,1,p);if(r!==null&&r!==undefined)lx=r;}M4.rx(m,lx);
+    cy(m,0,-.28,0,.36,.58,.36,Q.st,0);bx(m,0,-.18,.18,.2,.05,.02,Q.sd,0);rb(m,0,-.58,.08,.42,.17,.52,Q.sd,0);MS.pop();}
+  // hips and the golden belt
+  rb(m,0,.7,0,.68,.26,.48,Q.cl,6);for(const s of [-1,1])rb(m,s*.19,.52,.21,.22,.26,.04,Q.cl,6);bx(m,0,.84,0,.78,.13,.54,Q.gd,3);rb(m,0,.84,.28,.24,.18,.06,'#fff1a8',3,.25);
+  // chest: a big barrel of rock with brick seams, glowing cracks and moss
+  const br=1+Math.sin(t*(sleep?1.1:1.8))*(A.amp<.2?.02:0);MS.push();M4.tr(m,0,1.1,0);M4.sc(m,br,br,br);M4.tr(m,0,-1.1,0);
+  rb(m,0,1.14,0,1,.66,.66,Q.st,0);rb(m,0,1.37,.02,1.16,.42,.7,Q.sl,0);bx(m,-.22,1.05,.335,.36,.04,.02,Q.sd,0);bx(m,.2,1.2,.345,.4,.04,.02,Q.sd,0);bx(m,0,.94,.335,.5,.04,.02,Q.sd,0);
+  const gl=.65+.35*Math.sin(t*2.2);bx(m,.28,1.02,.34,.04,.22,.02,Q.vein,1,gl);bx(m,-.3,1.28,.355,.22,.04,.02,Q.vein,1,gl);bx(m,-.08,1.12,.34,.03,.14,.02,Q.vein,1,gl);
+  for(const s of [-1,1]){sp(m,s*.46,1.57,-.04,.34,.15,.36,Q.mo,6);sp(m,s*.33,1.6,.1,.17,.08,.17,'#7ed957',6);}MS.pop();
+  // head: small for his size, heavy brow, glowing eyes, a big friendly grin
+  MS.push();M4.tr(m,0,1.68,.1);M4.rx(m,-A.lean.p*.4+sleep*.35);M4.rz(m,sleep*.12);rb(m,0,0,0,.47,.43,.45,Q.sl,0);bx(m,0,.12,.215,.5,.09,.08,Q.sd,0);
+  const bl=sleep?.012:(t%4.2)<.12?.02:.075;for(const s of [-1,1])sp(m,s*.11,.035,.23,.09,bl,.03,'#ffe27a',1,1);rb(m,0,-.02,.245,.1,.1,.07,Q.st,0);
+  if(sleep)bx(m,0,-.12,.23,.12,.03,.02,Q.sd,1);else{bx(m,0,-.12,.23,.22,.05,.02,'#ffffff',1);bx(m,0,-.145,.23,.26,.02,.02,Q.sd,1);}
+  // the bird's nest, and the little bird who lives there
+  cy(m,0,.25,-.02,.35,.08,.35,'#a0703e',6);cy(m,0,.3,-.02,.27,.05,.27,'#c9955a',6);const hop=((t%6)<1.2&&!sleep)?Math.max(0,Math.sin(t*9))*.1:0;
+  MS.push();M4.tr(m,.05,.37+hop,-.02);M4.ry(m,Math.sin(t*.7)*1.3);sp(m,0,0,0,.11,.1,.14,'#46b0ff',1);sp(m,0,.07,.06,.08,.08,.08,'#46b0ff',1);co(m,0,.065,.13,.035,.05,.035,'#ffcf3a',1);
+  sp(m,0,.03,-.09,.06,.03,.09,'#2f6bff',1);for(const s of [-1,1])sp(m,s*.035,.09,.1,.02,.025,.01,DARK,1);MS.pop();MS.pop();
+  // arms: long, heavy and swinging
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.67,1.39,0);let ax=-sw*s*.8+.15,az=s*.2;
+    if(A.punch>0&&s===A.pside){ax=-1.6*Math.sin(Math.min(1,A.punch)*Math.PI);az=s*.05;}if(p.carry||p.carryF||p.lift){ax=-2.95;az=s*.3;}
+    if(A.cheer>0){ax=-2.9;az=s*(.4+Math.sin(t*14)*.15);}if(A.wave>0&&s===1){ax=-2.6;az=.6+Math.sin(t*12)*.4;}if(A.slam>0){ax=-2.9+(1-A.slam)*2.6;az=s*.35;}
+    if(p.drive){ax=-1.2;az=-s*.25;}if(sit){ax=-.5;az=s*.35;}if(p.ko>0){ax=-2.8;az=s*.6;}if(p.swim){ax=-2.5+Math.sin(t*5+(s>0?0:Math.PI))*1.2;az=s*.3;}
+    if(p.glide||A.fly>.1){ax=-1.4;az=s*1.1;}if(p.chute){ax=-2.85;az=s*.42;}if(p.hug){ax=-1.2;az=-s*.55;}
+    if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,0,p);if(r){ax=r[0];az=r[1];}}
+    M4.rx(m,ax);M4.rz(m,az);sp(m,0,0,0,.39,.39,.39,Q.sl,0);rb(m,0,-.43,0,.33,.52,.33,Q.st,0);bx(m,s*.1,-.37,.17,.03,.17,.02,Q.vein,1,gl);rb(m,0,-.82,.03,.46,.42,.46,Q.sd,0);
+    for(let k=0;k<3;k++)bx(m,-.13+k*.13,-.76,.26,.09,.06,.02,Q.sl,0);MS.pop();}}
+{const _dh=drawHero;drawHero=function(p,t){if(p&&p.looks&&charOfLooks(p.looks,p.hero).id==='titan')return drawTitan(p,t);return _dh(p,t);};}
+// the picture in the heroes list
+{const _dp=drawPortrait;drawPortrait=function(cv,C,sil){if(!C||C.id!=='titan')return _dp(cv,C,sil);const x=cv.getContext('2d'),S=cv.width,u=S/100;x.clearRect(0,0,S,S);
+  const col=c=>sil?'#1d1a33':c;const Rr2=(a,b,w,h,r,c)=>{x.fillStyle=col(c);x.beginPath();x.roundRect?x.roundRect(a*u,b*u,w*u,h*u,r*u):x.rect(a*u,b*u,w*u,h*u);x.fill();};const O=(a,b,r,c)=>{x.fillStyle=col(c);x.beginPath();x.arc(a*u,b*u,r*u,0,TAU);x.fill();};
+  if(!sil){const g=x.createRadialGradient(50*u,40*u,8*u,50*u,50*u,52*u);g.addColorStop(0,'rgba(255,255,255,.28)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,S,S);}
+  Rr2(2,60,96,44,20,TT.sl);O(12,66,12,TT.mo);O(88,66,12,TT.mo);Rr2(24,70,52,34,8,TT.st);if(!sil){x.fillStyle=TT.vein;x.fillRect(58*u,76*u,2*u,12*u);x.fillRect(34*u,80*u,10*u,2*u);}
+  Rr2(29,26,42,40,12,TT.sl);Rr2(27,31,46,8,3,TT.sd);if(!sil){O(41,43,3.6,'#ffe27a');O(59,43,3.6,'#ffe27a');Rr2(41,55,18,4,2,'#ffffff');}
+  Rr2(33,19,34,8,4,'#a0703e');O(52,14,6,'#46b0ff');O(57,12,3,'#46b0ff');if(!sil){O(58.5,11.5,.9,'#1d1a33');x.fillStyle='#ffcf3a';x.beginPath();x.moveTo(60*u,13*u);x.lineTo(65*u,14*u);x.lineTo(60*u,15*u);x.fill();}};}
+// the list says how to get him
+{const _ul=unlockLine;unlockLine=function(id){const U=HU3[id];if(U&&U.gate){const g=GGBY[U.gate];return '🔒 '+trf('Open the Golden Gate to {0} with {1} golden bricks',tr(g.n),g.need)+` · 🧱 ${Math.min(G.gb.size,g.need)}/${g.need}`;}return _ul(id);};}
+// ---------- playing as Titan: heavy steps, a booming landing, a camera further back ----------
+const TTS={ph:0,air:false,top:0,land:0};
+{const _hs=heroSpeed;heroSpeed=function(){const s=_hs();return isTitan(ME)?s*.92:s;};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(!ME||G.mode!=='play'||!isTitan(ME))return;const A=ME.anim;
+    // footsteps: dust and a deep thump on every step
+    const ph=Math.floor(A.walk/Math.PI);if(ph!==TTS.ph){TTS.ph=ph;if(ME.ground&&!ME.swim&&!ME.veh&&A.amp>.35){const s=ph%2?1:-1,f=ME.face,S=titanScale(ME);const fx=ME.x+Math.cos(f)*s*.23*S,fz=ME.z-Math.sin(f)*s*.23*S;
+      for(let k=0;k<5;k++)PARTS.push({x:fx+Rr(-.3,.3),y:ME.y+.1,z:fz+Rr(-.3,.3),vx:Rr(-1.2,1.2),vy:Rr(.6,1.6),vz:Rr(-1.2,1.2),life:.6,s:.22,c:hex('#d8c7a8'),e:0,g:-.5,k:'smoke',rot:0});
+      AU.tone(58,.16,'sine',.16*Math.min(1,A.amp),.6);AU.noise(.06,.05*Math.min(1,A.amp),400);if(A.amp>.8)shake(.07);}}
+    // landing from high up: a small quake
+    if(!ME.ground&&!ME.fly&&!ME.swim){if(!TTS.air){TTS.air=true;TTS.top=ME.y;}TTS.top=Math.max(TTS.top,ME.y);}
+    else if(TTS.air){TTS.air=false;const h=TTS.top-ME.y;if(ME.ground&&h>2.5){const r=Math.min(6,2+h*.35);shake(Math.min(.6,.15+h*.04));ringFx(ME.x,ME.y+.2,ME.z,'#e8c08a',r);AU.tone(46,.35,'sine',.24,.5);AU.noise(.3,.14,300);
+      for(let k=0;k<12;k++){const a=k/12*TAU;smokePuff(ME.x+Math.cos(a)*1.4,ME.y+.2,ME.z+Math.sin(a)*1.4,1,'#e8c08a');}
+      forEachTarget(ME.x,ME.z,r,(k,o)=>{const dx=o.x-ME.x,dz=o.z-ME.z,l=Math.hypot(dx,dz)||1;if(k==='en'){if(Math.abs(o.y-ME.y)<3)hitEnemy(o,x3dmg(.8),dx/l*10,dz/l*10);}else if(k==='brk'&&o.t!=='lamp')hitBrk(o,2);else if(k==='ped')knockPed(o,dx/l,dz/l);});
+      netEvent('fx','slam',+ME.x.toFixed(1),+ME.y.toFixed(1),+ME.z.toFixed(1),r);}}}catch(e){noteErr('titan',e);}};}
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);if(!ME||!isTitan(ME)||ME.veh||GG.cine||G.mode!=='play')return;const k=titanScale(ME)>1.5?1:.4;const ty=CAM.ty+1.1*k;
+  const ex=CAM.eye[0]-CAM.tx,ey=CAM.eye[1]-CAM.ty,ez=CAM.eye[2]-CAM.tz,f=1+.26*k;CAM.ty=ty;CAM.eye=[CAM.tx+ex*f,ty+ey*f,CAM.tz+ez*f];};}
+// ---------- Titan on his island: asleep on his throne until someone opens the gate and comes to wake him ----------
+const TNPC={x:0,y:0,z:0,face:0,anim:newAnim(),sleep:1,sit:1,looks:{ch:'titan'},state:'sleep',t:0,tscale:1.7};
+function titanIslandBuild(){const g=GGBY.titan;const tx=g.x,tz=g.z-9.5;const y=H[cid(tx|0,tz|0)];TNPC.x=tx;TNPC.z=tz;TNPC.face=0;
+  // the throne: a giant stone chair facing the road in
+  const th=mat4At(tx,y,tz-1.2,0);sput('box',th,0,.8,0,4.2,1.6,3,'#b8a58a',0);sput('box',th,0,3.2,-1.2,4.2,5,.8,'#c9b69a',0);for(const s of [-1,1]){sput('box',th,s*2.2,1.9,.1,.6,1.4,2.8,'#b8a58a',0);sput('sph',th,s*2.2,2.7,1.3,.8,.8,.8,'#f3b61f',3);}
+  sput('box',th,0,5.9,-1.2,4.8,.5,1.2,'#f3b61f',3);sput('sph',th,0,6.6,-1.2,1.2,1.2,1.2,'#fff1a8',3,.3);solid(tx-2.5,tz-2.8,tx+2.5,tz+.3,y+1.6);solid(tx-2.1,tz-3,tx+2.1,tz-2,y+5.7);
+  TNPC.y=y+1.6;TNPC.z=tz-.6;
+  // the gym: giant stone dumbbells, a punching boulder and a scoreboard
+  const q=mulberry(771);for(const [dx,dz,a] of [[-7,-2,.4],[7,-3,-.3],[-6,5,1.2]]){const x=tx+dx,z=g.z+dz,yy=H[cid(x|0,z|0)];const mm=mat4At(x,yy,z,a);sput('cyl',mm,0,.55,0,.25,3.4,.25,'#8f98a8',3);
+    const tb=M4.id();M4.tr(tb,x,yy+.55,z);M4.ry(tb,a);M4.rz(tb,Math.PI/2);sput('cyl',tb,0,0,0,.24,3.6,.24,'#8f98a8',3);for(const s of [-1,1])sput('sph',mm,s*1.7,.6,0,1.25,1.25,1.25,'#9aa0ac',0);occ(x-2,z-2,x+2,z+2);}
+  {const x=g.x+8,z=g.z+3,yy=H[cid(x|0,z|0)];sbox(x-2,yy,z-.3,.4,5,.4,'#8a5a3a',6);sbox(x+1.6,yy,z-.3,.4,5,.4,'#8a5a3a',6);sbox(x-2,yy+5,z-.3,4,.4,.4,'#8a5a3a',6);sbox(x-.05,yy+2.5,z-.05,.1,2.5,.1,'#555a6a',3);
+    sput('sph',mat4At(x,yy+2.2,z),0,0,0,1.8,1.8,1.8,'#9aa0ac',0);solid(x-2,z-.3,x+2,z+.1,yy+5.4);}
+  // training boulders to smash
+  for(let k=0;k<8;k++){const a=k/8*TAU+.3,d=6.5+q()*3;const x=g.x+Math.sin(a)*d,z=g.z+Math.cos(a)*d;if(Math.hypot(x-tx,z-tz)<4)continue;addBrk('tboulder',x,z,q()*6);}}
+BRKT.tboulder={r:1,top:1.9,hp:3,v:60,cols:['#c8783f','#dd8f52','#9a5530']};
+{const _db=drawBrk;drawBrk=function(b,t){if(b.t!=='tboulder')return _db(b,t);const m=MS.cur;MS.reset();M4.tr(m,b.x,b.y,b.z);M4.ry(m,b.r||0);if(b.wob)M4.rz(m,Math.sin(t*40)*b.wob*.1);
+  rb(m,0,.85,0,1.9,1.7,1.8,'#c8783f',0);rb(m,.45,1.35,.3,1,.8,1,'#dd8f52',0);bx(m,-.2,1.1,.91,.8,.06,.03,'#9a5530',0);bx(m,.3,.7,.91,.05,.5,.03,'#ffb347',1,.6);};}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{titanIslandBuild();}catch(e){noteErr('titanIsle',e);console.error(e);}};}
+// waking him up
+function titanWake(){if(TNPC.state!=='sleep')return;TNPC.state='wake';TNPC.t=0;SFX.roar&&SFX.roar();shake(.3);}
+function titanUpdate(dt){const g=GGBY.titan;const A=TNPC.anim;A.amp=0;A.walk=0;TNPC.t+=dt;
+  if(heroOK('titan')){TNPC.state='gone';return;}
+  if(TNPC.state==='sleep'){TNPC.sleep=1;TNPC.sit=1;if(R()<dt*1.2)PARTS.push({x:TNPC.x+.4,y:TNPC.y+4.3,z:TNPC.z+.5,vx:.4,vy:.8,vz:0,life:1.6,s:.28,c:hex('#ffffff'),e:.8,g:-.2,k:'deb',rot:0});
+    if(ggOpen('titan')&&ME&&d2(ME.x,ME.z,TNPC.x,TNPC.z)<9&&!GG.cine)titanWake();}
+  else if(TNPC.state==='wake'){const t=TNPC.t;TNPC.sleep=Math.max(0,1-t*2);if(t>.9){TNPC.sit=0;TNPC.y=H[cid(TNPC.x|0,(TNPC.z+2.6)|0)];TNPC.z=g.z-9.5+2.6;}if(t>1.1&&t<2.4)A.cheer=.4;
+    if(t>2.6&&!TNPC.done){TNPC.done=1;try{giveRewards({rw:[{t:'hero',id:'titan'}]});}catch(e){}if(!heroOK('titan'))unlockHero('titan');toast('🦸 '+trf('{0} joined your team!',tr('Titan')));saveSoon();}}}
+// the throne and the gym are drawn with the world; Titan himself is drawn here
+function drawTitanNpcs(t){if(camRealm()!=='earth')return;const prev=OUT;OUT=MOB;
+  if(TNPC.state!=='gone'&&Math.abs(TNPC.x-CAM.tx)<110&&Math.abs(TNPC.z-CAM.tz)<110)drawTitan(TNPC,t);
+  for(const q of GG.tease)if(q.on&&Math.abs(q.x-CAM.tx)<90&&Math.abs(q.z-CAM.tz)<90)drawTease(q,t);OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawTitanNpcs(t);}catch(e){noteErr('titanDraw',e);}};}
+// ---------- seen around the islands before you can play him ----------
+// lifting a car over his head on the road to his island, carrying two cows at the farm, and doing squats with a boulder at the beach
+const TEASE_LINES={car:[MV('This car? Light as a feather!','هذه السيارة؟ خفيفة كالريشة!'),MV('Don\'t worry, I will put it back. Probably.','لا تقلق، سأعيدها. على الأغلب.'),MV('Beep beep! Ha ha!','بيب بيب! ها ها!')],
+  cows:[MV('Moo-ving day! The cows asked for a ride.','يوم النقل! الأبقار طلبت توصيلة.'),MV('These two are my best friends. They say moo.','هاتان صديقتاي المفضلتان. تقولان موو.')],
+  squat:[MV('998... 999... 1000! Now with two boulders!','998... 999... 1000! الآن بصخرتين!'),MV('Strong heroes eat their veggies!','الأبطال الأقوياء يأكلون خضرواتهم!')]};
+MV('Open my Golden Gate with {0} golden bricks, and you can play as me!','افتح بوابتي الذهبية بـ {0} طوبة ذهبية، وستلعب بشخصيتي!');
+// open ground with no buildings nearby, so everyone can see him
+function openSpot(x0,z0,r){for(let rr=0;rr<=r;rr+=2){const n=Math.max(1,Math.round(rr*1.2));for(let k=0;k<n;k++){const a=k/n*TAU+rr*.37;const px=Math.floor(x0+Math.cos(a)*rr),pz=Math.floor(z0+Math.sin(a)*rr);let ok=true;const h0=inMap(px,pz)?H[cid(px,pz)]:0;
+    for(let dz=-6;dz<=6&&ok;dz++)for(let dx=-6;dx<=6;dx++){const X=px+dx,Z=pz+dz;if(!inMap(X,Z)||inInBox(X,Z)){ok=false;break;}const i=cid(X,Z);const near=Math.abs(dx)<=2&&Math.abs(dz)<=2;
+      if(CH[i]>H[i]+.1||H[i]<WL+.3||(near&&(RD[i]||Math.abs(H[i]-h0)>.5))){ok=false;break;}}if(ok)return {x:px+.5,z:pz+.5,y:h0};}}return null;}
+function teaseBuild(){GG.tease.length=0;const g=GGBY.titan;const add=(k,x,z,face)=>{if(!inMap(x|0,z|0))return;const y=H[cid(x|0,z|0)];if(y<WL+.3)return;GG.tease.push({k,x,z,y,face,anim:newAnim(),looks:{ch:'titan'},t:R()*5,said:0,on:true,tscale:1.6});};
+  {const L0=openSpot(LOC.park.x,LOC.park.z,34)||openSpot(LOC.camp.x,LOC.camp.z,40);if(L0)add('car',L0.x,L0.z,Math.atan2(LOC.hq.x-L0.x,LOC.hq.z-L0.z));}
+  const F=LOC.farm;const L=flatSpot(F.x+16,F.z-6,24,2);if(L)add('cows',L.x,L.z,-.6);
+  const Hb=LOC.beach||LOC.harbor;const B2=flatSpot(Hb.x+4,Hb.z-8,24,2);if(B2)add('squat',B2.x,B2.z,1.2);}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{teaseBuild();}catch(e){noteErr('tease',e);}};}
+function drawTease(q,t){const A=q.anim;A.amp=0;A.walk=0;q.lift=0;q.sit=0;q.sleep=0;
+  if(q.k==='car'){q.lift=1;q.yv=0;drawTitan(q,t);const S=q.tscale,up=Math.sin(t*1.6+q.t)*.25;const car={id:-1,type:'sedan',x:q.x+Math.sin(q.face)*.2,z:q.z+Math.cos(q.face)*.2,y:q.y+S*2.55+up,head:q.face+Math.PI/2,spd:0,vx:0,vz:0,vy:0,air:false,pitch:0,roll:0,wrot:t*6,hp:12,maxHp:12,col:'#46b0ff',drv:0,boost:1,honkT:0};
+    const prev=OUT;OUT=DYN;drawVehicle(car,t);OUT=prev;}
+  else if(q.k==='cows'){q.lift=0;A.walk=t*3.2;A.amp=.55;q.hug=1;drawTitan(q,t);q.hug=0;const S=q.tscale,f=q.face;for(const s of [-1,1]){const x=q.x+Math.cos(f)*s*1.25*S,z=q.z-Math.sin(f)*s*1.25*S;
+      drawAnimal({kind:'cow',x,y:q.y+S*.62+Math.abs(Math.sin(t*3.2))*.06,z,face:f+s*.15,walk:0,amp:0},t);}}
+  else if(q.k==='squat'){const ph=Math.abs(Math.sin(t*1.9+q.t));const S=q.tscale;q.lift=1;q.yv=-ph*.32*S;drawTitan(q,t);q.yv=0;const m=MS.cur;MS.reset();M4.tr(m,q.x,q.y+S*2.75-ph*.32*S,q.z);M4.ry(m,q.face);
+    rb(m,0,0,0,S*1.05,S*.85,S*.95,'#9aa0ac',0);rb(m,S*.25,S*.3,S*.1,S*.5,S*.4,S*.5,'#8a909c',0);}}
+function teaseUpdate(dt){const off=heroOK('titan')||ggOpen('titan');for(const q of GG.tease){q.on=!off;if(!q.on||!ME)continue;const d=d2(q.x,q.z,ME.x,ME.z);
+    if(d<16&&G.t-(q.said||-99)>14&&G.mode==='play'){q.said=G.t;const L=TEASE_LINES[q.k];q.line=tr(L[Math.floor(R()*L.length)]);q.lineT=5.5;q.sign=1;if(!q.voiced&&typeof VOICE!=='undefined'){q.voiced=1;try{VOICE.say(q.line,'Titan');}catch(e){}}}
+    if(q.lineT>0)q.lineT-=dt;}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(G.mode!=='play')return;titanUpdate(dt);teaseUpdate(dt);}catch(e){noteErr('titanUpd',e);}};}
+function titanLabels(){if(!ME)return;for(const q of GG.tease){if(!q.on)continue;const d=d2(q.x,q.z,ME.x,ME.z);if(d>30)continue;const S=q.tscale;const yTop=q.y+S*(q.k==='car'?3.7:2.2)+.6;
+    if(q.lineT>0)label('tts'+q.k,q.x,yTop+1.1,q.z,`<span class="sb"><b>Titan:</b> ${esc(q.line)}</span>`,'say yay');
+    label('ttg'+q.k,q.x,yTop+(q.lineT>0?2.9:.2),q.z,`🔒 ${esc(tr('Titan'))} · 🧱 ${Math.min(G.gb.size,20)}/20`,'sign or');}
+  if(TNPC.state==='sleep'&&d2(TNPC.x,TNPC.z,ME.x,ME.z)<30)label('ttz',TNPC.x,TNPC.y+4.6,TNPC.z,ggOpen('titan')?'💤 '+esc(tr('Titan is asleep. Walk up and wake him!')):'💤 Zzz...','sign');}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{titanLabels();}catch(e){}};}
+MV('Titan is asleep. Walk up and wake him!','تايتن نائم. اقترب وأيقظه!');MV('Open the Golden Gate to {0} with {1} golden bricks','افتح البوابة الذهبية إلى {0} بـ {1} طوبة ذهبية');MV('{0} joined your team!','{0} انضم إلى فريقك!');
+// ---------- Titan's Workout: smash the 8 training boulders on his island, as Titan ----------
+HATS.push({id:'nest',n:MV('Bird Nest','عش العصفور'),p:-1});REWARD_HATS.add('nest');HAT_ICON.nest='🪺';TROPHIES.titan={ic:'💪',n:MV('Titan Workout Belt','حزام تمارين تايتن')};
+{const _dh=drawHatX;drawHatX=function(m,hat,acc,hair,t){if(hat!=='nest')return _dh(m,hat,acc,hair,t);cy(m,0,.76,0,.68,.16,.68,'#a0703e',6);cy(m,0,.84,0,.54,.06,.54,'#c9955a',6);for(let k=0;k<7;k++){const a=k/7*TAU;MS.push();M4.tr(m,Math.cos(a)*.31,.8,Math.sin(a)*.31);M4.ry(m,-a+.6);bx(m,0,0,0,.22,.035,.045,'#8a5a3a',6);MS.pop();}
+  const hop=(t%5)<1?Math.max(0,Math.sin(t*9))*.07:0;MS.push();M4.tr(m,.06,.93+hop,0);M4.ry(m,Math.sin(t*.8)*1.2);sp(m,0,0,0,.14,.12,.18,'#46b0ff',1);sp(m,0,.08,.08,.1,.1,.1,'#46b0ff',1);co(m,0,.08,.16,.04,.06,.04,'#ffcf3a',1);
+  for(const s of [-1,1])sp(m,s*.045,.11,.13,.025,.03,.012,DARK,1);sp(m,0,.02,-.12,.07,.035,.1,'#2f6bff',1);MS.pop();};}
+{const _hb=hitBrk;hitBrk=function(b,dmg,fromNet){if(b&&b.t==='tboulder'&&!fromNet&&ME&&!isTitan(ME)){b.wob=.5;SFX.thud();if(G.t-(GG.tbT??-9)>4){GG.tbT=G.t;toast('💪 '+tr('Only Titan is strong enough to smash these!'));}return;}return _hb(b,dmg,fromNet);};}
+{const _sb=smashBrk;smashBrk=function(b,fromNet){_sb(b,fromNet);try{if(b.t!=='tboulder')return;b.respT=45;if(fromNet||!ME||!isTitan(ME)||G.tgymDone)return;G.tgym=Math.min(8,(G.tgym||0)+1);toast('💪 '+trf("Titan's Workout: {0}/8",G.tgym));
+    if(G.tgym>=8){G.tgymDone=1;banner(tr("Titan's Workout is done!"),tr('Super strong!'),'#ff9a3c');giveRewards({rw:[{t:'hat',id:'nest'},{t:'trophy',id:'titan'},{t:'coins',n:500}]});}saveSoon();}catch(e){}};}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.tg=[G.tgym||0,G.tgymDone?1:0];return o;};extraLoad=function(x){_el(x);const a=x&&Array.isArray(x.tg)?x.tg:[0,0];G.tgym=a[0]|0;G.tgymDone=a[1]?1:0;};}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(!ME||G.tgymDone||!heroOK('titan'))return;const g=GGBY.titan;if(d2(g.x,g.z,ME.x,ME.z)>34)return;const x=g.x+8,z=g.z+3;
+  label('tgym',x,H[cid(x|0,z|0)]+6.4,z,'💪 '+esc(trf("Titan's Workout: {0}/8",G.tgym||0))+'<br><span style="font-size:13px">'+esc(tr('Smash the training boulders as Titan'))+'</span>','sign or');}catch(e){}};}
+MV('Only Titan is strong enough to smash these!','تايتن وحده قوي بما يكفي لتحطيم هذه!');MV("Titan's Workout: {0}/8",'تمارين تايتن: {0}/8');MV("Titan's Workout is done!",'انتهت تمارين تايتن!');MV('Super strong!','قوي جدًا!');
+MV('Smash the training boulders as Titan','حطّم صخور التدريب بشخصية تايتن');
+// "show me the way" leads to his gate, or to his throne once the gate is open
+{const _hg=heroGuide;heroGuide=function(id){if(id!=='titan')return _hg(id);const g=GGBY.titan;if(!g.gate)return false;if(ggOpen('titan'))navSet({x:TNPC.x,z:TNPC.z+3,label:tr('Titan'),icon:'💪',col:g.col,realm:'earth'});else navSet({x:g.gate.x,z:g.gate.z,label:tr(g.n),icon:'🔒',col:g.col,realm:'earth'});return true;};}
+// ================= Blaze the Dragon: the prize behind the second golden gate =================
+// A friendly red dragon with a golden belly. Before the gate opens she flies big loops over the islands, and sleeps on her
+// nest on Dragon Peak. Open the gate, walk up to wake her, and she becomes a ride: hold jump to flap up, let go to glide
+// down, hold power to breathe fire, and tap attack to roar.
+VSPEC.dragon={n:MV('Blaze the Dragon','التنين بليز'),max:30,acc:14,col:'#e8343f',w:3.2,l:6.5,hp:999,air:1,special:1,ic:'🐉'};
+if(!SPECIALV.includes('dragon'))SPECIALV.push('dragon');if(!VTYPES.includes('dragon'))VTYPES.push('dragon');SEAT.dragon=[-.35,2.25,.9];
+const BLZ={nest:null,state:'sleep',t:0,fly:{u:0},roarT:0,near:false};G.blaze=G.blaze||0;
+// ---------- the model: used for the ride, the sleeping dragon and the one flying over the islands ----------
+function drawDragon(o,t){const m=MS.cur;MS.reset();const red='#e8343f',dk='#b8232f',bel='#ffcf3a',wing='#ff7a5a',horn='#fff1a8';
+  M4.tr(m,o.x,o.y,o.z);M4.ry(m,o.head||0);M4.rx(m,o.pitch||0);M4.rz(m,o.roll||0);const S=o.sc||1;M4.sc(m,S,S,S);
+  const sl=o.sleep||0,fl=o.flapK||0,ph=o.flap||0,br=Math.sin(t*(sl?1.2:2))*.04,air=o.air?1:0,fire=o.fire?1:0;
+  // body and belly
+  sp(m,0,1.55,0,2.2,1.9+br,3.7,red,1);sp(m,0,1.22,.25,1.72,1.3,3,bel,1);for(let k=0;k<5;k++)bx(m,0,.62,-.95+k*.5,1.12-Math.abs(k-2)*.1,.07,.36,'#ffb300',1);
+  for(let k=0;k<5;k++)co(m,0,2.5-Math.abs(k-2)*.1,-1.25+k*.6,.3,.55,.3,horn,1);
+  // legs: tucked in the air
+  for(const [lx,lz] of [[-.82,1],[.82,1],[-.82,-1.1],[.82,-1.1]]){MS.push();M4.tr(m,lx,1.05,lz);M4.rx(m,air*.95+(o.walk?Math.sin(o.walk+lx*3+lz)*.5:0)+sl*.6);sp(m,0,-.45,0,.58,.95,.62,red,1);sp(m,0,-.92,.15,.52,.3,.72,dk,1);
+    for(const c of [-.16,0,.16])co(m,c,-.98,.5,.08,.2,.08,horn,1);MS.pop();}
+  // tail: five pieces swinging, with a spade at the end
+  MS.push();M4.tr(m,0,1.5,-1.75);if(sl)M4.ry(m,.5);for(let k=0;k<5;k++){M4.rx(m,.14-air*.12);M4.ry(m,Math.sin(t*1.6-k*.7)*.13*(1-sl)+sl*.32);sp(m,0,0,-.45,.74-k*.11,.72-k*.11,1.15,red,1);M4.tr(m,0,-.04,-.82);}
+  MS.push();M4.rx(m,-Math.PI/2);co(m,0,.25,0,.5,.6,.12,dk,1);MS.pop();MS.pop();
+  // wings: flapping in the air, folded on the ground
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.95,2.3,.4);const a=fl>.02?Math.sin(ph)*.95*fl+.1:(sl?-.35:.95);M4.rz(m,s*a);if(fl<=.02)M4.ry(m,-s*.55);
+    bx(m,s*1.65,0,0,3.3,.16,.22,dk,1);sp(m,s*3.3,0,0,.26,.26,.26,dk,1);for(let k=0;k<3;k++)rb(m,s*(.62+k*1.05),-.05,-.78+k*.05,1.08,.06,1.6-k*.28,wing,1,.18);MS.pop();}
+  // neck and head
+  MS.push();M4.tr(m,0,2.05,1.55);M4.rx(m,-.72+sl*1.25);sp(m,0,.52,0,.92,1.55,.92,red,1);sp(m,0,.42,.26,.6,1.2,.5,bel,1);M4.tr(m,0,1.25,0);M4.rx(m,.78-sl*.35+fire*-.3);
+  sp(m,0,.32,.2,1.25,1.05,1.3,red,1);rb(m,0,.12,.88,.82,.56,.95,red,1);rb(m,0,-.14-fire*.14,.9,.74,.14+fire*.08,.84,dk,1);if(fire)rb(m,0,-.05,1.15,.5,.1,.4,'#ff9ec0',1);
+  for(const s of [-1,1]){sp(m,s*.37,.52,.56,.34,.38,.22,'#ffffff',1);if(!sl){sp(m,s*.39,.53,.66,.17,.24,.08,DARK,1);sp(m,s*.35,.6,.69,.06,.07,.03,WHITE,1,1);}else bx(m,s*.37,.5,.68,.3,.04,.02,DARK,1);
+    MS.push();M4.tr(m,s*.33,.92,-.12);M4.rx(m,-.9);M4.rz(m,-s*.2);co(m,0,.35,0,.17,.75,.17,horn,1);MS.pop();sp(m,s*.18,.26,1.34,.1,.08,.06,fire?'#ffcf3a':DARK,1,fire?1:0);
+    sp(m,s*.58,.25,.35,.2,.34,.08,'#ff9ec0',1,.2);}MS.pop();}
+// ---------- the ride ----------
+function dragonDrive(v,dt,inp,mine){const S=VS(v);const thr=clamp(-inp.mz,-1,1);v.head+=clamp(inp.mx,-1,1)*1.8*dt;const fx=Math.sin(v.head),fz=Math.cos(v.head);
+  v.spd=lerp(v.spd||0,thr*S.max,Math.min(1,dt*1.3));const up=!!inp.jump,dive=!!inp.down;
+  const tv=up?8.5:dive?-13:(v.landed?0:-3.2);v.vy=lerp(v.vy||0,tv,Math.min(1,dt*2.6));
+  v.flapK=lerp(v.flapK||0,v.landed?0:up?1:.35,Math.min(1,dt*4));const f0=v.flap||0;v.flap=f0+dt*(v.landed?0:up?10:4.2);
+  if(mine&&!v.landed&&Math.floor(f0/TAU)!==Math.floor(v.flap/TAU))AU.at(v.x,v.z,()=>{AU.noise(.2,.07*(up?1:.5),420);AU.tone(80,.18,'sine',.06*(up?1:.5),.7);});
+  airPhys(v,dt,mine,fx*v.spd,fz*v.spd);v.walk=v.landed&&Math.abs(v.spd)>.5?(v.walk||0)+dt*Math.abs(v.spd)*1.6:0;
+  v.pitch=lerp(v.pitch||0,clamp(-v.vy*.035,-.32,.32),Math.min(1,dt*3));v.roll=lerp(v.roll||0,-clamp(inp.mx,-1,1)*.38*(v.landed?0:1),Math.min(1,dt*3));
+  v.fire=inp.power?1:0;if(v.fire)dragonFire(v,dt,mine);v.roarT=(v.roarT||0)-dt;if(inp.punchP&&v.roarT<=0){v.roarT=1.4;dragonRoar(v,mine);}}
+function dragonMouth(v){const fx=Math.sin(v.head),fz=Math.cos(v.head);return {x:v.x+fx*3.9,y:v.y+3.1,z:v.z+fz*3.9,fx,fz};}
+function dragonFire(v,dt,mine){const M=dragonMouth(v);v.fireT=(v.fireT||0)-dt;
+  for(let k=0;k<3;k++){const sp=Rr(15,21),a=v.head+Rr(-.12,.12),dn=Rr(-.5,-.1);PARTS.push({x:M.x,y:M.y,z:M.z,vx:Math.sin(a)*sp+(v.vx||0),vy:dn*sp,vz:Math.cos(a)*sp+(v.vz||0),life:.5,s:Rr(.3,.6),c:hex(Rpick(['#ffcf3a','#ff8a1f','#ff4f1f','#fff1a8'])),e:1,g:-2,k:'deb',rot:R()*6});}
+  if(R()<.25)smokePuff(M.x+M.fx*7,M.y-1.5,M.z+M.fz*7,1,'#6d6672');
+  v.fsT=(v.fsT||0)-dt;if(v.fsT<=0){v.fsT=.24;AU.at(v.x,v.z,()=>{AU.noise(.28,.09,650);AU.tone(110,.25,'sawtooth',.025,.6);});}
+  if(!mine||v.fireT>0)return;v.fireT=.2;const dmg=x3dmg(.7);
+  for(const e of EN){if(e.dead)continue;const dx=e.x-M.x,dz=e.z-M.z,dh=Math.hypot(dx,dz);if(dh>14)continue;const c=(dx*M.fx+dz*M.fz)/(dh||1);if(c<.72&&dh>2)continue;const dy=e.y+1-M.y;if(dy>3||dy<-dh*1.1-4)continue;
+    hitEnemy(e,dmg,M.fx*4,M.fz*4);applyStatus(e,'burn',1.5);}
+  const hx=M.x+M.fx*6,hz=M.z+M.fz*6;brkNear(hx,hz,4,b=>{if(b.t!=='lamp'&&b.t!=='boulder')hitBrk(b,1);});for(const c of MIS.cores())if(!c.dead&&d2(c.x,c.z,hx,hz)<5)MIS.hitCore(c,dmg);}
+function dragonRoar(v,mine){SFX.roar&&SFX.roar();AU.at(v.x,v.z,()=>{AU.tone(140,.7,'sawtooth',.06,.45);AU.noise(.6,.1,500);});shake(.25);const M=dragonMouth(v);
+  for(let k=0;k<18;k++)PARTS.push({x:M.x,y:M.y,z:M.z,vx:M.fx*Rr(4,9)+Rr(-2,2),vy:Rr(2,6),vz:M.fz*Rr(4,9)+Rr(-2,2),life:.8,s:.4,c:hex(Rpick(['#ffcf3a','#ff8a1f','#ffffff'])),e:1,g:-1,k:'deb',rot:0});
+  if(mine)for(const e of EN)if(!e.dead&&d2(e.x,e.z,v.x,v.z)<13)applyStatus(e,'stun',1.6);}
+{const _du=driveUpdate;driveUpdate=function(v,dt,inp,mine){if(v.type!=='dragon')return _du(v,dt,inp,mine);v.lastIn=G.t;dragonDrive(v,dt,inp,mine);};}
+{const _dv=drawVehicle;drawVehicle=function(v,t){if(v.type!=='dragon')return _dv(v,t);drawDragon({x:v.x,y:v.y,z:v.z,head:v.head,pitch:v.pitch,roll:v.roll,flapK:v.flapK||0,flap:v.flap||0,air:!v.landed,fire:v.fire&&v===(ME&&ME.veh),walk:v.walk},t);
+  // the saddle
+  const m=MS.cur;MS.reset();M4.tr(m,v.x,v.y,v.z);M4.ry(m,v.head||0);M4.rx(m,v.pitch||0);M4.rz(m,v.roll||0);rb(m,0,2.35,-.3,1.1,.22,1.2,'#8a4a2a',6);rb(m,0,2.52,-.82,1,.3,.2,'#8a4a2a',6);bx(m,0,2.48,.28,.8,.3,.1,'#ffcf3a',3);};}
+{const _tl=touchLabels;touchLabels=function(){_tl();const T=$('touch');if(!T||!ME||!ME.veh||BUILD.on||ME.veh.type!=='dragon')return;const set=(k,ic,lb)=>{const b=T.querySelector('.tb.'+k);if(b){b.querySelector('.ic').textContent=ic;b.querySelector('.lb').textContent=tr(lb);}};
+  set('jump','⬆',MV('Flap','رفرفة'));set('power','🔥',MV('Fire','نار'));set('punch','🐉',MV('Roar','زئير'));};}
+{const _fi=findInteract;findInteract=function(p){const r=_fi(p);if(r&&r.k==='drive'&&r.o&&r.o.type==='dragon')r.label=trf('Ride {0}',tr('Blaze'));return r;};}
+{const _rt=rideTip;rideTip=function(v){if(v.type!=='dragon')return _rt(v);G.rideTips=G.rideTips||{};if(G.rideTips.dragon)return;G.rideTips.dragon=1;setTimeout(()=>toast('🐉 '+tr('Hold jump to flap up, let go to glide down. Power breathes fire, attack roars!')),600);};}
+MV('Ride {0}','اركب {0}');MV('Blaze','بليز');MV('Hold jump to flap up, let go to glide down. Power breathes fire, attack roars!','اضغط مطولاً على القفز لترفرف للأعلى، واتركه لتنزلق للأسفل. زر القوة ينفث النار، وزر الهجوم يزأر!');
+// ---------- Dragon Peak: the nest, the eggs, the gold, and the volcano glowing ----------
+function dragonIslandBuild(){const g=GGBY.dragon;const nx=g.x,nz=g.z-17;const y=H[cid(nx|0,nz|0)];BLZ.nest={x:nx,z:nz,y};
+  const q=mulberry(881);for(let k=0;k<14;k++){const a=k/14*TAU;const x=nx+Math.sin(a)*5.2,z=nz+Math.cos(a)*5.2;if(Math.abs(angDiff(a,0))<.5)continue;const m=mat4At(x,H[cid(x|0,z|0)],z,a);sput('rbox',m,0,.4,0,1.2+q()*.6,.8+q()*.5,1+q()*.5,'#3a3440',0);}
+  for(let k=0;k<40;k++){const a=k/40*TAU,r=4.2+q()*.5;const m=mat4At(nx+Math.sin(a)*r,y,nz+Math.cos(a)*r,a+q());sput('box',m,0,.18,0,1.1,.14,.2,q()<.5?'#e8c45a':'#c9a23a',6);}
+  // the eggs and the gold
+  for(const [dx,dz,s] of [[2.6,-2.4,1],[3,1.2,.8],[1.2,3,.7]]){const m=mat4At(nx+dx,y,nz+dz);sput('cone',m,0,.45*s,0,1.8*s,.9*s,1.8*s,'#ffcf3a',3,.15);for(let k=0;k<6;k++)sput('cyl',m,Math.sin(k)*.8*s,.12,Math.cos(k*1.3)*.8*s,.34,.06,.34,'#ffe27a',3,.2);
+    sput('box',m,.3,.95*s,0,.4,.3,.3,'#ff4f6d',3,.3);}
+  occ(nx-5,nz-5,nx+5,nz+5);}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{dragonIslandBuild();if(G.blaze)dragonRideOn();}catch(e){noteErr('dragonIsle',e);console.error(e);}};}
+function dragonRideOn(){if(!BLZ.nest||RIDES.some(r=>r.type==='dragon'))return;const N0=BLZ.nest;RIDES.push({type:'dragon',x:N0.x+.5,z:N0.z+1.5,h:Math.PI,y:N0.y,name:'Dragon Peak'});}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.blz=G.blaze?1:0;return o;};extraLoad=function(x){_el(x);G.blaze=x&&x.blz?1:0;};}
+// waking her up
+function blazeUpdate(dt){if(!BLZ.nest)return;BLZ.t+=dt;BLZ.roarT-=dt;
+  if(G.blaze){BLZ.state='ride';return;}
+  if(BLZ.state==='sleep'){if(ggOpen('dragon')&&ME&&!GG.cine&&d2(ME.x,ME.z,BLZ.nest.x,BLZ.nest.z)<11){BLZ.state='wake';BLZ.t=0;shake(.3);}}
+  else if(BLZ.state==='wake'){const t=BLZ.t;if(t>.6&&!BLZ.r1){BLZ.r1=1;SFX.roar&&SFX.roar();AU.tone(160,.8,'sawtooth',.06,.4);}
+    if(t>1.1&&t<2.6){const N0=BLZ.nest;for(let k=0;k<3;k++)PARTS.push({x:N0.x,y:N0.y+5.2,z:N0.z+2.2,vx:Rr(-1.5,1.5),vy:Rr(14,20),vz:Rr(-1.5,1.5),life:.8,s:Rr(.35,.6),c:hex(Rpick(['#ffcf3a','#ff8a1f','#ff4f1f'])),e:1,g:3,k:'deb',rot:0});}
+    if(t>2.8){G.blaze=1;BLZ.state='ride';dragonRideOn();ridesSpawn();banner(tr('Blaze is your friend now!'),tr('Hop on and fly!'),'#ff5a3c');SFX.heroUnlock&&SFX.heroUnlock();saveSoon();}}}
+MV('Blaze is your friend now!','بليز صديقتك الآن!');MV('Hop on and fly!','اركب وطِر!');
+// ---------- before the gate opens she flies big loops over the islands ----------
+const BLZPATH=chaikin([[192,150],[330,60],[520,110],[700,220],[760,420],[700,640],[560,800],[405,760],[240,760],[110,620],[80,420],[110,260]].concat([[192,150]]),3);
+const BLZLEN=(()=>{let L=0;for(let k=0;k<BLZPATH.length-1;k++)L+=Math.hypot(BLZPATH[k+1][0]-BLZPATH[k][0],BLZPATH[k+1][1]-BLZPATH[k][1]);return L;})();
+function blazePathAt(u){let d=((u%BLZLEN)+BLZLEN)%BLZLEN;for(let k=0;k<BLZPATH.length-1;k++){const [ax,az]=BLZPATH[k],[bx,bz]=BLZPATH[k+1];const L=Math.hypot(bx-ax,bz-az);if(d<=L){const t=d/L;return {x:ax+(bx-ax)*t,z:az+(bz-az)*t,head:Math.atan2(bx-ax,bz-az)};}d-=L;}return {x:BLZPATH[0][0],z:BLZPATH[0][1],head:0};}
+function blazeFlyer(){if(G.blaze||ggOpen('dragon'))return null;const u=G.t*21;const P=blazePathAt(u),P2=blazePathAt(u+6);const turn=angDiff(P.head,P2.head);return {x:P.x,z:P.z,y:62+Math.sin(G.t*.4)*6,head:P.head,roll:clamp(-turn*3,-.5,.5),pitch:Math.sin(G.t*.8)*.08,flapK:.8,flap:G.t*6,air:1,sc:1.25};}
+function blazeTease(dt){const F=blazeFlyer();BLZ.flyer=F;if(!F||!ME)return;const d=Math.hypot(F.x-ME.x,F.z-ME.z);if(d<70&&BLZ.roarT<=0){BLZ.roarT=22;AU.at(F.x,F.z,()=>{AU.tone(150,.9,'sawtooth',.05,.45);AU.noise(.7,.08,500);});}
+  if(d<120&&R()<dt*.6){const fx=Math.sin(F.head),fz=Math.cos(F.head);for(let k=0;k<10;k++)PARTS.push({x:F.x+fx*5,y:F.y+3.5,z:F.z+fz*5,vx:fx*Rr(10,16),vy:Rr(-2,2),vz:fz*Rr(10,16),life:.6,s:Rr(.4,.7),c:hex(Rpick(['#ffcf3a','#ff8a1f','#ff4f1f'])),e:1,g:0,k:'deb',rot:0});}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(G.mode!=='play')return;blazeUpdate(dt);blazeTease(dt);volcanoFx(dt);}catch(e){noteErr('blaze',e);}};}
+function volcanoFx(dt){const g=GGBY.dragon;if(!ME||Math.abs(ME.x-g.x)>140||Math.abs(ME.z-g.z)>140)return;const top=H[cid(g.x|0,g.z|0)];
+  if(R()<dt*6)PARTS.push({x:g.x+Rr(-3,3),y:top+.5,z:g.z+Rr(-3,3),vx:Rr(-1,1),vy:Rr(4,8),vz:Rr(-1,1),life:1.4,s:Rr(.15,.3),c:hex(Rpick(['#ffcf3a','#ff8a1f','#ff4f1f'])),e:1,g:2,k:'deb',rot:0});
+  if(R()<dt*3)smokePuff(g.x+Rr(-2,2),top+3+Rr(0,2),g.z+Rr(-2,2),1,'#7a7480');}
+function drawBlaze(t){if(camRealm()!=='earth')return;const prev=OUT;OUT=MOB;
+  if(BLZ.nest&&BLZ.state!=='ride'){const N0=BLZ.nest;if(Math.abs(N0.x-CAM.tx)<120&&Math.abs(N0.z-CAM.tz)<120){const w=BLZ.state==='wake'?smooth(0,1.2,BLZ.t):0;
+    drawDragon({x:N0.x+.5,y:N0.y+.1,z:N0.z+1.5,head:Math.PI,sleep:1-w,flapK:w>.5?.6:0,flap:t*8,fire:BLZ.state==='wake'&&BLZ.t>1.1&&BLZ.t<2.6,pitch:-w*.35},t);
+    if(BLZ.state==='sleep'&&R()<.02)PARTS.push({x:N0.x+.5,y:N0.y+3,z:N0.z-1.2,vx:.3,vy:.9,vz:0,life:1.6,s:.3,c:hex('#ffffff'),e:.8,g:-.2,k:'deb',rot:0});}}
+  const F=BLZ.flyer;if(F&&Math.abs(F.x-CAM.tx)<260&&Math.abs(F.z-CAM.tz)<260)drawDragon(F,t);OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawBlaze(t);}catch(e){noteErr('blazeDraw',e);}};}
+function blazeLabels(){if(!ME)return;const F=BLZ.flyer;if(F&&Math.hypot(F.x-ME.x,F.z-ME.z)<90)label('blzf',F.x,F.y+5,F.z,`🔒 🐉 ${esc(tr('Blaze the Dragon'))} · 🧱 ${Math.min(G.gb.size,35)}/35`,'sign or');
+  const N0=BLZ.nest;if(N0&&BLZ.state==='sleep'&&d2(N0.x,N0.z,ME.x,ME.z)<30)label('blzz',N0.x,N0.y+5.5,N0.z,ggOpen('dragon')?'💤 '+esc(tr('Blaze is asleep. Walk up and wake her!')):'💤 Zzz...','sign');}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{blazeLabels();}catch(e){}};}
+MV('Blaze is asleep. Walk up and wake her!','بليز نائمة. اقترب وأيقظها!');
+// ---------- the dragon eggs: warm all three with Blaze's fire and they hatch ----------
+const EGGS=[{c:'#ff9ec0',dx:-1.8,dz:-2.2,h:0},{c:'#7ef9ff',dx:-2.6,dz:.1,h:0},{c:'#b28dff',dx:-1.6,dz:2.1,h:0}];G.eggs=G.eggs||0;
+PETS.push({id:'ember',n:MV('Ember the Baby Dragon','إمبر التنين الصغير'),p:-1,i:'🐲',d:MV('A tiny dragon who hatched on Dragon Peak','تنين صغير فقس على قمة التنين')});TROPHIES.dragon={ic:'🥚',n:MV('Dragon Egg Keeper','حارس بيض التنين')};
+{const _dp=drawPet;drawPet=function(o,t){if(o.kind!=='ember')return _dp(o,t);drawDragon({x:o.x,y:o.y+.75+Math.sin(t*3+o.x)*.12,z:o.z,head:o.face||0,flapK:1,flap:t*13,air:1,sc:.26,pitch:-.1},t);};}
+{const _ps=petSound;petSound=function(k){if(k==='ember'){AU.tone(700,.16,'sawtooth',.03,1.7);AU.tone(900,.12,'triangle',.02,1.4,.1);AU.noise(.1,.03,1500);return;}_ps(k);};}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.egg=G.eggs?1:0;return o;};extraLoad=function(x){_el(x);G.eggs=x&&x.egg?1:0;};}
+function eggsWarm(v,dt){if(G.eggs||!BLZ.nest)return;const M=dragonMouth(v),N0=BLZ.nest;let all=true;for(const e of EGGS){const ex=N0.x+e.dx,ez=N0.z+e.dz,ey=N0.y+.7;const dx=ex-M.x,dz=ez-M.z,dh=Math.hypot(dx,dz);
+    if(dh<15&&(dx*M.fx+dz*M.fz)/(dh||1)>.6&&ey<M.y+2){const h0=e.h;e.h=Math.min(1,e.h+dt*.65);if(h0<1&&e.h>=1){SFX.sparkle&&SFX.sparkle();burst(ex,ey+.5,ez,[e.c,'#ffffff','#ffcf3a'],16,3,.16,1);toast('🥚 '+trf('Egg warm! {0}/3',EGGS.filter(q=>q.h>=1).length));}}if(e.h<1)all=false;}
+  if(all){G.eggs=1;const N=BLZ.nest;for(const e of EGGS)burst(N.x+e.dx,N.y+1,N.z+e.dz,[e.c,'#ffffff','#ffcf3a'],30,5,.2,1);SFX.win&&SFX.win();banner(tr('The eggs hatched!'),tr('Ember the baby dragon wants to come with you!'),'#ff5a3c');
+    giveRewards({rw:[{t:'pet',id:'ember'},{t:'trophy',id:'dragon'},{t:'coins',n:500}]});saveSoon();}}
+{const _df=dragonFire;dragonFire=function(v,dt,mine){_df(v,dt,mine);if(mine)try{eggsWarm(v,dt);}catch(e){}};}
+function drawEggs(t){if(!BLZ.nest||camRealm()!=='earth')return;const N0=BLZ.nest;if(Math.abs(N0.x-CAM.tx)>90||Math.abs(N0.z-CAM.tz)>90)return;const m=MS.cur;const prev=OUT;OUT=DYN;
+  for(const e of EGGS){const x=N0.x+e.dx,z=N0.z+e.dz;MS.reset();M4.tr(m,x,N0.y,z);if(G.eggs){for(const s of [-1,1]){MS.push();M4.tr(m,s*.3,.25,0);M4.rz(m,s*.5);sp(m,0,0,0,.9,.6,.9,e.c,1,.1);MS.pop();}continue;}
+    const h=e.h;if(h>.3)M4.rz(m,Math.sin(t*(8+h*10))*.08*h);sp(m,0,.7,0,1,1.35,1,e.c,1,.12+h*.8);for(let k=0;k<4;k++)sp(m,Math.sin(k*1.7)*.42,.5+k*.18,Math.cos(k*1.7)*.42,.18,.18,.18,'#ffffff',1,h*.5);}OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawEggs(t);}catch(e){}};}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(!ME||G.eggs||!G.blaze||!BLZ.nest)return;const N0=BLZ.nest;if(d2(N0.x,N0.z,ME.x,ME.z)>40)return;
+  label('eggs',N0.x-2,N0.y+3.4,N0.z,'🥚 '+esc(tr("Warm the eggs with Blaze's fire"))+` · ${EGGS.filter(q=>q.h>=1).length}/3`,'sign or');}catch(e){}};}
+MV('Egg warm! {0}/3','البيضة دافئة! {0}/3');MV('The eggs hatched!','فقس البيض!');MV('Ember the baby dragon wants to come with you!','إمبر التنين الصغير يريد أن يأتي معك!');MV("Warm the eggs with Blaze's fire",'دفّئ البيض بنار بليز');
+MV('Golden Gates!','البوابات الذهبية!');MV('Golden bricks now open giant golden gates to two new islands, and each island hides a big prize','الطوب الذهبي يفتح الآن بوابات ذهبية عملاقة إلى جزيرتين جديدتين، وفي كل جزيرة جائزة كبيرة');
+MV('A gentle giant made of living rock. Open Titan Island with 20 golden bricks and wake him up. Boys and girls can both play him!','عملاق طيب مصنوع من الصخر الحي. افتح جزيرة تايتن بـ 20 طوبة ذهبية وأيقظه. الأولاد والبنات يستطيعون اللعب به!');
+MV('Open Dragon Peak with 35 golden bricks and wake Blaze. Fly her, breathe fire and roar!','افتح قمة التنين بـ 35 طوبة ذهبية وأيقظ بليز. طِر بها، وانفث النار، وازأر!');MV('Dragon eggs','بيض التنين');
+MV("Warm the three eggs on Dragon Peak with Blaze's fire, and a baby dragon hatches to be your pet",'دفّئ البيضات الثلاث على قمة التنين بنار بليز، فيفقس تنين صغير ليكون حيوانك الأليف');
+// ================= online: the host sees how friends join, and how many are playing =================
+function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
+  if(!want){if(el&&!el.hidden)el.hidden=true;return;}
+  if(!el){const f=$('friends');if(!f)return;el=document.createElement('div');el.id='hostcard';el.className='card';el.onclick=()=>{NET.hcHide=1;el.hidden=true;};f.parentNode.insertBefore(el,f.nextSibling);}
+  el.hidden=false;const n=playerCount(),name=prof().name;const SA=!!(NET.room&&NET.room.standalone);
+  const how=SA?trf('On the other iPads: open Block Buddies, tap Play online, then tap Join next to {0}',name):trf('On the other devices: open this same game, tap Play online, then tap Join next to {0}',name);
+  const h=`<div class="hc"><b>🎮 ${esc(tr("You're hosting!"))} <span class="pill2" dir="ltr">👥 ${n}/${MAXP}</span></b><small>${esc(n>1?trf('{0} more friends can still join',MAXP-n):how)}</small>${n>1?'':`<small>${esc(tr('Everyone needs the internet. The same Wi-Fi works best.'))}</small>`}<small class="x">${esc(tr('Tap to hide'))}</small></div>`;
+  if(el._h!==h){el._h=h;el.innerHTML=h;}}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{hostCard();}catch(e){}};}
+{const _nh=netHost;netHost=async function(){NET.hcHide=0;const ok=await _nh();if(ok)setTimeout(()=>{if(NET.role==='host')banner(tr("You're hosting!"),tr('Friends can join you now'),'#46e6b0');},900);return ok;};}
+MV("You're hosting!",'أنت المضيف!');MV('On the other iPads: open Block Buddies, tap Play online, then tap Join next to {0}','على أجهزة الآيباد الأخرى: افتح بلوك بديز، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');
+MV('On the other devices: open this same game, tap Play online, then tap Join next to {0}','على الأجهزة الأخرى: افتح هذه اللعبة نفسها، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');MV('{0} more friends can still join','ما زال بإمكان {0} أصدقاء الانضمام');
+MV('Everyone needs the internet. The same Wi-Fi works best.','يحتاج الجميع إلى الإنترنت. شبكة الواي فاي نفسها هي الأفضل.');MV('Tap to hide','اضغط للإخفاء');MV('Friends can join you now','يستطيع أصدقاؤك الانضمام إليك الآن');
 // ================= start =================
 boot();
 </script>
