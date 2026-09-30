@@ -119,7 +119,15 @@ kbd{font:800 11.5px var(--ui);background:#fff;color:var(--ink);border-radius:5px
 .tag{position:absolute;left:0;top:0;white-space:nowrap;font-weight:900;font-size:13px;padding:2px 8px;border-radius:8px;background:rgba(26,22,66,.75)}
 .tag.name{font-size:14px}.tag.alert{background:var(--gold);color:var(--ink);font-family:var(--display);font-size:24px;padding:0 12px;animation:bob 1s ease-in-out infinite}@keyframes bob{50%{margin-top:-6px}}
 .tag.emote{background:#fff;color:var(--ink);font-size:22px;padding:2px 10px;border-radius:14px}
-.tag.sign{font-family:var(--display);font-size:18px;background:var(--red);letter-spacing:.05em;box-shadow:0 3px 0 #b3223b}.tag.sign.or{background:#ff8a1f;box-shadow:0 3px 0 #b35a10}.tag.sign.gr{background:#3fb45a;box-shadow:0 3px 0 #22803a}.tag.job{background:#fff;color:var(--ink);font-size:20px;padding:1px 7px;border-radius:12px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.tag.sign{font-family:var(--display);font-size:18px;background:var(--red);letter-spacing:.05em;box-shadow:0 3px 0 #b3223b}.tag.sign.or{background:#ff8a1f;box-shadow:0 3px 0 #b35a10}.tag.sign.gr{background:#3fb45a;box-shadow:0 3px 0 #22803a}.tag.say{background:none;padding:0;white-space:normal;pointer-events:none}
+.tag.say .sb{display:block;position:relative;background:#fff;color:#1a1642;font-size:14px;font-weight:800;line-height:1.2;padding:6px 11px;border-radius:14px;max-width:210px;width:max-content;text-align:center;box-shadow:0 3px 0 rgba(0,0,0,.22);animation:sayin .28s cubic-bezier(.2,1.6,.4,1) both;margin-bottom:8px}
+.tag.say .sb::after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-7px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #fff}
+.tag.say.yay .sb{background:#fff4b8}.tag.say.yay .sb::after{border-top-color:#fff4b8}
+.tag.say.mad .sb{background:#ffe0e0;color:#8a1020}.tag.say.mad .sb::after{border-top-color:#ffe0e0}
+.tag.say.wow .sb{background:#dff4ff}.tag.say.wow .sb::after{border-top-color:#dff4ff}
+.tag.say.sad .sb{background:#ece6ff}.tag.say.sad .sb::after{border-top-color:#ece6ff}
+@keyframes sayin{from{transform:scale(.4) translateY(10px)}to{transform:none}}
+.tag.job{background:#fff;color:var(--ink);font-size:20px;padding:1px 7px;border-radius:12px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
 .ftxt{position:absolute;left:0;top:0;font-family:var(--display);font-size:22px;white-space:nowrap;-webkit-text-stroke:1.5px var(--ink);color:var(--gold)}
 .ftxt.white{color:#fff;font-size:18px}.ftxt.red{color:#ff7d93}.ftxt.green{color:#8dff9a}.ftxt.orange{color:#ffb35a}.ftxt.blue{color:#9be7ff}
 /* dialog */
@@ -1051,6 +1059,8 @@ Object.assign(AR,{'Skater Zak':'زاك المتزلّج','Rocky Rockstar':'رو�
 Object.assign(AR,{'{0} hits!':'{0} ضربات!','Combo x{0}!':'سلسلة x{0}!','Combo King':'ملك السلاسل','Hit baddies 25 times in a row':'اضرب الأشرار 25 مرة متتالية','Hero of the day: {0} earns +50% coins!':'بطل اليوم: {0} يربح عملات أكثر بنسبة 50%!',
 'Play again:':'العب مجددًا:','Level {0} unlocks {1}!':'المستوى {0} يفتح {1}!'});
 // ---- v18: flying down, hero landing, pools ----
+Object.assign(AR,{'People talk to you!':'الناس يتحدثون إليك!','People in the street say hi, cheer when you beat baddies, and shout "Watch out!" when you drive too fast':'الناس في الشارع يلقون التحية، ويهتفون عندما تهزم الأشرار، ويصرخون "انتبه!" عندما تقود بسرعة كبيرة',
+'All new sounds':'أصوات جديدة كليًا','Richer sound effects, a friendly car horn, engines for every ride, footsteps, birds and waves':'مؤثرات صوتية أغنى، وبوق سيارة لطيف، ومحركات لكل مركبة، ووقع الأقدام، والعصافير، والأمواج'});
 Object.assign(AR,{'40 new missions!':'40 مهمة جديدة!','Catch runaway animals, put out fires, take photos, train like a knight and more':'أمسك الحيوانات الهاربة، وأطفئ النيران، والتقط الصور، وتدرّب مثل الفرسان، والمزيد',
 'New prizes':'جوائز جديدة','Win 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks':'اربح 12 قبعة و4 حيوانات أليفة (كتكوت وثعلب وفقمة صغيرة وكائن فضائي صغير) وتعابير وطوبًا ذهبيًا',
 'Fly down fast':'انزل بسرعة أثناء الطيران','Hold ⬇ to fly down. Tap 🦸 Land for a super hero landing':'اضغط مطولاً على ⬇ لتنزل. اضغط 🦸 هبوط لهبوط الأبطال الخارق',
@@ -3481,9 +3491,9 @@ function buildTarget(){const p=ME;const fx=Math.sin(p.face),fz=Math.cos(p.face);
 function buildMsg(t){if(G.t-BUILD.msgT<1.2)return;BUILD.msgT=G.t;toast(tr(t));}
 function buildPlace(){const T=BUILD.tgt;if(!T)return;if(T.why){buildMsg(T.why);SFX.nope();return;}if(bstCount()>=BUILD.max){buildMsg('Brick limit reached. Remove some first.');SFX.nope();return;}
   let c=BUILD.sel;if(!isBrick(c[0]))c=c[0]+String(BUILD.rot);const code=colCode(T.i)+c;setColumn(T.i,code);netEvent('bset',T.i,code);
-  ME.anim.punch=1;ME.anim.pside=1;SFX.click();AU.tone(520+R()*120,.07,'square',.035);burst(T.cx+.5,T.y+.8,T.cz+.5,isBrick(c[0])&&c[0]>='a'?BCOL[c.charCodeAt(0)-97]:'#ffffff',5,2,.12,.3);}
+  ME.anim.punch=1;ME.anim.pside=1;burst(T.cx+.5,T.y+.8,T.cz+.5,isBrick(c[0])&&c[0]>='a'?BCOL[c.charCodeAt(0)-97]:'#ffffff',5,2,.12,.3);}
 function buildRemove(){const T=BUILD.tgt;if(!T)return;if(!T.has){buildMsg('Nothing of yours to remove here');SFX.nope();return;}const code=colCode(T.i).slice(0,-2);setColumn(T.i,code);netEvent('bset',T.i,code);
-  ME.anim.punch=1;ME.anim.pside=-1;SFX.smash();const k=T.top[0];brickBurst(T.cx+.5,T.y-.4,T.cz+.5,[k>='a'&&k<='p'?BCOL[k.charCodeAt(0)-97]:MCBC[k]&&k!=='Z'?MCBC[k].col:'#c08a4a'],6,3);}
+  ME.anim.punch=1;ME.anim.pside=-1;const k=T.top[0];brickBurst(T.cx+.5,T.y-.4,T.cz+.5,[k>='a'&&k<='p'?BCOL[k.charCodeAt(0)-97]:MCBC[k]&&k!=='Z'?MCBC[k].col:'#c08a4a'],6,3);}
 function setBuildMode(on){if(on&&(ME.veh||G.mode!=='play'||ME.ko))return;if(BUILD.on===on)return;BUILD.on=on;BUILD.dirty=true;document.body.classList.toggle('building',on);$('bbar').hidden=!on;if(on){renderBBar();if(!G.buildTip){G.buildTip=1;toast(tr(TOUCH.on?'Build mode! Place, Remove and Turn buttons. Tap a color up top.':'Build mode! J or click = place · K = remove · E = turn · 1-9 = colors'));}}
   touchLabels();SFX.click();}
 function touchLabels(){const T=$('touch');if(!T)return;const set=(k,ic,lb)=>{const b=T.querySelector('.tb.'+k);if(b){b.querySelector('.ic').textContent=ic;b.querySelector('.lb').textContent=tr(lb);}};
@@ -7395,8 +7405,10 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:18,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:19,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'💬',t:'People talk to you!',s:'People in the street say hi, cheer when you beat baddies, and shout "Watch out!" when you drive too fast'},
+  {ic:'🔊',t:'All new sounds',s:'Richer sound effects, a friendly car horn, engines for every ride, footsteps, birds and waves'},
   {ic:'⭐',t:'40 new missions!',s:'Catch runaway animals, put out fires, take photos, train like a knight and more',go:()=>{if(!ME||typeof MP==='undefined')return null;const L=MP.ids.map(qDef).filter(q=>q&&qAvailable(q)).map(q=>NPCS.find(n=>n.id===q.giver)).filter(n=>n&&!inInBox(n.x,n.z)&&realmAt(n.x,n.z)==='earth').sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const n=L[0];return n?dd({x:n.x,z:n.z,label:tr(n.name),icon:'⭐',col:'#ffcf3a'}):null;}},
   {ic:'🎁',t:'New prizes',s:'Win 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks'},
   {ic:'⬇️',t:'Fly down fast',s:'Hold ⬇ to fly down. Tap 🦸 Land for a super hero landing'},
@@ -8502,6 +8514,324 @@ function questParty(){if(!ME)return;const C0=['#ff4f6d','#ffcf3a','#46b0ff','#7e
   for(let k=0;k<40;k++)PARTS.push({x:ME.x+Rr(-2.5,2.5),y:ME.y+Rr(3,5),z:ME.z+Rr(-2.5,2.5),vx:Rr(-1,1),vy:Rr(-.5,1.5),vz:Rr(-1,1),life:Rr(1.4,2.2),s:Rr(.09,.15),c:hex(C0[k%C0.length]),e:.6,g:2.2,k:'deb',rot:R()*6});
   for(const n of NPCS)if(d2(n.x,n.z,ME.x,ME.z)<14&&n.anim)n.anim.cheer=1.4;}
 {const _bn=banner;banner=function(t,...a){const r=_bn(t,...a);if(t==='Quest complete!'||t===tr('Quest complete!'))try{questParty();}catch(e){noteErr('party',e);}return r;};}
+// ================= sound 2.0: a small mixing desk, softer and richer tones, hand-made sound effects,
+// engines that sound like what you drive, footsteps, and the sounds of the world around you =================
+// Everything is still made in code (no sound files). Every sound goes through one bus with a gentle compressor and a
+// little room echo. Sounds from things in the world come from their side of the screen and get quieter far away.
+// ---------- the desk ----------
+AU.setup=function(){if(this.bus||!this.ctx)return;const c=this.ctx;try{
+  const comp=c.createDynamicsCompressor();comp.threshold.value=-16;comp.knee.value=14;comp.ratio.value=4;comp.attack.value=.003;comp.release.value=.16;
+  const out=c.createGain();out.gain.value=1.1;comp.connect(out);out.connect(c.destination);
+  const bus=c.createGain();bus.gain.value=1;bus.connect(comp);
+  // room echo: a short, soft, darkened reverb so sounds feel like they happen somewhere
+  const conv=c.createConvolver();conv.buffer=SND.ir(c,1.25);const rlp=c.createBiquadFilter();rlp.type='lowpass';rlp.frequency.value=5200;const ret=c.createGain();ret.gain.value=.9;
+  const send=c.createGain();send.gain.value=.16;bus.connect(send);send.connect(conv);conv.connect(rlp);rlp.connect(ret);ret.connect(comp);
+  this.comp=comp;this.out=out;this.bus=bus;this.send=send;this.conv=conv;
+  const nb=c.createBuffer(1,c.sampleRate*2|0,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;this.nbuf=nb;
+  const t0=performance.now();SND.bank(c);SND.ms=Math.round(performance.now()-t0);SND.bgStart();}catch(e){console.error('sound setup',e);this.bus=null;}};
+{const _in=AU.init;AU.init=function(){_in.call(AU);try{AU.setup();if(AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume();}catch(e){}};}
+// where the next sounds come from (set by AU.at around things that happen in the world)
+AU.pp=null;AU.pv=1;
+AU.at=function(x,z,fn){if(!ME||!isFinite(x)){fn();return;}const d=Math.hypot(x-ME.x,z-ME.z);if(d>70){AU.pv=0;try{fn();}finally{AU.pv=1;AU.pp=null;}return;}
+  const ex=CAM.eye?CAM.eye[0]:ME.x,ez=CAM.eye?CAM.eye[2]:ME.z;let fx=CAM.tx-ex,fz=CAM.tz-ez;const l=Math.hypot(fx,fz)||1;fx/=l;fz/=l;const dx=x-ME.x,dz=z-ME.z,dl=Math.hypot(dx,dz)||1;
+  const side=(dx*-fz+dz*fx)/dl;const pan=clamp(side*Math.min(1,d/4),-.8,.8);const vol=clamp(1.5/(1+d/9),.06,1);AU.pp=pan;AU.pv=vol;try{fn();}finally{AU.pp=null;AU.pv=1;}};
+AU.route=function(node,pan){const c=this.ctx;let p=pan!==undefined&&pan!==null?pan:(AU.pp!==null?AU.pp:(Math.random()-.5)*.24);
+  if(c.createStereoPanner){const P=c.createStereoPanner();P.pan.value=clamp(p,-1,1);node.connect(P);P.connect(this.bus);}else node.connect(this.bus);};
+AU.ok=function(){return !!(this.ctx&&this.sfx&&(this.bus||(this.setup(),this.bus)));};
+// the old simple beeps are softened: a gentle attack, a filter that follows the note, two slightly detuned voices for the buzzy waves
+AU.tone=function(f,d,type='square',v=.07,slide=0,delay=0){if(!this.ok())return;v*=AU.pv;if(v<.002)return;const c=this.ctx,t=c.currentTime+delay+.004;
+  const lp=c.createBiquadFilter();lp.type='lowpass';lp.Q.value=.55;const k=type==='square'?4.2:type==='sawtooth'?3.4:type==='triangle'?9:16;const cut=Math.min(11000,Math.max(300,f*k));lp.frequency.setValueAtTime(cut,t);
+  if(slide)lp.frequency.exponentialRampToValueAtTime(Math.min(12000,Math.max(120,cut*slide)),t+d);
+  const g=c.createGain();const a=Math.min(.007,d*.2);g.gain.setValueAtTime(.00001,t);g.gain.exponentialRampToValueAtTime(v*.95,t+a);g.gain.exponentialRampToValueAtTime(.0003,t+d);
+  const voices=type==='square'||type==='sawtooth'?[[-7,.62],[7,.62]]:[[0,1]];for(const [det,vol] of voices){const o=c.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);o.detune.value=det;
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+d);const og=c.createGain();og.gain.value=vol;o.connect(og);og.connect(lp);o.start(t);o.stop(t+d+.04);}
+  lp.connect(g);this.route(g);};
+AU.noise=function(d,v=.1,f=800,delay=0){if(!this.ok())return;v*=AU.pv;if(v<.002)return;const c=this.ctx,t=c.currentTime+delay+.004;const s=c.createBufferSource();s.buffer=this.nbuf;
+  const fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=f;fl.Q.value=.6;const g=c.createGain();g.gain.setValueAtTime(.00001,t);g.gain.exponentialRampToValueAtTime(v,t+Math.min(.006,d*.2));g.gain.exponentialRampToValueAtTime(.0003,t+d);
+  s.connect(fl);fl.connect(g);this.route(g);s.start(t,Math.random()*1.4,d+.05);};
+// ---------- hand-made sounds, drawn sample by sample ----------
+const SND={B:{},G:{},gen:{},order:[],last:{},SR:32000,
+  ir(c,sec){const sr=c.sampleRate,n=Math.floor(sr*sec),b=c.createBuffer(2,n,sr);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);let lp=0;
+      for(let i=0;i<n;i++){const t=i/n;lp+=((Math.random()*2-1)-lp)*(.7-.55*t);d[i]=lp*Math.pow(1-t,3)*(i<sr*.006?i/(sr*.006):1)*(t<.06?.6:1);}}return b;},
+  mk(c,sec,fn){const sr=this.SR,n=Math.max(8,Math.floor(sr*sec)),b=c.createBuffer(1,n,sr),d=b.getChannelData(0);fn(d,sr,n);let pk=0;for(let i=0;i<n;i++)if(!isFinite(d[i]))d[i]=0;else pk=Math.max(pk,Math.abs(d[i]));
+    if(pk>0)for(let i=0;i<n;i++)d[i]*=.95/pk;const f=Math.min(n>>1,Math.floor(sr*.008));for(let i=0;i<f;i++)d[n-1-i]*=i/f;const f0=Math.min(n>>2,Math.floor(sr*.0015));for(let i=0;i<f0;i++)d[i]*=i/f0;return b;},
+  // play a sample: name, loudness, pitch (1 = as made), pan (default: where it happens)
+  // the sounds are drawn a few at a time in the background (the most used ones first), so the game never stops to make them
+  PRI:['click','coin','jump','land','st_grass','st_hard','hit','punch','whoosh','nope','place','unplace','open','talk','pop','bubble','splash','thud','smash','coin2','honk','engineOn','chirp','stroke','st_sand','st_snow','st_wood','hoof','wave','cricket'],
+  genMs:0,bgStart(){if(this.bgOn)return;this.bgOn=true;const q=[...new Set([...this.PRI.filter(k=>this.gen[k]),...this.order])];const tick=()=>{const t0=performance.now();
+      while(q.length&&performance.now()-t0<10){const k=q.shift();if(!this.B[k])this.get(k);}this.genMs+=performance.now()-t0;if(q.length)setTimeout(tick,45);else this.ready=true;};setTimeout(tick,120);},
+  get(name){let L=this.B[name];if(!L&&this.gen[name]){try{L=this.B[name]=this.gen[name]();}catch(e){console.error('snd',name,e);this.gen[name]=null;}}return L;},
+  play(name,v=1,rate=1,pan,delay=0){if(!AU.ok())return;const L=this.get(name);if(!L)return false;const b=Array.isArray(L)?L[Math.floor(Math.random()*L.length)]:L;v*=(this.G[name]||1)*AU.pv;if(v<.002)return true;
+    const now=performance.now();if(this.last[name]&&now-this.last[name]<28)return true;this.last[name]=now;const c=AU.ctx,s=c.createBufferSource();s.buffer=b;s.playbackRate.value=rate*(1+(Math.random()-.5)*.05);
+    const g=c.createGain();g.gain.value=v;s.connect(g);AU.route(g,pan);s.start(c.currentTime+.004+delay);return true;},
+  bank(c){const G=this.G,L=(k,f)=>{this.gen[k]=f;this.order.push(k);},T=Math.PI*2,rnd=()=>Math.random()*2-1,mk=(s,f)=>this.mk(c,s,f),E=Math.exp,S=Math.sin;
+    // tiny filters used while drawing: one-pole low/high pass and a state-variable band pass
+    const lpK=(fc,sr)=>1-E(-T*fc/sr);const svf=()=>{let lo=0,bd=0;return (x,fc,q,sr)=>{const f=2*S(Math.PI*Math.min(fc,sr/6)/sr);lo+=f*bd;const hi=x-lo-q*bd;bd+=f*hi;return bd;};};
+    const bell=(t,f,dec)=>(S(T*f*t)+.34*S(T*f*2.01*t)*E(-t*dec*1.6)+.16*S(T*f*2.76*t)*E(-t*dec*2.4)+.05*S(T*f*5.4*t)*E(-t*dec*4))*E(-t*dec);
+    const note=(d,sr,n,t0,f,dec,amp=1,fn=bell)=>{const i0=Math.floor(t0*sr);for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=amp*fn(t,f,dec)*Math.min(1,t/.0015);}};
+    // --- menus ---
+    L('click',()=>mk(.05,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*.5;d[i]=S(T*1350*t)*E(-t*140)*.8+lp*E(-t*900)*.5+S(T*2700*t)*E(-t*260)*.2;}}));G.click=.16;
+    L('nope',()=>mk(.36,(d,sr,n)=>{for(const [t0,f] of [[0,330],[.13,247]]){const i0=Math.floor(t0*sr);let ph=0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;ph+=T*f*(1-.08*Math.min(1,t/.12))/sr;
+        d[i]+=(S(ph)+.28*S(3*ph)+.1*S(5*ph))*Math.min(1,t/.006)*E(-t*13);}}}));G.nope=.15;
+    L('open',()=>mk(.22,(d,sr,n)=>{const bp=svf();for(let i=0;i<n;i++){const t=i/sr;d[i]=bp(rnd(),500+3500*t/.22,.9,sr)*S(Math.PI*t/.22)*.9+S(T*(600+900*t/.22)*t)*E(-t*18)*.12;}}));G.open=.1;
+    // --- coins and prizes ---
+    L('coin',()=>mk(.34,(d,sr,n)=>{note(d,sr,n,0,1976,26,.8);note(d,sr,n,.058,2637,9,1);}));G.coin=.2;
+    L('coin2',()=>mk(.5,(d,sr,n)=>{[1568,1976,2637].forEach((f,k)=>note(d,sr,n,k*.052,f,k<2?18:7,k<2?.7:1));}));G.coin2=.22;
+    L('coin3',()=>mk(.9,(d,sr,n)=>{[1568,1976,2349,3136,3951].forEach((f,k)=>note(d,sr,n,k*.048,f,k<4?14:5,.8));let hp=0,pv=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.9*(hp+z-pv);pv=z;d[i]+=hp*.14*E(-t*5)*(t>.1?1:t/.1);}}));G.coin3=.24;
+    L('gold',()=>mk(1.5,(d,sr,n)=>{[1047,1319,1568,2093,2637].forEach((f,k)=>note(d,sr,n,k*.085,f,3.2,.75));let hp=0,pv=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.92*(hp+z-pv);pv=z;d[i]+=hp*.1*E(-t*2.2)*Math.min(1,t/.2);}}));G.gold=.26;
+    L('chest',()=>mk(1.1,(d,sr,n)=>{let ph=0,lp=0;for(let i=0;i<n&&i<sr*.22;i++){const t=i/sr;ph+=T*(150+30*S(t*40)+rnd()*8)/sr;const saw=((ph/T)%1)*2-1;lp+=(saw-lp)*lpK(900,sr);d[i]+=lp*.35*Math.min(1,t/.02)*E(-t*6);}
+      [784,988,1319,1568,1976].forEach((f,k)=>note(d,sr,n,.2+k*.055,f,5,.6));}));G.chest=.24;
+    L('buy',()=>mk(.8,(d,sr,n)=>{const bp=svf();for(let i=0;i<n;i++){const t=i/sr;d[i]+=bp(rnd(),5200,.5,sr)*E(-t*35)*.8;}note(d,sr,n,.03,1319,5,.9,(t,f,k)=>(S(T*f*t)+.5*S(T*f*2.43*t)*E(-t*9)+.3*S(T*f*3.91*t)*E(-t*14))*E(-t*k));note(d,sr,n,.1,2637,12,.35);note(d,sr,n,.16,3136,12,.3);}));G.buy=.24;
+    L('heal',()=>mk(.8,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(523+524*Math.min(1,t/.35))/sr;d[i]=(S(ph)+.3*S(2*ph))*Math.min(1,t/.02)*E(-t*3.5)*.7;}note(d,sr,n,.18,2093,6,.35);note(d,sr,n,.27,2637,6,.3);}));G.heal=.2;
+    // fanfares
+    const brass=(t,f)=>{let s=0;for(let h=1;h<=7;h++)s+=S(T*f*h*t)*(1/h)*E(-t*h*.6);return s*.7;};
+    L('level',()=>mk(1.2,(d,sr,n)=>{[[0,784,.09],[.09,1047,.09],[.18,1319,.09]].forEach(([t0,f,l])=>{const i0=t0*sr|0;for(let i=i0;i<n&&i<i0+l*sr+.03*sr;i++){const t=(i-i0)/sr;d[i]+=brass(t,f)*Math.min(1,t/.005)*(t<l?1:E(-(t-l)*80));}});
+      for(const f of [1047,1319,1568]){const i0=.27*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=brass(t,f*(1+.004*S(T*6*t)))*.55*Math.min(1,t/.01)*E(-t*2.6);}}note(d,sr,n,.3,3136,4,.25);}));G.level=.26;
+    L('win',()=>mk(1.4,(d,sr,n)=>{for(let i=0;i<sr*.25&&i<n;i++){const t=i/sr;d[i]+=S(T*(80+60*E(-t*30))*t)*E(-t*14)*.6;}[[0,1047],[.1,1319],[.2,1568],[.3,2093]].forEach(([t0,f],k)=>note(d,sr,n,t0,f,k<3?7:2.4,.8));
+      for(const f of [1047,1319,1568]){const i0=.3*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=brass(t,f/2)*.3*Math.min(1,t/.02)*E(-t*2.2);}}}));G.win=.28;
+    L('mission',()=>mk(.9,(d,sr,n)=>{[[0,784,.13],[.14,1047,.5]].forEach(([t0,f,l])=>{const i0=t0*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;let lpv=0;d[i]+=brass(t,f/2)*Math.min(1,t/.012)*(t<l?1:E(-(t-l)*9))*(1+.05*S(T*5*t));}});note(d,sr,n,.16,2093,5,.3);}));G.mission=.24;
+    L('boss',()=>mk(1.6,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;const f=110;const sw=((f*t)%1)*2-1,sw2=((f*1.059*t)%1)*2-1,sw3=((f*.5*t)%1)*2-1;lp+=((sw+sw2+sw3*.8)-lp)*lpK(300+900*E(-t*2),sr);
+        d[i]=lp*.5*Math.min(1,t/.08)*E(-t*1.2)+S(T*(55+40*E(-t*18))*t)*E(-t*5)*.7;}}));G.boss=.3;
+    L('heroUnlock',()=>mk(1.6,(d,sr,n)=>{[523,659,784,1047,1319,1568].forEach((f,k)=>note(d,sr,n,k*.085,f*2,4,.7));for(const f of [523,659,784]){const i0=.5*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=brass(t,f)*.35*Math.min(1,t/.05)*E(-t*1.8);}}}));G.heroUnlock=.28;
+    L('sparkle',()=>mk(.5,(d,sr,n)=>{for(let k=0;k<6;k++)note(d,sr,n,k*.04+Math.random()*.02,2200+Math.random()*2200,14,.4);}));G.sparkle=.14;
+    // --- the hero ---
+    L('jump',()=>mk(.2,(d,sr,n)=>{let ph=0,lp=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(250+410*(1-E(-t*24)))/sr;lp+=(rnd()-lp)*.2;d[i]=(S(ph)+.22*S(2*ph))*Math.min(1,t/.004)*E(-t*15)+lp*E(-t*70)*.25;}}));G.jump=.2;
+    L('djump',()=>mk(.26,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(420+700*(1-E(-t*28)))/sr;d[i]=(S(ph)+.2*S(2*ph))*Math.min(1,t/.004)*E(-t*13);}note(d,sr,n,.05,2600,22,.25);}));G.djump=.2;
+    L('land',()=>[0,1,2].map(v=>mk(.16,(d,sr,n)=>{let lp=0;const f0=120+v*14;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(700,sr);d[i]=S(T*(f0*E(-t*9)+45)*t)*E(-t*30)*.8+lp*E(-t*38)*.9;}})));G.land=.2;
+    L('punch',()=>mk(.12,(d,sr,n)=>{const bp=svf();for(let i=0;i<n;i++){const t=i/sr;d[i]=bp(rnd(),1600-1100*t/.12,.8,sr)*S(Math.PI*Math.min(1,t/.1))*.9+S(T*(170-60*t/.12)*t)*E(-t*40)*.4*(t>.04?1:0);}}));G.punch=.16;
+    L('hit',()=>[0,1,2].map(v=>mk(.16,(d,sr,n)=>{let hp=0,pv=0;const f0=240+v*30;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.6*(hp+z-pv);pv=z;d[i]=Math.tanh(1.8*S(T*(f0*E(-t*18)+80)*t))*E(-t*26)*.8+hp*E(-t*70)*.6+S(T*2800*t)*E(-t*300)*.3;}})));G.hit=.22;
+    L('hurt',()=>mk(.3,(d,sr,n)=>{let ph=0,lp=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(560-240*Math.min(1,t/.25))*(1+.03*S(T*22*t))/sr;const saw=((ph/T)%1)*2-1;lp+=(saw-lp)*lpK(1700,sr);d[i]=lp*Math.min(1,t/.01)*E(-t*9);}}));G.hurt=.2;
+    L('oof',()=>mk(.2,(d,sr,n)=>{let ph=0,lp=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(300-110*t/.2)/sr;const tri=Math.asin(S(ph))*.64;lp+=(rnd()-lp)*lpK(600,sr);d[i]=tri*Math.min(1,t/.012)*E(-t*11)+lp*E(-t*30)*.3;}}));G.oof=.18;
+    L('slam',()=>mk(1,(d,sr,n)=>{let lp=0,lp2=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(900*E(-t*3)+120,sr);lp2+=(rnd()-lp2)*lpK(2400,sr);d[i]=Math.tanh(1.6*S(T*(34+60*E(-t*9))*t))*E(-t*3.6)*.9+lp*E(-t*3.5)*.9+lp2*E(-t*30)*.35;}}));G.slam=.34;
+    L('whoosh',()=>[0,1].map(v=>mk(.3,(d,sr,n)=>{const bp=svf();const L=.3;for(let i=0;i<n;i++){const t=i/sr,u=t/L;d[i]=bp(rnd(),600+2600*S(Math.PI*u)*(v?1.2:1),.7,sr)*Math.pow(S(Math.PI*u),1.6);}})));G.whoosh=.16;
+    L('fly',()=>mk(.6,(d,sr,n)=>{const bp=svf();let ph=0;for(let i=0;i<n;i++){const t=i/sr,u=t/.6;ph+=T*(380+700*u)*(1+.02*S(T*9*t))/sr;d[i]=bp(rnd(),500+2400*u,.6,sr)*S(Math.PI*u)*.8+S(ph)*.25*S(Math.PI*u);}}));G.fly=.18;
+    L('dash',()=>mk(.35,(d,sr,n)=>{const bp=svf();let ph=0;for(let i=0;i<n;i++){const t=i/sr,u=t/.35;ph+=T*(300+800*u)/sr;d[i]=bp(rnd(),900+3200*u,.7,sr)*Math.min(1,t/.02)*E(-t*6)+S(ph)*.2*E(-t*7);}}));G.dash=.18;
+    L('lift',()=>mk(.2,(d,sr,n)=>{let ph=0,lp=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(210+160*Math.min(1,t/.12))/sr;lp+=(rnd()-lp)*lpK(500,sr);d[i]=Math.asin(S(ph))*.64*Math.min(1,t/.01)*E(-t*12)+lp*E(-t*40)*.25;}}));G.lift=.18;
+    L('chute',()=>mk(.45,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(1800*E(-t*5)+300,sr);d[i]=lp*Math.min(1,t/.03)*E(-t*6)+S(T*140*t)*E(-t*18)*.3;}}));G.chute=.2;
+    // footsteps: soft ones, different for grass, stone and road, sand, snow and wood
+    const step=(kind)=>mk(kind==='snow'?.12:.09,(d,sr,n)=>{let lp=0,hp=0,pv=0;const bp=svf();for(let i=0;i<n;i++){const t=i/sr,z=rnd();
+        if(kind==='grass'){lp+=(z-lp)*lpK(1100,sr);d[i]=lp*(.6+.4*Math.abs(S(T*140*t+z*.3)))*Math.min(1,t/.006)*E(-t*48)+S(T*95*t)*E(-t*60)*.25;}
+        else if(kind==='hard'){d[i]=bp(z,1500,.8,sr)*E(-t*110)*.9+S(T*180*t)*E(-t*70)*.45;}
+        else if(kind==='sand'){d[i]=bp(z,2600,.9,sr)*Math.min(1,t/.012)*E(-t*42);}
+        else if(kind==='snow'){hp=.7*(hp+z-pv);pv=z;const g=(Math.random()<.35?1:.15);d[i]=hp*g*Math.min(1,t/.008)*E(-t*32)*.8+bp(z,900,1,sr)*E(-t*40)*.4;}
+        else{d[i]=(S(T*210*t)+.4*S(T*430*t))*E(-t*55)*.7+bp(z,2200,.8,sr)*E(-t*160)*.5;}}});
+    L('st_grass',()=>[0,1,2].map(()=>step('grass')));L('st_hard',()=>[0,1,2].map(()=>step('hard')));L('st_sand',()=>[0,1,2].map(()=>step('sand')));L('st_snow',()=>[0,1,2].map(()=>step('snow')));L('st_wood',()=>[0,1].map(()=>step('wood')));
+    G.st_grass=.05;G.st_hard=.045;G.st_sand=.045;G.st_snow=.06;G.st_wood=.05;
+    L('hoof',()=>[0,1].map(v=>mk(.1,(d,sr,n)=>{const bp=svf();for(let i=0;i<n;i++){const t=i/sr;d[i]=S(T*(520+v*90)*t)*E(-t*70)*.6+bp(rnd(),1800,.7,sr)*E(-t*120)*.6+S(T*140*t)*E(-t*50)*.3;}})));G.hoof=.09;
+    L('stomp',()=>mk(.3,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(400,sr);d[i]=S(T*(48+50*E(-t*20))*t)*E(-t*11)+lp*E(-t*20)*.5;}}));G.stomp=.2;
+    // --- water ---
+    const splashB=(big)=>mk(big?.9:.6,(d,sr,n)=>{let lp=0,lp2=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();lp+=(z-lp)*lpK(3200*E(-t*6)+500,sr);lp2+=(z-lp2)*lpK(700,sr);d[i]=lp*Math.min(1,t/.004)*E(-t*(big?7:10))*.9+lp2*E(-t*3)*.3*Math.min(1,t/.05);}
+      for(let k=0;k<(big?9:5);k++){const t0=.04+Math.random()*(big?.6:.35),f=500+Math.random()*700;const i0=t0*sr|0;let ph=0;for(let i=i0;i<n&&i<i0+sr*.06;i++){const t=(i-i0)/sr;ph+=T*f*(1+t*25)/sr;d[i]+=S(ph)*E(-t*60)*.3;}}});
+    L('splash',()=>[splashB(false),splashB(false)]);L('splash2',()=>splashB(true));G.splash=.24;G.splash2=.28;
+    L('stroke',()=>[0,1].map(()=>mk(.25,(d,sr,n)=>{const bp=svf();for(let i=0;i<n;i++){const t=i/sr;d[i]=bp(rnd(),1100+500*S(t*20),.6,sr)*Math.min(1,t/.03)*E(-t*12);}})));G.stroke=.07;
+    L('bubble',()=>mk(.16,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(300+700*(1-E(-t*30)))/sr;d[i]=(S(ph)+.25*S(2*ph))*Math.min(1,t/.003)*E(-t*20);}note(d,sr,n,.07,1400,40,.2,(t,f,k)=>S(T*f*(1+t*8)*t)*E(-t*k));}));G.bubble=.16;
+    L('pop',()=>[0,1].map(v=>mk(.06,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(900+1900*Math.min(1,t/.02)+v*300)/sr;d[i]=S(ph)*E(-t*80)+(t<.002?rnd()*.4:0);}})));G.pop=.12;
+    // --- hits, breaks and booms ---
+    L('thud',()=>mk(.18,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(550,sr);d[i]=S(T*(55+70*E(-t*22))*t)*E(-t*24)+lp*E(-t*34)*.6;}}));G.thud=.22;
+    L('smash',()=>[0,1].map(()=>mk(.45,(d,sr,n)=>{let hp=0,pv=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.75*(hp+z-pv);pv=z;const g=t<.05?1:(Math.random()<.08?1:.2);d[i]=hp*g*E(-t*9)*.8+S(T*(90+90*E(-t*25))*t)*E(-t*18)*.6;}
+      for(let k=0;k<6;k++){const t0=.03+Math.random()*.3;note(d,sr,n,t0,700+Math.random()*1400,45,.25,(t,f,k2)=>S(T*f*t)*E(-t*k2));}})));G.smash=.24;
+    L('boom',()=>[0,1].map(()=>mk(1.4,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(2200*E(-t*3.2)+120,sr);d[i]=Math.tanh(2*S(T*(28+60*E(-t*6))*t))*E(-t*2.6)*.8+lp*Math.min(1,t/.004)*E(-t*2.2)*1.1+(Math.random()<.003*E(-t*3)?rnd()*.8:0);}})));G.boom=.34;
+    L('crash',()=>mk(.9,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(2600*E(-t*5)+300,sr);d[i]=lp*Math.min(1,t/.003)*E(-t*7)+S(T*(60+60*E(-t*20))*t)*E(-t*12)*.7;}
+      for(const [f,k,a] of [[523,5,.25],[1211,7,.2],[2330,9,.14],[3712,12,.1]])note(d,sr,n,.005,f,k,a,(t,ff,kk)=>S(T*ff*t)*E(-t*kk));for(let k=0;k<5;k++)note(d,sr,n,.05+Math.random()*.4,3000+Math.random()*2500,40,.12,(t,ff,kk)=>S(T*ff*t)*E(-t*kk));}));G.crash=.3;
+    L('clang',()=>mk(.7,(d,sr,n)=>{for(const [f,k,a] of [[820,5,.5],[2150,8,.35],[3900,12,.2],[5300,16,.1]])note(d,sr,n,0,f,k,a,(t,ff,kk)=>S(T*ff*t)*E(-t*kk));for(let i=0;i<sr*.01;i++)d[i]+=rnd()*.5*(1-i/(sr*.01));}));G.clang=.18;
+    L('kick',()=>mk(.2,(d,sr,n)=>{for(let i=0;i<n;i++){const t=i/sr;d[i]=S(T*(50+80*E(-t*28))*t)*E(-t*18)+(t<.004?rnd()*.6:0);}}));G.kick=.24;
+    L('door',()=>mk(.4,(d,sr,n)=>{const bp=svf();let lp=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();lp+=(z-lp)*lpK(700,sr);d[i]=bp(z,1300,.7,sr)*E(-t*120)*.7+lp*S(Math.PI*Math.min(1,t/.35))*.4+S(T*190*t)*E(-t*45)*.35;}}));G.door=.26;
+    L('boing',()=>mk(.55,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*200*(1+.55*S(T*15*t)*E(-t*5)+.3*t)/sr;d[i]=S(ph)*Math.min(1,t/.004)*E(-t*4.6);}}));G.boing=.18;
+    L('trap',()=>mk(.45,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(320+380*Math.min(1,t/.25))*(1+.06*S(T*13*t))/sr;d[i]=(S(ph)+.3*S(2*ph))*Math.min(1,t/.006)*E(-t*5);}}));G.trap=.16;
+    L('zap',()=>mk(.18,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;const fc=1700*E(-t*14)+250;ph+=T*fc/sr;d[i]=S(ph+2.4*S(ph*2.01))*E(-t*16)*.8;}}));G.zap=.12;
+    L('orb',()=>mk(.5,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(220+440*t/.5)*(1+.02*S(T*7*t))/sr;d[i]=(S(ph)+.4*S(2*ph+S(T*5*t)))*Math.min(1,t/.03)*E(-t*4)*.8;}note(d,sr,n,.1,1760,7,.25);}));G.orb=.15;
+    L('web',()=>mk(.14,(d,sr,n)=>{const bp=svf();for(let i=0;i<n;i++){const t=i/sr;d[i]=bp(rnd(),3600-2600*t/.14,.5,sr)*E(-t*20);}}));G.web=.16;
+    L('freeze',()=>mk(.45,(d,sr,n)=>{let hp=0,pv=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.5*(hp+z-pv);pv=z;d[i]=hp*(Math.random()<.2?1:.1)*E(-t*8)*.8;}for(let k=0;k<7;k++)note(d,sr,n,Math.random()*.3,2400+Math.random()*3000,26,.25);}));G.freeze=.16;
+    L('thunder',()=>mk(1.6,(d,sr,n)=>{let lp=0,amp=1;for(let i=0;i<n;i++){const t=i/sr;if(Math.random()<.0008)amp=.5+Math.random();lp+=(rnd()-lp)*lpK(260+200*E(-t*4),sr);d[i]=lp*amp*Math.min(1,t/.02)*E(-t*1.6)+S(T*(38+30*E(-t*5))*t)*E(-t*2)*.6;}}));G.thunder=.34;
+    L('roar',()=>mk(.9,(d,sr,n)=>{let lp=0,ph=0,ph2=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(150-40*t)*(1+.05*S(T*8*t))/sr;ph2+=T*(153-40*t)/sr;const s=((ph/T)%1)*2-1+((ph2/T)%1)*2-1;lp+=(s+rnd()*.6-lp)*lpK(900,sr);d[i]=lp*Math.min(1,t/.06)*E(-t*2.8);}}));G.roar=.24;
+    L('rocket',()=>mk(1.6,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(300+1400*Math.min(1,t/1.2),sr);d[i]=lp*Math.min(1,t/.15)*(t<1.2?1:E(-(t-1.2)*6))*1.2+S(T*(60+120*t)*t)*.2*Math.min(1,t/.2);}}));G.rocket=.3;
+    // --- vehicles ---
+    // a friendly "beep-beep" car horn: two short, bright notes a third apart (soft square tones, a tiny drop at the end)
+    const beep=(d,sr,n,t0,l,f1,f2)=>{const i0=t0*sr|0;let p1=0,p2=0;for(let i=i0;i<n&&i<i0+(l+.05)*sr;i++){const t=(i-i0)/sr;const dr=1-.025*Math.max(0,(t-l*.6)/(l*.4));p1+=T*f1*dr/sr;p2+=T*f2*dr/sr;
+        let s=0;for(const h of [1,3,5,7])s+=(S(h*p1)+S(h*p2))/(h*h*.8);d[i]+=s*Math.min(1,t/.006)*(t<l?1:E(-(t-l)*90));}};
+    L('honk',()=>mk(.45,(d,sr,n)=>{beep(d,sr,n,0,.11,660,831);beep(d,sr,n,.17,.14,660,831);let lp=0;for(let i=0;i<n;i++){lp+=(d[i]-lp)*lpK(2600,sr);d[i]=lp;}}));G.honk=.12;
+    // a ship's "toot-toot": deep, round and warm
+    L('toot',()=>mk(1.2,(d,sr,n)=>{for(const [t0,l] of [[0,.32],[.45,.5]]){const i0=t0*sr|0;let lp=0;for(let i=i0;i<n&&i<i0+(l+.15)*sr;i++){const t=(i-i0)/sr;const s=((196*t)%1)*2-1+((247*t)%1)*2-1;lp+=(s-lp)*lpK(700,sr);d[i]+=lp*Math.min(1,t/.05)*(t<l?1:E(-(t-l)*18));}}}));G.toot=.16;
+    // a helicopter / plane "toot": a quick two-tone chime
+    L('airhorn',()=>mk(.4,(d,sr,n)=>{note(d,sr,n,0,988,9,.8);note(d,sr,n,.12,1319,7,.8);}));G.airhorn=.2;
+    L('engineOn',()=>mk(.7,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;const f=28+60*Math.min(1,t/.5);const saw=((f*t)%1)*2-1;const am=.6+.4*S(T*(f/2)*t);lp+=(saw*am+rnd()*.3-lp)*lpK(420,sr);d[i]=lp*Math.min(1,t/.05)*(t<.55?1:E(-(t-.55)*14));}}));G.engineOn=.14;
+    // --- animals and people ---
+    L('woof',()=>mk(.36,(d,sr,n)=>{for(const t0 of [0,.17]){const i0=t0*sr|0;const b1=svf(),b2=svf();let ph=0;for(let i=i0;i<n&&i<i0+.12*sr;i++){const t=(i-i0)/sr;ph+=T*(380-160*t/.12)/sr;const src=(((ph/T)%1)*2-1)*.6+rnd()*.5;
+        d[i]+=(b1(src,750,.4,sr)+b2(src,1500,.5,sr)*.6)*Math.min(1,t/.008)*E(-t*22);}}}));G.woof=.2;
+    L('whistle',()=>mk(.55,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;const on=t<.24||(t>.3&&t<.5);ph+=T*(t<.26?2700:3000)*(1+.03*S(T*34*t))/sr;d[i]=S(ph)*(on?1:0)*.8+(on?rnd()*.06:0);}}));G.whistle=.09;
+    L('talk',()=>[0,1,2].map(v=>mk(.12,(d,sr,n)=>{const b=svf();let ph=0;const f0=[520,600,680][v];for(let i=0;i<n;i++){const t=i/sr;ph+=T*f0*(1+.1*Math.min(1,t/.05))/sr;const src=((ph/T)%1)*2-1;d[i]=b(src,1100+600*v,.35,sr)*Math.min(1,t/.006)*E(-t*28);}})));G.talk=.12;
+    L('join',()=>mk(1,(d,sr,n)=>{[[0,1047],[.11,1568],[.22,2093]].forEach(([t0,f])=>note(d,sr,n,t0,f,4.5,.8));}));G.join=.22;
+    L('team',()=>mk(1.5,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*lpK(1500*E(-t*3)+150,sr);d[i]=lp*E(-t*2.5)*.8+Math.tanh(1.8*S(T*(36+50*E(-t*6))*t))*E(-t*3)*.7;}[523,659,784,1047,1319,1568].forEach((f,k)=>note(d,sr,n,.05+k*.04,f*2,3.5,.3));}));G.team=.3;
+    // --- building ---
+    L('place',()=>[0,1,2].map(v=>mk(.12,(d,sr,n)=>{const f=[1450,1600,1750][v];for(let i=0;i<n;i++){const t=i/sr;d[i]=S(T*f*t)*E(-t*90)*.7+S(T*(f*.38)*t)*E(-t*60)*.5+(t<.0015?rnd()*.8:0)+(t>.018&&t<.02?rnd()*.5:0);}})));G.place=.28;
+    L('unplace',()=>mk(.14,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T*(900-500*t/.14)/sr;d[i]=S(ph)*E(-t*40)*.8+(t<.002?rnd()*.5:0);}}));G.unplace=.18;
+    // --- the world around you ---
+    L('chirp',()=>[0,1,2,3].map(v=>mk(.5,(d,sr,n)=>{const k=2+Math.floor(Math.random()*4);for(let j=0;j<k;j++){const t0=j*(.07+Math.random()*.05),f=2600+Math.random()*2200,up=Math.random()<.5;const i0=t0*sr|0;let ph=0;
+        for(let i=i0;i<n&&i<i0+.06*sr;i++){const t=(i-i0)/sr;ph+=T*f*(1+(up?1:-1)*t*6)/sr;d[i]+=S(ph+.6*S(ph*.5))*S(Math.PI*t/.06);}}})));G.chirp=.022;
+    L('cricket',()=>mk(.4,(d,sr,n)=>{for(let j=0;j<3;j++){const i0=(j*.055)*sr|0;for(let i=i0;i<n&&i<i0+.03*sr;i++){const t=(i-i0)/sr;d[i]+=S(T*4400*t)*S(Math.PI*t/.03)*(.6+.4*S(T*180*t));}}}));G.cricket=.012;
+    L('wave',()=>[0,1].map(()=>mk(2.4,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;const env=Math.pow(S(Math.PI*t/2.4),2)*(t<1?t:1);lp+=(rnd()-lp)*lpK(350+1300*env,sr);d[i]=lp*env;}})));G.wave=.05;
+  }};
+// ---------- new versions of the sounds everyone hears all the time (the old ones stay as a backup) ----------
+{const P=(k,v,r,pan)=>SND.play(k,v,r,pan);const W=(k,fn)=>{const old=SFX[k];SFX[k]=function(...a){if(!AU.ctx||!AU.sfx)return;AU.setup();if(fn(...a)===false&&old)old.apply(SFX,a);};};
+  W('click',()=>P('click'));W('nope',()=>P('nope'));W('jump',()=>P('jump'));W('djump',()=>P('djump'));W('land',()=>P('land'));W('punch',()=>P('punch'));W('hit',()=>P('hit'));W('hurt',()=>P('hurt'));
+  W('oof',()=>P('oof'));W('slam',(v=1)=>P('slam',v));W('boom',()=>P('boom'));W('whoosh',()=>P('whoosh'));W('fly',()=>P('fly'));W('dash',()=>P('dash'));W('lift',()=>P('lift'));W('chute',()=>P('chute'));
+  W('coin',(v)=>P(v>=1000?'coin3':v>=100?'coin2':'coin'));W('gold',()=>P('gold'));W('chest',()=>P('chest'));W('buy',()=>P('buy'));W('heal',()=>P('heal'));W('level',()=>P('level'));
+  W('splash',()=>P('splash'));W('splash2',()=>P('splash2'));W('thud',()=>P('thud'));W('smash',()=>P('smash'));W('crash',()=>P('crash'));W('clang',()=>P('clang'));W('kick',()=>P('kick'));W('door',()=>P('door'));
+  W('boing',()=>P('boing'));W('trap',()=>P('trap'));W('zap',()=>P('zap'));W('orb',()=>P('orb'));W('web',()=>P('web'));W('freeze',()=>P('freeze'));W('thunder',()=>P('thunder'));W('roar',()=>P('roar'));W('rocket',()=>P('rocket'));
+  W('bubble',(big)=>P('bubble',1,big?.7:1));W('pop',()=>P('pop'));W('woof',()=>P('woof'));W('whistle',()=>P('whistle'));W('talk',()=>P('talk'));W('join',()=>P('join'));W('team',()=>P('team'));
+  W('engineOn',()=>P('engineOn'));W('heroUnlock',()=>P('heroUnlock'));W('sparkle',()=>P('sparkle'));
+  // car horn: the friendly beep-beep; boats toot; aircraft chime
+  W('honk',()=>P('honk'));W('horn',()=>{const v=ME&&ME.veh;const S0=v?(VSPEC[v.type]||{}):{};if(S0.water||!v)return P('toot');if(S0.air)return P('airhorn');return P('honk');});
+  // sounds that were missing: starting a quest, finishing one, meeting a boss
+  SFX.mission=function(){if(AU.ctx&&AU.sfx){AU.setup();P('mission');}};SFX.win=function(){if(AU.ctx&&AU.sfx){AU.setup();P('win');}};SFX.boss=function(){if(AU.ctx&&AU.sfx){AU.setup();P('boss');}};}
+// building: a satisfying snap when a brick goes on, a pop when it comes off
+{const _bp=buildPlace;buildPlace=function(){const n0=bstCount();_bp();if(bstCount()>n0)SND.play('place');};const _br=buildRemove;buildRemove=function(){const T=BUILD.tgt;const had=T&&T.has;_br();if(had)SND.play('unplace');};}
+// menus open with a soft whoosh
+for(const nm of ['openRoster','openShop','openMap','openPause','openGarage','openTravel','openEmotes','openArmory','openQuestBoard','openNews','openPhotos'])if(typeof window[nm]==='function'){const f0=window[nm];window[nm]=function(...a){const r=f0.apply(this,a);try{SND.play('open',1,1.1,0);}catch(e){}return r;};}
+// ---------- things that happen out in the world come from where they happen ----------
+{const _he=hitEnemy;hitEnemy=function(e,...a){if(!e)return _he(e,...a);let r;AU.at(e.x,e.z,()=>{r=_he(e,...a);});return r;};}
+{const _sb=smashBrk;smashBrk=function(b,...a){let r;AU.at(b.x,b.z,()=>{r=_sb(b,...a);});return r;};}
+{const _kp=knockPed;knockPed=function(q,...a){let r;AU.at(q.x,q.z,()=>{r=_kp(q,...a);});return r;};}
+{const _sf=shotFx;shotFx=function(...a){let r;const x=+a[1],z=+a[3];if(isFinite(x)&&isFinite(z))AU.at(x,z,()=>{r=_sf(...a);});else r=_sf(...a);return r;};}
+// ---------- engines that sound like what you ride ----------
+const ENG={on:false,kind:'',n:null,t:0,stepT:0};
+function engBuild(){const c=AU.ctx;if(ENG.n||!AU.ok())return;const o1=c.createOscillator(),o2=c.createOscillator();o1.type='sawtooth';o2.type='square';const g1=c.createGain(),g2=c.createGain();g1.gain.value=.55;g2.gain.value=.35;
+  const nz=c.createBufferSource();nz.buffer=AU.nbuf;nz.loop=true;const ng=c.createGain();ng.gain.value=0;const nf=c.createBiquadFilter();nf.type='bandpass';nf.frequency.value=900;nf.Q.value=.8;
+  const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=400;lp.Q.value=1.2;const am=c.createGain();am.gain.value=.75;const lfo=c.createOscillator();lfo.frequency.value=12;const lfoG=c.createGain();lfoG.gain.value=.25;lfo.connect(lfoG);lfoG.connect(am.gain);
+  const out=c.createGain();out.gain.value=0;o1.connect(g1);o2.connect(g2);g1.connect(lp);g2.connect(lp);nz.connect(nf);nf.connect(ng);ng.connect(out);lp.connect(am);am.connect(out);out.connect(AU.bus);
+  o1.start();o2.start();nz.start();lfo.start();ENG.n={o1,o2,g1,g2,ng,nf,lp,am,lfo,lfoG,out};}
+AU.engine=function(on,spd){if(!this.ctx)return;const v=ME&&ME.veh;const S0=v?(VSPEC[v.type]||{}):{};const want=on&&this.sfx&&v&&!S0.animal&&v.type!=='cloud';
+  if(!want){if(ENG.n)ENG.n.out.gain.setTargetAtTime(0,this.ctx.currentTime,.12);ENG.on=false;return;}if(!ENG.n)engBuild();if(!ENG.n)return;const N0=ENG.n,t=this.ctx.currentTime,a=Math.abs(spd||0);
+  let f,cut,lfoR,lfoD,noise,vol,nf=900;const ty=v.type;
+  if(ty==='heli'){f=62+a*.8;cut=380;lfoR=17+a*.15;lfoD=.7;noise=.9;nf=500;vol=.05;}
+  else if(ty==='plane'){f=75+a*2.4;cut=900+a*20;lfoR=26+a*.6;lfoD=.45;noise=.25;nf=1400;vol=.042;}
+  else if(ty==='sub'){f=48+a*1.3;cut=260;lfoR=3;lfoD=.2;noise=.35;nf=380;vol=.04;}
+  else if(S0.water){f=44+a*2.3;cut=300+a*25;lfoR=f*.5;lfoD=.3;noise=.25+Math.min(.6,a*.03);nf=1100;vol=.042;}
+  else if(ty==='hover'){f=120+a*3;cut=900+a*30;lfoR=7;lfoD=.15;noise=.12;nf=2400;vol=.03;}
+  else if(ty==='scooter'){f=70+a*4.2;cut=700+a*40;lfoR=f*.5;lfoD=.35;noise=.08;vol=.03;}
+  else if(ty==='monster'||ty==='truck'||ty==='bus'||ty==='firetruck'||ty==='van'||ty==='getaway'||ty==='icecream'){f=26+a*1.9;cut=220+a*18;lfoR=f*.5;lfoD=.35;noise=.08;vol=.05;}
+  else if(ty==='sports'||ty==='hotrod'||ty==='herocar'||ty==='police'){f=36+a*2.9;cut=320+a*30;lfoR=f*.5;lfoD=.28;noise=.06;vol=.045;}
+  else{f=32+a*2.4;cut=260+a*24;lfoR=f*.5;lfoD=.3;noise=.06;vol=.042;}
+  N0.o1.frequency.setTargetAtTime(f,t,.08);N0.o2.frequency.setTargetAtTime(f*.5*1.004,t,.08);N0.lp.frequency.setTargetAtTime(Math.min(4000,cut),t,.1);N0.lfo.frequency.setTargetAtTime(Math.min(60,lfoR),t,.1);N0.lfoG.gain.setTargetAtTime(lfoD*.5,t,.1);
+  N0.am.gain.setTargetAtTime(1-lfoD*.5,t,.1);N0.ng.gain.setTargetAtTime(noise*.5,t,.1);N0.nf.frequency.setTargetAtTime(nf,t,.1);N0.out.gain.setTargetAtTime(vol*(.8+Math.min(.4,a*.012)),t,.12);ENG.on=true;};
+// rain goes through the desk too (so it gets softer when the menu mutes sound)
+AU.rain=function(l){if(!this.ctx)return;if(!this.rn&&l>.02&&this.sfx&&this.ok()){try{const c=this.ctx;const s=c.createBufferSource();s.buffer=this.nbuf;s.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=1700;
+    const h=c.createBiquadFilter();h.type='highpass';h.frequency.value=280;const g=c.createGain();g.gain.value=0;s.connect(f);f.connect(h);h.connect(g);g.connect(this.bus);s.start();this.rn={s,g};}catch(e){}}
+  if(this.rn)this.rn.g.gain.setTargetAtTime(this.sfx?l*.07:0,this.ctx.currentTime,.4);};
+// ---------- footsteps, hooves, swimming strokes and wind ----------
+const STEP={ph:0,swimT:0,wind:null};
+function stepKind(p){const i=cid(clamp(Math.floor(p.x),0,N-1),clamp(Math.floor(p.z),0,N-1));if(typeof inInBox==='function'&&inInBox(p.x,p.z))return 'wood';if(BST.has(i)&&CH[i]>H[i]+.3&&p.y>=CH[i]-.1)return 'hard';
+  if(CH[i]>H[i]+.3&&p.y>H[i]+.3)return 'hard';const tm=TM[i];if(tm===T.SNOW||tm===T.ICE)return 'snow';if(tm===T.SAND)return 'sand';if(tm===T.GRASS||tm===T.DIRT||(T.CROP!==undefined&&tm===T.CROP))return 'grass';return 'hard';}
+function soundsUpdate(dt){if(!AU.ctx||!AU.sfx||!ME||G.mode!=='play')return;const p=ME;const hs=Math.hypot(p.vx||0,p.vz||0);
+  // footsteps on foot; hooves or stomps on an animal ride
+  if(p.veh){const S0=VSPEC[p.veh.type]||{};const sp=Math.abs(p.veh.spd||0);if(S0.animal&&sp>1.2){STEP.ph+=dt*(1.6+sp*.32);if(STEP.ph>=1){STEP.ph-=1;if(p.veh.type==='trike')SND.play('stomp',Math.min(1,.5+sp*.03));else if(p.veh.type==='turtle')SND.play('stroke',1);else{SND.play('hoof',.8+Math.min(.4,sp*.02));SND.play('hoof',.6,1.1,undefined,.09);}}}}
+  else if(p.swim){if(hs>1){STEP.swimT-=dt;if(STEP.swimT<=0){STEP.swimT=.62;SND.play('stroke',Math.min(1,.4+hs*.1));}}}
+  else if(p.ground&&hs>1.3&&!p.fly){const A=p.anim;const ph=Math.floor((A.walk||0)/Math.PI);if(ph!==STEP.last){STEP.last=ph;SND.play('st_'+stepKind(p),Math.min(1.2,.45+hs*.09),1,((ph&1)?.08:-.08));}}
+  // wind when you fly fast or fall from high up
+  const wv=p.fly?Math.min(1,hs/40)*(p.turbo?1:.6):(!p.ground&&p.vy<-8?Math.min(1,-p.vy/40):0);
+  if(wv>.02&&!STEP.wind&&AU.ok()){const c=AU.ctx;const s=c.createBufferSource();s.buffer=AU.nbuf;s.loop=true;const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=700;f.Q.value=.6;const g=c.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(AU.bus);s.start();STEP.wind={s,f,g};}
+  if(STEP.wind){const t=AU.ctx.currentTime;STEP.wind.g.gain.setTargetAtTime(wv*.09,t,.25);STEP.wind.f.frequency.setTargetAtTime(500+wv*1400+Math.sin(G.t*1.3)*150,t,.3);}}
+// ---------- the sounds of the world: birds by day, crickets at night, waves by the sea ----------
+const AMBS={bird:2,cr:1,wave:0,seaT:0,sea:0};
+function seaNearSnd(){if(!ME)return 0;let w=0,n=0;for(let k=0;k<12;k++){const a=k/12*TAU;for(const r of [10,22]){const x=Math.floor(ME.x+Math.cos(a)*r),z=Math.floor(ME.z+Math.sin(a)*r);n++;if(!inMap(x,z)||H[cid(x,z)]<WL-.4)w++;}}return w/n;}
+function ambientSounds(dt){if(!AU.ctx||!AU.sfx||!ME||G.mode!=='play'||!AU.bus)return;const realm=ME.realm||'earth';if(realm!=='earth'||(typeof inInBox==='function'&&inInBox(ME.x,ME.z)))return;
+  AMBS.seaT-=dt;if(AMBS.seaT<=0){AMBS.seaT=1;AMBS.sea=seaNearSnd();}const night=DN.night||0,rain=DN.rain||0;const i=cid(clamp(Math.floor(ME.x),0,N-1),clamp(Math.floor(ME.z),0,N-1)),bio=BIO[i];
+  const green=bio===B.MEADOW||bio===B.FOREST||bio===B.CITY||bio===B.BEACH;
+  AMBS.bird-=dt;if(AMBS.bird<=0){AMBS.bird=(bio===B.FOREST?1.6:3.2)+Math.random()*4;if(green&&night<.4&&rain<.3&&ME.y<30)SND.play('chirp',bio===B.FOREST?1.3:.9,.9+Math.random()*.25,(Math.random()-.5)*1.4);}
+  AMBS.cr-=dt;if(AMBS.cr<=0){AMBS.cr=.5+Math.random()*1.1;if(night>.55&&green&&rain<.3)SND.play('cricket',.8+Math.random()*.4,.95+Math.random()*.1,(Math.random()-.5)*1.4);}
+  AMBS.wave-=dt;if(AMBS.wave<=0){AMBS.wave=2.1+Math.random()*1.4;if(AMBS.sea>.15)SND.play('wave',Math.min(1.3,AMBS.sea*2),.9+Math.random()*.2,(Math.random()-.5)*.8);}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{soundsUpdate(dt);ambientSounds(dt);}catch(e){noteErr('snd',e);}};}
+// stop the wind and engine when you pause
+{const _sp=typeof setPause==='function'?setPause:null;if(_sp)setPause=function(...a){const r=_sp(...a);try{if(STEP.wind)STEP.wind.g.gain.setTargetAtTime(0,AU.ctx.currentTime,.1);}catch(e){}return r;};}
+// ================= people in the street react to the hero: hellos, thank-yous, "watch out!" and plenty of jokes =================
+// A speech bubble pops up over their head (and in English they say it out loud when nobody else is talking).
+// Each person speaks now and then, never all at once, and what they say depends on what the hero just did.
+const SL=(en,ar)=>{if(ar)AR[en]=ar;return en;};
+const SAYS={
+  hi:[SL('Hi, {0}!','مرحبًا يا {0}!'),SL('Whoa! It\'s really {0}!','واو! إنه {0} حقًا!'),SL('Can I have your autograph?','هل يمكنني الحصول على توقيعك؟'),SL('My little brother has your poster!','أخي الصغير عنده ملصق لك!'),
+    SL('Nice cape, hero!','عباءة رائعة أيها البطل!'),SL('Go get \'em, {0}!','انطلق يا {0}!'),SL('You\'re my favorite hero!','أنت بطلي المفضل!'),SL('Hero! Wave at me! Yay!','أيها البطل! لوّح لي! ياي!'),
+    SL('Is it true heroes eat broccoli for super strength?','هل صحيح أن الأبطال يأكلون البروكلي ليصبحوا أقوياء؟'),SL('My dog wants a selfie with you!','كلبي يريد صورة سيلفي معك!'),SL('Stay awesome, {0}!','ابقَ رائعًا يا {0}!'),
+    SL('I\'m a hero too! ...at washing dishes.','أنا بطل أيضًا! ...في غسل الصحون.'),SL('Save some bad guys for me!','اترك لي بعض الأشرار!'),SL('Wait till I tell my grandma!','انتظر حتى أخبر جدتي!'),
+    SL('Is that {0}?! Best day ever!','هل هذا {0}؟! أجمل يوم في حياتي!'),SL('Hero high five!','كفّك يا بطل!')],
+  night:[SL('Out late, {0}?','ما زلت مستيقظًا يا {0}؟'),SL('Thanks for keeping us safe tonight!','شكرًا لأنك تحمينا الليلة!'),SL('Do heroes have a bedtime too?','هل للأبطال موعد نوم أيضًا؟')],
+  rain:[SL('Don\'t forget your umbrella, hero!','لا تنسَ مظلتك أيها البطل!'),SL('Even heroes get wet, huh?','حتى الأبطال يبتلّون، أليس كذلك؟')],
+  pet:[SL('Aww, your pet is SO cute!','أووه، حيوانك الأليف لطيف جدًا!'),SL('Can I pet your pet?','هل يمكنني أن أداعب حيوانك؟')],
+  famous:[SL('It\'s the famous {0}! Everyone look!','إنه {0} المشهور! انظروا جميعًا!'),SL('Level {1}?! You\'re a legend!','المستوى {1}؟! أنت أسطورة!')],
+  thanks:[SL('Thank you, hero!','شكرًا أيها البطل!'),SL('My hero!','بطلي!'),SL('You saved the day!','لقد أنقذت اليوم!'),SL('That was AMAZING!','كان ذلك مذهلًا!'),SL('Woo-hoo! Go {0}!','هووو! انطلق يا {0}!'),
+    SL('Take that, baddie!','خذ هذه أيها الشرير!'),SL('I\'m telling everyone about this!','سأخبر الجميع بهذا!'),SL('Best. Hero. Ever!','أفضل. بطل. على الإطلاق!'),SL('Can you teach me that move?','هل تعلّمني تلك الحركة؟'),
+    SL('Phew! Thanks, {0}!','فيو! شكرًا يا {0}!'),SL('That baddie didn\'t stand a chance!','ذلك الشرير لم تكن لديه فرصة!')],
+  watch:[SL('Watch out!','انتبه!'),SL('Slow down, speedy!','خفّف السرعة يا سريع!'),SL('Eek! Crazy driver!','إيك! سائق متهور!'),SL('My hat! You almost got my hat!','قبعتي! كدت تأخذ قبعتي!'),
+    SL('Ever heard of brakes?!','هل سمعت عن الفرامل؟!'),SL('Hey! People walking here!','هيه! هناك ناس يمشون هنا!'),SL('Whoa, where\'s the fire?','واو، أين الحريق؟'),SL('Zoooom! Easy there!','زووووم! على مهلك!')],
+  honk:[SL('Beep beep to you too!','بيب بيب لك أيضًا!'),SL('Okay, okay, I\'m moving!','حسنًا، حسنًا، سأتحرك!'),SL('Rude!','هذا ليس لطيفًا!'),SL('I\'m walking as fast as I can!','أمشي بأسرع ما أستطيع!'),SL('What a cute horn!','يا له من بوق لطيف!')],
+  bump:[SL('Hey! I was walking here!','هيه! كنت أمشي هنا!'),SL('Ouch! My ice cream!','آه! الآيس كريم خاصتي!'),SL('Watch where you\'re going, hero!','انتبه إلى طريقك أيها البطل!'),SL('Wheee! Do it again!','ويييي! افعلها مرة أخرى!'),
+    SL('Is that a new super move?','هل هذه حركة خارقة جديدة؟'),SL('My sandwich!','شطيرتي!'),SL('Excuse YOU!','عفوًا منك أنت!')],
+  shot:[SL('Hey! I\'m not a bad guy!','هيه! أنا لست شريرًا!'),SL('That tickles!','هذا يدغدغ!'),SL('Who ordered a bubble bath?','من طلب حمّام فقاعات؟'),SL('My new shirt!','قميصي الجديد!'),SL('Aim somewhere else, please!','صوّب إلى مكان آخر من فضلك!')],
+  fly:[SL('Whoa, a flying hero!','واو، بطل طائر!'),SL('Look up! Up there!','انظروا إلى الأعلى! هناك!'),SL('Can you teach me to fly?','هل تعلّمني الطيران؟'),SL('Bring me back a cloud!','أحضر لي غيمة!'),SL('Show-off!','استعراضي!')],
+  land:[SL('Ten out of ten landing!','هبوط يستحق عشرة من عشرة!'),SL('Did the ground just shake?!','هل اهتزت الأرض للتو؟!'),SL('My milkshake! ...Worth it!','مخفوق الحليب! ...لكن الأمر يستحق!'),SL('Show-off!','استعراضي!')],
+  idle:[SL('Are you lost, hero?','هل أنت تائه أيها البطل؟'),SL('Aren\'t you supposed to be saving the world?','ألا يجب أن تنقذ العالم الآن؟'),SL('Nice weather for being a hero, huh?','طقس جميل للأبطال، أليس كذلك؟'),
+    SL('Are you... frozen?','هل أنت... متجمد؟'),SL('Psst! The baddies went THAT way!','بسس! الأشرار ذهبوا من ذلك الطريق!')],
+  dance:[SL('Nice moves!','حركات رائعة!'),SL('Dance battle!','تحدي رقص!'),SL('Heroes can dance?!','الأبطال يرقصون أيضًا؟!')],
+  ko:[SL('Get up, hero! You can do it!','انهض أيها البطل! تستطيع ذلك!'),SL('Oh no! Are you okay?','يا إلهي! هل أنت بخير؟')],
+  carry:[SL('So strong!','قوي جدًا!'),SL('Can you carry my groceries next?','هل تحمل مشترياتي بعد ذلك؟')],
+  crash:[SL('That\'s gonna leave a dent!','سيترك هذا انبعاجًا!'),SL('Oops!','أوبس!'),SL('Maybe take the bus next time?','ربما تركب الحافلة في المرة القادمة؟')],
+  help:[SL('Psst! Hero! I need your help!','بسس! أيها البطل! أحتاج إلى مساعدتك!'),SL('Over here, {0}! I have a mission for you!','هنا يا {0}! عندي مهمة لك!'),SL('Hero! Got a minute?','أيها البطل! هل لديك دقيقة؟')],
+  hooray:[SL('Hooray for {0}!','هيييه! يعيش {0}!'),SL('You did it!','لقد فعلتها!')]};
+// the mood of each kind of line (bubble colour, and how the person moves)
+const SAYMOOD={thanks:'yay',hooray:'yay',famous:'yay',fly:'wow',land:'wow',dance:'yay',watch:'mad',honk:'mad',bump:'mad',shot:'mad',crash:'mad',ko:'sad'};
+Object.assign(VPROF,{ped_f:{p:1.08,r:1.03,f:1,v:1},ped_f2:{p:.98,r:1,f:1,v:2},ped_m:{p:.96,r:1,f:0,v:1},ped_m2:{p:1.06,r:1.04,f:0,v:2},ped_kid:{p:1.3,r:1.08,f:1,v:3}});
+const STREET={bubs:[],id:0,cd:0,vcd:0,idleT:0,idleCd:0,koWas:false,carryWas:false,flyT:0,helpSeen:{}};
+const heroName=()=>{const pr=prof();return pr.name||tr(charOf(pr).n);};
+function sayLine(kind){const L=SAYS[kind];if(!L)return '';return trf(Rpick(L),heroName(),prof().level||1);}
+function pedVoice(q){if(!q.look)return 'ped_m';if(q.look.scale&&q.look.scale<.9)return 'ped_kid';const fem=q.look.dress||q.look.hs===1||q.look.hs===3;return fem?(q.id2%2?'ped_f2':'ped_f'):(q.id2%2?'ped_m2':'ped_m');}
+// someone says something: a bubble over their head, a little reaction, and maybe their voice
+function pedSay(q,kind,force){if(!q||!ME||G.mode!=='play')return false;if(!force&&(STREET.cd>0||(q.saidT&&G.t-q.saidT<20)))return false;const text=sayLine(kind);if(!text)return false;
+  q.saidT=G.t;q.id2=q.id2||(++STREET.id);STREET.cd=kind==='thanks'?1.2:2.6;const mood=SAYMOOD[kind]||'hi';for(let k=STREET.bubs.length-1;k>=0;k--)if(STREET.bubs[k].q===q)STREET.bubs.splice(k,1);
+  STREET.bubs.push({q,text,mood,t:Math.min(4.2,1.8+text.length*.045),id:++STREET.id});if(STREET.bubs.length>3)STREET.bubs.shift();
+  const A=q.anim;if(A){if(mood==='yay'){A.cheer=1.4;q.hopT=.45;q.hvy=4.5;}else if(mood==='hi'||mood==='wow')A.wave=1.4;}if(mood!=='mad'&&q.loop&&q.panic<=0)q.pause=Math.max(q.pause||0,1.6);
+  if(mood!=='mad')q.face=Math.atan2(ME.x-q.x,ME.z-q.z);
+  if(LANG!=='ar'&&typeof VOICE!=='undefined'&&VOICE.on&&!DLG&&!VOICE.speaking()&&STREET.vcd<=0&&Math.random()<.75){STREET.vcd=5;VOICE.say(text,q.name&&VPROF[q.name]?q.name:pedVoice(q));}return true;}
+const nearPeds=(x,z,r)=>PEDS.filter(q=>!q.fall&&d2(q.x,q.z,x,z)<r).sort((a,b)=>d2(a.x,a.z,x,z)-d2(b.x,b.z,x,z));
+function streetUpdate(dt){if(!ME||G.mode!=='play')return;STREET.cd-=dt;STREET.vcd-=dt;STREET.idleCd-=dt;for(let k=STREET.bubs.length-1;k>=0;k--){const b=STREET.bubs[k];b.t-=dt;if(b.t<=0||(!PEDS.includes(b.q)&&!NPCS.includes(b.q)))STREET.bubs.splice(k,1);}
+  if(DLG||G.cine||(typeof inInBox==='function'&&inInBox(ME.x,ME.z)))return;const p=ME,hs=Math.hypot(p.vx||0,p.vz||0);
+  // walking past people: hellos (and special hellos at night, in the rain, with a pet, or when you are famous)
+  if(!p.veh&&!p.fly){for(const q of PEDS){if(q.greetDone||q.fall||q.panic>0)continue;const d=d2(q.x,q.z,p.x,p.z);if(d<4.2){q.greetDone=true;if(Math.random()<.45){const pr=prof();
+      const kind=(pr.level>=10&&Math.random()<.3)?'famous':(DN.night>.6&&Math.random()<.5)?'night':(DN.rain>.3&&Math.random()<.5)?'rain':(pr.pet&&PETST.me&&!PETST.me.hidden&&Math.random()<.3)?'pet':'hi';pedSay(q,kind);break;}}}}
+  // driving fast near people
+  if(p.veh&&Math.abs(p.veh.spd||0)>7){for(const q of nearPeds(p.veh.x,p.veh.z,7.5)){if(q.panic>0&&!q.shouted){q.shouted=true;if(pedSay(q,'watch'))break;}}}
+  for(const q of PEDS)if(q.panic<=0)q.shouted=false;
+  // flying low over people
+  if(p.fly&&hs>5&&p.y-chAt(p.x,p.z)<16){STREET.flyT-=dt;if(STREET.flyT<=0){STREET.flyT=4;const L=nearPeds(p.x,p.z,12).filter(q=>!q.flySeen);if(L.length){L[0].flySeen=true;if(pedSay(L[0],'fly')&&L[0].anim)L[0].anim.wave=1.6;}}}
+  // standing still for a while near people
+  if(!p.veh&&p.ground&&hs<.3&&!BUILD.on&&!(PHOTO&&PHOTO.on)){STREET.idleT+=dt;if(STREET.idleT>10&&STREET.idleCd<=0){const L=nearPeds(p.x,p.z,8);if(L.length&&pedSay(L[0],'idle'))STREET.idleCd=45;STREET.idleT=0;}}else STREET.idleT=0;
+  // dancing
+  if(p.emote&&p.emoteT>3.5&&!STREET.danced){STREET.danced=true;const L=nearPeds(p.x,p.z,10);if(L.length){pedSay(L[0],'dance');for(const q of L.slice(0,3))if(q.anim)q.anim.cheer=2;}}if(!p.emote)STREET.danced=false;
+  // knocked out, or carrying something heavy
+  const ko=(p.ko||0)>0;if(ko&&!STREET.koWas){const L=nearPeds(p.x,p.z,14);if(L.length)pedSay(L[0],'ko',true);}STREET.koWas=ko;
+  const car=!!(p.carry||p.carryF);if(car&&!STREET.carryWas&&Math.random()<.5){const L=nearPeds(p.x,p.z,9);if(L.length)pedSay(L[0],'carry');}STREET.carryWas=car;
+  // people who have a mission for you call out once in a while
+  if(!p.veh&&!QS.act){const QG=questGiverIds();for(const n of NPCS){if(!QG.has(n.id))continue;const d=d2(n.x,n.z,p.x,p.z);if(d<9&&d>2.5&&(!STREET.helpSeen[n.id]||G.t-STREET.helpSeen[n.id]>150)){STREET.helpSeen[n.id]=G.t;if(STREET.cd<=0){n.saidT=0;pedSay(n,'help');}break;}}}}
+// the bubbles themselves
+function streetLabels(){for(const b of STREET.bubs){const q=b.q;const y=(q.y||0)+(q.hy||0)+((q.look&&q.look.scale)||1)*2.2+.35;if(d2(q.x,q.z,CAM.tx,CAM.tz)>45)continue;
+    label('say'+b.id,q.x,y,q.z,`<span class="sb">${esc(b.text)}</span>`,'say '+b.mood);}}
+{const _ul=updateLabels;updateLabels=function(dt){_ul(dt);try{if(G.mode!=='title')streetLabels();}catch(e){noteErr('saylbl',e);}};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{streetUpdate(dt);}catch(e){noteErr('street',e);}};}
+// ---------- what the hero does, as the people see it ----------
+// beating a baddie: the people nearby cheer
+{const _he=hitEnemy;hitEnemy=function(e,...a){const alive=e&&!e.dead;const r=_he(e,...a);try{if(alive&&e.dead&&e.type!=='dummy'&&G.mode==='play'){const L=nearPeds(e.x,e.z,24);if(L.length){setTimeout(()=>pedSay(L[0],'thanks',true),450);
+      for(const q of L.slice(1,4))if(q.anim){q.anim.cheer=1.4;q.hopT=.4;q.hvy=4;}}}}catch(err){}return r;};}
+// bumping into people
+{const _kp=knockPed;knockPed=function(q,...a){const r=_kp(q,...a);if(Math.random()<.6)setTimeout(()=>pedSay(q,'bump',true),350);return r;};}
+// honking at people
+{const _hk=honk;honk=function(v){const r=_hk(v);try{const L=nearPeds(v.x,v.z,10);if(L.length&&Math.random()<.7)setTimeout(()=>pedSay(L[0],'honk'),400);}catch(e){}return r;};}
+// attacking when there is no baddie around (bubbles, water, lasers...) right next to someone
+{const _hp=heroPrimary;heroPrimary=function(p,inp,dt){const r=_hp(p,inp,dt);try{if(p===ME&&inp.punchP&&!EN.some(e=>!e.dead&&d2(e.x,e.z,p.x,p.z)<16)){const fx=Math.sin(p.face),fz=Math.cos(p.face);
+      const L=nearPeds(p.x,p.z,6).filter(q=>((q.x-p.x)*fx+(q.z-p.z)*fz)>0);if(L.length&&Math.random()<.5){const q=L[0];setTimeout(()=>{if(pedSay(q,'shot')&&q.anim){q.hopT=.35;q.hvy=4;}},300);}}}catch(e){}return r;};}
+// the super hero landing
+{const _hl=heroLand;heroLand=function(p){const r=_hl(p);try{const L=nearPeds(p.x,p.z,13);if(L.length)setTimeout(()=>pedSay(L[0],'land',true),500);for(const q of L)if(q.anim){q.hopT=.5;q.hvy=5;}}catch(e){}return r;};}
+// crashing a car
+{const _cr=SFX.crash;SFX.crash=function(...a){const r=_cr.apply(SFX,a);try{if(ME&&ME.veh){const L=nearPeds(ME.x,ME.z,16);if(L.length&&Math.random()<.7)setTimeout(()=>pedSay(L[0],'crash'),500);}}catch(e){}return r;};}
+// finishing a quest where people can see it
+{const _bn=banner;banner=function(t,...a){const r=_bn(t,...a);try{if((t==='Quest complete!'||t===tr('Quest complete!'))&&ME){const L=nearPeds(ME.x,ME.z,18);if(L.length)setTimeout(()=>pedSay(L[0],'hooray',true),900);}}catch(e){}return r;};}
 // ================= start =================
 boot();
 </script>

@@ -47,6 +47,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 ## Things to do
 - About 100 quests from people with a **!** over their heads, or pick one on the castle's Quest Board.
 - **New missions** all over the islands: catch runaway chickens, kittens and baby dinos, put out forest fires (only a water hero can), melt frozen fountains (only a fire hero can), take photos, train like a knight, a sea swimming race, sunken treasure and more. Each one has its own prize: 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks.
+- **People react to you**: people in the street wave and say hi, cheer when you beat baddies, run from monsters and shout "Watch out!" when you drive too fast. Some of them are quite funny.
 - **Combos**: keep hitting baddies without a break for bonus coins. The **hero of the day** earns 50% more coins.
 - **Obstacle courses**: Rainbow Steps, Sky Tower and Iceberg Hop. Beat your best time.
 - **Boss of the Week** at the Champion Arena. There is a new boss every Monday.
@@ -54,6 +55,11 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - **Photo mode** (📸): pose your hero, pick a filter, a frame and the time of day, then save photos to the iPad.
 - Races, build zones (build like Minecraft), soccer, hide and seek, jobs, golden bricks, treasure chests, a sticker album and three daily challenges.
 - The **Hall of Heroes** has a statue for all 50 heroes (covered until you unlock them), your trophies and your golden bricks.
+
+## Sound
+- Every ride has its own engine, and the car horn is a friendly beep-beep.
+- You hear footsteps on grass, sand, snow and wood, birds in the trees, waves on the beach and wind up high.
+- Attacks, coins, doors, splashes and landings each have their own sound.
 
 ## Playing together online
 - Up to 4 players. Each tablet opens the game and taps **Play online** (the same Wi-Fi works best).
