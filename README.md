@@ -16,6 +16,9 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
 ## Finding your way
 - Pick a mission or tap a place on the map and three things lead the way: a **golden arrow** on the ground in front of your hero that follows the glowing trail, a **compass** at the top of the screen that points where to go from where you are looking (it says **Turn around** when the place is behind you and **Almost there!** at the end), and a sign above the light beam at the destination.
 
+## Holding ✋ Use
+- Some jobs need you to hold **✋ Use** (or **E** on a keyboard): helping the lost hikers, fixing things on quests, helping a knocked-out friend up and cooking. A ring fills up while you hold, so you can see it working. Tapping again and again works too, and if you let go the ring only drains slowly.
+
 ## Heroes
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes.
 - There are **50 heroes**: 25 boys and 25 girls. Each has their own look, a special skill and two attacks of their own.

@@ -221,7 +221,7 @@ body.tch.building #mapbox,body.tch.building #friends{display:none!important}
 body:not(.tch) #bbar{top:auto;bottom:calc(18px + env(safe-area-inset-bottom,0px))}
 @media (max-width:520px){#bbar{top:auto;bottom:calc(212px + env(safe-area-inset-bottom,0px))}body.building #prompt{display:none!important}}
 /* touch */
-#touch{position:fixed;inset:0;z-index:6;pointer-events:none}#touch.hid{display:none}
+#touch{position:fixed;inset:0;z-index:6;pointer-events:none}#touch,#touch *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}#touch.hid{display:none}
 .jz{position:absolute;left:0;bottom:0;top:30%;width:45%;pointer-events:auto;touch-action:none}
 .cz{position:absolute;right:0;top:18%;bottom:0;width:55%;pointer-events:auto;touch-action:none}
 .jb{position:absolute;left:110px;top:calc(100% - 120px);width:116px;height:116px;margin:-58px 0 0 -58px;border-radius:50%;background:rgba(255,255,255,.16);border:3px solid rgba(255,255,255,.55);opacity:.55}.jb.on{opacity:1}
@@ -597,7 +597,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
   // host: announce the game on every route (a PeerJS game id and a retained MQTT message) and answer join offers from both
   function hostGame(){return new Promise((res,rej)=>{const room=GameRoom('host');room.hid=myHid;room._sig=null;let settled=false;LB.host=room;
     const done=()=>{if(settled)return;settled=true;res(room);};
-    const announce=()=>{if(room._gone)return;const msg=JSON.stringify({hid:myHid,slot:room.gid||null,lobby:LB.pres,at:Date.now()});for(const q of MQ)q.publish(TOP+'/host/'+myHid,msg,true);};
+    const announce=()=>{if(room._gone)return;const msg=JSON.stringify({hid:myHid,slot:room.gid||null,lobby:LB.pres,at:Date.now()});for(const q of MQ)q.publish(TOP+'/host/'+myHid,msg,true);};room._announce=announce;
     const send=(dst,type,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(room._sig&&room._sig.open)ok=room._sig.send(type,dst,payload)||ok;ok=mqSend(myHid,dst,type,payload)||ok;return ok;};
     room._msg=(m,via)=>{if(!fresh(m))return;const p=m.payload||{},src=m.src;if(!src||room._gone)return;
       if(m.type==='OFFER'){if(p.probe){if(via==='pj'&&room._sig)room._sig.send('ANSWER',src,{probe:1,lobby:LB.pres,hid:myHid});return;}
@@ -633,7 +633,9 @@ body.ar .small,body.ar .sub{line-height:1.5}
     L.start().catch(()=>{if(!J.relay)L.close();});setTimeout(()=>{if(!settled){settled=true;drop();L.close();LB.lastJoin='timeout';rej(new Error('timeout'));}},22000);});}
 
   const lobby={name:'lobby',standalone:true,
-    presence(patch){for(const k in patch){if(patch[k]===null)delete LB.pres[k];else LB.pres[k]=patch[k];}return Promise.resolve();},
+    presence(patch){for(const k in patch){if(patch[k]===null)delete LB.pres[k];else LB.pres[k]=patch[k];}
+      // while hosting, tell the message servers right away (the game shows up for friends at once, not at the next 8-second update)
+      if(LB.host&&LB.host._announce){clearTimeout(LB.annT);LB.annT=setTimeout(()=>{try{if(LB.host&&LB.host._announce)LB.host._announce();}catch(e){}},120);}return Promise.resolve();},
     onPeers(f,onErr){LB.peerL.push(f);if(onErr)LB.errL.push(onErr);setTimeout(()=>emitLobby(true),0);return ()=>{};},
     onConnection(f){LB.connL.push(f);setTimeout(()=>f(anyOn()),0);return ()=>{};},
     connected:()=>anyOn(),peers:()=>lobbyPeers(),emit(){return Promise.resolve();},on(){return ()=>{};},
@@ -2537,12 +2539,19 @@ function findInteract(p){if(p.veh){if(!JOB.id)for(const r of WORLD.races)if(d2(p
   if(PETST.me&&!PETST.me.hidden){const q=PETS.find(x=>x.id===PETST.me.kind);cand(PETST.me,'pet',trf('Pet your {0}',tr(q?q.n:'pet')),1.4,0);}
   jobInteract(cand,p);teamInteract(cand,p);questInteract(cand,p);placeInteract(cand,p);
   if(!best&&prof().gad.whistle)best={k:'whistle',label:'Hold to call your car',hold:true};return best;}
+// how long each hold takes (seconds of holding), and how much one tap adds, so tapping again and again works too
+const HOLD_T={qfix:1,revive:1,whistle:1},HOLD_TAP={qfix:.25,revive:.25,qcook:.2};
+function holdTgt(ia){if(ia.rp)return ia.rp;if(ia.i!==undefined)return 'i'+ia.i;if(ia.j!==undefined)return 'j'+ia.j;return ia.o||null;}
+function holdDone(){try{if(TOUCH.on&&navigator.vibrate)navigator.vibrate(40);}catch(e){}}
 function handleInteract(dt,inp){const p=ME;const ia=findInteract(p);G.ia=ia;
-  if(!ia){G.iaHold=0;return;}
+  if(!ia){G.iaHold=0;G.iaK=null;return;}
+  // a hold also counts real time, so a slow tablet does not make you hold longer; a new thing to hold starts from zero
+  const now=performance.now(),gap=(now-(G.iaT0||0))/1000;G.iaT0=now;const hdt=gap>0&&gap<.3?Math.max(dt,gap):dt;
+  if(ia.hold||(ia.k==='drive'&&ia.lift)){const tg=holdTgt(ia);if(G.iaK!==ia.k||G.iaTg!==tg){G.iaK=ia.k;G.iaTg=tg;G.iaHold=0;G.iaUsed=false;}}
   if(ia.hold){if(inp.interact){if(ia.need&&ia.need!==p.hero){if(inp.interactP){SFX.nope();toast(ia.label);}return;}
-      G.iaHold+=dt;if(ia.k==='build')MIS.buildContrib(ia.o,dt);else if(ia.k==='socket'){p.anim.charge=1;MIS.socketContrib(ia.i,dt);}else if(ia.k==='handle'){p.anim.punch=.8;MIS.handleContrib(dt);}else if(ia.k==='whistle'&&G.iaHold>1){G.iaHold=0;summonCar();}else if(ia.k==='revive'){p.anim.punch=Math.max(p.anim.punch,.6);if(G.iaHold>1.2){G.iaHold=0;helpedFriend(ia.rp);}}else if(ia.k==='qfix'){p.anim.punch=Math.max(p.anim.punch,.5);if(R()<.3)burst(ia.o.x,ia.o.y+1,ia.o.z,['#ffcf3a','#ffffff'],2,2,.1,1);if(G.iaHold>1.3){G.iaHold=0;qAction('fix',ia.i);}}else if(ia.hk)ia.hk(dt,p);}
-    else{G.iaHold=0;if(ia.k==='socket')p.anim.charge=0;}return;}
-  if(ia.k==='drive'&&ia.lift){if(inp.interact){G.iaHold+=dt;if(G.iaHold>.45){G.iaHold=0;G.iaUsed=true;liftObj(p,ia.o,'veh');}}else{if(G.iaHold>0&&!G.iaUsed)enterVeh(p,ia.o);G.iaHold=0;G.iaUsed=false;}return;}
+      G.iaHold+=hdt+((inp.interactP&&HOLD_TAP[ia.k])||0);if(ia.k==='build')MIS.buildContrib(ia.o,dt);else if(ia.k==='socket'){p.anim.charge=1;MIS.socketContrib(ia.i,dt);}else if(ia.k==='handle'){p.anim.punch=.8;MIS.handleContrib(dt);}else if(ia.k==='whistle'&&G.iaHold>HOLD_T.whistle){G.iaHold=0;summonCar();}else if(ia.k==='revive'){p.anim.punch=Math.max(p.anim.punch,.6);if(G.iaHold>HOLD_T.revive){G.iaHold=0;helpedFriend(ia.rp);holdDone();}}else if(ia.k==='qfix'){p.anim.punch=Math.max(p.anim.punch,.5);if(R()<.3)burst(ia.o.x,ia.o.y+1,ia.o.z,['#ffcf3a','#ffffff'],2,2,.1,1);if(G.iaHold>HOLD_T.qfix){G.iaHold=0;qAction('fix',ia.i);holdDone();}}else if(ia.hk)ia.hk(dt,p);}
+    else{G.iaHold=Math.max(0,G.iaHold-dt*.6);if(ia.k==='socket')p.anim.charge=0;}return;}
+  if(ia.k==='drive'&&ia.lift){if(inp.interact){G.iaHold+=hdt;if(G.iaHold>.45){G.iaHold=0;G.iaUsed=true;liftObj(p,ia.o,'veh');}}else{if(G.iaHold>0&&!G.iaUsed)enterVeh(p,ia.o);G.iaHold=0;G.iaUsed=false;}return;}
   if(!inp.interactP)return;
   if(ia.k==='exit')exitVeh(p);else if(ia.k==='throw')throwCarry(p);else if(ia.k==='drive')enterVeh(p,ia.o);else if(ia.k==='talk'){if(DLG&&DLG.npc===ia.o)advanceDialog();else talkTo(ia.o);}else if(ia.k==='chest')openChest(ia.o);
   else if(ia.k==='lift')liftObj(p,ia.o,'brk');else if(ia.k==='heavy'){SFX.nope();toast(ia.label);}else if(ia.k==='shop')openShop();else if(ia.k==='garage'){G.garagePad=ia.pad||LOC.garagePad;openGarage();}else if(ia.k==='station')openTravel(ia.st);else if(ia.k==='rocket'){if(rocketReady())startLaunch(true);else{SFX.nope();toast(G.spaceQ?tr('Find all 5 rocket parts first!'):tr('Talk to Commander Nova first'));}}else if(ia.k==='rocket2')startLaunch(false);else if(ia.k==='rescue')doRescue(ia.r);else if(ia.k==='qrescue'){qAction('rescue',ia.i);ME.anim.cheer=1;}else if(ia.k==='pet')petPet();else if(ia.k==='home')buyHome();else if(ia.k==='veg'||ia.k==='sell')jobDo(ia);else if(ia.k==='grabF')grabFriend(ia.rp);else if(ia.k==='tossF')tossFriend();else if(ia.k==='race')startRace(ia.o);else if(ia.fn)ia.fn(p);}
@@ -3175,8 +3184,19 @@ function buildTouch(){document.body.classList.toggle('tch',!!TOUCH.on);const T=$
   const cz=document.createElement('div');cz.className='cz';T.appendChild(cz);let cid2=null,lx=0,ly=0;cz.addEventListener('pointerdown',e=>{cid2=e.pointerId;cz.setPointerCapture(cid2);lx=e.clientX;ly=e.clientY;});
   cz.addEventListener('pointermove',e=>{if(e.pointerId!==cid2)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;CAM.dYaw-=dx*.008*G.camSens;CAM.dPitch+=dy*.005;CAM.manualT=0;});const cend=e=>{if(e.pointerId===cid2)cid2=null;};cz.addEventListener('pointerup',cend);cz.addEventListener('pointercancel',cend);
   const tbs=document.createElement('div');tbs.className='tbs';for(const [k,label,ic] of [['jump','Jump','⬆'],['punch','Bubble','🫧'],['power','Power','⚡'],['act','Use','✋']]){const b=document.createElement('button');b.className='tb '+k;b.innerHTML=`<span class="ic">${ic}</span><span class="lb">${label}</span>`;
-    b.addEventListener('pointerdown',e=>{AU.init();b.setPointerCapture(e.pointerId);TOUCH.b[k]=true;TOUCH.p=TOUCH.p||{};TOUCH.p[k]=true;b.classList.add('on');e.preventDefault();e.stopPropagation();});
-    const up=()=>{TOUCH.b[k]=false;b.classList.remove('on');};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);tbs.appendChild(b);}T.appendChild(tbs);touchLabels();}
+    tbWire(b,k);tbs.appendChild(b);}T.appendChild(tbs);touchLabels();}
+// a button is held while a pointer OR a finger is on it: holding a finger still is a "long press" to some browsers, and they
+// cancel the pointer (the hero stopped helping after half a second); the finger's touch keeps the button held until it lifts
+function tbWire(b,k){const src=TBSRC[k]={p:new Set(),t:new Set()};const set=()=>{const on=src.p.size>0||src.t.size>0;if(on&&!TOUCH.b[k]){TOUCH.p=TOUCH.p||{};TOUCH.p[k]=true;}TOUCH.b[k]=on;b.classList.toggle('on',on);};
+  b.addEventListener('pointerdown',e=>{src.p.add(e.pointerId);try{b.setPointerCapture(e.pointerId);}catch(x){}set();e.preventDefault();e.stopPropagation();try{AU.init();}catch(x){}});
+  const up=e=>{src.p.delete(e.pointerId);set();};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
+  b.addEventListener('touchstart',e=>{for(const t of e.changedTouches)src.t.add(t.identifier);set();},{passive:true});
+  const tup=e=>{for(const t of e.changedTouches)src.t.delete(t.identifier);set();};b.addEventListener('touchend',tup);b.addEventListener('touchcancel',tup);}
+// the touch controls never start the browser's long-press (menus, text magnifier) or scrolling
+const TBSRC={};function tbReleaseAll(){for(const k in TBSRC){TBSRC[k].p.clear();TBSRC[k].t.clear();TOUCH.b[k]=false;}for(const x of document.querySelectorAll('#touch .tb.on'))x.classList.remove('on');}
+{const T=$('touch');T.addEventListener('touchstart',e=>{if(e.cancelable)e.preventDefault();},{passive:false});T.addEventListener('contextmenu',e=>e.preventDefault());
+  // no finger on the screen: nothing can still be held
+  document.addEventListener('touchend',e=>{if(e.touches.length===0)tbReleaseAll();},{passive:true});document.addEventListener('touchcancel',e=>{if(e.touches.length===0)tbReleaseAll();},{passive:true});addEventListener('blur',tbReleaseAll);}
 addEventListener('touchstart',()=>{if(!TOUCH.on){TOUCH.on=true;buildTouch();}},{passive:true});if(matchMedia('(pointer:coarse)').matches)TOUCH.on=true;document.body.classList.toggle('tch',!!TOUCH.on);
 
 // ================= HUD =================
@@ -3203,7 +3223,7 @@ function updateHUD(dt){if(G.mode==='title'||G.mode==='boot')return;const pr=prof
   $('bswap').hidden=NET.role!=='solo';
   const ob=(typeof navObjective==='function'&&navObjective())||G.obj,oe=$('obj');oe.hidden=!ob;if(ob){const d=ob.t?Math.round(d2(ob.t.x,ob.t.z,p.x,p.z)):0;setH(oe,'ob',`${esc(tr(ob.text))}${ob.t?`<small>${esc(trf('{0} m away',d))}</small>`:''}`);oe.style.setProperty('--c',ob.col);}
   const boss=EN.find(e=>e.boss&&!e.dead&&d2(e.x,e.z,p.x,p.z)<70)||EN.find(e=>e.type==='van'&&!e.dead);$('boss').hidden=!boss;if(boss){setH($('bossn'),'bn',esc(tr(ETYPE[boss.type].name||'Boss')));$('bossf').style.width=Math.max(0,(boss.hpLocal??boss.hp)/(boss.maxHp||ETYPE[boss.type].hp)*100)+'%';}
-  const ia=G.ia,pe=$('prompt');const showP=ia&&G.mode==='play'&&!p.ko;pe.hidden=!showP;if(showP){const hold=ia.hold||ia.lift;let key=ia.k==='wiggle'?(TOUCH.on?'⬆':'Space'):KEYNAME.interact();let prog=null;if(ia.k==='build'){prog=Math.min(1,Math.max(WS.bp[ia.o.id]||0,ia.o.localP||0));}else if(ia.k==='socket')prog=WS.sock[ia.i];else if(ia.k==='handle')prog=WS.hand;else if(ia.k==='revive')prog=Math.min(1,G.iaHold/1.2);else if(ia.pg)prog=ia.pg();
+  const ia=G.ia,pe=$('prompt');const showP=ia&&G.mode==='play'&&!p.ko;pe.hidden=!showP;if(showP){const hold=ia.hold||ia.lift;let key=ia.k==='wiggle'?(TOUCH.on?'⬆':'Space'):KEYNAME.interact();let prog=null;if(ia.k==='build'){prog=Math.min(1,Math.max(WS.bp[ia.o.id]||0,ia.o.localP||0));}else if(ia.k==='socket')prog=WS.sock[ia.i];else if(ia.k==='handle')prog=WS.hand;else if(HOLD_T[ia.k])prog=G.iaHold>.02?Math.min(1,G.iaHold/HOLD_T[ia.k]):null;else if(ia.pg)prog=ia.pg();
     setH($('pkey'),'pk',prog!==null?`<span class="ring" style="--p:${Math.round(prog*100)}"></span>`:esc(key));$('pkey').style.background=prog!==null?'transparent':'';$('pkey').style.boxShadow=prog!==null?'none':'';setH($('plabel'),'pl',esc(hold&&prog===null&&!ia.lift?trf('Hold {0} · {1}',key,tr(ia.label)):tr(ia.label)));pe.classList.toggle('off',!!(ia.need&&ia.need!==p.hero)||ia.k==='heavy');}
   const kb=$('kobox');kb.hidden=!(p.ko>0&&G.mode==='play');if(!kb.hidden)setH(kb,'ko',friendOK()?trf('💫 Knocked out! {0} can help you up · {1}',esc(NET.remote.name),Math.ceil(p.ko)):trf('💫 Oops! Back in {0}',Math.ceil(p.ko)));
   const v=p.veh;$('drive').hidden=!v;if(v){$('spd').textContent=Math.round(Math.abs(v.spd)*3.6);$('boostf').style.width=(v.boost*100)+'%';}
@@ -7566,8 +7586,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:24,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:25,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'✋',t:'Helping is easier',s:'When you hold ✋ Use, a ring fills up so you can see it working. Tapping it again and again works too'},
   {ic:'⛶',t:'Full screen',s:'Tap ⛶ on the title screen or next to the menu button. On a tablet the game goes full screen by itself when you tap Play',act:()=>{if(typeof fsPress==='function')fsPress();}},
   {ic:'🌐',t:'Online play works better',s:"Your friend's game shows up again after a Wi-Fi hiccup, and the screen tells you when it is looking for games"},
   {ic:'👆',t:'No more zooming',s:'Double-tapping the screen does not zoom in on the iPad any more'},
@@ -7829,8 +7850,7 @@ function heroLand(p){p.anim.slam=1;p.powT=Math.max(p.powT||0,.5);SFX.slam&&SFX.s
   b.addEventListener('pointerdown',e=>{AU.init();e.preventDefault();e.stopPropagation();stopFly();});tbs.appendChild(b);
   // hold ⬇ to fly down (as fast as you like, and stop at any height)
   const d=document.createElement('button');d.className='tb down';d.hidden=true;d.innerHTML=`<span class="ic">⬇</span><span class="lb">${esc(tr('Down'))}</span>`;
-  d.addEventListener('pointerdown',e=>{AU.init();try{d.setPointerCapture(e.pointerId);}catch(_){}TOUCH.b.down=true;d.classList.add('on');e.preventDefault();e.stopPropagation();});
-  const up=()=>{TOUCH.b.down=false;d.classList.remove('on');};d.addEventListener('pointerup',up);d.addEventListener('pointercancel',up);d.addEventListener('lostpointercapture',up);tbs.appendChild(d);};}
+  tbWire(d,'down');tbs.appendChild(d);};}
 const LANDTIP={t:0,shown:false};
 {const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&(ME.fly||ME.chute)&&!ME.veh&&G.mode==='play');const dv=!!(ME&&!ME.veh&&ME.swim&&G.mode==='play'&&typeof abOf==='function'&&abOf(ME)==='dive');for(const b of document.querySelectorAll('#touch .tb.land,#touch .tb.down')){const want=b.classList.contains('down')?(on||dv):on;if(b.hidden===want){b.hidden=!want;if(!want&&b.classList.contains('down')){TOUCH.b.down=false;b.classList.remove('on');}}}
   if(on&&!LANDTIP.shown){LANDTIP.t+=dt;if(LANDTIP.t>2.6){LANDTIP.shown=true;toast(tr(TOUCH.on?'Hold ⬇ to fly down. Tap 🦸 to land fast':'Hold Shift to fly down. Press L to land fast'));}}};}
@@ -8895,10 +8915,10 @@ AU.engine=function(on,spd){if(!this.ctx)return;const v=ME&&ME.veh;const S0=v?(VS
   else{f=32+a*2.4;cut=260+a*24;lfoR=f*.5;lfoD=.3;noise=.06;vol=.042;}
   N0.o1.frequency.setTargetAtTime(f,t,.08);N0.o2.frequency.setTargetAtTime(f*.5*1.004,t,.08);N0.lp.frequency.setTargetAtTime(Math.min(4000,cut),t,.1);N0.lfo.frequency.setTargetAtTime(Math.min(60,lfoR),t,.1);N0.lfoG.gain.setTargetAtTime(lfoD*.5,t,.1);
   N0.am.gain.setTargetAtTime(1-lfoD*.5,t,.1);N0.ng.gain.setTargetAtTime(noise*.5,t,.1);N0.nf.frequency.setTargetAtTime(nf,t,.1);N0.out.gain.setTargetAtTime(vol*(.8+Math.min(.4,a*.012)),t,.12);ENG.on=true;};
-// rain goes through the desk too (so it gets softer when the menu mutes sound)
-AU.rain=function(l){if(!this.ctx)return;if(!this.rn&&l>.02&&this.sfx&&this.ok()){try{const c=this.ctx;const s=c.createBufferSource();s.buffer=this.nbuf;s.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=1700;
-    const h=c.createBiquadFilter();h.type='highpass';h.frequency.value=280;const g=c.createGain();g.gain.value=0;s.connect(f);f.connect(h);h.connect(g);g.connect(this.bus);s.start();this.rn={s,g};}catch(e){}}
-  if(this.rn)this.rn.g.gain.setTargetAtTime(this.sfx?l*.07:0,this.ctx.currentTime,.4);};
+// rain goes through the desk too (so it gets softer when the menu mutes sound); v23.4: much softer, it was too loud
+AU.rain=function(l){if(!this.ctx)return;if(!this.rn&&l>.02&&this.sfx&&this.ok()){try{const c=this.ctx;const s=c.createBufferSource();s.buffer=this.nbuf;s.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=1150;
+    const h=c.createBiquadFilter();h.type='highpass';h.frequency.value=300;const g=c.createGain();g.gain.value=0;s.connect(f);f.connect(h);h.connect(g);g.connect(this.bus);s.start();this.rn={s,g};}catch(e){}}
+  if(this.rn)this.rn.g.gain.setTargetAtTime(this.sfx?l*.026:0,this.ctx.currentTime,.4);};
 // ---------- footsteps, hooves, swimming strokes and wind ----------
 const STEP={ph:0,swimT:0,wind:null};
 function stepKind(p){const i=cid(clamp(Math.floor(p.x),0,N-1),clamp(Math.floor(p.z),0,N-1));if(typeof inInBox==='function'&&inInBox(p.x,p.z))return 'wood';if(BST.has(i)&&CH[i]>H[i]+.3&&p.y>=CH[i]-.1)return 'hard';
@@ -10249,7 +10269,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='23.3';window.BB_VER=BB_VER;
+const BB_VER='23.4';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
   if(!want){if(el&&!el.hidden)el.hidden=true;return;}
@@ -10391,6 +10411,7 @@ MV('Scroll down the list and tap','مرّر القائمة للأسفل واضغ
 MV('Tap ⛶ on the title screen or next to the menu button. On a tablet the game goes full screen by itself when you tap Play','اضغط ⛶ في شاشة البداية أو بجانب زر القائمة. على الجهاز اللوحي تملأ اللعبة الشاشة وحدها عندما تضغط «العب»');
 MV('Online play works better','اللعب عبر الإنترنت أفضل الآن');MV("Your friend's game shows up again after a Wi-Fi hiccup, and the screen tells you when it is looking for games",'لعبة صديقك تظهر من جديد بعد انقطاع الواي فاي، والشاشة تخبرك عندما تبحث عن ألعاب');
 MV('No more zooming','لا مزيد من التكبير');MV('Double-tapping the screen does not zoom in on the iPad any more','النقر مرتين على الشاشة لم يعد يكبّرها على الآيباد');
+MV('Helping is easier','المساعدة أسهل الآن');MV('When you hold ✋ Use, a ring fills up so you can see it working. Tapping it again and again works too','عندما تضغط مطولًا على ✋ «استخدم» تمتلئ دائرة لترى أنها تعمل. والضغط مرة بعد مرة يعمل أيضًا');
 // ================= move my game: take your progress to the Home Screen app, or to another tablet =================
 // On an iPad, Safari and the Home Screen app keep separate saves (and the Claude page is separate again). Move my game
 // turns your whole save into a game code: copy it, open the game where you want it, and paste it there.
