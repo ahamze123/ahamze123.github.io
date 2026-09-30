@@ -1,6 +1,6 @@
 # Block Buddies
 
-A brick hero adventure for kids. It has 16 heroes to collect, five connected islands, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and nearly 60 quests. Up to 4 players can play together online.
+A brick hero adventure for kids. It has 16 heroes to collect, five connected islands, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and nearly 60 quests. Up to 4 players can play together online.
 
 **Play:** https://ahamze123.github.io
 
@@ -9,10 +9,22 @@ A brick hero adventure for kids. It has 16 heroes to collect, five connected isl
 2. Tap **Share → Add to Home Screen** to get a game icon that opens full screen.
 
 ## Heroes
-- Pick **Boys** or **Girls** on the first screen, then a hero.
+- Pick **Boys** or **Girls** on the first screen, then one of your heroes.
 - There are 16 heroes. Each has their own look, a special skill and two attacks of their own.
-- 8 heroes are unlocked by finishing their missions. Locked heroes show as dark shapes; tap one to see how to unlock it.
+- 8 heroes are unlocked by finishing their missions. Tap 🦸 in the game to see every hero and how to unlock the locked ones.
 - Some treasures are behind **hero gates** (ice, boulders, thorns and more). Only a hero with the right power can open them.
+
+## The Hero Castle
+Hero HQ in Brick City is now a castle. Walk through the big wooden door to find nine zones:
+- **Throne Room**: King Brickley and the **Quest Board**. Tap a quest and a trail leads you there.
+- **Armory**: buy power stars for your heroes. Each star makes all of that hero's attacks 20% stronger, up to 5 stars. You can buy boosts here too.
+- **Training Room**: hit the practice dummies and watch your damage on the board.
+- **Pet Shop**: meet the pets in their pens and adopt one.
+- **Costume Shop**: hats, suits, capes and masks.
+- **Great Hall**: the fountain, and a hologram of your hero. Choose your hero here.
+- **Garage**: pick and paint a car. It waits for you on the street outside.
+- **Map & Travel Room**: the big map, and train tickets to any town.
+- **Entrance Hall**: a free snack that fills your hearts, and a super juice for double XP.
 
 ## The world
 - **Brick City** (the home island), **Sunset Bay**, **Star Harbor**, **Frostpeak** and **Cactus Canyon**, joined by highway bridges and trains.
@@ -21,10 +33,14 @@ A brick hero adventure for kids. It has 16 heroes to collect, five connected isl
 - **Coral Cove**: a tropical island with a reef to explore by submarine.
 - **The Moon**: build the rocket at the Star Harbor space center and fly there.
 - **Rides**: boats, a jet ski, a helicopter, a biplane, a submarine, a horse, a camel, a unicorn, a sea turtle, the Nimbus Cloud and Trixie. Jump out of an aircraft and a parachute opens.
-- **Places to go inside**: Pizza Palace, the Fire Station, Brick Bank, Scoops Ice Cream, Toy Town, the Dino Museum, the Space Museum, the Spooky Manor, the Moon Greenhouse and the Hall of Heroes. Each has missions that fit the place.
+- **Places to go inside**: the Hero Castle, Pizza Palace, the Fire Station, Brick Bank, Scoops Ice Cream, Toy Town, the Dino Museum, the Space Museum, the Spooky Manor, the Moon Greenhouse and the Hall of Heroes. Each has missions that fit the place.
+
+## Moving around
+- **Swimming**: every hero can swim. Jump into the sea to swim, and jump again to climb out.
+- **Flying** (with the Jet Wings gadget): hold jump to go up. Tap **🪂 Land** (or press **L**) to stop flying. If you are high up, a parachute opens.
 
 ## Things to do
-- Nearly 60 quests from people with a **!** over their heads.
+- Nearly 60 quests from people with a **!** over their heads, or pick one on the castle's Quest Board.
 - **Obstacle courses**: Rainbow Steps, Sky Tower and Iceberg Hop. Beat your best time.
 - **Boss of the Week** at the Champion Arena. There is a new boss every Monday.
 - **Festivals** on special dates (Eid Lanterns, Pumpkin Festival, Winter Lights, Green Day, Flower Festival), with hidden things to find and prize hats. There are fireworks on festival and weekend nights.
