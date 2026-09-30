@@ -94,8 +94,10 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - Put TNT down in a zone, then dig it to light it. Run!
 - Sell ores at the crafting table for coins. Your digging is saved, and friends playing online see it.
 
-## Sound
-- Every ride has its own engine, and the car horn is a friendly beep-beep.
+## Music and sound
+- The music is our own songs: **Skyline Exploration** in the city, **Gliding Over Green Valleys** in the green and sunny places, **Quiet Horizons** in the snow, at Star Harbor and on the Moon, and **Subtle Quests and Flying Capes** in missions and boss fights. When a song ends the next one starts, and going back to a place picks its song up where it stopped.
+- The songs stream from the `music` folder. Without internet the game plays its own calm backup music instead.
+- Cars in traffic don't beep. Your own horn is a soft, low toot, and jumping makes a soft swish.
 - You hear footsteps on grass, sand, snow and wood, birds in the trees, waves on the beach and wind up high.
 - Attacks, coins, doors, splashes and landings each have their own sound.
 
@@ -109,3 +111,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 Tap **🌐 العربية** on the first screen (or Menu → Settings → Language) to play in Arabic.
 
 Progress is saved on each device.
+
+## Credits
+- Songs: "Skyline Exploration", "Gliding Over Green Valleys", "Quiet Horizons" and "Subtle Quests and Flying Capes" were made for Block Buddies by its owner.
+- The backup music uses instrument recordings from the FluidR3_GM sound font by Frank Wen, as packaged in [midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts) by Benjamin Gleitzman, under the [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/) licence (converted to small MP3 files, one note every four semitones).
