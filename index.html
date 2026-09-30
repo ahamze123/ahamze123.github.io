@@ -416,7 +416,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
 // the host links to each guest (up to 3) and passes heroes between them. Game data flows device-to-device.
 // To find each other and swap connection offers, the tablets use two kinds of free public matchmakers at the same time:
 // - the PeerJS cloud server (0.peerjs.com), and
-// - two public MQTT message servers (EMQX and HiveMQ).
+// - three public MQTT message servers (Eclipse, EMQX and HiveMQ).
 // Whichever works carries the messages; when more than one works, repeats are ignored. This file exposes the same small
 // interface the game uses for the claude.ai room (presence, onPeers, onConnection, join, leave), so the game code stays the same.
 // Tablets drop their connections all the time (the screen locks, you switch apps, the Wi-Fi hiccups): every connection
@@ -427,11 +427,15 @@ body.ar .small,body.ar .sub{line-height:1.5}
   const PJ=Q.get('peerhost')!=='none';
   const CFG={host:Q.get('peerhost')||'0.peerjs.com',port:+(Q.get('peerport')||443),secure:Q.get('peersecure')!=='0',key:'peerjs',path:'/'};
   const ICE=Q.get('peerice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
+  // a free relay server (Open Relay, static-auth credentials made on the tablet) for networks where tablets cannot reach each other directly
+  if(ICE.length&&window.crypto&&crypto.subtle)(async()=>{try{const user=(Math.floor(Date.now()/1000)+86400)+':bbuddies';const E=new TextEncoder();
+    const k=await crypto.subtle.importKey('raw',E.encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);const sg=new Uint8Array(await crypto.subtle.sign('HMAC',k,E.encode(user)));let b='';for(const x of sg)b+=String.fromCharCode(x);
+    ICE.push({urls:['turn:staticauth.openrelay.metered.ca:80','turn:staticauth.openrelay.metered.ca:443','turn:staticauth.openrelay.metered.ca:443?transport=tcp'],username:user,credential:btoa(b)});}catch(e){}})();
   const FAM=(window.BB_FAMILY||'fam')+(Q.get('peerns')?'-'+Q.get('peerns'):'');
   const NS='bbuddies-'+FAM;
   // up to three games can be hosted at once on PeerJS (and a game a tablet left behind never blocks a new one)
   const SLOTS=[NS+'-game',NS+'-game2',NS+'-game3'];const isSlot=id=>SLOTS.includes(id);
-  const MQURLS=(Q.get('mqtt')!==null?Q.get('mqtt'):'wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt').split(',').map(s=>s.trim()).filter(Boolean);
+  const MQURLS=(Q.get('mqtt')!==null?Q.get('mqtt'):'wss://mqtt.eclipseprojects.io:443/mqtt,wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt').split(',').map(s=>s.trim()).filter(Boolean);
   const TOP='bbuddies/'+FAM;
   const rid=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s;};
   const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
@@ -508,6 +512,21 @@ body.ar .small,body.ar .sub{line-height:1.5}
     if(offerer)wire(pc.createDataChannel('bb',{ordered:true}));else pc.ondatachannel=ev=>wire(ev.channel);
     return L;}
 
+  // ---- when two tablets cannot reach each other directly (some Wi-Fi keeps devices apart), the game data goes through the MQTT
+  // message servers instead: a "relay link" that works like a WebRTC link. Hero updates go at most 8 times a second. ----
+  const RL=new Map();
+  function RelayLink(cid,side,remote,h){const other=side==='h'?'g':'h';const mine=TOP+'/r/'+cid+'/'+side,theirs=TOP+'/r/'+cid+'/'+other;let q=0,lastQ=0,dead=false,opened=false,pend=null,pendT=null,lastSend=0;
+    const L={cid,remote,relay:true,get ready(){return opened&&!dead;},
+      send(o){if(dead)return;const str=typeof o==='string'?o:JSON.stringify(o);const now=Date.now();
+        if(str.startsWith('{"t":"p"')&&now-lastSend<125){pend=str;if(!pendT)pendT=setTimeout(()=>{pendT=null;if(pend&&!dead){const x=pend;pend=null;L._out(x);}},125-(now-lastSend));return;}
+        L._out(str);},
+      _out(str){lastSend=Date.now();const msg=JSON.stringify({q:++q,d:str});for(const m of MQ)if(m.open)m.publish(theirs,msg,false);},
+      _in(payload){if(dead)return;let o;try{o=JSON.parse(payload);}catch(e){return;}if(!o||typeof o.q!=='number'||o.q<=lastQ)return;lastQ=o.q;
+        if(!opened){opened=true;h.open&&h.open(L);}if(o.d==='hello')return;let d;try{d=JSON.parse(o.d);}catch(e){return;}h.data&&h.data(d,L);},
+      hello(){L._out('hello');},
+      close(){if(dead)return;dead=true;clearTimeout(pendT);RL.delete(cid+'/'+side);h.close&&h.close(L);}};
+    RL.set(cid+'/'+side,L);for(const m of MQ)m.subscribe(mine);return L;}
+
   // ---- a game room. The host links to up to 3 guests and passes each guest's hero on to the others,
   // so every device sees every hero; a guest has a single link, to the host. ----
   function GameRoom(role){let myPres={},pending=null,gone=false;const links=new Map(),rps=new Map(),peerL=[],errL=[];
@@ -565,6 +584,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
     if(topic.startsWith(TOP+'/host/')){const hid=topic.slice(TOP.length+6);if(!hid||hid===myHid)return;
       if(!payload){let ch=false;for(const [k,f] of LB.found)if(f.hid===hid){LB.found.delete(k);ch=true;}if(ch)emitLobby();return;}
       let o;try{o=JSON.parse(payload);}catch(e){return;}if(!o||!o.lobby||Math.abs(Date.now()-(+o.at||0))>120000)return;foundGame(hid,o.lobby,{hid,slot:isSlot(o.slot)?o.slot:null,mq:true});return;}
+    if(topic.startsWith(TOP+'/r/')){const rl=RL.get(topic.slice(TOP.length+3));if(rl)rl._in(payload);return;}
     let m;try{m=JSON.parse(payload);}catch(e){return;}if(!m||typeof m.type!=='string'||typeof m.src!=='string')return;
     if(topic===TOP+'/to/'+myHid){if(LB.host&&LB.host._msg)LB.host._msg(m,'mq');return;}
     if(topic===TOP+'/to/'+myId)onLobbyMsg(m);}
@@ -585,7 +605,11 @@ body.ar .small,body.ar .sub{line-height:1.5}
         // room for 3 guests; a guest that reconnects replaces its old link
         if(!room._from(src)&&room._count()>=3){send(src,'ANSWER',{cid:p.cid,full:1});return;}
         const L=Link({send:(type,_d,pl)=>send(src,type,pl)},src,p.cid,false,{open:l=>room._open(l),data:(o,l)=>room._data(o,l),close:l=>room._lost(l)});room._add(L);L.accept(p.sdp).catch(e=>{log('accept fail',e);L.close();});}
-      else if(m.type==='CANDIDATE'){const L=room._link(p.cid);if(L)L.cand(p.candidate);}};
+      else if(m.type==='CANDIDATE'){const L=room._link(p.cid);if(L&&!L.relay)L.cand(p.candidate);}
+      else if(m.type==='RELAY'&&p.cid&&!room._gone){const prev=room._link(p.cid);if(prev&&prev.relay)return;
+        if(!room._from(src)&&room._count()>=3){send(src,'ANSWER',{cid:p.cid,full:1});return;}
+        const R=RelayLink(p.cid,'h',src,{open:l=>room._open(l),data:(o,l)=>room._data(o,l),close:l=>room._lost(l)});room._add(R);if(prev&&prev!==R)prev.close();R.hello();
+        let n=0;const hi=setInterval(()=>{if(R.ready||++n>14){clearInterval(hi);return;}R.hello();},700);}};
     // route 1: the first free PeerJS game id
     if(PJ){const tok=ls.get('bb_ptok')||rid(16);ls.set('bb_ptok',tok);let i=0;
       const next=()=>{if(i>=SLOTS.length||room._gone)return;const gid=SLOTS[i++];const sig=Sig(gid,tok,m=>room._msg(m,'pj'),st=>{if(st==='open'&&!room._sig){room._sig=sig;room.gid=gid;announce();done();}else if(st==='taken'&&room._sig!==sig)next();});room._sigs.push(sig);};next();}
@@ -598,10 +622,15 @@ body.ar .small,body.ar .sub{line-height:1.5}
   // guest: offer a data channel to the game we found, by every route we know for it
   function joinGame(t){return new Promise((res,rej)=>{if(!anyOn()){rej(new Error('offline'));return;}const room=GameRoom('guest');const cid=rid(8);let settled=false;
     const router={send:(type,_d,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(t.slot&&pjOn())ok=LB.sig.send(type,t.slot,payload)||ok;if(t.hid)ok=mqSend(myId,t.hid,type,payload)||ok;return ok;}};
-    const L=Link(router,t.key,cid,true,{open:l=>{room._open(l);if(!settled){settled=true;drop();res(room);}},data:(o,l)=>room._data(o,l),close:l=>{drop();if(!settled){settled=true;rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
-    room._add(L);const J={cid,t,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){L.close();}};LB.pendJoin.push(J);
+    const L=Link(router,t.key,cid,true,{open:l=>{if(J.relay){l.close();return;}room._open(l);if(!settled){settled=true;drop();LB.lastJoin='direct';res(room);}},data:(o,l)=>room._data(o,l),
+      close:l=>{if(J.relay&&l===L)return;drop();if(!settled){settled=true;LB.lastJoin=J.full?'full':'failed';rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
+    room._add(L);const J={cid,t,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){if(!J.relay)L.close();}};LB.pendJoin.push(J);
     const drop=()=>{const i=LB.pendJoin.indexOf(J);if(i>=0)LB.pendJoin.splice(i,1);};
-    L.start().catch(()=>L.close());setTimeout(()=>{if(!settled){settled=true;drop();L.close();rej(new Error('timeout'));}},20000);});}
+    // no direct connection after a few seconds: go through the message servers instead
+    setTimeout(()=>{if(settled||J.full||!t.hid||!mqOn())return;J.relay=true;
+      const R=RelayLink(cid,'g',t.key,{open:l=>{room._add(l);room._open(l);if(!settled){settled=true;drop();LB.lastJoin='relay';res(room);}},data:(o,l)=>room._data(o,l),close:l=>{if(!settled){settled=true;drop();rej(new Error('failed'));}else room._lost(l);}});
+      router.send('RELAY',t.key,{cid});setTimeout(()=>{if(!R.ready&&!settled)router.send('RELAY',t.key,{cid});},2500);try{L.close();}catch(e){}},Q.get('relayms')?+Q.get('relayms'):6000);
+    L.start().catch(()=>{if(!J.relay)L.close();});setTimeout(()=>{if(!settled){settled=true;drop();L.close();LB.lastJoin='timeout';rej(new Error('timeout'));}},22000);});}
 
   const lobby={name:'lobby',standalone:true,
     presence(patch){for(const k in patch){if(patch[k]===null)delete LB.pres[k];else LB.pres[k]=patch[k];}return Promise.resolve();},
@@ -614,7 +643,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
         if(!t)return Promise.reject(new Error('gone'));return joinGame(t);}
       return hostGame();},
     leave(){return Promise.resolve();},
-    status:()=>({online:anyOn(),pj:pjOn(),mq:MQ.map(q=>q.open),found:LB.found.size,hosting:!!LB.host,slot:LB.host?(LB.host.gid||null):null,hid:myHid,id:myId,diag:{...DIAG}})};
+    status:()=>({online:anyOn(),pj:pjOn(),mq:MQ.map(q=>q.open),lastJoin:LB.lastJoin||'',found:LB.found.size,hosting:!!LB.host,slot:LB.host?(LB.host.gid||null):null,hid:myHid,id:myId,diag:{...DIAG}})};
   window.__peerRoom=lobby;startLobby();
 })();
 </script><script>
@@ -2859,7 +2888,7 @@ function lobbyPresence(st){if(!NET.room)return;const pr=PROF[G.hero]||{name:'Her
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<5;i++)s+=a[Math.floor(R()*a.length)];return s;}
 async function netHost(){if(!NET.room)return false;NET.code=randCode();try{NET.game=await NET.room.join('bb2-'+NET.code);}catch(e){NET.game=null;toast(e&&e.message==='taken'?tr('Your friend is already hosting. Join their game instead!'):tr('Could not open an online game right now'));return false;}
   NET.role='host';NET.slot=0;wireGame();lobbyPresence('host');return true;}
-async function netJoin(code){if(!NET.room)return false;NET.code=code;NET.connecting=true;try{NET.game=await NET.room.join('bb2-'+code);}catch(e){NET.game=null;NET.connecting=false;toast(e&&e.message==='full'?tr('That game is full. 4 heroes are already playing!'):tr('Could not join that game. Try again!'));return false;}
+async function netJoin(code){if(!NET.room)return false;NET.code=code;NET.connecting=true;try{NET.game=await NET.room.join('bb2-'+code);}catch(e){NET.game=null;NET.connecting=false;toast(e&&e.message==='full'?tr('That game is full. 4 heroes are already playing!'):tr('Could not join that game. Try again!')+(e&&e.message?' ('+tr('why: '+e.message)+')':''));return false;}
   NET.role='guest';NET.slot=1;NET.joinedT=performance.now();wireGame();lobbyPresence('play');return true;}
 async function netLeave(){const wasGuest=NET.role==='guest';try{if(NET.game)await NET.game.leave();}catch(e){}NET.game=null;NET.role='solo';NET.remote=null;NET.peers={};NET.host=null;NET.code='';NET.slot=0;lobbyPresence('menu');if(wasGuest){for(const e of EN)if(e.mirror)e.dead=true;EN.length=0;restoreMyWorld();}}
 function wireGame(){const g=NET.game;NET.seen={};NET.peers={};NET.host=null;NET.remote=null;NET.lockId=null;NET.full=false;
@@ -10220,6 +10249,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
+const BB_VER='23.3';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
   if(!want){if(el&&!el.hidden)el.hidden=true;return;}
@@ -10238,9 +10268,13 @@ function lobbyNetLine(){const st=$('onstat');if(!st)return;let el=$('onnet');if(
   if(!NET.avail){if(el.textContent)el.textContent='';return;}const SA=!!(NET.room&&NET.room.standalone);const s=SA&&NET.room.status?NET.room.status():null;const on=SA?!!(s&&s.online):true;
   const n=(NET.lobby||[]).filter(p=>p.presence&&p.presence.st==='host').length;const t=!on?'🟠 '+tr('Reconnecting…'):n?'🟢 '+trf(n===1?'{0} game found':'{0} games found',n):'🟢 '+tr('Online · looking for games…');
   // which routes are working (helps when something is wrong): PeerJS, then the two message servers
-  const r=s&&s.mq?' · '+[s.pj?'✓':'✗',...s.mq.map(x=>x?'✓':'✗')].join(''):'';const full=t+r;if(el.textContent!==full)el.textContent=full;}
+  const r=s&&s.mq?' · '+[s.pj?'✓':'✗',...s.mq.map(x=>x?'✓':'✗')].join(''):'';const lj=s&&s.lastJoin?' · '+tr('last join: '+s.lastJoin):'';const full=t+r+lj+' · v'+BB_VER;if(el.textContent!==full)el.textContent=full;}
 {const _ls=UI.lobbyStatus;UI.lobbyStatus=function(){_ls.call(UI);try{lobbyNetLine();}catch(e){}};}
 MV('Reconnecting…','جارٍ إعادة الاتصال…');MV('{0} game found','تم العثور على لعبة واحدة');MV('{0} games found','تم العثور على {0} ألعاب');MV('Online · looking for games…','متصل · نبحث عن ألعاب…');
+// the version on the title screen (so we know every tablet has the newest one)
+{const T=$('title');if(T&&!$('tver')){const d=document.createElement('div');d.id='tver';d.textContent='v'+BB_VER;d.style.cssText='position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(6px + env(safe-area-inset-bottom,0px));font:800 12px system-ui,sans-serif;color:#fff;opacity:.6;pointer-events:none;z-index:3';T.appendChild(d);}}
+MV('why: timeout','لا يوجد رد');MV('why: failed','تعذّر الاتصال');MV('why: gone','لم نجد اللعبة');MV('why: offline','غير متصل');MV('why: taken','مستخدم');
+MV('last join: direct','آخر انضمام: مباشر');MV('last join: relay','آخر انضمام: عبر الإنترنت');MV('last join: failed','آخر انضمام: فشل');MV('last join: timeout','آخر انضمام: لا يوجد رد');MV('last join: full','آخر انضمام: ممتلئة');
 // ================= the edge of the world =================
 // The indoor rooms and the Moon are built far out in the north-east sea, where you can't normally go. Swimming, flying,
 // sailing or flying a plane into that corner used to throw you back to town (and the screen flickered between the worlds).
