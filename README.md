@@ -16,6 +16,10 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
 ## Finding your way
 - Pick a mission or tap a place on the map and three things lead the way: a **golden arrow** on the ground in front of your hero that follows the glowing trail, a **compass** at the top of the screen that points where to go from where you are looking (it says **Turn around** when the place is behind you and **Almost there!** at the end), and a sign above the light beam at the destination.
 
+## Camera
+- The camera follows your hero: it swings round behind them as they run. Turn it yourself any time (drag on the right side of the screen, or the mouse on a computer); a moment after you let go it starts following again.
+- **Menu → Settings → Camera** switches between Close, Normal and Far, and **Camera follows me** turns the following off. On a tablet, pinch with two fingers on the right side of the screen to zoom.
+
 ## Holding ✋ Use
 - Some jobs need you to hold **✋ Use** (or **E** on a keyboard): helping the lost hikers, fixing things on quests, helping a knocked-out friend up and cooking. A ring fills up while you hold, so you can see it working. Tapping again and again works too, and if you let go the ring only drains slowly.
 

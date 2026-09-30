@@ -1331,16 +1331,17 @@ layout(location=2) in vec4 iM0;layout(location=3) in vec4 iM1;layout(location=4)
 uniform mat4 uVP;uniform mat4 uLVP;uniform vec3 uOff;uniform float uOutline;uniform float uTime;
 out vec3 vW;out vec3 vN;out vec3 vLp;out vec3 vHs;out vec3 vNl;out vec4 vCol;out vec4 vLs;
 void main(){mat4 m=mat4(iM0,iM1,iM2,iM3);vec3 s=max(vec3(length(iM0.xyz),length(iM1.xyz),length(iM2.xyz)),vec3(1e-4));
-vec3 lp=aPos;if(uOutline>0.)lp*=1.+uOutline*2./s;vec4 wp=m*vec4(lp,1.);wp.xyz+=uOff;
+vec3 lp=aPos;if(uOutline>0.){if(min(s.x,min(s.y,s.z))<.075){gl_Position=vec4(0.,0.,2.,1.);return;}lp*=1.+uOutline*2./s;}vec4 wp=m*vec4(lp,1.);wp.xyz+=uOff;
 float mt=floor(iCol.a*.25+.001);if(mt>6.5&&mt<7.5&&uOutline<=0.){float k=(aPos.y+.5)*min(s.y,3.5);float ph=wp.x*.31+wp.z*.23;wp.x+=(sin(uTime*1.6+ph)*.07+sin(uTime*2.7+ph*1.7)*.03)*k;wp.z+=(cos(uTime*1.3+ph*1.3)*.05)*k;}
 vLp=aPos*s;vHs=.5*s;vNl=aNor;vN=normalize(mat3(m)*(aNor/(s*s)));vW=wp.xyz;vCol=iCol;vLs=uLVP*wp;gl_Position=uVP*wp;}`;
 const FS_INST=`#version 300 es
 precision highp float;precision highp sampler2DShadow;
 in vec3 vW;in vec3 vN;in vec3 vLp;in vec3 vHs;in vec3 vNl;in vec4 vCol;
-uniform int uKind;uniform vec4 uFlat;uniform vec4 uFade;
+uniform int uKind;uniform vec4 uFlat;uniform vec4 uFade;uniform float uNF;
 out vec4 o;
 ${GLSL_COMMON}
 void main(){
+ if(uNF>0.&&uFlat.a<1.5){float cd=length(vW-uCam);if(cd<uNF){float k=clamp((cd-uNF*.45)/(uNF*.55),0.,1.);if(bayer(gl_FragCoord.xy)>=k)discard;}}
  if(uFlat.a>3.5){vec2 lr=vLp.xz/max(vHs.xz,vec2(1e-3));float r=length(lr);float k=1.-smoothstep(0.,1.,r);k*=k*(1.-smoothstep(45.,90.,length(vW-uCam)));o=vec4(vCol.rgb*k*(uFlat.a-3.5),1.);return;}
  if(uFlat.a>2.5){vec3 Nb=normalize(vN);vec3 Vb=normalize(uCam-vW);float fr=pow(1.-abs(dot(Nb,Vb)),2.2);float sb=pow(max(dot(reflect(-uSun,Nb),Vb),0.),36.);vec3 cb=mix(vCol.rgb,vec3(1.),fr*.55)+sb;
    cb+=vec3(.25,-.1,.3)*sin(vW.y*6.+fr*9.+uTime*2.)*fr*.35;o=vec4(cb,clamp(.08+fr*.7+sb,0.,1.)*(uFlat.a-2.5));return;}
@@ -1396,9 +1397,9 @@ void main(){
  vec2 sf=fract(vW.xz*2.)-.5;float sr=length(sf);float saa=fwidth(sr)*1.3+.002;
  vec2 cc=floor(vW.xz-N.xz*.5);float t=hash12(cc);float t2=hash12(floor(vW.xz*3.));
  float spec=.04,gloss=8.;float htop=top?vW.y:texelFetch(uH,ivec2(clamp(cc,vec2(0.),vec2(uN-1.))),0).r;float below=htop-vW.y;
- if(m==0){alb*=.9+.17*t;alb*=.96+.06*t2;if(!top&&below>.3)alb=vec3(.56,.4,.27)*(.88+.14*t)*(.93+.07*step(.5,fract(vW.y*.5)));}
- else if(m==1){alb*=.97+.05*t;spec=.25;gloss=34.;if(top)studs(alb,N,sf,sr,saa,1.-smoothstep(16.,36.,length(vW-uCam)));}
- else if(m==2){alb*=.9+.14*t2;spec=.12;gloss=18.;if(!top)alb*=.75;}
+ if(m==0){alb*=.935+.1*t;alb*=.975+.04*t2;if(!top&&below>.3)alb=vec3(.56,.4,.27)*(.88+.14*t)*(.93+.07*step(.5,fract(vW.y*.5)));}
+ else if(m==1){alb*=.98+.03*t;spec=.25;gloss=34.;if(top)studs(alb,N,sf,sr,saa,1.-smoothstep(10.,26.,length(vW-uCam)));}
+ else if(m==2){alb*=.95+.07*t2;spec=.12;gloss=18.;if(!top)alb*=.75;}
  else if(m==3){alb*=.94+.1*t;alb*=.96+.04*sin(vW.x*1.9+vW.z*.7);if(!top)alb*=.84;}
  else if(m==4){alb*=.97+.05*t;spec=.4;gloss=28.;if(!top&&below>.35)alb=vec3(.6,.64,.72)*(.9+.12*t);}
  else if(m==5){alb*=.86+.2*t;if(!top)alb*=.9+.1*step(.5,fract(vW.y*.5));}
@@ -1487,13 +1488,21 @@ const FS_BLUR=`#version 300 es
 precision highp float;in vec2 vUV;uniform sampler2D uT;uniform vec2 uDir;out vec4 o;
 void main(){vec3 c=texture(uT,vUV).rgb*.227;c+=(texture(uT,vUV+uDir*1.385).rgb+texture(uT,vUV-uDir*1.385).rgb)*.316;c+=(texture(uT,vUV+uDir*3.23).rgb+texture(uT,vUV-uDir*3.23).rgb)*.0703;o=vec4(c,1.);}`;
 const FS_COMP=`#version 300 es
-precision highp float;in vec2 vUV;uniform sampler2D uT;uniform sampler2D uB;uniform float uBloom;uniform float uHit;uniform vec3 uTint;uniform vec3 uGrade;uniform vec2 uSunUV;uniform float uRays;out vec4 o;
+precision highp float;in vec2 vUV;uniform sampler2D uT;uniform sampler2D uB;uniform float uBloom;uniform float uHit;uniform vec3 uTint;uniform vec3 uGrade;uniform vec2 uSunUV;uniform float uRays;uniform vec2 uTxl;uniform float uAA;uniform float uSat;out vec4 o;
 vec3 soft(vec3 x){vec3 t=max(x-.78,0.);return min(x,.78)+(1.-exp(-t*2.2))*.22;}
-void main(){vec3 c=texture(uT,vUV).rgb+texture(uB,vUV).rgb*uBloom;
+vec3 fxaa(vec2 uv){vec3 M=texture(uT,uv).rgb;if(uAA<.5)return M;const vec3 L=vec3(.299,.587,.114);
+  vec3 nw=texture(uT,uv+vec2(-1.,-1.)*uTxl).rgb,ne=texture(uT,uv+vec2(1.,-1.)*uTxl).rgb,sw=texture(uT,uv+vec2(-1.,1.)*uTxl).rgb,se=texture(uT,uv+vec2(1.,1.)*uTxl).rgb;
+  float lnw=dot(nw,L),lne=dot(ne,L),lsw=dot(sw,L),lse=dot(se,L),lm=dot(M,L);float lmin=min(lm,min(min(lnw,lne),min(lsw,lse))),lmax=max(lm,max(max(lnw,lne),max(lsw,lse)));
+  if(lmax-lmin<max(.05,lmax*.12))return M;vec2 d=vec2(-((lnw+lne)-(lsw+lse)),(lnw+lsw)-(lne+lse));float red=max((lnw+lne+lsw+lse)*.03125,1./128.);float rcp=1./(min(abs(d.x),abs(d.y))+red);
+  d=clamp(d*rcp,vec2(-8.),vec2(8.))*uTxl;vec3 A=.5*(texture(uT,uv+d*(1./3.-.5)).rgb+texture(uT,uv+d*(2./3.-.5)).rgb);vec3 B=A*.5+.25*(texture(uT,uv-d*.5).rgb+texture(uT,uv+d*.5).rgb);
+  float lb=dot(B,L);return (lb<lmin||lb>lmax)?A:B;}
+void main(){vec3 c=fxaa(vUV)+texture(uB,vUV).rgb*uBloom;
 if(uRays>.01){vec2 dl=(uSunUV-vUV)/12.;vec2 p=vUV+dl*fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)*.8;float dec=1.;vec3 acc=vec3(0.);for(int i=0;i<12;i++){p+=dl;acc+=texture(uB,clamp(p,0.,1.)).rgb*dec;dec*=.9;}c+=acc*uRays*.075*vec3(1.,.88,.7)*(1.-smoothstep(.2,1.1,length(vUV-uSunUV)));}
-c=soft(c);float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.12);
-c=(c-.5)*1.04+.5;c*=uGrade;vec2 q=vUV-.5;c*=1.-dot(q,q)*.42;c=mix(c,uTint,uHit*smoothstep(.2,.75,length(q)));o=vec4(clamp(c,0.,1.),1.);}`;
+c=soft(c);float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,uSat);
+c=(c-.5)*1.02+.5;c*=uGrade;vec2 q=vUV-.5;c*=1.-dot(q,q)*.3;c=mix(c,uTint,uHit*smoothstep(.2,.75,length(q)));o=vec4(clamp(c,0.,1.),1.);}`;
 
+// v23.5 calmer look: colour saturation of the final picture (it used to be boosted to 1.12), outline thickness and colour, near-camera fade distance
+const LOOK={sat:.9,ol:.02,olc:[.13,.11,.2],nf:6};
 const PR={};const FXU={sunUV:[.5,.5],rays:0,aur:0,wet:0,snow:[0,0,0,0]};
 function initPrograms(){PR.inst=compileProg(VS_INST,FS_INST);PR.terr=compileProg(VS_TERR,FS_TERR);PR.di=compileProg(VS_DI,FS_D);PR.dt=compileProg(VS_DT,FS_D);
   PR.sky=compileProg(VS_FULL,FS_SKY);PR.water=compileProg(VS_WATER,FS_WATER);PR.bright=compileProg(VS_FULL,FS_BRIGHT);PR.blur=compileProg(VS_FULL,FS_BLUR);PR.comp=compileProg(VS_FULL,FS_COMP);}
@@ -1586,7 +1595,7 @@ function postProcess(bloom,hit,tint){const w=RT.w,h=RT.h;
     const pass=(src,dst,dx,dy)=>{gl.bindFramebuffer(gl.FRAMEBUFFER,dst);gl.bindTexture(gl.TEXTURE_2D,src);gl.uniform2f(PR.blur.u.uDir,dx,dy);fullDraw();};
     pass(RT.half,RT.qafb,1/RT.hw,0);pass(RT.qa,RT.qbfb,0,1/RT.qh);pass(RT.qb,RT.qafb,1.6/RT.qw,0);pass(RT.qa,RT.qbfb,0,1.6/RT.qh);}
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,canvas.width,canvas.height);gl.useProgram(PR.comp.p);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,RT.tex);gl.uniform1i(PR.comp.u.uT,0);
-  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,bloom>0?RT.qb:RT.tex);gl.uniform1i(PR.comp.u.uB,1);gl.uniform1f(PR.comp.u.uBloom,bloom);gl.uniform1f(PR.comp.u.uHit,hit||0);gl.uniform3fv(PR.comp.u.uTint,tint||[1,0,0]);gl.uniform3fv(PR.comp.u.uGrade,(typeof MOOD!=='undefined'?MOOD.cur:[1,1,1]));gl.uniform2f(PR.comp.u.uSunUV,FXU.sunUV[0],FXU.sunUV[1]);gl.uniform1f(PR.comp.u.uRays,bloom>0?FXU.rays:0);fullDraw();gl.activeTexture(gl.TEXTURE0);}
+  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,bloom>0?RT.qb:RT.tex);gl.uniform1i(PR.comp.u.uB,1);gl.uniform1f(PR.comp.u.uBloom,bloom);gl.uniform1f(PR.comp.u.uHit,hit||0);gl.uniform3fv(PR.comp.u.uTint,tint||[1,0,0]);gl.uniform3fv(PR.comp.u.uGrade,(typeof MOOD!=='undefined'?MOOD.cur:[1,1,1]));gl.uniform2f(PR.comp.u.uSunUV,FXU.sunUV[0],FXU.sunUV[1]);gl.uniform1f(PR.comp.u.uRays,bloom>0?FXU.rays:0);if(PR.comp.u.uTxl)gl.uniform2f(PR.comp.u.uTxl,1/w,1/h);if(PR.comp.u.uAA)gl.uniform1f(PR.comp.u.uAA,RT.s>0?0:1);if(PR.comp.u.uSat)gl.uniform1f(PR.comp.u.uSat,LOOK.sat);fullDraw();gl.activeTexture(gl.TEXTURE0);}
 function initGL(){GLX.hdr=!!gl.getExtension('EXT_color_buffer_float');GLX.maxS=gl.getParameter(gl.MAX_SAMPLES)||0;initPrograms();initMeshes();initWater();fullVAO.v=gl.createVertexArray();
   TEX.h=gl.createTexture();TEX.ch=gl.createTexture();}
 // ================= world: terrain =================
@@ -1869,21 +1878,21 @@ function streetFurniture(){srand(501);const LAMP=RW+.6,TREE=RW+1.9,BENCH=RW+2.4,
   for(let k=0;k<7;k++){const R0=ROADS[k];for(let j=0;j<6;j++){const s0=ROADS[j]+LO+.5,s1=ROADS[j+1]-LO-.5;
       for(const side of [-1,1]){
         // vertical road: sidewalk along z
-        for(let t=s0+2;t<s1;t+=8)brk('lamp',R0+side*LAMP,t,side>0?-Math.PI/2:Math.PI/2);
+        for(let t=s0+2+(side>0?8:0);t<s1;t+=16)brk('lamp',R0+side*LAMP,t,side>0?-Math.PI/2:Math.PI/2);
         for(let t=s0+6;t<s1-1;t+=8)if(rnd()<.6)tree(R0+side*TREE,t);
-        for(let t=s0+4;t<s1-2;t+=8){const r=rnd(),x=R0+side*BENCH;if(r<.28)brk('bench',x,t,side>0?-Math.PI/2:Math.PI/2);else if(r<.48)brk('trash',x,t);else if(r<.58)brk('mail',x,t);else if(r<.66)brk('news',x,t);else if(r<.72)brk('booth',x,t,side>0?-Math.PI/2:Math.PI/2);}
-        if(rnd()<.7)brk('hydrant',R0+side*HYD,s0+.8);
+        for(let t=s0+4+(side>0?8:0);t<s1-2;t+=16){const r=rnd(),x=R0+side*BENCH;if(r<.28)brk('bench',x,t,side>0?-Math.PI/2:Math.PI/2);else if(r<.48)brk('trash',x,t);else if(r<.58)brk('mail',x,t);else if(r<.66)brk('news',x,t);else if(r<.72)brk('booth',x,t,side>0?-Math.PI/2:Math.PI/2);}
+        if(rnd()<.4)brk('hydrant',R0+side*HYD,s0+.8);
         // horizontal road: sidewalk along x
-        for(let t=s0+2;t<s1;t+=8)brk('lamp',t,R0+side*LAMP,side>0?Math.PI:0);
+        for(let t=s0+2+(side>0?8:0);t<s1;t+=16)brk('lamp',t,R0+side*LAMP,side>0?Math.PI:0);
         for(let t=s0+6;t<s1-1;t+=8)if(rnd()<.6)tree(t,R0+side*TREE);
-        for(let t=s0+4;t<s1-2;t+=8){const r=rnd(),z=R0+side*BENCH;if(r<.28)brk('bench',t,z,side>0?Math.PI:0);else if(r<.48)brk('trash',t,z);else if(r<.58)brk('mail',t,z);else if(r<.66)brk('news',t,z);}
-        if(rnd()<.7)brk('hydrant',s0+.8,R0+side*HYD);
+        for(let t=s0+4+(side>0?8:0);t<s1-2;t+=16){const r=rnd(),z=R0+side*BENCH;if(r<.28)brk('bench',t,z,side>0?Math.PI:0);else if(r<.48)brk('trash',t,z);else if(r<.58)brk('mail',t,z);else if(r<.66)brk('news',t,z);}
+        if(rnd()<.4)brk('hydrant',s0+.8,R0+side*HYD);
         // white lane edges
-        sbox(R0+side*(RW-.35)-.07,4.004,ROADS[j]+RW,.14,.02,ROADS[j+1]-ROADS[j]-RW*2,'#e8e8ee',0,0,true);sbox(ROADS[j]+RW,4.004,R0+side*(RW-.35)-.07,ROADS[j+1]-ROADS[j]-RW*2,.02,.14,'#e8e8ee',0,0,true);}
-      for(let t=s0-LO+RW+1;t<s1+LO-RW-2;t+=3){sbox(R0-.08,4.004,t,.16,.02,1.6,'#ffd84a',0,0,true);sbox(t,4.004,R0-.08,1.6,.02,.16,'#ffd84a',0,0,true);}}}
+        sbox(R0+side*(RW-.35)-.07,4.004,ROADS[j]+RW,.14,.02,ROADS[j+1]-ROADS[j]-RW*2,'#d9d8d2',0,0,true);sbox(ROADS[j]+RW,4.004,R0+side*(RW-.35)-.07,ROADS[j+1]-ROADS[j]-RW*2,.02,.14,'#d9d8d2',0,0,true);}
+      for(let t=s0-LO+RW+1;t<s1+LO-RW-2;t+=3){sbox(R0-.08,4.004,t,.16,.02,1.6,'#e2c565',0,0,true);sbox(t,4.004,R0-.08,1.6,.02,.16,'#e2c565',0,0,true);}}}
   for(let i=0;i<7;i++)for(let j=0;j<7;j++){const X=ROADS[i],Z=ROADS[j];
-    for(let s=0;s<8;s++){const o=-3.85+s*1.1;sbox(X+o-.25,4.003,Z-RW-2,.5,.02,1.6,'#f4f4f4',0,0,true);sbox(X+o-.25,4.003,Z+RW+.4,.5,.02,1.6,'#f4f4f4',0,0,true);sbox(X-RW-2,4.003,Z+o-.25,1.6,.02,.5,'#f4f4f4',0,0,true);sbox(X+RW+.4,4.003,Z+o-.25,1.6,.02,.5,'#f4f4f4',0,0,true);}
-    if(i>0&&i<6&&j>0&&j<6)for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const L=RW+.9;const m=mat4At(X+sx*L,4,Z+sz*L,Math.atan2(-sx,-sz));sput('cyl',m,0,2,0,.16,4,.16,'#3a3f4d',3);sput('rbox',m,0,4.4,0,.5,1.3,.45,'#2a2e38',1);
+    for(let s=0;s<8;s++){const o=-3.85+s*1.1;sbox(X+o-.25,4.003,Z-RW-2,.5,.02,1.6,'#d6d4ce',0,0,true);sbox(X+o-.25,4.003,Z+RW+.4,.5,.02,1.6,'#d6d4ce',0,0,true);sbox(X-RW-2,4.003,Z+o-.25,1.6,.02,.5,'#d6d4ce',0,0,true);sbox(X+RW+.4,4.003,Z+o-.25,1.6,.02,.5,'#d6d4ce',0,0,true);}
+    if(i>0&&i<6&&j>0&&j<6)for(const [sx,sz] of [[-1,-1],[1,1]]){const L=RW+.9;const m=mat4At(X+sx*L,4,Z+sz*L,Math.atan2(-sx,-sz));sput('cyl',m,0,2,0,.16,4,.16,'#5a616d',3);sput('rbox',m,0,4.4,0,.5,1.3,.45,'#444a56',1);
       sput('sph',m,0,4.8,.22,.26,.26,.1,'#ff3b3b',1,(i+j)%2?1:.1);sput('sph',m,0,4.4,.22,.26,.26,.1,'#ffd23f',1,.1);sput('sph',m,0,4,.22,.26,.26,.1,'#3dff7a',1,(i+j)%2?.1:1);}}}
 function cityBlocks(){srand(404);for(let bj=0;bj<6;bj++)for(let bi=0;bi<6;bi++){const t=BLOCK_TYPE(bi,bj);WORLD.blocks.push({bi,bj,t,x0:ROADS[bi]+LO,z0:ROADS[bj]+LO});
     if(t==='bld')lotBuildings(bi,bj);else if(t==='hq')hqBlock();else if(t==='bank')bankBlock();else if(t==='police')policeBlock();else if(t==='garage')garageBlock();else if(t==='park')parkBlock();else if(t==='plaza')plazaBlock();else if(t==='park2')park2Block();else if(t==='fire')fireBlock();else if(t==='play')playBlock();}}
@@ -2266,7 +2275,7 @@ function drawEnemy(e,t){const m=MS.cur;MS.reset();const hit=e.hitT>0;M4.tr(m,e.x
 
 // ---------- breakables ----------
 const BRKT={bench:{r:.9,top:.9,hp:2,v:40,cols:['#b27a4a','#555a6a'],lift:1},trash:{r:.4,top:1,hp:1,v:30,cols:['#3fae4a','#555a6a'],lift:1},hydrant:{r:.3,top:.8,hp:1,v:30,cols:['#e8344a'],lift:1},
-  lamp:{r:.25,top:4.6,hp:2,v:60,cols:['#3a3f4d','#ffe08a']},mail:{r:.4,top:1.1,hp:1,v:40,cols:['#2f6bff'],lift:1},news:{r:.35,top:1,hp:1,v:30,cols:['#ff8a1f'],lift:1},booth:{r:.6,top:2.4,hp:2,v:80,cols:['#e8344a','#a8d8ff']},
+  lamp:{r:.25,top:4.6,hp:2,v:60,cols:['#5a616d','#ffe08a']},mail:{r:.4,top:1.1,hp:1,v:40,cols:['#2f6bff'],lift:1},news:{r:.35,top:1,hp:1,v:30,cols:['#ff8a1f'],lift:1},booth:{r:.6,top:2.4,hp:2,v:80,cols:['#e8344a','#a8d8ff']},
   cart:{r:.9,top:1.8,hp:2,v:80,cols:['#ffcf3a','#ff5fa8']},crate:{r:.5,top:1,hp:1,v:40,cols:['#c08a4a'],lift:1},barrel:{r:.45,top:1.1,hp:1,v:40,cols:['#8a5a3a'],lift:1},hay:{r:.7,top:1.1,hp:1,v:30,cols:['#e8c45a'],lift:1},
   snowman:{r:.6,top:1.9,hp:1,v:50,cols:['#f4f8ff','#ff8a1f']},bush:{r:.8,top:1.2,hp:1,v:30,cols:['#4fb35a','#3f9e52']},sandc:{r:.8,top:1.4,hp:1,v:50,cols:['#f3dea0']},drum:{r:.4,top:1.1,hp:1,v:40,cols:['#e8534a','#ffcf3a'],lift:1},
   pot:{r:.45,top:1.1,hp:1,v:30,cols:['#c9774a','#4fb35a'],lift:1},boulder:{r:1.1,top:2,hp:99,v:0,cols:['#9aa0ac'],lift:2}};
@@ -2274,7 +2283,7 @@ function drawBrk(b,t){const m=MS.cur;MS.reset();M4.tr(m,b.x,b.y,b.z);M4.ry(m,b.r
   if(ty==='bench'){rb(m,0,.45,0,1.7,.1,.5,'#b27a4a',6);rb(m,0,.8,-.2,1.7,.35,.08,'#b27a4a',6);for(const s of [-1,1])bx(m,s*.7,.22,0,.1,.45,.45,'#555a6a',3);}
   else if(ty==='trash'){cy(m,0,.45,0,.7,.9,.7,'#3fae4a',1);cy(m,0,.94,0,.76,.1,.76,'#2f8a3a',1);}
   else if(ty==='hydrant'){cy(m,0,.35,0,.4,.7,.4,'#e8344a',1);sp(m,0,.72,0,.4,.3,.4,'#e8344a',1);cy(m,0,.45,0,.16,.16,.62,'#c8c8c8',3);}
-  else if(ty==='lamp'){cy(m,0,2.2,0,.18,4.4,.18,'#3a3f4d',3);bx(m,0,4.4,.55,.12,.12,1.1,'#3a3f4d',3);rb(m,0,4.3,1.05,.5,.22,.5,'#3a3f4d',3);bx(m,0,4.17,1.05,.36,.05,.36,'#ffe08a',1,1);cy(m,0,.2,0,.4,.4,.4,'#3a3f4d',3);}
+  else if(ty==='lamp'){cy(m,0,2.2,0,.18,4.4,.18,'#5a616d',3);bx(m,0,4.4,.55,.12,.12,1.1,'#5a616d',3);rb(m,0,4.3,1.05,.5,.22,.5,'#5a616d',3);bx(m,0,4.17,1.05,.36,.05,.36,'#ffe08a',1,1);cy(m,0,.2,0,.4,.4,.4,'#5a616d',3);}
   else if(ty==='mail'){rb(m,0,.85,0,.6,.55,.5,'#2f6bff',1);cy(m,0,.3,0,.1,.6,.1,'#333',3);bx(m,0,.9,.26,.3,.06,.02,'#ffffff',1);}
   else if(ty==='news'){rb(m,0,.5,0,.5,1,.45,'#ff8a1f',1);bx(m,0,.7,.23,.36,.3,.02,'#dfe8f2',8);}
   else if(ty==='booth'){rb(m,0,1.2,0,1,2.4,1,'#e8344a',1);for(const [x,z] of [[0,.51],[.51,0],[-.51,0]])bx(m,x,1.3,z,x?.02:.7,1.4,z?.02:.7,'#a8d8ff',8,.1);}
@@ -2299,7 +2308,8 @@ function drawCrystal(x,y,z,t,col,s=1){const m=MS.cur;MS.reset();M4.tr(m,x,y+Math
 function drawChest(c,t){const m=MS.cur;MS.reset();M4.tr(m,c.x,c.y,c.z);M4.ry(m,c.r);const wd='#a4652f';rb(m,0,.3,0,1,.6,.7,wd,6);bx(m,0,.3,0,1.04,.1,.74,GOLD,3);for(const s of [-1,1])bx(m,s*.44,.3,0,.08,.62,.74,GOLD,3);
   MS.push();M4.tr(m,0,.6,-.35);M4.rx(m,c.open?-1.9:Math.sin(t*3+c.x)*.04);rb(m,0,.12,.35,1.02,.26,.72,wd,6);bx(m,0,.12,.35,1.06,.06,.76,GOLD,3);bx(m,0,.02,.72,.16,.18,.04,GOLD,3,.4);MS.pop();if(!c.open)sp(m,0,1.1+Math.sin(t*3)*.1,0,.14,.14,.14,GOLD,1,1);}
 function drawMarkerRing(x,y,z,t,col){const m=MS.cur;MS.reset();M4.tr(m,x,y,z);M4.ry(m,t);for(let k=0;k<8;k++){const a=k/8*TAU;bx(m,Math.cos(a)*1.3,.12+Math.sin(t*3+k)*.08,Math.sin(a)*1.3,.3,.1,.3,col,1,1);}}
-function drawBeam(x,y,z,t,col){const m=MS.cur;MS.reset();M4.tr(m,x,y,z);const p=.22+Math.sin(t*4)*.05;cy(m,0,30,0,p,60,p,col,1,1);drawMarkerRing(x,y+.05,z,t,col);}
+// v23.5: the beam gets thinner as you come close and goes away when you are there (the ring on the ground stays)
+function drawBeam(x,y,z,t,col){const m=MS.cur;const d=typeof ME!=='undefined'&&ME?Math.hypot(x-ME.x,z-ME.z):99;if(d>6){MS.reset();M4.tr(m,x,y,z);const k=Math.min(1,(d-6)/24);const p=(.07+.13*k)+Math.sin(t*4)*.035*k;cy(m,0,30,0,p,60,p,col,1,1);}drawMarkerRing(x,y+.05,z,t,col);}
 function drawTerminal(x,y,z,f,t,col,icon){const m=MS.cur;MS.reset();M4.tr(m,x,y,z);M4.ry(m,f);rb(m,0,.7,0,.9,1.4,.6,'#2b2d42',3);bx(m,0,1.05,.31,.7,.5,.02,col,1,.9);cy(m,0,1.6+Math.sin(t*3)*.1,0,.5,.1,.5,col,1,1);}
 function drawPile(b,t){const m=MS.cur;MS.reset();M4.tr(m,b.x,b.y,b.z);const cols=['#e8344a','#2f6bff','#ffcf3a','#1faa5c','#ff7a1a','#8a4ff0'];
   for(let k=0;k<10;k++){const a=k*2.4,r=.3+(k%4)*.25,j=Math.max(0,Math.sin(t*6+k*1.7))*.35;MS.push();M4.tr(m,Math.cos(a)*r,.18+Math.floor(k/4)*.3+j,Math.sin(a)*r);M4.ry(m,k);bx(m,0,0,0,.5,.3,.25,cols[k%6],2);MS.pop();}}
@@ -2360,6 +2370,8 @@ function inWater(x,z,y){return chAt(x,z)<WL-.2&&y<WL+.2;}
 // ================= camera =================
 const CAM={yaw:0,pitch:.34,dist:10,tx:0,ty:0,tz:0,manualT:9,eye:[0,20,0],fov:1,dYaw:0,dPitch:0,zoom:0};
 function camForward(){return [-Math.sin(CAM.yaw),-Math.cos(CAM.yaw)];}
+// camera distance presets: 0 close (the old view), 1 normal, 2 far
+const CAMD=[{d:1,p:0},{d:1.3,p:.07},{d:1.6,p:.13}];
 function updateCamera(dt){const p=ME;const v=p.veh;let tx=p.x,ty=p.y+1.5,tz=p.z;let dist=10.4,pitch=.31;
   if(G.mode==='title'){CAM.yaw+=dt*.05;tx=C+8;tz=C+10;ty=14;dist=46;pitch=.34;}
   else if(G.cine&&G.cine.draw){const d=G.cine.draw;tx=d.x;ty=d.y+(G.cine.arrived?4:9);tz=d.z;dist=G.cine.arrived?26:36;pitch=G.cine.arrived?.32:.12;CAM.yaw+=dt*.12;CAM.cd=null;}
@@ -2367,7 +2379,14 @@ function updateCamera(dt){const p=ME;const v=p.veh;let tx=p.x,ty=p.y+1.5,tz=p.z;
   else if(p.realm==='inside'&&G.mode!=='shop'){dist=12.5;pitch=.8;}
   else if(p.fly){dist=p.turbo?19:13;pitch=p.turbo?.36:.42;}
   else if(G.mode==='shop'){dist=5.2;pitch=.18;ty=p.y+1.1;}
-  if(G.mode!=='title'&&!v&&CAM.manualT>1.4){const hs=Math.hypot(p.vx,p.vz);if(hs>2){const want=Math.atan2(-p.vx,-p.vz);const lat=Math.abs(Math.sin(angDiff(CAM.yaw,want)));CAM.yaw=angLerp(CAM.yaw,want,Math.min(1,dt*.55*lat*(hs/7)));}}
+  // v23.5: the camera sits further back and a little higher (Settings: Close = the old view, Normal, Far)
+  if(G.mode!=='title'&&!(G.cine&&G.cine.draw)&&G.mode!=='shop'&&p.realm!=='inside'){const cp=CAMD[G.camD]||CAMD[1];dist*=cp.d;pitch+=cp.p;}
+  // the camera follows the hero: it swings round behind them as they run (turn it yourself any time; it starts following again
+  // a moment after you let go). Running straight at the camera lets you see your hero's face for a second before it swings round.
+  if(G.mode!=='title'&&!v&&G.camFollow!==false){const hs=Math.hypot(p.vx,p.vz);if(CAM.manualT>1.6&&hs>1.5&&!G.cine){const want=Math.atan2(-p.vx,-p.vz);const df=angDiff(CAM.yaw,want),ad=Math.abs(df);
+      // turn speed: gentle when nearly lined up, at most about 60 degrees a second (so running sideways makes a wide curve, not a spin)
+      CAM.backT=ad>2.5?(CAM.backT||0)+dt:0;const w=ad>2.5?(CAM.backT>1.1?1.8:0):Math.min(1.1,ad*1.2);CAM.yaw+=Math.sign(df)*Math.min(ad,w*dt*Math.min(1,hs/6));}else CAM.backT=0;}
+  else if(G.mode!=='title'&&!v&&CAM.manualT>1.4){const hs=Math.hypot(p.vx,p.vz);if(hs>2){const want=Math.atan2(-p.vx,-p.vz);const lat=Math.abs(Math.sin(angDiff(CAM.yaw,want)));CAM.yaw=angLerp(CAM.yaw,want,Math.min(1,dt*.55*lat*(hs/7)));}}
   CAM.manualT+=dt;CAM.yaw+=CAM.dYaw;CAM.pitch=clamp(CAM.pitch+CAM.dPitch,-.1,1.2);CAM.dYaw=0;CAM.dPitch=0;
   const pt=G.cine?pitch:clamp(pitch+(CAM.pitch-.34),-.05,1.25);if(G.mode==='title'){CAM.pAdj=pt;}const k=Math.min(1,dt*10);CAM.tx=lerp(CAM.tx,tx,k);CAM.tz=lerp(CAM.tz,tz,k);CAM.ty=lerp(CAM.ty,ty,Math.min(1,dt*6));
   dist*=1+CAM.zoom;CAM.dist=lerp(CAM.dist,dist,Math.min(1,dt*3));
@@ -3052,12 +3071,14 @@ function renderFrame(){const q=G.quality;const scale=q==='high'?1:q==='med'?.85:
   const Pt=PR.terr;gl.useProgram(Pt.p);setCommon(Pt,shOn);gl.uniform1i(Pt.u.uCH,1);gl.uniform1i(Pt.u.uH,2);gl.uniform1f(Pt.u.uN,N);gl.uniform1f(Pt.u.uAO,q==='low'?0:q==='med'?1:2);gl.uniform1f(Pt.u.uWet,FXU.wet);gl.uniform4fv(Pt.u.uSnow,FXU.snow);gl.uniform1f(Pt.u.uWL,WL);
   for(const ch of visChunks){gl.bindVertexArray(ch.terr.vao);gl.drawElements(gl.TRIANGLES,ch.terr.n,ch.terr.type,0);}
   const P=PR.inst;gl.useProgram(P.p);setCommon(P,shOn);gl.uniform3f(P.u.uOff,0,0,0);gl.uniform1f(P.u.uOutline,0);gl.uniform4f(P.u.uFlat,0,0,0,0);
+  // things right next to the camera (a tree, a lamp post) fade out instead of filling the screen (not in photos or the shop)
+  if(P.u.uNF)gl.uniform1f(P.u.uNF,(G.mode==='play'||G.mode==='menu'||G.mode==='dialog')&&!(typeof PHOTO!=='undefined'&&PHOTO.on)?LOOK.nf:0);
   const fp=project(ME.x,ME.y+1.1,ME.z);const fd=Math.hypot(CAM.eye[0]-ME.x,CAM.eye[1]-ME.y-1,CAM.eye[2]-ME.z);
   if(G.mode==='play'&&fp.vis)gl.uniform4f(P.u.uFade,fp.x*w/innerWidth,(innerHeight-fp.y)*h/innerHeight,h*.16,fd-1.2);else gl.uniform4f(P.u.uFade,0,0,0,0);
   const smallD=q==='low'?60:95;if(camOnMoon()){gl.uniform1f(P.u.uNight,.5);}else if(camRealm()==='inside')gl.uniform1f(P.u.uNight,DN.night);gl.uniform4fv(P.u.uSnow,FXU.snow);gl.uniform1f(P.u.uWetI,FXU.wet);gl.uniform1f(P.u.uWL,WL);for(const ch of visChunks){drawSetK(ch.big,P);if(ch.dist<smallD)drawSetK(ch.small,P);}gl.uniform4f(P.u.uSnow,0,0,0,0);gl.uniform1f(P.u.uWetI,0);
   drawSetK(DYN,P);if(BUILD.set)drawSetK(BUILD.set,P);gl.uniform4f(P.u.uFade,0,0,0,0);
   // outlines for mobs and characters
-  gl.cullFace(gl.FRONT);gl.uniform1f(P.u.uOutline,.028);gl.uniform4f(P.u.uFlat,.09,.07,.16,1);drawSetK(MOB,P);drawSetK(CHR,P);gl.uniform1f(P.u.uOutline,0);gl.uniform4f(P.u.uFlat,0,0,0,0);gl.cullFace(gl.BACK);
+  if(P.u.uNF)gl.uniform1f(P.u.uNF,0);gl.cullFace(gl.FRONT);gl.uniform1f(P.u.uOutline,LOOK.ol);gl.uniform4f(P.u.uFlat,LOOK.olc[0],LOOK.olc[1],LOOK.olc[2],1);drawSetK(MOB,P);drawSetK(CHR,P);gl.uniform1f(P.u.uOutline,0);gl.uniform4f(P.u.uFlat,0,0,0,0);gl.cullFace(gl.BACK);
   drawSetK(MOB,P);
   // hero ghost when hidden
   gl.depthFunc(gl.GREATER);gl.depthMask(false);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform4f(P.u.uFlat,0,0,0,1.5+.42);drawSetK(CHR,P);gl.uniform4f(P.u.uFlat,0,0,0,0);gl.disable(gl.BLEND);gl.depthMask(true);gl.depthFunc(gl.LEQUAL);
@@ -3163,7 +3184,7 @@ addEventListener('keyup',e=>KEYS.delete(e.code));addEventListener('blur',()=>{KE
 canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')return;AU.init();MOUSE.down=true;MOUSE.btn=e.button;MOUSE.drag=0;MOUSE.lx=e.clientX;MOUSE.ly=e.clientY;canvas.setPointerCapture(e.pointerId);canvas.focus();});
 canvas.addEventListener('pointermove',e=>{if(!MOUSE.down||e.pointerType==='touch')return;const dx=e.clientX-MOUSE.lx,dy=e.clientY-MOUSE.ly;MOUSE.lx=e.clientX;MOUSE.ly=e.clientY;MOUSE.drag+=Math.abs(dx)+Math.abs(dy);if(MOUSE.drag>5){CAM.dYaw-=dx*.006*G.camSens;CAM.dPitch+=dy*.004*G.camSens;CAM.manualT=0;}});
 canvas.addEventListener('pointerup',e=>{if(e.pointerType==='touch')return;if(MOUSE.down&&MOUSE.drag<=5&&MOUSE.btn===0)MOUSE.click=true;MOUSE.down=false;});
-canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{CAM.zoom=clamp(CAM.zoom+e.deltaY*.0008,-.35,.7);e.preventDefault();},{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{CAM.zoom=clamp(CAM.zoom+e.deltaY*.0008,-.4,.8);e.preventDefault();},{passive:false});
 const PADPREV={};
 function readInput(dt){const k=c=>KEYS.has(c),p=c=>PRESS.has(c);let mx=0,mz=0;if(k('KeyW'))mz-=1;if(k('KeyS'))mz+=1;if(k('KeyA'))mx-=1;if(k('KeyD'))mx+=1;
   if(k('ArrowLeft')){CAM.dYaw+=2.2*dt*G.camSens;CAM.manualT=0;}if(k('ArrowRight')){CAM.dYaw-=2.2*dt*G.camSens;CAM.manualT=0;}if(k('ArrowUp'))CAM.dPitch-=1*dt;if(k('ArrowDown'))CAM.dPitch+=1*dt;
@@ -3181,8 +3202,13 @@ function buildTouch(){document.body.classList.toggle('tch',!!TOUCH.on);const T=$
   let jid=null,ox=0,oy=0;jz.addEventListener('pointerdown',e=>{AU.init();jid=e.pointerId;jz.setPointerCapture(jid);ox=e.clientX;oy=e.clientY;const r=jz.getBoundingClientRect();jb.style.left=(ox-r.left)+'px';jb.style.top=(oy-r.top)+'px';jb.classList.add('on');e.preventDefault();});
   jz.addEventListener('pointermove',e=>{if(e.pointerId!==jid)return;let dx=e.clientX-ox,dy=e.clientY-oy;const l=Math.hypot(dx,dy),R0=50;if(l>R0){dx=dx/l*R0;dy=dy/l*R0;}jk.style.transform=`translate(${dx}px,${dy}px)`;TOUCH.jx=dx/R0;TOUCH.jy=dy/R0;if(Math.hypot(TOUCH.jx,TOUCH.jy)<.15)TOUCH.jx=TOUCH.jy=0;});
   const jend=e=>{if(e.pointerId!==jid)return;jid=null;TOUCH.jx=TOUCH.jy=0;jk.style.transform='';jb.classList.remove('on');};jz.addEventListener('pointerup',jend);jz.addEventListener('pointercancel',jend);
-  const cz=document.createElement('div');cz.className='cz';T.appendChild(cz);let cid2=null,lx=0,ly=0;cz.addEventListener('pointerdown',e=>{cid2=e.pointerId;cz.setPointerCapture(cid2);lx=e.clientX;ly=e.clientY;});
-  cz.addEventListener('pointermove',e=>{if(e.pointerId!==cid2)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;CAM.dYaw-=dx*.008*G.camSens;CAM.dPitch+=dy*.005;CAM.manualT=0;});const cend=e=>{if(e.pointerId===cid2)cid2=null;};cz.addEventListener('pointerup',cend);cz.addEventListener('pointercancel',cend);
+  // the camera area: one finger turns the camera, two fingers pinch to zoom in and out
+  const cz=document.createElement('div');cz.className='cz';T.appendChild(cz);const CP=new Map();let pinch=null;
+  cz.addEventListener('pointerdown',e=>{try{cz.setPointerCapture(e.pointerId);}catch(x){}CP.set(e.pointerId,{x:e.clientX,y:e.clientY});if(CP.size===2){const [a,b]=[...CP.values()];pinch={d0:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)),z0:CAM.zoom};}});
+  cz.addEventListener('pointermove',e=>{const q=CP.get(e.pointerId);if(!q)return;const dx=e.clientX-q.x,dy=e.clientY-q.y;q.x=e.clientX;q.y=e.clientY;
+    if(CP.size>=2&&pinch){const [a,b]=[...CP.values()];const d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y));CAM.zoom=clamp((1+pinch.z0)*pinch.d0/d-1,-.4,.8);return;}
+    CAM.dYaw-=dx*.008*G.camSens;CAM.dPitch+=dy*.005;CAM.manualT=0;});
+  const cend=e=>{CP.delete(e.pointerId);if(CP.size<2)pinch=null;};cz.addEventListener('pointerup',cend);cz.addEventListener('pointercancel',cend);cz.addEventListener('lostpointercapture',cend);document.addEventListener('touchend',e=>{if(e.touches.length===0){CP.clear();pinch=null;}},{passive:true});
   const tbs=document.createElement('div');tbs.className='tbs';for(const [k,label,ic] of [['jump','Jump','⬆'],['punch','Bubble','🫧'],['power','Power','⚡'],['act','Use','✋']]){const b=document.createElement('button');b.className='tb '+k;b.innerHTML=`<span class="ic">${ic}</span><span class="lb">${label}</span>`;
     tbWire(b,k);tbs.appendChild(b);}T.appendChild(tbs);touchLabels();}
 // a button is held while a pointer OR a finger is on it: holding a finger still is a "long press" to some browsers, and they
@@ -4358,11 +4384,11 @@ function waterTower(tw,x0,z0){const cx=x0+4,cz=z0+4;const m=mat4At(cx,4,cz);for(
   const wx=x0+9,wz=z0+8;const wm=mat4At(wx,4,wz);for(const [a,b] of [[-.8,-.8],[.8,-.8],[-.8,.8],[.8,.8]])sput('box',wm,a*(1-.0),3.5,b,.14,7,.14,'#8f97a8',3);solid(wx-.9,wz-.9,wx+.9,wz+.9,11);WORLD.windmills.push({x:wx,y:4+7.6,z:wz+.6});adobe(tw,x0+7.5,z0+.5,4,4,[0,-1]);}
 function townFurniture(tw){srand(600+tw.rid);const X=tw.X,Z=tw.Z;const lampC=({beach:'#ff7aa2',snow:'#2a2e38',west:'#6b4a2e',space:'#46e6ff'})[tw.theme];
   const tree=(x,z)=>{if(tw.theme==='beach')palm(x,z);else if(tw.theme==='snow')pineTree(x,z,.75);else if(tw.theme==='west')cactus(x,z);else streetTree(x,z);};
-  for(let k=0;k<X.length;k++)for(let j=0;j<Z.length-1;j++){const R0=X[k],s0=Z[j]+TW_LO+.5,s1=Z[j+1]-TW_LO-.5;for(const side of [-1,1]){for(let t=s0+2;t<s1;t+=9)addBrk('lamp',R0+side*(TW_RW+.6),t,side>0?-Math.PI/2:Math.PI/2);if(rnd()<.6)tree(R0+side*(TW_RW+1.9),s0+6);
+  for(let k=0;k<X.length;k++)for(let j=0;j<Z.length-1;j++){const R0=X[k],s0=Z[j]+TW_LO+.5,s1=Z[j+1]-TW_LO-.5;for(const side of [-1,1]){for(let t=s0+2+(side>0?9:0);t<s1;t+=18)addBrk('lamp',R0+side*(TW_RW+.6),t,side>0?-Math.PI/2:Math.PI/2);if(rnd()<.6)tree(R0+side*(TW_RW+1.9),s0+6);
       const r=rnd();if(r<.35)addBrk('bench',R0+side*(TW_RW+2.4),s0+4,side>0?-Math.PI/2:Math.PI/2);else if(r<.55)addBrk('trash',R0+side*(TW_RW+2.4),s0+4);
       sbox(R0+side*(TW_RW-.35)-.07,4.004,Z[j]+TW_RW,.14,.02,Z[j+1]-Z[j]-TW_RW*2,'#e8e8ee',0,0,true);}
     for(let t=Z[j]+TW_RW+1;t<Z[j+1]-TW_RW-1;t+=3)sbox(R0-.08,4.004,t,.16,.02,1.6,'#ffd84a',0,0,true);}
-  for(let j=0;j<Z.length;j++)for(let k=0;k<X.length-1;k++){const R0=Z[j],s0=X[k]+TW_LO+.5,s1=X[k+1]-TW_LO-.5;for(const side of [-1,1]){for(let t=s0+2;t<s1;t+=9)addBrk('lamp',t,R0+side*(TW_RW+.6),side>0?Math.PI:0);if(rnd()<.6)tree(s0+6,R0+side*(TW_RW+1.9));
+  for(let j=0;j<Z.length;j++)for(let k=0;k<X.length-1;k++){const R0=Z[j],s0=X[k]+TW_LO+.5,s1=X[k+1]-TW_LO-.5;for(const side of [-1,1]){for(let t=s0+2+(side>0?9:0);t<s1;t+=18)addBrk('lamp',t,R0+side*(TW_RW+.6),side>0?Math.PI:0);if(rnd()<.6)tree(s0+6,R0+side*(TW_RW+1.9));
       const r=rnd();if(r<.35)addBrk('bench',s0+4,R0+side*(TW_RW+2.4),side>0?Math.PI:0);else if(r<.5)addBrk('mail',s0+4,R0+side*(TW_RW+2.4));
       sbox(X[k]+TW_RW,4.004,R0+side*(TW_RW-.35)-.07,X[k+1]-X[k]-TW_RW*2,.02,.14,'#e8e8ee',0,0,true);}
     for(let t=X[k]+TW_RW+1;t<X[k+1]-TW_RW-1;t+=3)sbox(t,4.004,R0-.08,1.6,.02,.16,'#ffd84a',0,0,true);}
@@ -7586,8 +7612,10 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:25,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:26,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'📷',t:'A new camera',s:'The camera is further back and follows your hero. Pinch with two fingers to zoom, or change it in Settings'},
+  {ic:'🎨',t:'A calmer city',s:'Softer colours, fewer lamp posts, and faces without lines'},
   {ic:'✋',t:'Helping is easier',s:'When you hold ✋ Use, a ring fills up so you can see it working. Tapping it again and again works too'},
   {ic:'⛶',t:'Full screen',s:'Tap ⛶ on the title screen or next to the menu button. On a tablet the game goes full screen by itself when you tap Play',act:()=>{if(typeof fsPress==='function')fsPress();}},
   {ic:'🌐',t:'Online play works better',s:"Your friend's game shows up again after a Wi-Fi hiccup, and the screen tells you when it is looking for games"},
@@ -10269,9 +10297,10 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='23.4';window.BB_VER=BB_VER;
+const BB_VER='23.5';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
-function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
+function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
+  const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
   if(!want){if(el&&!el.hidden)el.hidden=true;return;}
   if(!el){const f=$('friends');if(!f)return;el=document.createElement('div');el.id='hostcard';el.className='card';el.onclick=()=>{NET.hcHide=1;el.hidden=true;};f.parentNode.insertBefore(el,f.nextSibling);}
   el.hidden=false;const n=playerCount(),name=prof().name;const SA=!!(NET.room&&NET.room.standalone);
@@ -10486,7 +10515,9 @@ function guideHud(dt){let el=$('navc');const g=guideCalc();const show=!!g&&G.mod
   const top=near?'🎯 '+tr('Almost there!'):behind?'🔄 '+tr('Turn around'):trf('{0} m',d);setH(el.querySelector('.nct b'),'gdb',esc(top));setH(el.querySelector('.nct small'),'gds',esc(lb));
   document.body.classList.toggle('navlow',!!(($('boss')&&!$('boss').hidden)||($('race')&&!$('race').hidden)||($('gmhud')&&!$('gmhud').hidden)));
   // the old arrow at the edge of the screen is not needed while the compass shows
-  const oa=$('oarrow');if(oa)oa.hidden=true;}
+  const oa=$('oarrow');if(oa)oa.hidden=true;
+  // v23.5: the objective card says the same thing as the compass, so it steps aside while the compass shows
+  const oe=$('obj');if(oe)oe.hidden=true;}
 {const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{guideHud(dt);}catch(e){noteErr('guide',e);}};}
 {const _ns=navSet;navSet=function(d){_ns(d);try{if(!G.guideTip&&G.mode==='play'){G.guideTip=1;setTimeout(()=>toast('🧭 '+tr('Follow the golden arrow!')),900);}}catch(e){}};}
 // ---------- the golden arrow on the ground in front of the hero ----------
@@ -10511,6 +10542,20 @@ function drawGuide(t){if(!GUIDE.on||!ME||G.mode!=='play')return;const g=guideCal
 {const _pl=placeLabels;placeLabels=function(){_pl();try{if(!GUIDE.on)return;const g=guideCalc();if(!g||!g.goal)return;const gx=g.goal.x,gz=g.goal.z;if(Math.hypot(gx-ME.x,gz-ME.z)<6)return;
     const gy=Math.max(chAt(gx,gz),ME.realm==='earth'?WL:-99);const lb=g.label.replace(/^📍\s*/,'');label('navdst',gx,gy+4.2,gz,'📍 '+esc(lb)+` · ${Math.max(1,Math.round(g.dist))} m`,'sign or');}catch(e){}};}
 MV('Almost there!','اقتربت جدًا!');MV('Follow the golden arrow!','اتبع السهم الذهبي!');MV('Turn around','استدر للخلف');
+// ================= v23.5: a calmer look and a camera that follows you =================
+// The camera sits further back and swings round behind your hero as they run. Settings has Camera (Close = the old view,
+// Normal, Far) and "Camera follows me" (On/Off); both are kept on this device. On a tablet, pinch the camera area to zoom.
+(function(){try{const d=localStorage.getItem('bb2_camd');if(d!==null&&CAMD[+d])G.camD=+d;const f=localStorage.getItem('bb2_camf');if(f!==null)G.camFollow=f!=='0';}catch(e){}
+  if(!(G.camD>=0&&G.camD<=2))G.camD=1;if(G.camFollow===undefined)G.camFollow=true;})();
+function lookSave(){try{localStorage.setItem('bb2_camd',String(G.camD));localStorage.setItem('bb2_camf',G.camFollow?'1':'0');}catch(e){}}
+{const _rp=renderPause;renderPause=function(){_rp();try{if(PTAB!=='set'||$('ps_camd'))return;const after=$('ps_cam');if(!after)return;
+  const a=document.createElement('button');a.className='mb';a.id='ps_camd';a.textContent='📷 '+trf('Camera: {0}',tr(['Close','Normal','Far'][G.camD]||'Normal'));
+  a.onclick=()=>{G.camD=((G.camD|0)+1)%3;CAM.zoom=0;lookSave();try{SFX.click();}catch(e){}renderPause();};
+  const b=document.createElement('button');b.className='mb';b.id='ps_camf';b.textContent='🎥 '+trf('Camera follows me: {0}',tr(G.camFollow?'On':'Off'));
+  b.onclick=()=>{G.camFollow=!G.camFollow;lookSave();try{SFX.click();}catch(e){}renderPause();};after.after(a,b);}catch(e){}};}
+MV('Camera: {0}','الكاميرا: {0}');MV('Close','قريبة');MV('Far','بعيدة');MV('Camera follows me: {0}','الكاميرا تتبعني: {0}');
+MV('A new camera','كاميرا جديدة');MV('The camera is further back and follows your hero. Pinch with two fingers to zoom, or change it in Settings','الكاميرا أبعد قليلًا وتتبع بطلك. قرّب أو بعّد بإصبعين، أو غيّرها من الإعدادات');
+MV('A calmer city','مدينة أهدأ');MV('Softer colours, fewer lamp posts, and faces without lines','ألوان أهدأ، وأعمدة إنارة أقل، ووجوه بلا خطوط');
 // ================= start =================
 boot();
 </script>
