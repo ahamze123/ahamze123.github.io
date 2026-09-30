@@ -116,6 +116,12 @@ kbd{font:800 11.5px var(--ui);background:#fff;color:var(--ink);border-radius:5px
 .arrow{position:absolute;left:0;top:0;width:52px;height:52px;--c:#ffcf3a}.arrow .ar{position:absolute;inset:0;display:grid;place-items:center}
 .arrow .ar::before{content:'';border-left:26px solid var(--c);border-top:15px solid transparent;border-bottom:15px solid transparent;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
 .arrow .d{position:absolute;left:50%;top:100%;transform:translateX(-50%);font-weight:900;font-size:12px;background:var(--panel);padding:1px 7px;border-radius:7px;white-space:nowrap}
+/* the guide compass: where to go, from where you are looking */
+#navc{position:absolute;left:50%;top:calc(60px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--panel);border-radius:999px;padding:5px 18px 5px 5px;box-shadow:0 6px 16px rgba(0,0,0,.25);border:3px solid var(--c,#ffcf3a);pointer-events:none;max-width:min(460px,70vw)}
+#navc .nca{width:46px;height:46px;border-radius:50%;background:#ffcf3a;display:grid;place-items:center;flex:0 0 auto;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+#navc .nca i{display:block;width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-bottom:26px solid #fff;filter:drop-shadow(0 2px 1px rgba(0,0,0,.35))}
+#navc .nct{display:flex;flex-direction:column;min-width:0}#navc .nct b{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.05}#navc .nct small{font-weight:800;font-size:13px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.navlow #navc{top:calc(118px + env(safe-area-inset-top,0px))}body.ar #navc{padding:5px 5px 5px 18px}body.navon #toasts{top:calc(126px + env(safe-area-inset-top,0px))}body.navon.navlow #toasts{top:calc(184px + env(safe-area-inset-top,0px))}
 /* world tags */
 #tags{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
 .tag{position:absolute;left:0;top:0;white-space:nowrap;font-weight:900;font-size:13px;padding:2px 8px;border-radius:8px;background:rgba(26,22,66,.75)}
@@ -407,29 +413,35 @@ body.ar .small,body.ar .sub{line-height:1.5}
 <script>window.BB_STANDALONE=true;window.BB_FAMILY='ah7q';</script><script>
 // ================= standalone online play =================
 // Outside claude.ai there is no shared "room", so devices talk directly over WebRTC data channels:
-// the host links to each guest (up to 3) and passes heroes between them.
-// The free PeerJS cloud server (0.peerjs.com) is only used as a matchmaker to swap connection offers;
-// game data flows device-to-device. This file exposes the same small interface the game uses for the
-// claude.ai room (presence, onPeers, onConnection, join, leave), so the game code stays the same.
-// Tablets drop their connection to the matchmaker all the time (the screen locks, you switch apps, the Wi-Fi hiccups).
-// The server then takes the tablet back WITHOUT saying "OPEN", so we also count a quiet reconnect as connected, and
-// every few seconds each connection sends itself a tiny note through the server to prove it is still alive.
+// the host links to each guest (up to 3) and passes heroes between them. Game data flows device-to-device.
+// To find each other and swap connection offers, the tablets use two kinds of free public matchmakers at the same time:
+// - the PeerJS cloud server (0.peerjs.com), and
+// - two public MQTT message servers (EMQX and HiveMQ).
+// Whichever works carries the messages; when more than one works, repeats are ignored. This file exposes the same small
+// interface the game uses for the claude.ai room (presence, onPeers, onConnection, join, leave), so the game code stays the same.
+// Tablets drop their connections all the time (the screen locks, you switch apps, the Wi-Fi hiccups): every connection
+// reconnects by itself, and the PeerJS one also checks that it still works by sending itself a note every few seconds.
 (function(){
   if(typeof RTCPeerConnection==='undefined'||typeof WebSocket==='undefined')return;
   const Q=new URLSearchParams(location.search);
+  const PJ=Q.get('peerhost')!=='none';
   const CFG={host:Q.get('peerhost')||'0.peerjs.com',port:+(Q.get('peerport')||443),secure:Q.get('peersecure')!=='0',key:'peerjs',path:'/'};
-  const ICE=Q.get('peerice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
-  const NS='bbuddies-'+(window.BB_FAMILY||'fam')+(Q.get('peerns')?'-'+Q.get('peerns'):'');
-  // up to three games can be hosted at once (and a game a tablet left behind never blocks a new one)
+  const ICE=Q.get('peerice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
+  const FAM=(window.BB_FAMILY||'fam')+(Q.get('peerns')?'-'+Q.get('peerns'):'');
+  const NS='bbuddies-'+FAM;
+  // up to three games can be hosted at once on PeerJS (and a game a tablet left behind never blocks a new one)
   const SLOTS=[NS+'-game',NS+'-game2',NS+'-game3'];const isSlot=id=>SLOTS.includes(id);
+  const MQURLS=(Q.get('mqtt')!==null?Q.get('mqtt'):'wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt').split(',').map(s=>s.trim()).filter(Boolean);
+  const TOP='bbuddies/'+FAM;
   const rid=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s;};
   const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
   const log=(...a)=>{if(window.__peerDebug)console.log('[peer]',...a);};
+  const DIAG={pjOpen:0,pjClose:0,pjErr:'',mqOpen:0,mqClose:0};
 
-  // ---- signaling socket (PeerJS server protocol: OPEN / ID-TAKEN / HEARTBEAT, and relayed OFFER / ANSWER / CANDIDATE / EXPIRE) ----
+  // ---- PeerJS signaling socket (OPEN / ID-TAKEN / HEARTBEAT, and relayed OFFER / ANSWER / CANDIDATE / EXPIRE) ----
   function Sig(id,token,onMsg,onState){let ws=null,hb=null,closed=false,opened=false,tries=0,openT=null,lastPong=0,everPong=false,pingN=0,checkT=null;
     const url=()=>`${CFG.secure?'wss':'ws'}://${CFG.host}:${CFG.port}${CFG.path}peerjs?key=${CFG.key}&id=${encodeURIComponent(id)}&token=${token}&version=1.5.4`;
-    const setOpen=()=>{clearTimeout(openT);if(opened)return;opened=true;tries=0;log('open',id);onState('open');};
+    const setOpen=()=>{clearTimeout(openT);if(opened)return;opened=true;tries=0;DIAG.pjOpen++;log('open',id);onState('open');};
     function connect(){if(closed||ws)return;clearTimeout(openT);let me;try{me=ws=new WebSocket(url());}catch(e){ws=null;onState('closed');later();return;}
       me.onopen=()=>{if(me!==ws)return;lastPong=Date.now();clearInterval(hb);hb=setInterval(()=>{try{if(me.readyState===1)me.send('{"type":"HEARTBEAT"}');}catch(e){}},5000);
         // a device that comes back with its own id and token is taken back without OPEN: after a moment of quiet we are in
@@ -437,13 +449,13 @@ body.ar .small,body.ar .sub{line-height:1.5}
       me.onmessage=ev=>{if(me!==ws)return;let m;try{m=JSON.parse(ev.data);}catch(e){return;}
         if(m.type==='OPEN'){setOpen();return;}
         if(m.type==='ID-TAKEN'||m.type==='ID_TAKEN'){clearTimeout(openT);log('taken',id);opened=false;closed=true;clearInterval(hb);try{me.close();}catch(e){}onState('taken');return;}
-        if(m.type==='ERROR'){log('error',m.payload);onState('error');return;}
+        if(m.type==='ERROR'){DIAG.pjErr=String((m.payload&&m.payload.msg)||'error').slice(0,60);log('error',m.payload);onState('error');return;}
         if(m.type==='HEARTBEAT')return;
         if(m.src===id&&m.payload&&m.payload.bbping){lastPong=Date.now();everPong=true;if(!opened)setOpen();return;}
         if(!opened)setOpen();onMsg(m);};
       me.onerror=()=>{};
-      me.onclose=()=>{if(me!==ws)return;ws=null;clearInterval(hb);hb=null;clearTimeout(openT);opened=false;if(!closed){onState('closed');later();}};}
-    function later(){if(closed)return;tries=Math.min(tries+1,5);setTimeout(()=>{if(!ws)connect();},700*tries);}
+      me.onclose=()=>{if(me!==ws)return;ws=null;clearInterval(hb);hb=null;clearTimeout(openT);if(opened)DIAG.pjClose++;opened=false;if(!closed){onState('closed');later();}};}
+    function later(){if(closed)return;tries=Math.min(tries+1,6);setTimeout(()=>{if(!ws)connect();},700*tries);}
     function ping(){if(ws&&ws.readyState===1){try{ws.send(JSON.stringify({type:'OFFER',dst:id,payload:{bbping:++pingN}}));}catch(e){}}}
     // a connection that stopped carrying anything is replaced with a fresh one
     function restart(){if(closed)return;log('restart',id);const old=ws;ws=null;clearInterval(hb);hb=null;clearTimeout(openT);try{old&&old.close();}catch(e){}if(opened){opened=false;onState('closed');}tries=0;connect();}
@@ -453,6 +465,32 @@ body.ar .small,body.ar .sub{line-height:1.5}
       close(){closed=true;opened=false;clearInterval(hb);clearInterval(pingI);clearTimeout(openT);clearTimeout(checkT);const w=ws;ws=null;try{w&&w.close();}catch(e){}},
       // back from the background: reconnect if it closed, and make sure an open-looking connection still works
       kick(){if(closed)return;if(!ws){tries=0;connect();return;}if(ws.readyState>1){restart();return;}const t=Date.now();ping();clearTimeout(checkT);checkT=setTimeout(()=>{if(!closed&&everPong&&lastPong<t)restart();},4000);}};}
+
+  // ---- a small MQTT 3.1.1 client over WebSocket (QoS 0, retained messages, a last-will message) ----
+  function Mqtt(url,clientId,will,onMsg,onState){let ws=null,closed=false,up=false,tries=0,pidN=1,lastRx=0;const subs=new Set();const E=new TextEncoder(),D=new TextDecoder();
+    const s2=s=>{const b=typeof s==='string'?E.encode(s):s;const o=new Uint8Array(2+b.length);o[0]=b.length>>8;o[1]=b.length&255;o.set(b,2);return o;};
+    const cat=(...a)=>{let n=0;for(const x of a)n+=x.length;const o=new Uint8Array(n);let p=0;for(const x of a){o.set(x,p);p+=x.length;}return o;};
+    const pkt=(h,body)=>{const lb=[];let x=body.length;do{let d=x%128;x=Math.floor(x/128);if(x>0)d|=128;lb.push(d);}while(x>0);return cat(new Uint8Array([h]),new Uint8Array(lb),body);};
+    const raw=b=>{try{if(ws&&ws.readyState===1){ws.send(b);return true;}}catch(e){}return false;};
+    const sendSub=t=>{pidN=(pidN%65000)+1;raw(pkt(0x82,cat(new Uint8Array([pidN>>8,pidN&255]),s2(t),new Uint8Array([0]))));};
+    function connect(){if(closed||ws)return;let me;try{me=ws=new WebSocket(url,['mqtt']);}catch(e){ws=null;later();return;}me.binaryType='arraybuffer';let buf=new Uint8Array(0);
+      me.onopen=()=>{if(me!==ws)return;let flags=0x02;const vh=new Uint8Array([4,0,0,60]);const pay=[s2(clientId)];
+        if(will){flags|=0x04|(will.retain?0x20:0);pay.push(s2(will.topic),s2(will.payload||''));}vh[1]=flags;raw(pkt(0x10,cat(s2('MQTT'),vh,...pay)));};
+      me.onmessage=ev=>{if(me!==ws)return;lastRx=Date.now();buf=cat(buf,new Uint8Array(ev.data));
+        for(;;){if(buf.length<2)break;let mul=1,len=0,i=1,d=0,ok=true;do{if(i>=buf.length){ok=false;break;}d=buf[i++];len+=(d&127)*mul;mul*=128;}while(d&128);if(!ok||buf.length<i+len)break;
+          const h=buf[0],type=h>>4,body=buf.slice(i,i+len);buf=buf.slice(i+len);
+          if(type===2){if(body[1]===0){up=true;tries=0;DIAG.mqOpen++;for(const t of subs)sendSub(t);onState('open');}else{try{me.close();}catch(e){}}}
+          else if(type===3){const qos=(h>>1)&3;const tl=(body[0]<<8)|body[1];const topic=D.decode(body.subarray(2,2+tl));let p=2+tl;if(qos>0){const id=(body[p]<<8)|body[p+1];p+=2;if(qos===1)raw(new Uint8Array([0x40,2,id>>8,id&255]));}
+            try{onMsg(topic,D.decode(body.subarray(p)),!!(h&1));}catch(e){}}}};
+      me.onerror=()=>{};
+      me.onclose=()=>{if(me!==ws)return;ws=null;const was=up;up=false;if(was){DIAG.mqClose++;onState('closed');}later();};}
+    function later(){if(closed)return;tries=Math.min(tries+1,6);setTimeout(()=>{if(!ws)connect();},800*tries+Math.random()*500);}
+    const pingI=setInterval(()=>{if(closed){clearInterval(pingI);return;}if(up){raw(new Uint8Array([0xC0,0]));if(Date.now()-lastRx>70000){const w=ws;ws=null;up=false;try{w&&w.close();}catch(e){}onState('closed');connect();}}},20000);
+    connect();
+    return {url,get open(){return up;},subscribe(t){subs.add(t);if(up)sendSub(t);},
+      publish(t,payload,retain){if(!up)return false;return raw(pkt(0x30|(retain?1:0),cat(s2(t),E.encode(payload||''))));},
+      close(){closed=true;clearInterval(pingI);if(ws){raw(new Uint8Array([0xE0,0]));const w=ws;ws=null;try{w.close();}catch(e){}}up=false;},
+      kick(){if(closed)return;if(!ws){tries=0;connect();}}};}
 
   // ---- one WebRTC link to another device ----
   function Link(sig,remote,cid,offerer,h){const pc=new RTCPeerConnection({iceServers:ICE});let dc=null,remoteSet=false,pend=[],dead=false;
@@ -473,17 +511,17 @@ body.ar .small,body.ar .sub{line-height:1.5}
   // ---- a game room. The host links to up to 3 guests and passes each guest's hero on to the others,
   // so every device sees every hero; a guest has a single link, to the host. ----
   function GameRoom(role){let myPres={},pending=null,gone=false;const links=new Map(),rps=new Map(),peerL=[],errL=[];
-    const idle=setInterval(()=>{if(gone){clearInterval(idle);return;}for(const L of [...links.values()])if(L.ready&&Date.now()-(L.lastRx||L.openAt||Date.now())>10000){log('link idle, closing');L.close();}},2000);
+    const idle=setInterval(()=>{if(gone){clearInterval(idle);return;}for(const L of [...links.values()])if(L.ready&&Date.now()-(L.lastRx||L.openAt||Date.now())>20000){log("link idle, closing");L.close();}},2000);
     const snap=()=>{const a=[{peer:'me',isMe:true,sameTab:true,kind:'viewer',guest:false,presence:myPres}];for(const p of rps.values())a.push(p);return a;};
     const fire=(j,l,u)=>{const ps=snap();for(const f of peerL){try{f({peers:ps,joined:j,left:l,updated:u});}catch(e){console.error(e);}}};
     const setPeer=(id,pres)=>{const had=rps.has(id);const p={peer:id,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:pres,updatedAt:Date.now()};rps.set(id,p);fire(had?[]:[p],[],had?[p]:[]);};
     const dropId=id=>{const p=rps.get(id);if(p){rps.delete(id);fire([],[p],[]);}};
     const sendAll=(o,except)=>{const str=JSON.stringify(o);for(const L of links.values())if(L!==except&&L.ready)L.send(str);};
-    const R={role,name:'bb2',
+    const R={role,name:'bb2',_sigs:[],
       presence(patch){for(const k in patch){if(patch[k]===null)delete myPres[k];else myPres[k]=patch[k];}if(!pending)pending=setTimeout(()=>{pending=null;sendAll({t:'p',p:myPres});},30);return Promise.resolve();},
       onPeers(f,onErr){peerL.push(f);if(onErr)errL.push(onErr);setTimeout(()=>{if(!gone)f({peers:snap(),joined:[...rps.values()],left:[],updated:[]});},0);return ()=>{};},
       peers:()=>snap(),emit(){return Promise.resolve();},on(){return ()=>{};},connected:()=>[...links.values()].some(L=>L.ready),onConnection(f){setTimeout(()=>f(true),0);return ()=>{};},
-      leave(){gone=true;for(const L of [...links.values()]){L.send({t:'bye'});setTimeout(()=>L.close(),60);}links.clear();if(R._sig)R._sig.close();return Promise.resolve();},
+      leave(){gone=true;R._gone=true;for(const L of [...links.values()]){L.send({t:'bye'});setTimeout(()=>L.close(),60);}links.clear();for(const s of R._sigs)s.close();if(R._stop)R._stop();return Promise.resolve();},
       // guests that are really here right now (host)
       _count:()=>[...links.values()].filter(L=>L.ready&&Date.now()-(L.lastRx||L.openAt||0)<8000).length,
       _from:src=>{for(const L of links.values())if(L.remote===src)return L;return null;},
@@ -504,55 +542,79 @@ body.ar .small,body.ar .sub{line-height:1.5}
     return R;}
 
   // ---- the lobby (what the game gets instead of claude.use('room')) ----
-  const LB={sig:null,pres:{},found:new Map(),peerL:[],errL:[],connL:[],pendJoin:[],host:null,lastSig:''};
-  const myId=NS+'-'+rid(10);
-  function lobbyPeers(){const a=[{peer:myId,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:LB.pres}];for(const [id,f] of LB.found)a.push({peer:id,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:f.pres});return a;}
+  const LB={sig:null,pres:{},found:new Map(),peerL:[],errL:[],connL:[],pendJoin:[],host:null,lastSig:'',lastOn:null};
+  const myId=NS+'-'+rid(10);      // this tablet in the lobby (both routes)
+  const myHid='h'+rid(11);         // this tablet when it hosts (MQTT)
+  const seen=new Map();            // messages that arrive by more than one route are handled once
+  const fresh=m=>{const k=m&&m.payload&&m.payload.mid;if(!k)return true;if(seen.has(k))return false;const now=Date.now();seen.set(k,now);if(seen.size>500)for(const [a,t] of seen)if(now-t>60000)seen.delete(a);return true;};
+  const MQ=MQURLS.map(u=>Mqtt(u,'bb-'+FAM+'-'+rid(10),{topic:TOP+'/host/'+myHid,payload:'',retain:true},onMq,()=>connState()));
+  for(const q of MQ){q.subscribe(TOP+'/to/'+myId);q.subscribe(TOP+'/to/'+myHid);q.subscribe(TOP+'/host/+');}
+  const pjOn=()=>!!(LB.sig&&LB.sig.open),mqOn=()=>MQ.some(q=>q.open),anyOn=()=>pjOn()||mqOn();
+  function mqSend(from,to,type,payload){let ok=false;const msg=JSON.stringify({type,src:from,dst:to,payload});for(const q of MQ)if(q.open&&q.publish(TOP+'/to/'+to,msg,false))ok=true;return ok;}
+  function lobbyPeers(){const a=[{peer:myId,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:LB.pres}];for(const [k,f] of LB.found)a.push({peer:k,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:f.pres});return a;}
   function emitLobby(force){const sig=JSON.stringify([...LB.found].map(([k,v])=>[k,v.pres]));if(!force&&sig===LB.lastSig)return;LB.lastSig=sig;const ps=lobbyPeers();for(const f of LB.peerL){try{f({peers:ps,joined:[],left:[],updated:[]});}catch(e){console.error(e);}}}
-  function connState(ok){for(const f of LB.connL){try{f(ok);}catch(e){}}}
-  function onLobbyMsg(m){const p=m.payload||{};
-    if(m.type==='ANSWER'&&p.probe&&isSlot(m.src)){if(p.lobby&&p.lobby.bb===3){LB.found.set(m.src,{pres:p.lobby,at:Date.now()});emitLobby();}return;}
-    if(m.type==='EXPIRE'&&isSlot(m.src)){const f=LB.found.get(m.src);if(f&&Date.now()-f.at>4000){LB.found.delete(m.src);emitLobby();}for(const j of LB.pendJoin.slice())if(j.target===m.src)j.expire();return;}
-    for(const j of LB.pendJoin)if(j.cid===p.cid&&j.target===m.src){if(m.type==='ANSWER')j.answer(p);else if(m.type==='CANDIDATE')j.link.cand(p.candidate);}}
-  function startLobby(){LB.sig=Sig(myId,rid(16),onLobbyMsg,st=>{if(st==='open'){connState(true);probe();}else if(st==='closed'||st==='error'){connState(false);}});
-    setInterval(probe,2500);setInterval(()=>{let ch=false;for(const [id,f] of LB.found)if(Date.now()-f.at>9000){LB.found.delete(id);ch=true;}if(ch)emitLobby();},1000);
-    const wake=()=>{if(document.hidden)return;LB.sig&&LB.sig.kick();LB.host&&LB.host._sig&&LB.host._sig.kick();setTimeout(probe,600);};
+  function connState(){const on=anyOn();if(on===LB.lastOn)return;LB.lastOn=on;if(on)setTimeout(probe,300);for(const f of LB.connL){try{f(on);}catch(e){}}}
+  // a game we heard about: key it by the host's id so the same game found by two routes shows once
+  function foundGame(key,pres,route){if(!pres||pres.bb!==3)return;const f=LB.found.get(key)||{key,slot:null,hid:null};f.pres=pres;f.at=Date.now();if(route.slot)f.slot=route.slot;if(route.hid)f.hid=route.hid;if(route.mq)f.mqAt=Date.now();LB.found.set(key,f);emitLobby();}
+  function onLobbyMsg(m){if(!fresh(m))return;const p=m.payload||{};
+    if(m.type==='ANSWER'&&p.probe&&isSlot(m.src)){if(p.lobby)foundGame(p.hid||m.src,p.lobby,{slot:m.src,hid:p.hid||null});return;}
+    if(m.type==='EXPIRE'&&isSlot(m.src)){for(const [k,f] of LB.found)if(f.slot===m.src&&Date.now()-f.at>4000&&!(f.mqAt&&Date.now()-f.mqAt<20000)){LB.found.delete(k);emitLobby();}
+      for(const j of LB.pendJoin.slice())if(j.t.slot===m.src&&!j.t.hid)j.expire();return;}
+    for(const j of LB.pendJoin)if(j.cid===p.cid&&(m.src===j.t.slot||m.src===j.t.hid)){if(m.type==='ANSWER')j.answer(p);else if(m.type==='CANDIDATE')j.link.cand(p.candidate);}}
+  function onMq(topic,payload){
+    if(topic.startsWith(TOP+'/host/')){const hid=topic.slice(TOP.length+6);if(!hid||hid===myHid)return;
+      if(!payload){let ch=false;for(const [k,f] of LB.found)if(f.hid===hid){LB.found.delete(k);ch=true;}if(ch)emitLobby();return;}
+      let o;try{o=JSON.parse(payload);}catch(e){return;}if(!o||!o.lobby||Math.abs(Date.now()-(+o.at||0))>120000)return;foundGame(hid,o.lobby,{hid,slot:isSlot(o.slot)?o.slot:null,mq:true});return;}
+    let m;try{m=JSON.parse(payload);}catch(e){return;}if(!m||typeof m.type!=='string'||typeof m.src!=='string')return;
+    if(topic===TOP+'/to/'+myHid){if(LB.host&&LB.host._msg)LB.host._msg(m,'mq');return;}
+    if(topic===TOP+'/to/'+myId)onLobbyMsg(m);}
+  function startLobby(){if(PJ)LB.sig=Sig(myId,rid(16),onLobbyMsg,()=>connState());
+    setInterval(probe,2500);setInterval(()=>{let ch=false;const now=Date.now();for(const [k,f] of LB.found){const ttl=f.mqAt?25000:9000;if(now-f.at>ttl){LB.found.delete(k);ch=true;}}if(ch)emitLobby();},1000);
+    const wake=()=>{if(document.hidden)return;LB.sig&&LB.sig.kick();for(const q of MQ)q.kick();if(LB.host)for(const s of LB.host._sigs)s.kick();setTimeout(probe,600);};
     document.addEventListener('visibilitychange',wake);window.addEventListener('pageshow',wake);window.addEventListener('online',wake);}
-  function probe(){if(!LB.sig||!LB.sig.open||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;for(const s of SLOTS)LB.sig.send('OFFER',s,{probe:1,ts:Date.now()});}
+  function probe(){if(!pjOn()||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;for(const s of SLOTS)LB.sig.send('OFFER',s,{probe:1,ts:Date.now()});}
 
-  // host: claim the first free game id and answer probes + join offers
-  function hostGame(){return new Promise((res,rej)=>{const tok=ls.get('bb_ptok')||rid(16);ls.set('bb_ptok',tok);let i=0;
-    const next=()=>{if(i>=SLOTS.length){rej(new Error('taken'));return;}hostOn(SLOTS[i++],tok).then(res,e=>{if(e&&e.message==='taken')next();else rej(e);});};next();});}
-  function hostOn(gid,tok){return new Promise((res,rej)=>{const room=GameRoom('host');let settled=false;
-    const sig=Sig(gid,tok,m=>{const p=m.payload||{};
-        if(m.type==='OFFER'){if(p.probe){sig.send('ANSWER',m.src,{probe:1,lobby:LB.pres});return;}
-          if(!p.sdp||(p.ts&&Math.abs(Date.now()-p.ts)>45000))return;
-          // room for 3 guests; a guest that reconnects replaces its old link
-          if(!room._from(m.src)&&room._count()>=3){sig.send('ANSWER',m.src,{cid:p.cid,full:1});return;}
-          const L=Link(sig,m.src,p.cid,false,{open:l=>room._open(l),data:(o,l)=>room._data(o,l),close:l=>room._lost(l)});room._add(L);L.accept(p.sdp).catch(e=>{log('accept fail',e);L.close();});}
-        else if(m.type==='CANDIDATE'){const L=room._link(p.cid);if(L)L.cand(p.candidate);}},
-      st=>{if(st==='open'&&!settled){settled=true;res(room);}else if(st==='taken'&&!settled){settled=true;if(LB.host===room)LB.host=null;rej(new Error('taken'));}});
-    room._sig=sig;room.gid=gid;const leave0=room.leave;room.leave=()=>{if(LB.host===room)LB.host=null;return leave0();};LB.host=room;
-    setTimeout(()=>{if(!settled){settled=true;if(LB.host===room)LB.host=null;sig.close();rej(new Error('timeout'));}},12000);});}
+  // host: announce the game on every route (a PeerJS game id and a retained MQTT message) and answer join offers from both
+  function hostGame(){return new Promise((res,rej)=>{const room=GameRoom('host');room.hid=myHid;room._sig=null;let settled=false;LB.host=room;
+    const done=()=>{if(settled)return;settled=true;res(room);};
+    const announce=()=>{if(room._gone)return;const msg=JSON.stringify({hid:myHid,slot:room.gid||null,lobby:LB.pres,at:Date.now()});for(const q of MQ)q.publish(TOP+'/host/'+myHid,msg,true);};
+    const send=(dst,type,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(room._sig&&room._sig.open)ok=room._sig.send(type,dst,payload)||ok;ok=mqSend(myHid,dst,type,payload)||ok;return ok;};
+    room._msg=(m,via)=>{if(!fresh(m))return;const p=m.payload||{},src=m.src;if(!src||room._gone)return;
+      if(m.type==='OFFER'){if(p.probe){if(via==='pj'&&room._sig)room._sig.send('ANSWER',src,{probe:1,lobby:LB.pres,hid:myHid});return;}
+        if(!p.sdp||(p.ts&&Math.abs(Date.now()-p.ts)>45000)||room._link(p.cid))return;
+        // room for 3 guests; a guest that reconnects replaces its old link
+        if(!room._from(src)&&room._count()>=3){send(src,'ANSWER',{cid:p.cid,full:1});return;}
+        const L=Link({send:(type,_d,pl)=>send(src,type,pl)},src,p.cid,false,{open:l=>room._open(l),data:(o,l)=>room._data(o,l),close:l=>room._lost(l)});room._add(L);L.accept(p.sdp).catch(e=>{log('accept fail',e);L.close();});}
+      else if(m.type==='CANDIDATE'){const L=room._link(p.cid);if(L)L.cand(p.candidate);}};
+    // route 1: the first free PeerJS game id
+    if(PJ){const tok=ls.get('bb_ptok')||rid(16);ls.set('bb_ptok',tok);let i=0;
+      const next=()=>{if(i>=SLOTS.length||room._gone)return;const gid=SLOTS[i++];const sig=Sig(gid,tok,m=>room._msg(m,'pj'),st=>{if(st==='open'&&!room._sig){room._sig=sig;room.gid=gid;announce();done();}else if(st==='taken'&&room._sig!==sig)next();});room._sigs.push(sig);};next();}
+    // route 2: MQTT (the inbox for this host is already subscribed)
+    const chk=setInterval(()=>{if(room._gone){clearInterval(chk);return;}if(mqOn()){announce();done();clearInterval(chk);}},250);
+    const pres=setInterval(announce,8000);
+    room._stop=()=>{clearInterval(chk);clearInterval(pres);for(const q of MQ)q.publish(TOP+'/host/'+myHid,'',true);if(LB.host===room)LB.host=null;};
+    setTimeout(()=>{if(!settled){settled=true;room.leave();rej(new Error('timeout'));}},12000);});}
 
-  // guest: offer a data channel to the game we found
-  function joinGame(target){return new Promise((res,rej)=>{if(!LB.sig||!LB.sig.open){rej(new Error('offline'));return;}const room=GameRoom('guest');const cid=rid(8);let settled=false;
-    const L=Link(LB.sig,target,cid,true,{open:l=>{room._open(l);if(!settled){settled=true;drop();res(room);}},data:(o,l)=>room._data(o,l),close:l=>{drop();if(!settled){settled=true;rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
-    room._add(L);const J={cid,target,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){L.close();}};LB.pendJoin.push(J);
+  // guest: offer a data channel to the game we found, by every route we know for it
+  function joinGame(t){return new Promise((res,rej)=>{if(!anyOn()){rej(new Error('offline'));return;}const room=GameRoom('guest');const cid=rid(8);let settled=false;
+    const router={send:(type,_d,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(t.slot&&pjOn())ok=LB.sig.send(type,t.slot,payload)||ok;if(t.hid)ok=mqSend(myId,t.hid,type,payload)||ok;return ok;}};
+    const L=Link(router,t.key,cid,true,{open:l=>{room._open(l);if(!settled){settled=true;drop();res(room);}},data:(o,l)=>room._data(o,l),close:l=>{drop();if(!settled){settled=true;rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
+    room._add(L);const J={cid,t,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){L.close();}};LB.pendJoin.push(J);
     const drop=()=>{const i=LB.pendJoin.indexOf(J);if(i>=0)LB.pendJoin.splice(i,1);};
-    L.start().catch(()=>L.close());setTimeout(()=>{if(!settled){settled=true;drop();L.close();rej(new Error('timeout'));}},16000);});}
+    L.start().catch(()=>L.close());setTimeout(()=>{if(!settled){settled=true;drop();L.close();rej(new Error('timeout'));}},20000);});}
 
   const lobby={name:'lobby',standalone:true,
     presence(patch){for(const k in patch){if(patch[k]===null)delete LB.pres[k];else LB.pres[k]=patch[k];}return Promise.resolve();},
     onPeers(f,onErr){LB.peerL.push(f);if(onErr)LB.errL.push(onErr);setTimeout(()=>emitLobby(true),0);return ()=>{};},
-    onConnection(f){LB.connL.push(f);setTimeout(()=>f(!!(LB.sig&&LB.sig.open)),0);return ()=>{};},
-    connected:()=>!!(LB.sig&&LB.sig.open),peers:()=>lobbyPeers(),emit(){return Promise.resolve();},on(){return ()=>{};},
+    onConnection(f){LB.connL.push(f);setTimeout(()=>f(anyOn()),0);return ()=>{};},
+    connected:()=>anyOn(),peers:()=>lobbyPeers(),emit(){return Promise.resolve();},on(){return ()=>{};},
     // the game asks for 'bb2-<code>': join the game with that code (Join button), or host a new one (Host button)
     join(name){const code=String(name||'').replace(/^bb2-/,'');const joining=typeof NET!=='undefined'&&NET&&NET.connecting;
-      if(joining){let t=null;for(const [id,f] of LB.found)if(f.pres&&f.pres.code===code){t=id;break;}if(!t&&LB.found.size===1)t=[...LB.found.keys()][0];
+      if(joining){let t=null;for(const f of LB.found.values())if(f.pres&&f.pres.code===code){t=f;break;}if(!t&&LB.found.size===1)t=[...LB.found.values()][0];
         if(!t)return Promise.reject(new Error('gone'));return joinGame(t);}
       return hostGame();},
     leave(){return Promise.resolve();},
-    status:()=>({online:!!(LB.sig&&LB.sig.open),found:LB.found.size,hosting:!!LB.host,slot:LB.host?LB.host.gid:null,id:myId})};
+    status:()=>({online:anyOn(),pj:pjOn(),mq:MQ.map(q=>q.open),found:LB.found.size,hosting:!!LB.host,slot:LB.host?(LB.host.gid||null):null,hid:myHid,id:myId,diag:{...DIAG}})};
   window.__peerRoom=lobby;startLobby();
 })();
 </script><script>
@@ -10174,7 +10236,9 @@ MV('Everyone needs the internet. The same Wi-Fi works best.','يحتاج الج�
 // the online screen says what is going on: connected or not, looking for games, how many games were found
 function lobbyNetLine(){const st=$('onstat');if(!st)return;let el=$('onnet');if(!el){el=document.createElement('div');el.id='onnet';el.className='small';el.style.cssText='font-weight:800;opacity:.92';st.parentNode.insertBefore(el,st.nextSibling);}
   if(!NET.avail){if(el.textContent)el.textContent='';return;}const SA=!!(NET.room&&NET.room.standalone);const s=SA&&NET.room.status?NET.room.status():null;const on=SA?!!(s&&s.online):true;
-  const n=(NET.lobby||[]).filter(p=>p.presence&&p.presence.st==='host').length;const t=!on?'🟠 '+tr('Reconnecting…'):n?'🟢 '+trf(n===1?'{0} game found':'{0} games found',n):'🟢 '+tr('Online · looking for games…');if(el.textContent!==t)el.textContent=t;}
+  const n=(NET.lobby||[]).filter(p=>p.presence&&p.presence.st==='host').length;const t=!on?'🟠 '+tr('Reconnecting…'):n?'🟢 '+trf(n===1?'{0} game found':'{0} games found',n):'🟢 '+tr('Online · looking for games…');
+  // which routes are working (helps when something is wrong): PeerJS, then the two message servers
+  const r=s&&s.mq?' · '+[s.pj?'✓':'✗',...s.mq.map(x=>x?'✓':'✗')].join(''):'';const full=t+r;if(el.textContent!==full)el.textContent=full;}
 {const _ls=UI.lobbyStatus;UI.lobbyStatus=function(){_ls.call(UI);try{lobbyNetLine();}catch(e){}};}
 MV('Reconnecting…','جارٍ إعادة الاتصال…');MV('{0} game found','تم العثور على لعبة واحدة');MV('{0} games found','تم العثور على {0} ألعاب');MV('Online · looking for games…','متصل · نبحث عن ألعاب…');
 // ================= the edge of the world =================
@@ -10236,7 +10300,10 @@ fsToggle=function(){if(fsOn()){FSX.userExit=true;FSX.mine=true;const d=document;
 function fsPress(){try{AU.init();}catch(e){}if(fsOn()){fsToggle();return;}if(fsIOS()&&!fsApp()){fsHelp();return;}if(!fsAPI()||!fsEnter()){fsHelp();return;}FSX.userExit=false;setTimeout(()=>{if(!fsOn()&&!fsApp())fsHelp();},1200);}
 function fsHelp(){let el=$('fshelp');if(!el){el=document.createElement('div');el.id='fshelp';el.className='modal';el.hidden=true;document.body.appendChild(el);el.addEventListener('click',e=>{if(e.target===el)fsHelpClose();});}
   const claude=!window.BB_STANDALONE,ios=fsIOS();const li=s=>`<li style="margin:6px 0">${s}</li>`;
-  const home=[li(tr('Tap Share ⬆ at the top of Safari')),li(`<b>${esc(tr('Add to Home Screen'))}</b>`),li(tr('Open Block Buddies from the Home Screen: it fills the whole screen'))];
+  const chrome=/CriOS/.test(navigator.userAgent);
+  const home=[li(esc(tr(chrome?'Tap Share ⬆ in the address bar':'Tap Share ⬆ at the top of Safari. On the newest iPadOS, tap ••• next to the address bar first, then Share'))),
+    li(`${esc(tr('Scroll down the list and tap'))} <b>${esc(tr('Add to Home Screen'))}</b> ⊞. <small>${esc(tr('Not there? Tap Edit Actions… at the very bottom and turn it on.'))}</small>`),
+    li(esc(tr('Tap Add, then open Block Buddies from the Home Screen: it fills the whole screen')))];
   let body='';
   const saves=`<p class="small" style="margin:2px 0">📦 ${esc(tr('The Home Screen app keeps its own save. Tap Move my game first to take your heroes, golden bricks and coins with you.'))}</p>`;
   if(claude)body=`<p class="small" style="margin:2px 0">${esc(tr('Games cannot go full screen inside Claude.'))}</p><p class="small" style="margin:2px 0"><b>${esc(tr('For full screen on the iPad:'))}</b></p><ol class="small" style="margin:0;padding-inline-start:22px">${li(`${esc(tr('Open this in Safari:'))} <b dir="ltr">ahamze123.github.io</b>`)}${home.join('')}</ol><p class="small" style="margin:2px 0">${esc(tr('Online play works there too. Everyone who plays together should use the same one.'))}</p>${saves}`;
@@ -10273,6 +10340,8 @@ MV('This browser does not allow full screen here. Try pressing F11, or open the 
 MV('Tip: tap Share ⬆ then Add to Home Screen, and the game fills the whole screen','نصيحة: اضغط مشاركة ⬆ ثم إضافة إلى الشاشة الرئيسية، فتملأ اللعبة الشاشة كلها');
 MV("On an iPad, Safari's full screen closes every time you swipe down, and games are not allowed to stop that. The Home Screen app fills the whole screen and never closes:",'على الآيباد، يُغلق ملء الشاشة في سفاري كلما سحبت للأسفل، ولا يُسمح للألعاب بمنع ذلك. أما تطبيق الشاشة الرئيسية فيملأ الشاشة كلها ولا يُغلق أبدًا:');
 MV('The Home Screen app keeps its own save. Tap Move my game first to take your heroes, golden bricks and coins with you.','تطبيق الشاشة الرئيسية يحفظ لعبته وحده. اضغط «انقل لعبتي» أولًا لتأخذ أبطالك وطوبك الذهبي وعملاتك معك.');
+MV('Tap Share ⬆ in the address bar','اضغط زر المشاركة ⬆ في شريط العنوان');MV('Tap Share ⬆ at the top of Safari. On the newest iPadOS, tap ••• next to the address bar first, then Share','اضغط زر المشاركة ⬆ أعلى سفاري. في أحدث نظام iPadOS اضغط ••• بجانب شريط العنوان أولًا، ثم مشاركة');
+MV('Scroll down the list and tap','مرّر القائمة للأسفل واضغط');MV('Not there? Tap Edit Actions… at the very bottom and turn it on.','غير موجودة؟ اضغط «تعديل الإجراءات…» في أسفل القائمة وفعّلها.');MV('Tap Add, then open Block Buddies from the Home Screen: it fills the whole screen','اضغط «إضافة»، ثم افتح بلوك بديز من الشاشة الرئيسية: ستملأ اللعبة الشاشة كلها');
 // ================= no zooming by accident on iPad =================
 // Double-tapping or pinching used to zoom the whole page on iPad. The game has its own zoom where it needs one
 // (the map and the photo camera), so the page itself never zooms now.
@@ -10336,6 +10405,57 @@ MV('There is no saved game here yet.','لا توجد لعبة محفوظة هن�
 MV('Press and hold the code, then choose Copy.','اضغط مطولًا على الرمز، ثم اختر نسخ.');MV('Press and hold in the box, then choose Paste.','اضغط مطولًا داخل المربع، ثم اختر لصق.');MV('That is not a Block Buddies game code.','هذا ليس رمز لعبة بلوك بديز.');
 MV('{0} Lv {1} · {2} Lv {3} · {4} golden bricks','{0} مستوى {1} · {2} مستوى {3} · {4} طوبة ذهبية');MV('This replaces the game on this device. Tap Load again to do it.','سيحل هذا محل اللعبة على هذا الجهاز. اضغط «حمّل» مرة أخرى لتأكيد ذلك.');
 MV('Could not save here.','تعذّر الحفظ هنا.');MV('Game loaded! Starting again…','تم تحميل اللعبة! نبدأ من جديد…');MV('Bring my game from Safari','أحضر لعبتي من سفاري');
+// ================= clearer guidance to where you are going =================
+// When you pick a mission or a place, three things now lead the way instead of the little arrow at the edge of the screen:
+// - a big golden arrow on the ground in front of your hero, pointing along the glowing trail (it turns as the trail turns)
+// - a compass at the top of the screen: its arrow points where to go from where you are looking, with how far it is
+//   ("Turn around" when it is behind you, "Almost there!" at the end)
+// - a sign above the light beam at the destination, and bigger arrows along the trail
+const GUIDE={on:false,ang:0,dist:0,wx:0,wz:0,col:'#ffcf3a',label:'',behindT:0,lastSay:0};
+// where to head right now: a point a few steps ahead along the trail (or straight to the target if there is no trail)
+function guideCalc(){const p=ME;if(!p||G.mode==='title')return null;const nav=typeof navObjective==='function'&&navObjective();const ob=nav||G.obj;if(!ob||!ob.t)return null;
+  let wx=ob.t.x,wz=ob.t.z,dist=Math.hypot(ob.t.x-p.x,ob.t.z-p.z);
+  // follow the trail when we are on it (a few steps ahead of us); if we wandered off, point straight at the target until the trail catches up
+  if(nav&&NAV.pts&&NAV.pts.length>1&&(ME.realm==='moon')===NAV.moon){const P=NAV.pts;const i=Math.min(NAV.idx,P.length-1);if(Math.hypot(P[i][0]-p.x,P[i][1]-p.z)<12){const ahead=p.veh?14:7;
+    let k=i;while(k<P.length-1&&Math.hypot(P[k][0]-p.x,P[k][1]-p.z)<ahead)k++;wx=P[k][0];wz=P[k][1];}}
+  return {wx,wz,dist,col:ob.col||'#ffcf3a',label:String(ob.text||''),goal:ob.t,nav:!!nav};}
+// ---------- the compass at the top of the screen ----------
+function guideHud(dt){let el=$('navc');const g=guideCalc();const show=!!g&&G.mode==='play'&&!(ME.ko>0)&&!(typeof PHOTO!=='undefined'&&PHOTO.on);
+  if(!el){const hud=$('hud');if(!hud)return;el=document.createElement('div');el.id='navc';el.hidden=true;el.innerHTML='<div class="nca"><i></i></div><div class="nct"><b></b><small></small></div>';hud.appendChild(el);}
+  GUIDE.on=show;document.body.classList.toggle('navon',show);if(!show){if(!el.hidden)el.hidden=true;return;}el.hidden=false;
+  const [fx,fz]=camForward(),rx=-fz,rz=fx;const dx=g.wx-ME.x,dz=g.wz-ME.z;const lat=dx*rx+dz*rz,fw=dx*fx+dz*fz;let a=Math.atan2(lat,fw);
+  GUIDE.ang=GUIDE.ang+angDiff(GUIDE.ang,a)*Math.min(1,dt*10);const near=g.dist<18,behind=Math.abs(a)>2.1&&!near;
+  GUIDE.behindT=behind?GUIDE.behindT+dt:0;
+  el.style.setProperty('--c',g.col);el.querySelector('.nca i').style.transform=`rotate(${GUIDE.ang.toFixed(3)}rad)`;
+  const lb=g.label.replace(/^📍\s*/,'');const d=Math.max(1,Math.round(g.dist));
+  const top=near?'🎯 '+tr('Almost there!'):behind?'🔄 '+tr('Turn around'):trf('{0} m',d);setH(el.querySelector('.nct b'),'gdb',esc(top));setH(el.querySelector('.nct small'),'gds',esc(lb));
+  document.body.classList.toggle('navlow',!!(($('boss')&&!$('boss').hidden)||($('race')&&!$('race').hidden)||($('gmhud')&&!$('gmhud').hidden)));
+  // the old arrow at the edge of the screen is not needed while the compass shows
+  const oa=$('oarrow');if(oa)oa.hidden=true;}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{guideHud(dt);}catch(e){noteErr('guide',e);}};}
+{const _ns=navSet;navSet=function(d){_ns(d);try{if(!G.guideTip&&G.mode==='play'){G.guideTip=1;setTimeout(()=>toast('🧭 '+tr('Follow the golden arrow!')),900);}}catch(e){}};}
+// ---------- the golden arrow on the ground in front of the hero ----------
+function drawGuide(t){if(!GUIDE.on||!ME||G.mode!=='play')return;const g=guideCalc();if(!g)return;const p=ME,v=p.veh;const dx=g.wx-p.x,dz=g.wz-p.z,L=Math.hypot(dx,dz);if(L<.5)return;
+  const ang=Math.atan2(dx,dz);const big=v?1.9:1.45,off=v?4.8:2.7;const bob=Math.sin(t*5)*.12;let x=p.x+dx/L*off,z=p.z+dz/L*off;
+  let y=(p.fly||p.swim||(v&&(VSPEC[v.type]||{}).air))?p.y+.4:Math.max(chAt(x,z),p.realm==='earth'?WL:-99)+.12;if(!(p.fly||p.swim)&&Math.abs(y-p.y)>3)y=p.y+.12;
+  const m=MS.cur;const prev=OUT;OUT=DYN;const col='#ffcf3a',pulse=.75+Math.sin(t*6)*.25;
+  MS.reset();M4.tr(m,x,y+bob*.4,z);M4.ry(m,ang);M4.sc(m,big,big,big);
+  // white outline, then the colored arrow on top: a flat arrow head and a short shaft
+  MS.push();M4.tr(m,0,0,.1);M4.rx(m,Math.PI/2);co(m,0,.42,0,1.25,.85,.12,'#ffffff',1,.9);co(m,0,.44,-.02,1.02,.7,.14,col,1,pulse);MS.pop();
+  bx(m,0,0,-.45,.46,.1,.8,'#ffffff',1,.9);bx(m,0,.02,-.45,.3,.12,.72,col,1,pulse);
+  // three little chevrons behind it, flowing forward
+  for(let k=0;k<3;k++){const u=((t*1.6+k/3)%1);MS.push();M4.tr(m,0,.02,-1.1-u*.9+(1-u)*.0);for(const s of [-1,1]){MS.push();M4.tr(m,s*.13,0,0);M4.ry(m,s*.75);bx(m,0,0,0,.08,.06,.34,col,1,.6*(1-u)+.2);MS.pop();}MS.pop();}
+  OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawGuide(t);}catch(e){noteErr('guideDraw',e);}};}
+// ---------- bigger arrows along the trail ----------
+{const _dt=drawTrail;drawTrail=function(t){_dt(t);try{if(!NAV.dest||!NAV.pts||!ME||(ME.realm==='moon')!==NAV.moon)return;const P=NAV.pts,col=NAV.dest.col||'#7ef9ff';const m=MS.cur;const prev=OUT;OUT=DYN;
+    const n=Math.min(P.length-2,NAV.idx+60);for(let k=NAV.idx+2;k<=n;k+=3){const [x,z]=P[k],[x2,z2]=P[k+1];if(Math.abs(x-CAM.tx)>100||Math.abs(z-CAM.tz)>100)continue;const y=Math.max(chAt(x,z),WL)+.16;const w=Math.max(0,Math.sin(t*6-k*.5));
+      MS.reset();M4.tr(m,x,y+w*.1,z);M4.ry(m,Math.atan2(x2-x,z2-z));for(const s of [-1,1]){MS.push();M4.tr(m,s*.2,0,0);M4.ry(m,s*.8);bx(m,0,0,0,.14,.07,.62,'#ffffff',1,.9);MS.pop();}
+      for(const s of [-1,1]){MS.push();M4.tr(m,s*.2,.03,-.02);M4.ry(m,s*.8);bx(m,0,0,0,.08,.07,.5,col,1,.8);MS.pop();}}OUT=prev;}catch(e){}};}
+// ---------- a sign above the destination ----------
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(!GUIDE.on)return;const g=guideCalc();if(!g||!g.goal)return;const gx=g.goal.x,gz=g.goal.z;if(Math.hypot(gx-ME.x,gz-ME.z)<6)return;
+    const gy=Math.max(chAt(gx,gz),ME.realm==='earth'?WL:-99);const lb=g.label.replace(/^📍\s*/,'');label('navdst',gx,gy+4.2,gz,'📍 '+esc(lb)+` · ${Math.max(1,Math.round(g.dist))} m`,'sign or');}catch(e){}};}
+MV('Almost there!','اقتربت جدًا!');MV('Follow the golden arrow!','اتبع السهم الذهبي!');MV('Turn around','استدر للخلف');
 // ================= start =================
 boot();
 </script>

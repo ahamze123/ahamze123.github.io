@@ -6,12 +6,15 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
 
 ## On an iPad
 1. Open the link in Safari.
-2. Tap **Share → Add to Home Screen** to get a game icon that opens full screen.
+2. Tap **Share ⬆** (on the newest iPadOS tap **•••** next to the address bar first, then **Share**), scroll down the list and tap **Add to Home Screen**. If it is not in the list, tap **Edit Actions…** at the bottom and turn it on. Tap **Add**.
 3. Open Block Buddies from the Home Screen icon. It fills the whole screen and a swipe never closes it (Safari's own full screen closes when you swipe down, which Apple does not let games stop).
 4. The Home Screen app keeps its own save. To bring a game you started in Safari: in Safari tap **Menu → Settings → 📦 Move my game → Copy my game**, then in the Home Screen app tap **📦 Bring my game from Safari**, paste and tap **Load this game** twice.
 - Double-tapping or pinching no longer zooms the page on iPad.
 
-**Playing online:** one player taps **Play online → Host a game**, the others tap **Play online** and **Join**. The online screen shows when it is connected and how many games it found. If a tablet's Wi-Fi drops for a moment (the screen locks, you switch apps), the game reconnects by itself and the Join button comes back.
+**Playing online:** one player taps **Play online → Host a game**, the others tap **Play online** and **Join**. The online screen shows when it is connected and how many games it found. If a tablet's Wi-Fi drops for a moment (the screen locks, you switch apps), the game reconnects by itself and the Join button comes back. The tablets find each other through three free public servers at once (the PeerJS server and two MQTT message servers), so online play keeps working even when one of them is down. The ✓ and ✗ marks on the online screen show which ones are reachable.
+
+## Finding your way
+- Pick a mission or tap a place on the map and three things lead the way: a **golden arrow** on the ground in front of your hero that follows the glowing trail, a **compass** at the top of the screen that points where to go from where you are looking (it says **Turn around** when the place is behind you and **Almost there!** at the end), and a sign above the light beam at the destination.
 
 ## Heroes
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes.
