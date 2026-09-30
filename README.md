@@ -26,6 +26,14 @@ Golden bricks open giant golden gates to new islands. A golden force field cover
 - **Titan Island** (20 golden bricks): Titan is a gentle giant made of living rock, with a tiny bird living in a nest on his head. Walk up and wake him, and he becomes a hero that boys and girls can both play. He is slow and heavy: the ground shakes when he runs, his punch sends baddies flying, and his quake throws everything nearby into the air. Before his gate opens you can spot him around the islands lifting a car, carrying two cows and lifting a boulder. On his island, **Titan's Workout** (smash 8 training boulders as Titan) wins a bird nest hat.
 - **Dragon Peak** (35 golden bricks): a volcano island where **Blaze the Dragon** sleeps on her nest. Wake her and she becomes a ride: hold jump to flap up, let go to glide down, hold power to breathe fire and tap attack to roar. Warm her three eggs with her fire and a baby dragon hatches to be your pet.
 
+- **Candy Island** (50 golden bricks): gumdrop hills, lollipop trees, candy canes, giant cupcakes and a chocolate race track. The **Rocket Racer** waits in its garage by the track: the fastest car in Blocktopia. Power fires its rocket and jump makes it hop. Before the gate opens you can see it zooming along the highways. Once it is yours, take it out at any garage.
+- **Robot Rock** (all 76 golden bricks): power up the **Mega Mech**, a giant robot you pilot. Walk and stomp, fly on jump jets, fire laser eyes and launch a rocket punch. A Mega Mech prototype stands in Star Harbor and waves at everyone who walks by.
+- The **trains** also go to every golden island once its gate is open, and **Menu → Golden Gates** shows how close you are to each gate.
+- **Golden missions**: one big challenge on each island, and each one wins a golden brick. **Dragon Rings** (fly Blaze through 10 rings around the volcano), **Titan Bowling** (knock down 10 giant pins as Titan), **Sweet Rush** (grab 12 giant sweets in the Rocket Racer) and **Mech Training** (beat 8 training robots in the Mega Mech). There is also the **Candy Grand Prix** race on the chocolate track.
+- **Crystal Caves**: walk into the cave mouth at the foot of the Frostpeak mountains to find a glowing cavern of crystal towers, giant mushrooms, an old mine cart and sleepy bats. Three golden bricks sit on top of the tallest crystals.
+- **New costumes** unlock at 30, 40, 50, 60 and 76 golden bricks: Crystal, Lava, Rainbow, Galaxy and Diamond heroes, each with a sparkly trail.
+- **The edge of the sea** is now marked with red and white buoys, a sign and a dashed line on the map. Swimming, dashing across the water, flying or sailing too far no longer throws you back to town.
+
 ## The Hero Castle
 Hero HQ in Brick City is now a castle. Walk through the big wooden door to find nine zones:
 - **Throne Room**: King Brickley and the **Quest Board**. Tap a quest and a trail leads you there.

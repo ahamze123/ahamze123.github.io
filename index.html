@@ -1352,7 +1352,7 @@ void main(){vec3 w=vec3(aP.x+uOff.x,uY,aP.y+uOff.y);w.y+=sin(w.x*.5+uTime*1.2)*.
 const FS_WATER=`#version 300 es
 precision highp float;in vec3 vW;uniform sampler2D uH;uniform float uN;uniform float uTime;uniform vec3 uCam;uniform vec3 uFogC;uniform float uFogD;uniform vec3 uSun;uniform vec3 uSky;uniform float uY;uniform float uNight;out vec4 o;
 float h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-void main(){vec2 uv=vW.xz/uN;float h=-8.;if(uv.x>0.&&uv.x<1.&&uv.y>0.&&uv.y<1.)h=texture(uH,uv).r;if(h>uY+1.)discard;float depth=clamp((uY-h)/3.2,0.,1.);
+void main(){vec2 uv=vW.xz/uN;float h=-8.;if(uv.x>0.&&uv.x<1.&&uv.y>0.&&uv.y<1.)h=texture(uH,uv).r;if((vW.x>=702.&&vW.z<130.)||(vW.x>=766.&&vW.z>=126.&&vW.z<322.))h=-8.;if(h>uY+1.)discard;float depth=clamp((uY-h)/3.2,0.,1.);
  float t=uTime;vec2 g=vec2(cos(vW.x*.9+t*1.6)*.5+cos(vW.x*2.3-vW.z*1.1+t*2.3)*.25+cos((vW.x+vW.z)*3.7+t*3.)*.1,
   cos(vW.z*.8-t*1.3)*.5+cos(vW.z*2.1+vW.x*.9+t*2.)*.25+cos((vW.z-vW.x)*3.3+t*2.7)*.1);
  vec3 n=normalize(vec3(g.x*.16,1.,g.y*.16));vec3 V=normalize(uCam-vW);vec3 Rf=reflect(-V,n);
@@ -1937,8 +1937,9 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
   let suit=hex(SUITS[idxOf(SUITS,L.suit)].c),acc=hex(SUITS[idxOf(SUITS,L.suit)].a);const hair=hex(HAIRS[idxOf(HAIRS,L.hair)].c);
   if(cos==='ninja'){suit=hex('#23232f');acc=hex('#e8344a');}else if(cos==='astro'){suit=hex('#eef1f6');acc=hex('#ff7a1a');}else if(cos==='knight'){suit=hex('#b8c0cc');acc=hex('#3b5bdb');}else if(cos==='robot'){suit=hex('#8f98a8');acc=hex('#46e6ff');}
   else if(cos==='dino'){suit=hex('#3fbf5a');acc=hex('#ffe36e');}else if(cos==='pirate'){suit=hex('#f2f2f2');acc=hex('#d8343f');}else if(cos==='gold'){suit=hex('#f3b61f');acc=hex('#fff6c8');}
+  if(typeof COSX!=='undefined'&&COSX[cos]){const c=COSX[cos](t,p);suit=c.s;acc=c.a;}
   if(own&&CC.cs){suit=hex(CC.cs);acc=hex(CC.ca||CC.cs);}
-  if(PS){suit=hex(PSCOL[PS].s);acc=hex(PSCOL[PS].a);}const pants=PS?hex(PSCOL[PS].pants):mixc(suit,[.08,.08,.16],.5),smat=cos==='knight'||cos==='robot'||cos==='gold'?3:1,boot=p.gad&&p.gad.boots?hex('#ff7a2e'):cos==='knight'?hex('#8f98a8'):hex('#f4f4f4');
+  if(PS){suit=hex(PSCOL[PS].s);acc=hex(PSCOL[PS].a);}const pants=PS?hex(PSCOL[PS].pants):mixc(suit,[.08,.08,.16],.5),smat=cos==='knight'||cos==='robot'||cos==='gold'||(typeof COSM!=='undefined'&&COSM[cos])?3:1,boot=p.gad&&p.gad.boots?hex('#ff7a2e'):cos==='knight'?hex('#8f98a8'):hex('#f4f4f4');
   M4.tr(m,p.x,p.y+(p.yv||0)+A.bob,p.z);M4.ry(m,p.face);if(XS&&XS.spinY)M4.ry(m,XS.spinY);if(p.scale)M4.sc(m,p.scale,p.scale,p.scale);
   if(XS&&XS.chg>0)M4.rx(m,.32);
   if(p.ko>0){M4.rx(m,-1.45);M4.tr(m,0,.35,0);}
@@ -3108,7 +3109,7 @@ function buildMapImg(){const cv=document.createElement('canvas');cv.width=N;cv.h
   const M=MOONBOX;const mc=document.createElement('canvas');mc.width=M.x1-M.x0;mc.height=M.z1-M.z0;mc.getContext('2d').drawImage(cv,M.x0,M.z0,mc.width,mc.height,0,0,mc.width,mc.height);MOONIMG=mc;
   const EI=document.createElement('canvas');EI.width=N;EI.height=N;const ex=EI.getContext('2d');ex.drawImage(cv,0,0);ex.fillStyle='rgb(41,107,199)';ex.fillRect(M.x0,M.z0,M.x1-M.x0,M.z1-M.z0);ex.fillRect(INBOX.x0,INBOX.z0,INBOX.x1-INBOX.x0,INBOX.z1-INBOX.z0);EARTHIMG=EI;}
 function drawMini(){const cv=$('mini'),x=cv.getContext('2d');const S=cv.width,R0=S/2;const mo=ME.realm==='moon',ins=ME.realm==='inside';const PL=ins?placeAt(ME.x,ME.z):null;x.clearRect(0,0,S,S);x.save();x.beginPath();x.arc(R0,R0,R0-3,0,TAU);x.clip();x.fillStyle=mo?'#05060f':ins?'#1d1830':'#2c6fc0';x.fillRect(0,0,S,S);
-  const sc=ins?4.4:2.2;x.translate(R0,R0);x.rotate(CAM.yaw);x.scale(sc,sc);x.translate(-ME.x,-ME.z);x.imageSmoothingEnabled=false;if(MAPIMG){if(ins){if(PL)x.drawImage(MAPIMG,PL.x0-1,PL.z0-1,PL.w+2,PL.d+2,PL.x0-1,PL.z0-1,PL.w+2,PL.d+2);}else if(mo){const M=MOONBOX;x.drawImage(MAPIMG,M.x0,M.z0,M.x1-M.x0,M.z1-M.z0,M.x0,M.z0,M.x1-M.x0,M.z1-M.z0);}else x.drawImage(MAPIMG,0,0);}x.restore();
+  const sc=ins?4.4:2.2;x.translate(R0,R0);x.rotate(CAM.yaw);x.scale(sc,sc);x.translate(-ME.x,-ME.z);x.imageSmoothingEnabled=false;if(MAPIMG){if(ins){if(PL)x.drawImage(MAPIMG,PL.x0-1,PL.z0-1,PL.w+2,PL.d+2,PL.x0-1,PL.z0-1,PL.w+2,PL.d+2);}else if(mo){const M=MOONBOX;x.drawImage(MAPIMG,M.x0,M.z0,M.x1-M.x0,M.z1-M.z0,M.x0,M.z0,M.x1-M.x0,M.z1-M.z0);}else x.drawImage(EARTHIMG||MAPIMG,0,0);}x.restore();
   const toS=(wx,wz)=>{if(ins&&PL&&placeAt(wx,wz)!==PL){const g=PL.exit;wx=g.x;wz=g.z;}const dx=(wx-ME.x)*sc,dz=(wz-ME.z)*sc;const c=Math.cos(CAM.yaw),s=Math.sin(CAM.yaw);return [R0+dx*c-dz*s,R0+dx*s+dz*c];};
   const dot=(wx,wz,col,r,shape)=>{let [a,b]=toS(wx,wz);const dd=Math.hypot(a-R0,b-R0);if(dd>R0-8){a=R0+(a-R0)/dd*(R0-8);b=R0+(b-R0)/dd*(R0-8);}x.fillStyle=col;x.strokeStyle='#fff';x.lineWidth=2;x.beginPath();if(shape==='d'){x.moveTo(a,b-r);x.lineTo(a+r,b);x.lineTo(a,b+r);x.lineTo(a-r,b);x.closePath();}else if(shape==='s')x.rect(a-r,b-r,r*2,r*2);else x.arc(a,b,r,0,TAU);x.fill();x.stroke();};
   if(!ins){dot(LOC.shop.x,LOC.shop.z,'#ffcf3a',5);dot(LOC.garageT.x,LOC.garageT.z,'#ff8a1f',5);for(const q of WORLD.terms||[])if(Math.abs(q.x-ME.x)<90&&Math.abs(q.z-ME.z)<90)dot(q.x,q.z,q.kind==='shop'?'#ffcf3a':'#ff8a1f',5);for(const st of WORLD.stations||[])if(Math.abs(st.x-ME.x)<90&&Math.abs(st.z-ME.z)<90)dot(st.x,st.z,'#2f6bff',5);for(const p of WORLD.plots||[])if(Math.abs(p.x-ME.x)<95&&Math.abs(p.z-ME.z)<95&&inMoonBox(p.x,p.z)===(ME.realm==='moon'))dot(p.x,p.z,'#8fd14f',6,'s');for(const P of PLACES)if(P.door&&Math.abs(P.door.x-ME.x)<90&&Math.abs(P.door.z-ME.z)<90&&realmAt(P.door.x,P.door.z)===ME.realm)dot(P.door.x,P.door.z,P.col,6,'d');}
@@ -5505,7 +5506,7 @@ function goOutside(P,quick){P=P||myPlace();if(!P||!P.door)return;const p=ME;p.di
 // keeps you inside the room you are in (runs from realmUpdate); returns true when it handled you
 function insideUpdate(p){const inB=inInBox(p.x,p.z);
   if(!inB){if(p.realm==='inside')p.realm=realmAt(p.x,p.z);return false;}
-  const P=placeAt(p.x,p.z);if(p.realm!=='inside'){if(!P){const q=PLACES[0];p.x=q.door?q.door.ox:LOC.mayor.x;p.z=q.door?q.door.oz:LOC.mayor.z;p.y=chAt(p.x,p.z)+.5;p.realm=realmAt(p.x,p.z);return true;}p.realm='inside';}
+  const P=placeAt(p.x,p.z);if(p.realm!=='inside'){if(p.realm==='earth'&&typeof fenceMe==='function'&&!G.cine&&fenceMe(p))return true;if(!P){const q=PLACES[0];p.x=q.door?q.door.ox:LOC.mayor.x;p.z=q.door?q.door.oz:LOC.mayor.z;p.y=chAt(p.x,p.z)+.5;p.realm=realmAt(p.x,p.z);return true;}p.realm='inside';}
   if(P){p.x=clamp(p.x,P.x0+.45,P.x1-.45);p.z=clamp(p.z,P.z0+.45,P.z1-.45);if(p.y>FY+7.5){p.y=FY+7.5;p.vy=Math.min(p.vy,0);}if(p.veh)exitVeh(p);}return true;}
 // interaction candidates: the door outside, and the way out inside
 function placeInteract(cand,p){if(p.realm==='inside'){const P=placeAt(p.x,p.z);if(P)cand({x:P.exit.x,z:P.exit.z,y:FY},'leave',tr('Go outside'),2.2,2,{P,fn:()=>goOutside(P)});return;}
@@ -7452,8 +7453,14 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:22,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:23,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'💎',t:'Crystal Caves',s:'A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks',go:()=>{if(typeof CAVE==='undefined'||!CAVE.mouth)return null;const M=CAVE.mouth;return dd({x:M.x+Math.sin(M.f)*3,z:M.z+Math.cos(M.f)*3,label:tr('Crystal Caves'),icon:'💎',col:'#7ef9ff'});}},
+  {ic:'🍭',t:'Candy Island',s:'Golden gate number three (50 golden bricks): gumdrop hills, lollipop trees, a chocolate race track and the Rocket Racer',go:()=>{if(typeof GGBY==='undefined')return null;const g=GGBY.candy,s=g.gate;if(!s)return null;return ggOpen('candy')?dd({x:g.x,z:g.z,label:tr(g.n),icon:'🍭',col:g.col}):dd({x:s.x,z:s.z,label:tr(g.n),icon:'🔒',col:g.col});}},
+  {ic:'🚀',t:'Rocket Racer',s:'The fastest car in Blocktopia! Power fires the rocket, jump makes it hop. Watch for it zooming along the highways'},
+  {ic:'🤖',t:'The Mega Mech',s:'Find all 76 golden bricks to open Robot Rock and pilot a giant robot: stomp, jump jets, laser eyes and a rocket punch',go:()=>{if(typeof MECH==='undefined'||!MECH.tease)return null;const T0=MECH.tease;return dd({x:T0.x,z:T0.z+4,label:tr('Mega Mech'),icon:'🤖',col:'#46b0ff'});}},
+  {ic:'🏅',t:'Golden missions',s:'Dragon Rings, Titan Bowling, Sweet Rush and Mech Training: one on each golden island, and each wins a golden brick'},
+  {ic:'🌈',t:'Five new costumes',s:'Crystal, Lava, Rainbow, Galaxy and Diamond heroes unlock at 30, 40, 50, 60 and 76 golden bricks'},
   {ic:'🔓',t:'Golden Gates!',s:'Golden bricks now open giant golden gates to two new islands, and each island hides a big prize',go:()=>{if(typeof GGATES==='undefined')return null;const g=GGATES.find(q=>!ggOpen(q.id))||GGATES[0];const s=g.gate;return s?dd({x:ggOpen(g.id)?g.x:s.x,z:ggOpen(g.id)?g.z:s.z,label:tr(g.n),icon:ggOpen(g.id)?g.ic:'🔒',col:g.col}):null;}},
   {ic:'💪',t:'Titan',s:'A gentle giant made of living rock. Open Titan Island with 20 golden bricks and wake him up. Boys and girls can both play him!',go:()=>{if(typeof GGBY==='undefined')return null;const g=GGBY.titan,s=g.gate;if(!s)return null;return ggOpen('titan')?dd({x:TNPC.x,z:TNPC.z+3,label:tr('Titan'),icon:'💪',col:g.col}):dd({x:s.x,z:s.z,label:tr(g.n),icon:'🔒',col:g.col});}},
   {ic:'🐉',t:'Blaze the Dragon',s:'Open Dragon Peak with 35 golden bricks and wake Blaze. Fly her, breathe fire and roar!',go:()=>{if(typeof GGBY==='undefined')return null;const g=GGBY.dragon,s=g.gate;if(!s)return null;return ggOpen('dragon')&&BLZ.nest?dd({x:BLZ.nest.x,z:BLZ.nest.z+4,label:tr('Blaze the Dragon'),icon:'🐉',col:g.col}):dd({x:s.x,z:s.z,label:tr(g.n),icon:'🔒',col:g.col});}},
@@ -9380,7 +9387,11 @@ const GGATES=[
     road:{hw:'EB',at:[364,200],pts:[[368,185],[372,168],[377,152],[383,138]]}},
   {id:'dragon',need:35,x:405,z:750,r:36,R:46,seed:66,col:'#ff5a3c',ic:'🐉',n:MV('Dragon Peak','قمة التنين'),prize:MV('Blaze the Dragon','التنين بليز'),
     road:{hw:'FC',at:[405,628],pts:[[405,652],[405,678],[405,702],[405,726]]}}];
-const GGBY={};for(const g of GGATES){GGBY[g.id]=g;g.ga=Math.atan2(g.road.pts[1][0]-g.x,g.road.pts[1][1]-g.z);}
+const GGBY={},GGHW=[];GGATES[0].rid=5;GGATES[1].rid=6;
+function ggPrep(g){GGBY[g.id]=g;g.ga=Math.atan2(g.road.pts[1][0]-g.x,g.road.pts[1][1]-g.z);GGHW.push({id:'gg_'+g.id,gid:g.id,pts:[g.road.at,...g.road.pts]});}
+for(const g of GGATES)ggPrep(g);
+// later islands join with ggAdd (their own terrain, paint, prize and crest come with them)
+function ggAdd(g){GGATES.push(g);ggPrep(g);REG.push({id:g.id,name:g.n,x:g.x,z:g.z,r:g.r,seed:g.seed,col:g.col,idx:g.rid});if(g.height)REGH[g.id]=g.height;}
 const ggOpen=id=>G.ggo.has(id);
 const DOMEY=WL-4;// the dome's centre sits under the sea, so it meets the water in a wide circle
 // ---------- the islands ----------
@@ -9397,14 +9408,14 @@ REGH.dragon=(x,z)=>{const I=GGBY.dragon,d=Math.hypot(x-I.x,z-I.z);let h=4.6+fbm(
 // three lava streams run down the volcano
 const LAVA=[[[405,744],[398,736],[392,726],[386,716]],[[410,754],[418,764],[426,772],[434,778]],[[400,755],[391,766],[384,778]]].map(L=>chaikin(L,2));
 function lavaDist(x,z){let b=1e9;for(const L of LAVA)for(let k=0;k<L.length-1;k++){const [ax,az]=L[k],[bx,bz]=L[k+1];const vx=bx-ax,vz=bz-az,l2=vx*vx+vz*vz;const t=clamp(((x-ax)*vx+(z-az)*vz)/l2,0,1);b=Math.min(b,Math.hypot(x-ax-vx*t,z-az-vz*t));}return b;}
-{const _rp=regionPaint;regionPaint=function(){_rp();for(const g of GGATES){const I=g,r1=I.r*1.25;for(let z=Math.floor(I.z-r1);z<=I.z+r1;z++)for(let x=Math.floor(I.x-r1);x<=I.x+r1;x++){if(!inMap(x,z))continue;const i=cid(x,z);if(RID[i]!==(g.id==='titan'?5:6)||RD[i])continue;
+{const _rp=regionPaint;regionPaint=function(){_rp();for(const g of GGATES){const I=g,r1=I.r*1.25;for(let z=Math.floor(I.z-r1);z<=I.z+r1;z++)for(let x=Math.floor(I.x-r1);x<=I.x+r1;x++){if(!inMap(x,z))continue;const i=cid(x,z);if(RID[i]!==g.rid||RD[i])continue;
     const h=H[i];if(h<WL-.25)continue;const t=hash2(x,z,5);let mx=0;for(const [a,c] of [[1,0],[-1,0],[0,1],[0,-1]]){const nh=inMap(x+a,z+c)?H[cid(x+a,z+c)]:-6;mx=Math.max(mx,Math.abs(nh-h));}const d=Math.hypot(x+.5-I.x,z+.5-I.z);
+    if(g.paint){g.paint(i,x,z,h,t,mx,d);continue;}
     if(g.id==='titan'){if(h<3.7){TM[i]=T.SAND;TC[i]=pal(t<.5?'#f0cf95':'#ebc88a');}else if(h>=8||mx>=1.6){TM[i]=T.MESA;const band=Math.floor(h/1.4)%3;TC[i]=pal(band===0?(t<.5?'#c9653a':'#c05f36'):band===1?(t<.5?'#e08a52':'#d9824b'):(t<.5?'#f0b07a':'#e8a56c'));}
       else if(d<11.5){TM[i]=T.STONE;const ring=Math.floor(d/2.3)%2;TC[i]=pal(ring?(t<.5?'#e3d3b4':'#dccaa8'):(t<.5?'#d2bf9c':'#cbb794'));}else{TM[i]=T.DIRT;TC[i]=pal(t<.5?'#d2a46c':'#c99a62');}}
     else{const lv=lavaDist(x+.5,z+.5);if(h<3.5){TM[i]=T.SAND;TC[i]=pal(t<.5?'#4a4550':'#433e49');}else if(d<6.2){TM[i]=T.ROCK;TC[i]=pal(t<.5?'#ff6a1f':'#ff8a2a');}else if(lv<1.3){TM[i]=T.ROCK;TC[i]=pal(lv<.6?'#ffb13a':t<.5?'#ff5a1f':'#ff7a24');}
       else if(lv<2.2){TM[i]=T.ROCK;TC[i]=pal('#2c2830');}else if(h>21){TM[i]=T.ROCK;TC[i]=pal(t<.5?'#77707c':'#6d6672');}else{TM[i]=T.ROCK;TC[i]=pal(mx>=1.6?(t<.5?'#3a3440':'#35303b'):(t<.5?'#4d4656':'#453f4c'));}}}}};}
 // ---------- the roads: causeway bridges from the nearest highway, like the other islands ----------
-const GGHW=GGATES.map(g=>({id:'gg_'+g.id,gid:g.id,pts:[g.road.at,...g.road.pts]}));
 {const _rn=reserveNewRoads;reserveNewRoads=function(){_rn();for(const hw of GGHW){const pts=chaikin(hw.pts,3);for(let k=0;k<pts.length-1;k++){const [ax,az]=pts[k],[bx,bz]=pts[k+1];const L=Math.hypot(bx-ax,bz-az);for(let t=0;t<=L;t+=.5){const x=ax+(bx-ax)*t/L,z=az+(bz-az)*t/L;
     for(let c=Math.floor(z-7);c<=z+7;c++)for(let a=Math.floor(x-7);a<=x+7;a++)if(inMap(a,c)&&Math.hypot(a+.5-x,c+.5-z)<6.6)NRD[cid(a,c)]=1;}}}};}
 {const _cn=carveNewHighways;carveNewHighways=function(){_cn();for(const hw of GGHW){const S0=WORLD.hwSamples[GGBY[hw.gid].road.hw];
@@ -9446,9 +9457,9 @@ function ggCine(dt){const C=GG.cine;if(!C)return;const g=C.g,s=g.gate;const t0=C
   if(t0<1.9&&t>=1.9){AU.tone(392,.5,'sawtooth',.05,1,0);AU.tone(523,.5,'sawtooth',.05,1,.14);AU.tone(659,.5,'sawtooth',.05,1,.28);AU.tone(784,.9,'sawtooth',.06,1,.42);AU.tone(1568,.9,'sine',.03,1,.42);
     for(let k=0;k<160;k++){const a=Math.random()*TAU,b=Math.random()*Math.PI*.5;const nx=Math.cos(a)*Math.cos(b),ny=Math.sin(b),nz=Math.sin(a)*Math.cos(b);PARTS.push({x:g.x+nx*g.R,y:DOMEY+ny*g.R,z:g.z+nz*g.R,vx:nx*4,vy:ny*4+2,vz:nz*4,life:2.2,s:.4,c:hex(k%3?'#ffe27a':'#ffffff'),e:1,g:-1,k:'deb',rot:0});}}
   if(t>=1.9)GG.fade[g.id]=Math.max(0,1-(t-1.9)/1.1);
-  if(t0<3.1&&t>=3.1){banner(trf('{0} is open!',tr(g.n)),g.id==='titan'?tr('Go and wake up Titan!'):tr('Go and meet Blaze the Dragon!'),g.col);SFX.heroUnlock&&SFX.heroUnlock();const P=ggPrizeSpot(g);if(P)navSet({x:P.x,z:P.z,label:tr(g.prize),icon:g.ic,col:g.col,realm:'earth'});}
+  if(t0<3.1&&t>=3.1){banner(trf('{0} is open!',tr(g.n)),g.sub?tr(g.sub):g.id==='titan'?tr('Go and wake up Titan!'):tr('Go and meet Blaze the Dragon!'),g.col);SFX.heroUnlock&&SFX.heroUnlock();const P=ggPrizeSpot(g);if(P)navSet({x:P.x,z:P.z,label:tr(g.prize),icon:g.ic,col:g.col,realm:'earth'});}
   if(t>=3.8){GG.cine=null;GG.fade[g.id]=0;}}
-function ggPrizeSpot(g){if(g.id==='titan')return {x:g.x,z:g.z};const I=g;return {x:I.x,z:I.z-17};}
+function ggPrizeSpot(g){if(g.prizeSpot)return g.prizeSpot();if(g.id==='titan')return {x:g.x,z:g.z};const I=g;return {x:I.x,z:I.z-17};}
 {const _ri=readInput;readInput=function(){const r=_ri.apply(this,arguments);if(GG.cine)return Object.assign({},NOINP);return r;};}
 {const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{ggCine(dt);}catch(e){noteErr('ggcine',e);GG.cine=null;}};}
 // the camera watches the gate while it opens
@@ -9469,7 +9480,7 @@ function drawGates(t){const m=MS.cur;for(const g of GGATES){const s=g.gate;if(!s
   for(const g of GGATES){const k=ggDomeK(g);if(k<=.01)continue;if(Math.abs(g.x-CAM.tx)>260||Math.abs(g.z-CAM.tz)>260)continue;const Rd=g.R*(1+(1-k)*.08);MS.reset();M4.tr(m,g.x,DOMEY,g.z);M4.ry(m,t*.05);
     TRN.sph.put(m,0,0,0,Rd*2,Rd*2,Rd*2,hex('#ffd54a'),PK(1,0));if(k<1)continue;
     if(ME&&Math.hypot(ME.x-g.x,ME.z-g.z)<g.R+40&&R()<.5){const a=R()*TAU,b=R()*1.2;PARTS.push({x:g.x+Math.cos(a)*Math.cos(b)*g.R,y:DOMEY+Math.sin(b)*g.R,z:g.z+Math.sin(a)*Math.cos(b)*g.R,vx:0,vy:1.5,vz:0,life:1.6,s:.22,c:hex('#ffe27a'),e:1,g:0,k:'deb',rot:0});}}}
-function drawCrest(m,g,t){if(g.id==='titan'){bx(m,0,0,0,1.6,1.6,.5,'#e08a52',0);for(let k=0;k<4;k++)rb(m,-.6+k*.4,.7,.1,.34,.4,.5,'#d27a45',0);rb(m,.95,-.1,.1,.42,.8,.5,'#d27a45',0);bx(m,0,-.2,.28,1.2,.08,.05,'#8a4a2a',1);}
+function drawCrest(m,g,t){if(g.crest){g.crest(m,t);return;}if(g.id==='titan'){bx(m,0,0,0,1.6,1.6,.5,'#e08a52',0);for(let k=0;k<4;k++)rb(m,-.6+k*.4,.7,.1,.34,.4,.5,'#d27a45',0);rb(m,.95,-.1,.1,.42,.8,.5,'#d27a45',0);bx(m,0,-.2,.28,1.2,.08,.05,'#8a4a2a',1);}
   else{sp(m,0,0,0,1.2,1,1.4,'#e8343f',1,.1);sp(m,0,.1,.7,.8,.6,.8,'#e8343f',1,.1);for(const sd of [-1,1]){co(m,sd*.35,.75,.3,.2,.6,.2,'#fff1a8',1);sp(m,sd*.25,.3,1.02,.14,.14,.08,'#ffe27a',1,1);}
     for(const sd of [-1,1]){MS.push();M4.tr(m,sd*.6,.2,-.2);M4.rz(m,sd*(.5+Math.sin(t*4)*.3));bx(m,sd*.8,0,0,1.6,.08,1.1,'#ff7a5a',1,.1);MS.pop();}}}
 {const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{if(camRealm()==='earth'){const prev=OUT;OUT=DYN;drawGates(t);OUT=prev;}}catch(e){noteErr('ggdraw',e);}};}
@@ -9493,6 +9504,9 @@ MV('You can open the Golden Gate to {0}!','تستطيع فتح البوابة ا
 // the golden brick counter shows how many the next gate needs
 function ggHudHTML(){const n=G.gb.size;const g=ggNext()||ggReady();return g?`${n}<small class="ggn">/${g.need}${n>=g.need?' 🔓':''}</small>`:String(n);}
 MV('Walk up to open it!','اقترب لتفتحها!');
+// the trains also go to the islands whose gates are open
+{const _as=allStations;allStations=function(){const L=_as().slice();try{for(const g of GGATES){if(!ggOpen(g.id))continue;const S=WORLD.hwSamples['gg_'+g.id];if(!S)continue;const [x,z]=S[S.length-1];
+  L.push({town:'gg_'+g.id,name:g.n,x,z:z-2.2,y:hAt(x,z),face:0});if(typeof TOWNICON!=='undefined')TOWNICON['gg_'+g.id]=g.ic;}}catch(e){}return L;};}
 // ================= Titan: the gentle giant behind the first golden gate =================
 // A giant made of living red rock, with glowing cracks, moss on his shoulders and a tiny bird who lives in a nest on his
 // head. Boys and girls can both play him. He is slow and heavy: the ground shakes when he runs, he lands with a boom,
@@ -9643,6 +9657,9 @@ MV('Only Titan is strong enough to smash these!','تايتن وحده قوي ب�
 MV('Smash the training boulders as Titan','حطّم صخور التدريب بشخصية تايتن');
 // "show me the way" leads to his gate, or to his throne once the gate is open
 {const _hg=heroGuide;heroGuide=function(id){if(id!=='titan')return _hg(id);const g=GGBY.titan;if(!g.gate)return false;if(ggOpen('titan'))navSet({x:TNPC.x,z:TNPC.z+3,label:tr('Titan'),icon:'💪',col:g.col,realm:'earth'});else navSet({x:g.gate.x,z:g.gate.z,label:tr(g.n),icon:'🔒',col:g.col,realm:'earth'});return true;};}
+// Titan is so strong that walking into a car shoves it along
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(!ME||G.mode!=='play'||!isTitan(ME)||ME.veh||!ME.ground)return;const sp=Math.hypot(ME.vx||0,ME.vz||0);if(sp<2)return;TTS.pushT=(TTS.pushT||0)-dt;if(TTS.pushT>0)return;
+  const fx=Math.sin(ME.face),fz=Math.cos(ME.face);for(const q of VEH){if(q.dead||q.special||q===ME.veh)continue;if(d2(q.x,q.z,ME.x+fx*1.6,ME.z+fz*1.6)<2.4){TTS.pushT=.35;hitVeh(q,1,fx*2.5,fz*2.5);shake(.08);break;}}}catch(e){}};}
 // ================= Blaze the Dragon: the prize behind the second golden gate =================
 // A friendly red dragon with a golden belly. Before the gate opens she flies big loops over the islands, and sleeps on her
 // nest on Dragon Peak. Open the gate, walk up to wake her, and she becomes a ride: hold jump to flap up, let go to glide
@@ -9764,6 +9781,358 @@ MV('Golden Gates!','البوابات الذهبية!');MV('Golden bricks now ope
 MV('A gentle giant made of living rock. Open Titan Island with 20 golden bricks and wake him up. Boys and girls can both play him!','عملاق طيب مصنوع من الصخر الحي. افتح جزيرة تايتن بـ 20 طوبة ذهبية وأيقظه. الأولاد والبنات يستطيعون اللعب به!');
 MV('Open Dragon Peak with 35 golden bricks and wake Blaze. Fly her, breathe fire and roar!','افتح قمة التنين بـ 35 طوبة ذهبية وأيقظ بليز. طِر بها، وانفث النار، وازأر!');MV('Dragon eggs','بيض التنين');
 MV("Warm the three eggs on Dragon Peak with Blaze's fire, and a baby dragon hatches to be your pet",'دفّئ البيضات الثلاث على قمة التنين بنار بليز، فيفقس تنين صغير ليكون حيوانك الأليف');
+// ================= the third golden gate: Candy Island and the Rocket Racer =================
+// A pastel island of gumdrop hills, lollipop trees, candy canes and giant cupcakes, with a chocolate race track in the
+// middle. The Rocket Racer waits in its garage by the track: the fastest car in Blocktopia, with a rocket boost and a
+// rocket hop. Before the gate opens it zooms along the highways now and then, so everyone sees what they are playing for.
+const CHILLS=[];
+ggAdd({id:'candy',need:50,x:128,z:405,r:34,R:44,seed:67,rid:7,col:'#ff6fb5',ic:'🍭',n:MV('Candy Island','جزيرة الحلوى'),prize:MV('the Rocket Racer','سيارة الصاروخ'),sub:MV('Go and find the Rocket Racer!','اذهب وابحث عن سيارة الصاروخ!'),
+  road:{hw:'F',at:[140,296],pts:[[138,318],[134,342],[131,366],[129,386]]},
+  height:(x,z)=>{const I=GGBY.candy,dx=x-I.x,dz=z-I.z;const q=Math.hypot(dx/19,dz/12.5);let h=5+fbm(x*.05,z*.05,99,2)*.4;
+    for(const b of CHILLS){const dd=Math.hypot(x-b.x,z-b.z);if(dd<b.r)h=Math.max(h,5+Math.sqrt(1-(dd/b.r)*(dd/b.r))*b.h);}if(q<1.5)h=lerp(5,h,smooth(1.3,1.5,q));return [h,B.MEADOW];},
+  paint:(i,x,z,h,t)=>{const I=GGBY.candy,dx=x+.5-I.x,dz=z+.5-I.z;const q=Math.hypot(dx/19,dz/12.5),a=Math.atan2(dz,dx);
+    if(h<3.7){TM[i]=T.SAND;TC[i]=pal(t<.5?'#fff0c9':'#ffe9b8');return;}
+    if(h>5.6){let bc='#ff9ec0',bd=1e9;for(const b of CHILLS){const dd=Math.hypot(x+.5-b.x,z+.5-b.z);if(dd<bd){bd=dd;bc=b.c;}}TM[i]=T.GRASS;TC[i]=pal(shadeHex(bc,t<.5?1:.94));return;}
+    const w=Math.abs(q-1);if(w<.14){TM[i]=T.STONE;if(w>.105)TC[i]=pal(Math.floor((a+Math.PI)*9)%2?'#ff4f6d':'#ffffff');else if(Math.abs(angDiff(a,0))<.07)TC[i]=pal(((x+z)&1)?'#23232f':'#ffffff');else TC[i]=pal(((x+z)&1)?'#7a4b3a':'#6f4434');return;}
+    if(q<.86){TM[i]=T.GRASS;TC[i]=pal(t<.5?'#b8f5d8':'#aaf0d1');return;}TM[i]=T.GRASS;TC[i]=pal(((x>>1)+(z>>1))&1?'#ffd1e6':'#ffc4de');},
+  prizeSpot:()=>{const G0=CANDY.garage;return G0?{x:G0.x,z:G0.z+4}:{x:128,z:405};},
+  crest:(m,t)=>{cy(m,0,-.9,0,.16,1.8,.16,'#ffffff',1);MS.push();M4.rx(m,Math.PI/2);cy(m,0,0,0,2.2,.3,2.2,'#ff6fb5',1,.1);cy(m,0,-.17,0,1.5,.05,1.5,'#ffffff',1,.1);cy(m,0,-.2,0,.8,.05,.8,'#ffcf3a',1,.2);MS.pop();}});
+// the gumdrop hills around the edge (not where the road comes in)
+{const g=GGBY.candy,q=mulberry(671),cols=['#ff9ec0','#fff08a','#9ff0c8','#c9a8ff','#8fd8ff','#ffb38a'];for(let k=0;k<8;k++){const a=g.ga+.75+k*(TAU-1.5)/7+(q()-.5)*.2,d=25+q()*4;CHILLS.push({x:g.x+Math.sin(a)*d,z:g.z+Math.cos(a)*d,r:4.5+q()*2.5,h:4+q()*4,c:cols[k%cols.length]});}}
+function shadeHex(c,k){const v=hex(c);return '#'+[v[0],v[1],v[2]].map(u=>Math.max(0,Math.min(255,Math.round(u*255*k))).toString(16).padStart(2,'0')).join('');}
+const CANDY={garage:null,door:0,state:'wait',t:0,start:null};G.rocket=G.rocket||0;
+// ---------- the sweet things on the island ----------
+function candyBuild(){const g=GGBY.candy,q=mulberry(672);const at=(x,z)=>H[cid(x|0,z|0)];const free=(x,z)=>{const i=cid(x|0,z|0);return !RD[i]&&!OCC[i]&&H[i]>WL+.6&&H[i]<5.5;};
+  const onTrack=(x,z)=>Math.abs(Math.hypot((x-g.x)/19,(z-g.z)/12.5)-1)<.24;
+  // lollipop trees
+  const lolly=(x,z,s)=>{const y=at(x,z),ry=q()*TAU;const m=mat4At(x,y,z,ry);sput('cyl',m,0,1.7*s,0,.16*s,3.4*s,.16*s,'#ffffff',1);const d=M4.id();M4.tr(d,x,y+3.9*s,z);M4.ry(d,ry);M4.rx(d,Math.PI/2);
+    const L=[['#ff6fb5','#ffffff'],['#46b0ff','#fff08a'],['#9ff0c8','#ff9ec0'],['#ffb38a','#c9a8ff']][Math.floor(q()*4)];sput('cyl',d,0,0,0,2.6*s,.32*s,2.6*s,L[0],1,.08);for(let k=1;k<4;k++)sput('cyl',d,0,-.17*s-k*.01,0,(2.6-k*.6)*s,.05,(2.6-k*.6)*s,k%2?L[1]:L[0],1,.08);
+    occ(x-1,z-1,x+1,z+1);solid(x-.2,z-.2,x+.2,z+.2,y+3.2*s);};
+  // candy canes
+  const cane=(x,z)=>{const y=at(x,z),ry=q()*TAU;for(let k=0;k<7;k++){const m=mat4At(x,y+k*.55,z,ry);sput('cyl',m,0,.27,0,.42,.55,.42,k%2?'#ffffff':'#ff4f6d',1,.05);}for(let k=0;k<7;k++){const a=k/6*Math.PI;const m=mat4At(x,y,z,ry);sput('sph',m,Math.cos(a)*.7-.7,3.85+Math.sin(a)*.7,0,.42,.42,.42,k%2?'#ffffff':'#ff4f6d',1,.05);}solid(x-.25,z-.25,x+.25,z+.25,y+3.9);occ(x-1,z-1,x+1,z+1);};
+  // giant cupcakes you could live in
+  const cupcake=(x,z,c)=>{const y=at(x,z);const m=mat4At(x,y,z,q()*TAU);sput('cyl',m,0,1.1,0,4.2,2.2,4.2,'#f0c47c',1);for(let k=0;k<10;k++){const a=k/10*TAU;sput('box',m,Math.cos(a)*2.08,1.1,Math.sin(a)*2.08,.3,2.1,.3,'#e0a860',1);}
+    sput('sph',m,0,2.7,0,4.9,2.2,4.9,c,1,.05);sput('sph',m,0,3.6,0,3.2,1.8,3.2,c,1,.05);sput('sph',m,0,4.5,0,1.8,1.3,1.8,'#ffffff',1,.08);sput('sph',m,0,5.35,0,.8,.8,.8,'#e8343f',1,.15);sput('cyl',m,.15,5.9,0,.08,.6,.08,'#3f7a2a',1);
+    for(let k=0;k<14;k++){const a=q()*TAU,r=q()*1.8;sput('box',m,Math.cos(a)*r,3.1+q()*1.2,Math.sin(a)*r,.08,.08,.28,['#ff4f6d','#46b0ff','#ffcf3a','#9ff0c8'][k%4],1,.3);}solid(x-2.1,z-2.1,x+2.1,z+2.1,y+2.2);occ(x-2.6,z-2.6,x+2.6,z+2.6);};
+  // gumdrops and ice cream cones
+  const gumdrop=(x,z)=>{const y=at(x,z),c=['#ff4f6d','#46e6b0','#ffcf3a','#b28dff','#46b0ff'][Math.floor(q()*5)];sput('sph',mat4At(x,y,z),0,.45,0,1.2,1.2,1.2,c,1,.2);sput('cone',mat4At(x,y,z),0,.9,0,.8,.6,.8,c,1,.2);};
+  const cone=(x,z)=>{const y=at(x,z);const m=M4.id();M4.tr(m,x,y+1.6,z);M4.rx(m,Math.PI);sput('cone',m,0,0,0,1.9,3.2,1.9,'#e0a860',1);for(const [c,dy,s] of [['#ffd1e6',3.5,1.9],['#9ff0c8',4.6,1.6],['#fff08a',5.5,1.25]])sput('sph',mat4At(x,y,z),0,dy,0,s,s*.9,s,c,1,.05);sput('sph',mat4At(x,y,z),0,6.3,0,.5,.5,.5,'#e8343f',1,.2);solid(x-.9,z-.9,x+.9,z+.9,y+3.2);occ(x-1.2,z-1.2,x+1.2,z+1.2);};
+  const spots=[];for(let t=0;t<260&&spots.length<34;t++){const a=q()*TAU,d=8+q()*24;const x=g.x+Math.sin(a)*d,z=g.z+Math.cos(a)*d;if(!free(x,z)||onTrack(x,z))continue;if(Math.abs(angDiff(Math.atan2(x-g.x,z-g.z),g.ga))<.3&&d>12)continue;if(spots.some(s=>Math.hypot(s[0]-x,s[1]-z)<4.5))continue;spots.push([x,z]);}
+  spots.forEach(([x,z],k)=>{const r=k%9;if(r<3)lolly(x,z,.9+q()*.4);else if(r<5)gumdrop(x,z);else if(r<6)cane(x,z);else if(r<7)cone(x,z);else if(r<8)gumdrop(x,z);else lolly(x,z,.8);});
+  // three cupcake houses outside the track, and a big donut in the middle
+  for(const a of [2.2,3.4,-2.1]){const x=g.x+Math.sin(a)*23,z=g.z+Math.cos(a)*16;if(free(x,z))cupcake(x,z,['#ffd1e6','#c9a8ff','#9ff0c8'][Math.floor(q()*3)]);}
+  {const y=at(g.x,g.z);for(let k=0;k<16;k++){const a=k/16*TAU;const m=mat4At(g.x+Math.cos(a)*3,y,g.z+Math.sin(a)*2.2,-a);sput('sph',m,0,.9,0,1.9,1.5,1.6,'#e0a860',1);sput('sph',m,0,1.35,0,1.8,.8,1.5,'#ff9ec0',1,.08);
+    for(let j=0;j<3;j++)sput('box',m,(j-1)*.4,1.75,.2*(j%2),.07,.07,.26,['#ffffff','#46b0ff','#ffcf3a'][j],1,.3);}solid(g.x-4,g.z-3,g.x+4,g.z+3,y+1.9);}
+  // bleachers along the far side of the track
+  {const z0=g.z-12.5-5.5;for(let k=0;k<4;k++){sbox(g.x-9,at(g.x,z0)+k*.55,z0-k*.9,18,.55,.9,k%2?'#ff9ec0':'#9ff0c8',1);}solid(g.x-9,z0-3.6,g.x+9,z0+.9,at(g.x,z0)+2.2);}
+  // the start line arch: two candy cane posts and a banner
+  {const x0=g.x+19,z0=g.z;const y=at(x0,z0);for(const s of [-1,1]){for(let k=0;k<12;k++)sbox(x0-.4,y+k*.6,z0+s*3.6-.4,.8,.6,.8,k%2?'#ffffff':'#ff4f6d',1);sput('sph',mat4At(x0,y+7.4,z0+s*3.6),0,0,0,1.1,1.1,1.1,'#ffcf3a',1,.3);solid(x0-.4,z0+s*3.6-.4,x0+.4,z0+s*3.6+.4,y+7.2);}
+    sbox(x0-.3,y+6.2,z0-3.9,.6,1.5,7.8,'#ff6fb5',1,.1);for(let k=0;k<8;k++)sbox(x0-.33,y+6.35,z0-3.6+k*.95,.04,.5,.5,k%2?'#ffffff':'#23232f',1);CANDY.start={x:x0,z:z0,y};}
+  // the Candy Grand Prix: two laps of the chocolate track
+  {const pts=[];for(let lap=0;lap<2;lap++)for(let k=1;k<=8;k++){const a=k/8*TAU;pts.push({x:g.x+Math.cos(a)*19,z:g.z+Math.sin(a)*12.5});}
+    WORLD.races.push({id:'candy',name:'Candy Grand Prix',x:g.x+23.5,z:g.z+6,start:{x:g.x+19,z:g.z-3,h:0},gates:pts,time:46,reward:15000});}
+  // the Rocket Racer's garage, by the track in the infield
+  {const x=g.x-10,z=g.z-2;const y=at(x,z);sbox(x-3,y,z-3,6,3.8,.5,'#ffffff',1);for(const s of [-1,1])sbox(x-3+(s>0?5.5:0),y,z-3,.5,3.8,5,'#ff4f6d',1);sbox(x-3.2,y+3.8,z-3.2,6.4,.4,5.6,'#6a3df0',1,.1);
+    for(let k=0;k<6;k++)sbox(x-3+k,y+3.3,z+1.85,.5,.5,.18,k%2?'#ffffff':'#ff4f6d',1);solid(x-3,z-3,x+3,z-2.5,y+4.2);solid(x-3,z-3,x-2.5,z+2,y+4.2);solid(x+2.5,z-3,x+3,z+2,y+4.2);
+    CANDY.garage={x,z,y};occ(x-3.5,z-3.5,x+3.5,z+3.5);}}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{candyBuild();}catch(e){noteErr('candy',e);console.error(e);}};}
+// ---------- the Rocket Racer ----------
+VSPEC.rocket={n:MV('Rocket Racer','سيارة الصاروخ'),max:40,acc:30,col:'#6a3df0',w:2.1,l:4.6,hp:60,ic:'🚀'};if(!VTYPES.includes('rocket'))VTYPES.push('rocket');SEAT.rocket=[-.35,.28,.85];
+function drawRocket(v,t,m){const pu='#6a3df0',go='#ffcf3a',dk='#23232f',boost=v.rb||0;
+  rb(m,0,.62,0,2,.55,4.4,pu,3,.05);rb(m,0,.95,-.3,1.5,.4,2.4,pu,3,.05);rb(m,0,.62,2.05,1.6,.38,.6,pu,3,.05);bx(m,0,.92,.4,.2,.04,3.6,go,3,.2);for(const s of [-1,1])bx(m,s*.72,.72,0,.06,.1,3.9,go,3,.25);
+  sp(m,0,1.2,.15,1.1,.62,1.5,'#9fe7ff',8,.12);// the bubble canopy
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.95,.9,-1.7);M4.rz(m,s*.5);bx(m,0,.35,0,.1,.8,1,pu,3);bx(m,0,.72,-.2,.08,.12,.6,go,3,.3);MS.pop();}
+  // the big rocket engine
+  cy(m,0,.85,-2.3,.9,.9,.9,'#8f98a8',3);MS.push();M4.tr(m,0,.85,-2.75);M4.rx(m,Math.PI/2);cy(m,0,0,0,.72,.2,.72,dk,3);cy(m,0,-.12,0,.5,.1,.5,'#7ef9ff',1,.6+boost*.4);MS.pop();
+  if(boost>.05)for(let k=0;k<3;k++){const l=(1+k*.7)*boost*(.8+Math.random()*.4);sp(m,0,.85,-2.9-l*.6,.55-k*.12,.55-k*.12,l,k?'#ff8a1f':'#ffcf3a',1,1);}
+  // wheels with glowing rims
+  for(const [a,b] of [[-.95,1.35],[.95,1.35],[-.95,-1.35],[.95,-1.35]]){MS.push();M4.tr(m,a,.42,b);M4.rx(m,v.wrot||0);M4.rz(m,Math.PI/2);cy(m,0,0,0,.84,.42,.84,dk,1);cy(m,0,0,0,.5,.44,.5,'#7ef9ff',1,.5);MS.pop();}
+  // headlights and the underglow
+  for(const s of [-1,1])sp(m,s*.55,.7,2.36,.28,.16,.06,'#fff6c8',1,1);bx(m,0,.12,0,1.7,.03,3.9,'#b28dff',1,.7);}
+{const _dv=drawVehicle;drawVehicle=function(v,t){if(v.type!=='rocket')return _dv(v,t);const m=MS.cur;MS.reset();const y=v.y+(v.bob||0);M4.tr(m,v.x,y,v.z);M4.ry(m,v.head||0);M4.rx(m,v.pitch||0);M4.rz(m,v.roll||0);if(v.flip)M4.rz(m,v.flip);drawRocket(v,t,m);};}
+{const _du=driveUpdate;driveUpdate=function(v,dt,inp,mine){if(v.type!=='rocket')return _du(v,dt,inp,mine);
+  // jump is a rocket hop instead of a drift; power is a much bigger boost with flames
+  const hop=inp.jumpP&&!v.air;const in2=Object.assign({},inp,{jump:false,jumpP:false});const b0=v.boost;_du(v,dt,in2,mine);const boosting=inp.power&&b0>0;v.rb=lerp(v.rb||0,boosting?1:0,Math.min(1,dt*8));
+  if(boosting){v.spd=Math.min(VSPEC.rocket.max*1.55,v.spd+14*dt);if(mine&&(v.rsT=(v.rsT||0)-dt)<=0){v.rsT=.2;AU.noise(.25,.07,900);AU.tone(90,.25,'sawtooth',.03,1.4);}}
+  if(hop){v.vy=13;v.air=true;v.y+=.15;if(mine){AU.noise(.3,.09,700);AU.tone(200,.3,'sawtooth',.04,2.2);shake(.08);}for(let k=0;k<14;k++)PARTS.push({x:v.x-Math.sin(v.head)*2.8,y:v.y+.5,z:v.z-Math.cos(v.head)*2.8,vx:Rr(-2,2),vy:Rr(-3,0),vz:Rr(-2,2),life:.5,s:.35,c:hex(Rpick(['#ffcf3a','#ff8a1f','#ffffff'])),e:1,g:0,k:'deb',rot:0});}};}
+{const _tl=touchLabels;touchLabels=function(){_tl();const T=$('touch');if(!T||!ME||!ME.veh||BUILD.on||ME.veh.type!=='rocket')return;const set=(k,ic,lb)=>{const b=T.querySelector('.tb.'+k);if(b){b.querySelector('.ic').textContent=ic;b.querySelector('.lb').textContent=tr(lb);}};
+  set('jump','🚀',MV('Hop','قفزة'));set('power','🔥',MV('Rocket','صاروخ'));};}
+// ---------- getting it: open the gate, then walk up to the garage ----------
+function candyUpdate(dt){const G0=CANDY.garage;if(!G0)return;CANDY.t+=dt;const want=G.rocket||CANDY.state==='open'?1:0;CANDY.door=lerp(CANDY.door,want,Math.min(1,dt*1.5));
+  if(G.rocket||!ggOpen('candy')||!ME||GG.cine)return;if(CANDY.state==='wait'&&d2(ME.x,ME.z,G0.x,G0.z+3)<8){CANDY.state='open';CANDY.t=0;SFX.door&&SFX.door();}
+  if(CANDY.state==='open'&&CANDY.t>1.4){CANDY.state='done';G.rocket=1;const v=mkVeh('rocket',G0.x,G0.z+1,0,null,null);v.keep=true;v.hp=v.maxHp=VSPEC.rocket.hp;G.favCar='rocket';
+    burst(G0.x,G0.y+1.5,G0.z+2,['#ffcf3a','#b28dff','#ffffff'],40,6,.2,1);banner(tr('The Rocket Racer is yours!'),tr('Hop in! Power for the rocket, jump to hop'),'#6a3df0');giveRewards({rw:[{t:'car',id:'rocket'}]});saveSoon();}}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.rkt=G.rocket?1:0;return o;};extraLoad=function(x){_el(x);G.rocket=x&&x.rkt?1:0;};}
+function drawCandy(t){if(camRealm()!=='earth')return;const G0=CANDY.garage;const m=MS.cur;const prev=OUT;OUT=DYN;
+  if(G0&&Math.abs(G0.x-CAM.tx)<90&&Math.abs(G0.z-CAM.tz)<90){const d=CANDY.door;MS.reset();M4.tr(m,G0.x,G0.y,G0.z+2.05);for(let k=0;k<6;k++){const y=.35+k*.6+d*3.2;if(y>3.6)continue;bx(m,0,y,0,5,.56,.12,k%2?'#ffffff':'#ff9ec0',1);}
+    // before it is yours, the Rocket Racer waits inside (you can see it once the door is up)
+    if(!G.rocket&&d>.2){const v={x:G0.x,y:G0.y,z:G0.z-.3,head:0,wrot:0,rb:.3};MS.reset();M4.tr(m,v.x,v.y,v.z);drawRocket(v,t,m);}}
+  // sparkles over the island's sweets
+  OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawCandy(t);}catch(e){noteErr('candyDraw',e);}};}
+// ---------- the Rocket Racer zooms along the highways before its gate opens ----------
+const RKT={t:25};
+{const _st=spawnTraffic;spawnTraffic=function(){const n0=VEH.length;_st();try{RKT.t-=.5;if(G.rocket||ggOpen('candy')||RKT.t>0||VEH.length===n0)return;if(VEH.some(q=>q.teaser))return;const v=VEH[VEH.length-1];if(v.drv!==2||!v.ai)return;
+  v.type='rocket';v.col='#6a3df0';v.hp=v.maxHp=999;v.teaser=true;v.ai.cruise=19;RKT.t=40;}catch(e){}};}
+{const _fi=findInteract;findInteract=function(p){const r=_fi(p);if(r&&r.k==='drive'&&r.o&&r.o.teaser){if(G.t-(RKT.msgT||-9)>5){RKT.msgT=G.t;toast('🔒 '+trf('The Rocket Racer is locked! Open the Golden Gate to {0} with {1} golden bricks',tr(GGBY.candy.n),50));}return null;}return r;};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(G.mode!=='play')return;candyUpdate(dt);for(const v of VEH)if(v.teaser){v.rb=.8;if(ME&&d2(v.x,v.z,ME.x,ME.z)<22&&(v.wT=(v.wT||0)-dt)<=0){v.wT=3;AU.at(v.x,v.z,()=>{AU.noise(.5,.08,800);AU.tone(140,.5,'sawtooth',.03,2);});}}}catch(e){noteErr('candyUpd',e);}};}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(!ME)return;for(const v of VEH)if(v.teaser&&d2(v.x,v.z,ME.x,ME.z)<40)label('rkt'+v.id,v.x,v.y+2.6,v.z,`🔒 🚀 ${esc(tr('Rocket Racer'))} · 🧱 ${Math.min(G.gb.size,50)}/50`,'sign or');
+  const G0=CANDY.garage;if(G0&&!G.rocket&&d2(G0.x,G0.z,ME.x,ME.z)<30)label('rktg',G0.x,G0.y+5.4,G0.z,'🚀 '+esc(tr('Rocket Racer')),'sign or');
+  const S=CANDY.start;if(S&&d2(S.x,S.z,ME.x,ME.z)<40)label('rkts',S.x,S.y+7.4,S.z,'🍭 '+esc(tr('Candy Raceway')),'sign gr');}catch(e){}};}
+MV('The Rocket Racer is yours!','سيارة الصاروخ لك!');MV('Hop in! Power for the rocket, jump to hop','اركب! زر القوة للصاروخ، والقفز لتقفز بالسيارة');MV('Rocket Racer','سيارة الصاروخ');MV('Candy Raceway','حلبة الحلوى');
+MV('The Rocket Racer is locked! Open the Golden Gate to {0} with {1} golden bricks','سيارة الصاروخ مقفلة! افتح البوابة الذهبية إلى {0} بـ {1} طوبة ذهبية');
+MV('Candy Grand Prix','جائزة الحلوى الكبرى');
+// ================= the last golden gate: Robot Rock and the Mega Mech =================
+// Find every one of the 76 golden bricks and the gate to Robot Rock opens. In its hangar kneels the Mega Mech: a giant
+// blue and white robot suit you climb into and pilot. It stomps, flies on jump jets, fires laser eyes and launches a
+// rocket punch. Before then a Mega Mech prototype stands in Star Harbor and waves at everyone who walks by.
+ggAdd({id:'mech',need:76,x:812,z:500,r:28,R:38,seed:68,rid:8,col:'#46b0ff',ic:'🤖',n:MV('Robot Rock','صخرة الروبوت'),prize:MV('the Mega Mech','الروبوت العملاق'),sub:MV('Go and power up the Mega Mech!','اذهب وشغّل الروبوت العملاق!'),
+  road:{hw:null,at:[736,500],pts:[[752,500],[768,500],[782,500],[796,500]]},
+  height:(x,z)=>{const I=GGBY.mech,d=Math.hypot(x-I.x,z-I.z);let h=5+fbm(x*.06,z*.06,101,2)*1.2+Math.pow(ridge(x*.09,z*.09,102,2),2)*4*smooth(12,20,d);if(d<15)h=lerp(6,h,smooth(12,15,d));return [h,B.ISLE];},
+  paint:(i,x,z,h,t,mx,d)=>{if(h<3.6){TM[i]=T.SAND;TC[i]=pal(t<.5?'#8a8f9a':'#7f8490');return;}if(d<12.2){TM[i]=T.STONE;TC[i]=pal(((x>>1)+(z>>1))&1?'#9aa3b3':'#8f98a8');return;}
+    if(d<13.2){TM[i]=T.STONE;TC[i]=pal(((x+z)>>1)&1?'#ffcf3a':'#23232f');return;}TM[i]=T.ROCK;TC[i]=pal(mx>=1.6?(t<.5?'#5d6470':'#565d69'):(t<.5?'#6d7480':'#737a86'));},
+  prizeSpot:()=>{const H0=MECH.hangar;return H0?{x:H0.x,z:H0.z+5}:{x:812,z:500};},
+  crest:(m,t)=>{rb(m,0,0,0,1.5,1.3,1,'#2f6bff',3);bx(m,0,.1,.52,1.2,.3,.05,'#7ef9ff',1,.9);for(const s of [-1,1]){cy(m,s*.45,.95,0,.08,.6,.08,'#8f98a8',3);sp(m,s*.45,1.3,0,.15,.15,.15,'#ff4f6d',1,.8);}}});
+const MECH={hangar:null,state:'sleep',t:0,tease:null,fists:[],laserT:0};G.mechOn=G.mechOn||0;
+VSPEC.mech={n:MV('Mega Mech','الروبوت العملاق'),max:9,acc:8,col:'#2f6bff',w:3,l:3,hp:999,special:1,mech:1,ic:'🤖'};if(!SPECIALV.includes('mech'))SPECIALV.push('mech');if(!VTYPES.includes('mech'))VTYPES.push('mech');SEAT.mech=[.45,3.72,.95];
+// ---------- the model: about six and a half metres tall ----------
+function drawMech(o,t){const m=MS.cur;MS.reset();const bl='#2f6bff',wh='#eef3f8',ye='#ffcf3a',gr='#8f98a8',dk='#3a3f4d';const kn=o.kneel||0,on=o.on===undefined?1:o.on;
+  M4.tr(m,o.x,o.y+(o.bob||0)-kn*1.1,o.z);M4.ry(m,o.head||0);const sw=Math.sin(o.walk||0)*(o.amp??0)*.45;
+  // legs
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.78,2.6,0);M4.rx(m,sw*s-kn*.9);rb(m,0,-.7,0,.75,1.4,.85,wh,3);sp(m,0,-1.45,.05,.62,.62,.62,gr,3);M4.tr(m,0,-1.45,0);M4.rx(m,kn*1.6+Math.max(0,-sw*s)*.5);
+    rb(m,0,-.55,.08,.8,1.2,.9,bl,3);bx(m,0,-.4,.52,.5,.5,.06,ye,3,.2);rb(m,0,-1.08,.3,1.15,.36,1.65,dk,3);MS.pop();}
+  rb(m,0,2.62,0,1.9,.62,1.05,gr,3);
+  // body with the glass cockpit (the pilot sits inside), jets on the back
+  rb(m,0,4.1,0,2.7,2.5,1.85,bl,3);rb(m,0,4.25,.88,1.9,1.5,.22,wh,3);sp(m,0,4.3,.98,1.3,1.1,.6,'#9fe7ff',8,.12);for(const s of [-1,1]){bx(m,s*1.1,3.2,.93,.35,.2,.05,ye,1,on*.8);}
+  bx(m,0,5.4,0,2.8,.2,1.9,wh,3);for(const s of [-1,1]){rb(m,s*.62,4,-1.1,.7,1.7,.6,gr,3);cy(m,s*.62,3.05,-1.1,.44,.3,.44,dk,3);if(o.jet)for(let k=0;k<3;k++)sp(m,s*.62,2.7-k*.45,-1.1,.36-k*.08,.5+k*.1,.36-k*.08,k?'#ff8a1f':'#7ef9ff',1,1);}
+  // arms
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*1.62,5,0);sp(m,0,0,0,1.05,1.05,1.05,wh,3);let ax=-sw*s*.9,az=s*.1;if(o.wave&&s===1){ax=-2.6;az=.5+Math.sin(t*6)*.4;}if(kn){ax=-.3;az=s*.25;}const pu=o.punch||0;if(pu>0&&s===1){ax=-1.55;az=.05;}
+    M4.rx(m,ax);M4.rz(m,az);rb(m,0,-.72,0,.6,1.35,.6,bl,3);sp(m,0,-1.42,0,.52,.52,.52,gr,3);rb(m,0,-1.95,.05,.75,1,.75,wh,3);if(!(o.noFist&&s===1))rb(m,0,-2.65,.1,.95,.85,.95,bl,3,.05);MS.pop();}
+  // head with glowing eyes and two antennas
+  rb(m,0,5.95,.1,1,.72,.85,bl,3);bx(m,0,6,.54,.82,.22,.05,'#7ef9ff',1,on);if(o.laser)for(const s of [-1,1])sp(m,s*.22,6,.6,.16,.16,.16,'#ff4f6d',1,1);
+  for(const s of [-1,1]){cy(m,s*.36,6.55,-.05,.06,.6,.06,gr,3);sp(m,s*.36,6.88,-.05,.13,.13,.13,'#ff4f6d',1,on*(Math.sin(t*4+s)>0?1:.3));}}
+// ---------- piloting it ----------
+function mechDrive(v,dt,inp,mine){const S=VS(v);const thr=clamp(-inp.mz,-1,1);v.head+=clamp(inp.mx,-1,1)*1.5*dt*(v.landed===false?.6:1);if(v.landed===undefined)v.landed=true;
+  const tgt=thr*S.max;v.spd=lerp(v.spd||0,tgt,Math.min(1,dt*(Math.abs(tgt)>Math.abs(v.spd||0)?2:4)));const fx=Math.sin(v.head),fz=Math.cos(v.head);let nx=v.x+fx*v.spd*dt,nz=v.z+fz*v.spd*dt;
+  const gN=Math.max(chAt(nx,nz),WL-2.2);if(!inMap(nx|0,nz|0)||nx<4||nz<4||nx>N-4||nz>N-4||gN>v.y+1.7||H[cid(clamp(nx|0,0,N-1),clamp(nz|0,0,N-1))]<WL-3.2){if(mine&&H[cid(clamp(nx|0,0,N-1),clamp(nz|0,0,N-1))]<WL-3.2&&(MECH.wT=(MECH.wT||0)-dt)<=0){MECH.wT=4;toast('🌊 '+tr('Too deep for the Mega Mech! Use the jump jets'));}v.spd*=-.2;nx=v.x;nz=v.z;}
+  v.x=nx;v.z=nz;v.fuel=v.fuel===undefined?2:v.fuel;
+  if(inp.jumpP&&v.landed){v.vy=13;v.landed=false;if(mine){AU.noise(.4,.1,600);AU.tone(120,.4,'sawtooth',.05,2);}}
+  v.jet=0;if(inp.jump&&!v.landed&&v.fuel>0){v.vy=Math.max(v.vy,3);v.fuel-=dt;v.jet=1;if(mine&&(v.jsT=(v.jsT||0)-dt)<=0){v.jsT=.18;AU.noise(.2,.05,700);}}if(v.landed)v.fuel=Math.min(2,v.fuel+dt*.6);
+  v.vy=(v.vy||0)-26*dt;v.y+=v.vy*dt;const g=Math.max(chAt(v.x,v.z),WL-2.2);if(v.y<=g){if(!v.landed&&v.vy<-9)mechStomp(v,mine);v.y=g;v.vy=0;v.landed=true;}else if(v.y>g+.3)v.landed=false;
+  const w0=v.walk||0;v.walk=w0+dt*v.spd*.75;v.amp=lerp(v.amp||0,v.landed&&Math.abs(v.spd)>.5?1:0,Math.min(1,dt*5));v.air=!v.landed;
+  if(v.landed&&Math.abs(v.spd)>1&&Math.floor(w0/Math.PI)!==Math.floor(v.walk/Math.PI)){AU.at(v.x,v.z,()=>{AU.tone(52,.2,'sine',.18,.6);AU.noise(.1,.08,300);});if(mine)shake(.12);smokePuff(v.x+Math.cos(v.head)*.8*(Math.floor(v.walk/Math.PI)%2?1:-1),v.y+.2,v.z,2,'#c8ccd4');}
+  v.laser=inp.power?1:0;if(v.laser)mechLaser(v,dt,mine);v.punchT=(v.punchT||0)-dt;if(inp.punchP&&v.punchT<=0){v.punchT=1;mechPunch(v,mine);}}
+function mechEyes(v){const fx=Math.sin(v.head),fz=Math.cos(v.head);return {x:v.x+fx*.7,y:v.y+6,z:v.z+fz*.7,fx,fz};}
+function mechLaser(v,dt,mine){const E=mechEyes(v);let L=30,hx=E.x,hy=E.y,hz=E.z;for(let d=1;d<=30;d+=.5){const x=E.x+E.fx*d,z=E.z+E.fz*d,y=E.y-d*.18;if(!inMap(x|0,z|0)||chAt(x,z)>y){L=d;break;}hx=x;hy=y;hz=z;}
+  const rx=Math.cos(v.head),rz=-Math.sin(v.head);for(const s of [-1,1])BEAMS.push({pts:[[E.x+rx*s*.22,E.y,E.z+rz*s*.22],[hx,hy,hz]],t:.06,col:'#ff4f6d',w:.14});if(R()<.5)burst(hx,hy,hz,['#ff4f6d','#ffcf3a','#ffffff'],3,3,.12,1);
+  if(mine&&(v.lsT=(v.lsT||0)-dt)<=0){v.lsT=.25;AU.tone(900,.25,'sawtooth',.02,.6);}if(!mine)return;MECH.laserT-=dt;if(MECH.laserT>0)return;MECH.laserT=.15;const dmg=x3dmg(.8);
+  for(const e of EN){if(e.dead)continue;const dx=e.x-E.x,dz=e.z-E.z,along=dx*E.fx+dz*E.fz;if(along<0||along>L)continue;const side=Math.abs(dx*E.fz-dz*E.fx);const ey=E.y-along*.18;if(side<1.8&&Math.abs(e.y+1-ey)<3){hitEnemy(e,dmg,E.fx*3,E.fz*3);applyStatus(e,'burn',1.2);}}
+  brkNear(hx,hz,2.2,b=>{if(b.t!=='lamp'&&b.t!=='boulder')hitBrk(b,1);});for(const c of MIS.cores())if(!c.dead&&d2(c.x,c.z,hx,hz)<3)MIS.hitCore(c,dmg);}
+function mechPunch(v,mine){const fx=Math.sin(v.head),fz=Math.cos(v.head),rx=Math.cos(v.head),rz=-Math.sin(v.head);MECH.fists.push({x:v.x+rx*1.62+fx*.6,y:v.y+2.5,z:v.z+rz*1.62+fz*.6,fx,fz,head:v.head,t:1.1,mine,v});
+  AU.at(v.x,v.z,()=>{AU.noise(.35,.1,800);AU.tone(160,.35,'sawtooth',.05,2.4);});}
+function mechStomp(v,mine){const r=6;shake(.5);ringFx(v.x,v.y+.2,v.z,'#7ef9ff',r);ringFx(v.x,v.y+.4,v.z,'#ffffff',r*.6);AU.at(v.x,v.z,()=>{AU.tone(44,.4,'sine',.25,.5);AU.noise(.35,.15,300);});
+  for(let k=0;k<12;k++){const a=k/12*TAU;smokePuff(v.x+Math.cos(a)*2.2,v.y+.3,v.z+Math.sin(a)*2.2,1,'#c8ccd4');}
+  if(mine)forEachTarget(v.x,v.z,r,(k,o)=>{const dx=o.x-v.x,dz=o.z-v.z,l=Math.hypot(dx,dz)||1;if(k==='en'){if(Math.abs(o.y-v.y)<3.5)hitEnemy(o,x3dmg(1.4),dx/l*14,dz/l*14);}else if(k==='brk'&&o.t!=='lamp')hitBrk(o,3);else if(k==='ped')knockPed(o,dx/l,dz/l);});}
+function fistsUpdate(dt){for(let i=MECH.fists.length-1;i>=0;i--){const f=MECH.fists[i];f.t-=dt;const sp=34;f.x+=f.fx*sp*dt;f.z+=f.fz*sp*dt;if(R()<.7)PARTS.push({x:f.x-f.fx*.8,y:f.y,z:f.z-f.fz*.8,vx:0,vy:.2,vz:0,life:.35,s:.3,c:hex(Rpick(['#ffcf3a','#ff8a1f'])),e:1,g:0,k:'deb',rot:0});
+    let hit=f.t<=0||!inMap(f.x|0,f.z|0)||chAt(f.x,f.z)>f.y;if(!hit&&f.mine)for(const e of EN){if(!e.dead&&d2(e.x,e.z,f.x,f.z)<2.2&&Math.abs(e.y+1-f.y)<3){hit=true;break;}}
+    if(hit){SFX.boom();shake(.35);ringFx(f.x,f.y,f.z,'#ffcf3a',3.5);burst(f.x,f.y,f.z,['#ffcf3a','#ffffff','#ff8a1f'],22,6,.22,1);if(f.mine)forEachTarget(f.x,f.z,3.5,(k,o)=>{const dx=o.x-f.x,dz=o.z-f.z,l=Math.hypot(dx,dz)||1;if(k==='en')hitEnemy(o,x3dmg(2.5),dx/l*18+f.fx*8,dz/l*18+f.fz*8);else if(k==='brk'&&o.t!=='lamp')hitBrk(o,3);else if(k==='veh')hitVeh(o,4,dx/l,dz/l);});MECH.fists.splice(i,1);}}}
+{const _du=driveUpdate;driveUpdate=function(v,dt,inp,mine){if(v.type!=='mech')return _du(v,dt,inp,mine);v.lastIn=G.t;mechDrive(v,dt,inp,mine);};}
+{const _dv=drawVehicle;drawVehicle=function(v,t){if(v.type!=='mech')return _dv(v,t);drawMech({x:v.x,y:v.y,z:v.z,head:v.head,walk:v.walk,amp:v.amp,jet:v.jet,laser:v.laser,punch:v.punchT>.7?1:0,noFist:MECH.fists.some(f=>f.v===v)},t);};}
+{const _tl=touchLabels;touchLabels=function(){_tl();const T=$('touch');if(!T||!ME||!ME.veh||BUILD.on||ME.veh.type!=='mech')return;const set=(k,ic,lb)=>{const b=T.querySelector('.tb.'+k);if(b){b.querySelector('.ic').textContent=ic;b.querySelector('.lb').textContent=tr(lb);}};
+  set('jump','🚀',MV('Jets','نفاثات'));set('power','👀',MV('Lasers','ليزر'));set('punch','👊',MV('Rocket punch','لكمة صاروخية'));};}
+{const _fi=findInteract;findInteract=function(p){const r=_fi(p);if(r&&r.k==='drive'&&r.o&&r.o.type==='mech')r.label=tr('Climb into the Mega Mech');return r;};}
+{const _rt=rideTip;rideTip=function(v){if(v.type!=='mech')return _rt(v);G.rideTips=G.rideTips||{};if(G.rideTips.mech)return;G.rideTips.mech=1;setTimeout(()=>toast('🤖 '+tr('Walk and stomp! Jump for the jets, power for laser eyes, attack for a rocket punch')),600);};}
+MV('Climb into the Mega Mech','اصعد إلى الروبوت العملاق');MV('Walk and stomp! Jump for the jets, power for laser eyes, attack for a rocket punch','امشِ واضرب الأرض! القفز للنفاثات، والقوة لعيون الليزر، والهجوم للكمة الصاروخية');MV('Too deep for the Mega Mech! Use the jump jets','عميق جدًا على الروبوت العملاق! استخدم النفاثات');
+// ---------- Robot Rock: the hangar where it waits ----------
+function mechBuild(){const g=GGBY.mech;const x=g.x+2,z=g.z-4;const y=H[cid(x|0,z|0)];MECH.hangar={x,z,y};
+  sbox(x-6,y,z-6,12,.2,11,'#6d7480',3);sbox(x-6,y,z-6,12,9,.6,'#8f98a8',3);for(const s of [-1,1])sbox(x+(s<0?-6:5.4),y,z-6,.6,9,10,'#8f98a8',3);
+  for(let k=0;k<6;k++)sbox(x-6.3,y+9+Math.sin(k/5*Math.PI)*1.6,z-6+k*2,12.6,.4,2,k%2?'#9aa3b3':'#8f98a8',3);for(let k=0;k<5;k++)sbox(x-5.7+k*2.7,y+8.4,z+3.6,.5,.5,.3,'#ffcf3a',1,.6);
+  for(let k=-5;k<=5;k+=2)sbox(x+k-.5,y+.21,z+4.4,1,.02,.6,(k/2|0)%2?'#ffcf3a':'#23232f',1);solid(x-6,z-6,x+6,z-5.4,y+9);solid(x-6,z-6,x-5.4,z+4,y+9);solid(x+5.4,z-6,x+6,z+4,y+9);occ(x-7,z-7,x+7,z+6);}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{mechBuild();mechTeaseBuild();if(G.mechOn)mechRideOn();}catch(e){noteErr('mechBuild',e);console.error(e);}};}
+function mechRideOn(){const H0=MECH.hangar;if(!H0||RIDES.some(r=>r.type==='mech'))return;RIDES.push({type:'mech',x:H0.x,z:H0.z-1,h:0,y:H0.y,name:'Robot Rock'});}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.mch=G.mechOn?1:0;return o;};extraLoad=function(x){_el(x);G.mechOn=x&&x.mch?1:0;};}
+// the prototype in Star Harbor, waving at everyone
+function mechTeaseBuild(){const tw=townById('star');if(!tw)return;const sx=(tw.X[0]+tw.X[tw.X.length-1])/2,sz=tw.Z[tw.Z.length-1]+22;const s=openSpot(sx,sz,30);if(s)MECH.tease={x:s.x,z:s.z,y:s.y,head:Math.PI};}
+function mechUpdate(dt){MECH.t+=dt;fistsUpdate(dt);const H0=MECH.hangar;if(!H0)return;if(G.mechOn){MECH.state='on';return;}
+  if(MECH.state==='sleep'&&ggOpen('mech')&&ME&&!GG.cine&&d2(ME.x,ME.z,H0.x,H0.z)<10){MECH.state='wake';MECH.t=0;AU.tone(220,.6,'sawtooth',.04,3);}
+  if(MECH.state==='wake'){if(MECH.t>.4&&!MECH.b1){MECH.b1=1;AU.tone(440,.5,'square',.03,2);}if(MECH.t>2.4){G.mechOn=1;MECH.state='on';mechRideOn();ridesSpawn();banner(tr('The Mega Mech is powered up!'),tr('Climb in and stomp!'),'#2f6bff');SFX.heroUnlock&&SFX.heroUnlock();
+    giveRewards({rw:[{t:'trophy',id:'mech'},{t:'coins',n:1000}]});saveSoon();}}
+  const T0=MECH.tease;if(T0&&ME&&d2(T0.x,T0.z,ME.x,ME.z)<22&&(MECH.hiT=(MECH.hiT||0)-dt)<=0){MECH.hiT=12;AU.at(T0.x,T0.z,()=>{AU.tone(520,.12,'square',.03,1.4);AU.tone(660,.12,'square',.03,1.4,.14);AU.tone(880,.16,'square',.03,1.2,.28);});}}
+TROPHIES.mech={ic:'🤖',n:MV('Mega Mech Pilot','قائد الروبوت العملاق')};
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(G.mode!=='play')return;mechUpdate(dt);}catch(e){noteErr('mechUpd',e);}};}
+function drawMechs(t){if(camRealm()!=='earth')return;const prev=OUT;OUT=MOB;const H0=MECH.hangar;
+  if(H0&&!G.mechOn&&Math.abs(H0.x-CAM.tx)<110&&Math.abs(H0.z-CAM.tz)<110){const w=MECH.state==='wake'?smooth(.5,2.2,MECH.t):0;drawMech({x:H0.x,y:H0.y,z:H0.z-1,head:0,kneel:1-w,on:MECH.state==='wake'?Math.min(1,MECH.t*2):.15,jet:MECH.state==='wake'&&MECH.t>1&&MECH.t<2},t);}
+  const T0=MECH.tease;if(T0&&!G.mechOn&&!ggOpen('mech')&&Math.abs(T0.x-CAM.tx)<110&&Math.abs(T0.z-CAM.tz)<110){const near=ME&&d2(T0.x,T0.z,ME.x,ME.z)<22;const hd=near?Math.atan2(ME.x-T0.x,ME.z-T0.z):T0.head;
+    T0.hs=angLerp(T0.hs??T0.head,hd,.05);drawMech({x:T0.x,y:T0.y,z:T0.z,head:T0.hs,wave:near?1:0,bob:Math.sin(t*1.5)*.03},t);}
+  for(const f of MECH.fists){const m=MS.cur;MS.reset();M4.tr(m,f.x,f.y,f.z);M4.ry(m,f.head);rb(m,0,0,0,.95,.85,.95,'#2f6bff',3,.05);cy(m,0,0,-.7,.5,.5,.5,'#8f98a8',3);sp(m,0,0,-1.1,.4,.4,.7,'#ff8a1f',1,1);}OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawMechs(t);}catch(e){noteErr('mechDraw',e);}};}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(!ME)return;const T0=MECH.tease;if(T0&&!G.mechOn&&!ggOpen('mech')&&d2(T0.x,T0.z,ME.x,ME.z)<40)label('mcht',T0.x,T0.y+8,T0.z,`🔒 🤖 ${esc(tr('Mega Mech'))} · 🧱 ${Math.min(G.gb.size,76)}/76`,'sign or');
+  const H0=MECH.hangar;if(H0&&!G.mechOn&&d2(H0.x,H0.z,ME.x,ME.z)<35)label('mchh',H0.x,H0.y+10.5,H0.z,'🤖 '+esc(tr(ggOpen('mech')?'Walk up to power it up!':'Mega Mech')),'sign');}catch(e){}};}
+MV('The Mega Mech is powered up!','تم تشغيل الروبوت العملاق!');MV('Climb in and stomp!','اصعد واضرب الأرض!');MV('Walk up to power it up!','اقترب لتشغيله!');
+// every giant step shoves cars out of the way and flattens benches and bins
+{const _md=mechDrive;mechDrive=function(v,dt,inp,mine){const w0=v.walk||0;_md(v,dt,inp,mine);if(!mine||!v.landed||Math.abs(v.spd)<1)return;if(Math.floor(w0/Math.PI)===Math.floor((v.walk||0)/Math.PI))return;
+  const fx=Math.sin(v.head),fz=Math.cos(v.head),hx=v.x+fx*1.8,hz=v.z+fz*1.8;brkNear(hx,hz,1.6,b=>{if(b.t!=='lamp'&&b.t!=='boulder'&&b.t!=='tboulder'&&b.t!=='tpin')smashBrk(b);});
+  for(const q of VEH){if(q===v||q.dead||q.special)continue;if(d2(q.x,q.z,hx,hz)<2.8)hitVeh(q,2,fx*2,fz*2);}};}
+// ================= five new costumes for golden brick collectors (30, 40, 50, 60 and all 76) =================
+// Crystal (icy and sparkly), Lava (dark rock with glowing embers), Rainbow (colours that flow), Galaxy (night sky with
+// twinkling stars) and Diamond (the shiniest of all). Each one leaves its own little trail of sparkles behind you.
+COSTUMES.push({id:'crystal',n:MV('Crystal Hero','بطل الكريستال'),need:30},{id:'lava',n:MV('Lava Hero','بطل الحمم'),need:40},{id:'rainbow',n:MV('Rainbow Hero','بطل قوس قزح'),need:50},{id:'galaxy',n:MV('Galaxy Hero','بطل المجرة'),need:60},{id:'diamond',n:MV('Diamond Hero','بطل الألماس'),need:76});
+const COS_ICON={crystal:'💎',lava:'🌋',rainbow:'🌈',galaxy:'🌌',diamond:'💠'};const COSM={crystal:1,diamond:1,galaxy:1};
+function hsl2(h,s,l){const k=n=>(n+h*12)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return [f(0),f(8),f(4)];}
+const COSX={crystal:t=>({s:hex('#9fe7ff'),a:hex('#ffffff')}),lava:t=>({s:hex('#3a2a2a'),a:(Math.sin(t*3)>0?hex('#ff6a1f'):hex('#ff8a2a'))}),
+  rainbow:t=>({s:hsl2((t*.15)%1,.85,.6),a:hsl2((t*.15+.5)%1,.85,.65)}),galaxy:t=>({s:hex('#2a1f5a'),a:hex('#b28dff')}),diamond:t=>({s:hex('#e8f6ff'),a:hex('#7ef9ff')})};
+// the sparkle trails
+const COSFX={t:0};
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(G.mode!=='play'||!ME||ME.veh)return;const c=prof().looks.costume;if(!COSX[c])return;COSFX.t-=dt;if(COSFX.t>0)return;
+  const mv=Math.hypot(ME.vx||0,ME.vz||0)>1;COSFX.t=mv?.06:.25;const x=ME.x+Rr(-.35,.35),y=ME.y+Rr(.3,1.6),z=ME.z+Rr(-.35,.35);
+  const col=c==='crystal'?Rpick(['#bfefff','#ffffff']):c==='lava'?Rpick(['#ff6a1f','#ffcf3a','#ff4f1f']):c==='rainbow'?Rpick(['#e8343f','#ff8a1f','#ffcf3a','#1faa5c','#2f6bff','#8a4ff0']):c==='galaxy'?Rpick(['#ffffff','#b28dff','#7ef9ff']):Rpick(['#ffffff','#7ef9ff','#e8f6ff']);
+  PARTS.push({x,y,z,vx:Rr(-.3,.3),vy:c==='lava'?Rr(.8,1.8):Rr(.1,.6),vz:Rr(-.3,.3),life:c==='galaxy'?1.1:.7,s:c==='lava'?.12:.1,c:hex(col),e:1,g:c==='lava'?-.5:0,k:'deb',rot:R()*6});}catch(e){}};}
+MV('Golden gate number three (50 golden bricks): gumdrop hills, lollipop trees, a chocolate race track and the Rocket Racer','البوابة الذهبية الثالثة (50 طوبة ذهبية): تلال حلوى، وأشجار مصاصات، وحلبة سباق من الشوكولاتة، وسيارة الصاروخ');
+MV('The fastest car in Blocktopia! Power fires the rocket, jump makes it hop. Watch for it zooming along the highways','أسرع سيارة في بلوكتوبيا! زر القوة يطلق الصاروخ، والقفز يجعلها تقفز. راقبها وهي تنطلق على الطرق السريعة');
+MV('The Mega Mech','الروبوت العملاق');MV('Find all 76 golden bricks to open Robot Rock and pilot a giant robot: stomp, jump jets, laser eyes and a rocket punch','اجمع كل الـ 76 طوبة ذهبية لتفتح صخرة الروبوت وتقود روبوتًا عملاقًا: ضربات أرضية، ونفاثات، وعيون ليزر، ولكمة صاروخية');
+MV('Five new costumes','خمسة أزياء جديدة');MV('Crystal, Lava, Rainbow, Galaxy and Diamond heroes unlock at 30, 40, 50, 60 and 76 golden bricks','أزياء الكريستال والحمم وقوس قزح والمجرة والألماس تُفتح عند 30 و40 و50 و60 و76 طوبة ذهبية');
+MV('Mega Mech','الروبوت العملاق');MV('Candy Island','جزيرة الحلوى');MV('Rocket Racer','سيارة الصاروخ');
+// ================= golden missions: one big challenge on each golden-gate island, each worth a golden brick =================
+// 🐉 Dragon Rings: fly Blaze through 10 rings around the volcano.   🎳 Titan Bowling: knock down 10 giant pins as Titan.
+// 🍬 Sweet Rush: collect 12 giant sweets in the Rocket Racer.       🤖 Mech Training: beat 8 training robots in the Mega Mech.
+// They start by themselves when you are in the right place with the right hero or ride, so there is nothing to set up.
+const GM={act:null,t:0,n:0,cool:0,done:new Set()};
+const GMS=[
+  {id:'rings',ic:'🐉',n:MV('Dragon Rings','حلقات التنين'),time:80,total:10,rw:[{t:'gb',id:'gm_rings'},{t:'hat',id:'dhorns'},{t:'trophy',id:'rings'}],how:MV('Fly Blaze through the golden ring to start','طِر ببليز عبر الحلقة الذهبية لتبدأ')},
+  {id:'bowl',ic:'🎳',n:MV('Titan Bowling','بولينغ تايتن'),time:30,total:10,rw:[{t:'gb',id:'gm_bowl'},{t:'trophy',id:'bowl'},{t:'coins',n:1500}],how:MV('Knock down the giant pins as Titan','أسقط القوارير العملاقة بشخصية تايتن')},
+  {id:'sweets',ic:'🍬',n:MV('Sweet Rush','سباق الحلوى'),time:55,total:12,rw:[{t:'gb',id:'gm_sweets'},{t:'hat',id:'lolly'},{t:'coins',n:1500}],how:MV('Drive the Rocket Racer through the start arch','قد سيارة الصاروخ عبر قوس البداية')},
+  {id:'mechtr',ic:'🤖',n:MV('Mech Training','تدريب الروبوت'),time:50,total:8,rw:[{t:'gb',id:'gm_mech'},{t:'trophy',id:'mechtr'},{t:'coins',n:2000}],how:MV('Walk the Mega Mech onto the landing pad','امشِ بالروبوت العملاق إلى منصة الهبوط')}];
+const GMBY={};for(const d of GMS)GMBY[d.id]=d;
+TROPHIES.rings={ic:'🐉',n:MV('Dragon Rider','فارس التنين')};TROPHIES.bowl={ic:'🎳',n:MV('Titan Bowling Champ','بطل بولينغ تايتن')};TROPHIES.mechtr={ic:'🤖',n:MV('Mech Ace','بطل الروبوت')};
+{const _gm=GB_MORE;GB_MORE=function(){return _gm()+GMS.length;};}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.gmd=[...GM.done];return o;};extraLoad=function(x){_el(x);GM.done=new Set(x&&Array.isArray(x.gmd)?x.gmd.filter(id=>GMBY[id]):[]);};}
+// ---------- the places ----------
+const GMP={rings:[],pins:[],sweets:[],pad:null};
+function gmBuild(){GMP.rings.length=0;GMP.sweets.length=0;GMP.pins.length=0;
+  // ten rings spiralling up around the volcano
+  {const g=GGBY.dragon;for(let k=0;k<10;k++){const a=-Math.PI/2+k/10*TAU*1.15,r=25+Math.sin(k*1.3)*3;const x=g.x+Math.cos(a)*r,z=g.z+Math.sin(a)*r;GMP.rings.push({x,z,y:15+k*1.7,f:a+Math.PI/2});}}
+  // ten pins in a triangle at the east side of Titan's arena
+  {const g=GGBY.titan;const cx=g.x+2,cz=g.z+6;let k=0;for(let row=0;row<4;row++)for(let j=0;j<=row;j++){const x=cx+row*1.9,z=cz+(j-row/2)*2.1;addBrk('tpin',x,z,0);GMP.pins.push(WORLD.brk[WORLD.brk.length-1]);k++;}}
+  // twelve giant sweets around Candy Island
+  {const g=GGBY.candy;for(let k=0;k<12;k++){const a=k/12*TAU,onT=k%2===0;const rx=onT?19:25,rz=onT?12.5:21;const x=g.x+Math.cos(a)*rx,z=g.z+Math.sin(a)*rz;GMP.sweets.push({x,z,y:H[cid(x|0,z|0)]+1.6,c:['#ff4f6d','#46b0ff','#ffcf3a','#46e6b0','#b28dff','#ff9ec0'][k%6]});}}
+  {const g=GGBY.mech;GMP.pad={x:g.x,z:g.z+6};}}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{gmBuild();}catch(e){noteErr('gmBuild',e);console.error(e);}};}
+BRKT.tpin={r:.55,top:3,hp:1,v:40,cols:['#ffffff','#e8343f']};
+{const _db=drawBrk;drawBrk=function(b,t){if(b.t!=='tpin')return _db(b,t);const m=MS.cur;MS.reset();M4.tr(m,b.x,b.y,b.z);if(b.wob)M4.rz(m,Math.sin(t*40)*b.wob*.15);
+  sp(m,0,.9,0,1.1,1.8,1.1,'#ffffff',1);sp(m,0,2.3,0,.7,1,.7,'#ffffff',1);cy(m,0,1.75,0,.72,.14,.72,'#e8343f',1);cy(m,0,1.95,0,.66,.1,.66,'#e8343f',1);sp(m,0,2.85,0,.5,.45,.5,'#ffffff',1);};}
+{const _hb=hitBrk;hitBrk=function(b,dmg,fromNet){if(b&&b.t==='tpin'&&!fromNet&&ME&&!isTitan(ME)){b.wob=.5;SFX.thud();if(G.t-(GM.pinT??-9)>4){GM.pinT=G.t;toast('🎳 '+tr('Only Titan can knock over these giant pins!'));}return;}return _hb(b,dmg,fromNet);};}
+{const _sb=smashBrk;smashBrk=function(b,fromNet){_sb(b,fromNet);if(b.t!=='tpin'||fromNet)return;b.respT=1e9;AU.tone(300+GMP.pins.filter(q=>q.broken).length*60,.12,'triangle',.05,1.2);
+  if(!GM.act&&GM.cool<=0&&!GM.done.has('bowl')&&isTitan(ME))gmStart('bowl');if(GM.act&&GM.act.id==='bowl'){GM.n=GMP.pins.filter(q=>q.broken).length;if(GM.n>=10)gmWin();}};}
+// ---------- starting, running, winning ----------
+function gmStart(id){const d=GMBY[id];GM.act=d;GM.t=d.time;GM.n=0;GM.hit=new Set();GM.bots=[];banner(tr(d.n)+'!',trf('{0} seconds. Go go go!',d.time),'#ffcf3a');SFX.buy&&SFX.buy();
+  if(id==='mechtr'){const P=GMP.pad;for(let k=0;k<8;k++){const a=k/8*TAU;const e=spawnEnemy('bot',P.x+Math.cos(a)*11,P.z-6+Math.sin(a)*9,{});e.gm=1;e.hp=e.maxHp=18;GM.bots.push(e);}}
+  if(id==='bowl')GM.n=GMP.pins.filter(q=>q.broken).length;}
+function gmEnd(){const d=GM.act;GM.act=null;GM.cool=6;if(d&&d.id==='bowl')for(const b of GMP.pins){b.broken=false;b.hp=1;b.wob=0;}if(d&&d.id==='mechtr')for(const e of GM.bots)if(!e.dead){e.dead=true;smokePuff(e.x,e.y+1,e.z,6,'#c8ccd4');}}
+function gmWin(){const d=GM.act;if(!d)return;const first=!GM.done.has(d.id);GM.done.add(d.id);banner(trf('{0} done!',tr(d.n)),first?tr('You won a golden brick!'):tr('Great job, again!'),'#46e6b0');SFX.win&&SFX.win();
+  if(ME)burst(ME.x,ME.y+2,ME.z,['#ffcf3a','#ff5fa8','#46e6b0','#ffffff'],50,8,.25,1);if(first)giveRewards({rw:d.rw});else addCoins(500);gmEnd();saveSoon();}
+function gmUpdate(dt){GM.cool-=dt;if(!ME)return;const v=ME.veh;
+  if(!GM.act){if(GM.cool>0)return;
+    const R0=GMP.rings[0];if(R0&&v&&v.type==='dragon'&&!GM.done.has('rings')&&Math.hypot(v.x-R0.x,v.y+2-R0.y,v.z-R0.z)<4.2){gmStart('rings');GM.n=1;AU.tone(880,.15,'sine',.06,1.2);return;}
+    const S=CANDY.start;if(S&&v&&v.type==='rocket'&&!v.teaser&&!GM.done.has('sweets')&&d2(v.x,v.z,S.x,S.z)<4.5){gmStart('sweets');return;}
+    const P=GMP.pad;if(P&&v&&v.type==='mech'&&!GM.done.has('mechtr')&&d2(v.x,v.z,P.x,P.z)<5){gmStart('mechtr');return;}return;}
+  const d=GM.act;GM.t-=dt;
+  if(d.id==='rings'){const Rn=GMP.rings[GM.n];if(Rn&&v&&v.type==='dragon'&&Math.hypot(v.x-Rn.x,v.y+2-Rn.y,v.z-Rn.z)<4.4){GM.n++;AU.tone(660+GM.n*60,.15,'sine',.06,1.2);burst(Rn.x,Rn.y,Rn.z,['#ffcf3a','#ffffff'],20,5,.18,1);if(GM.n>=10){gmWin();return;}}}
+  if(d.id==='sweets'){for(let k=0;k<GMP.sweets.length;k++){if(GM.hit.has(k))continue;const q=GMP.sweets[k];const px=v?v.x:ME.x,pz=v?v.z:ME.z,py=v?v.y:ME.y;if(Math.hypot(px-q.x,pz-q.z)<3.4&&Math.abs(py+1-q.y)<3){GM.hit.add(k);GM.n=GM.hit.size;
+      AU.tone(700+GM.n*50,.12,'triangle',.05,1.4);burst(q.x,q.y,q.z,[q.c,'#ffffff'],18,4,.16,1);if(GM.n>=12){gmWin();return;}}}}
+  if(d.id==='mechtr'){GM.n=GM.bots.filter(e=>e.dead).length;if(GM.n>=8){gmWin();return;}}
+  if(GM.t<=0){banner(tr('Out of time!'),tr('Try again!'),'#ff5d73');SFX.nope&&SFX.nope();gmEnd();}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(G.mode==='play')gmUpdate(dt);}catch(e){noteErr('gm',e);}};}
+// ---------- the timer at the top of the screen ----------
+function gmHud(){let el=$('gmhud');if(!GM.act){if(el)el.hidden=true;return;}if(!el){el=document.createElement('div');el.id='gmhud';document.body.appendChild(el);}el.hidden=false;const d=GM.act;
+  const h=`${d.ic} ${esc(tr(d.n))} · ${GM.n}/${d.total} · ⏱ ${Math.max(0,Math.ceil(GM.t))}`;if(el._h!==h){el._h=h;el.textContent='';el.innerHTML=h;}el.classList.toggle('low',GM.t<10);}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{gmHud();}catch(e){}};}
+// ---------- drawing the rings and the sweets ----------
+function drawGM(t){if(camRealm()!=='earth')return;const m=MS.cur;const prev=OUT;OUT=DYN;
+  const ringOn=GM.act&&GM.act.id==='rings';if(G.blaze&&!GM.done.has('rings')||ringOn){GMP.rings.forEach((q,k)=>{if(Math.abs(q.x-CAM.tx)>140||Math.abs(q.z-CAM.tz)>140)return;const cur=ringOn?k===GM.n:k===0;if(ringOn&&k<GM.n)return;if(!ringOn&&k>0)return;
+    MS.reset();M4.tr(m,q.x,q.y,q.z);M4.ry(m,q.f);const n=18,R=3.6,col=cur?'#ffcf3a':'#ffffff',e=cur?.9+.1*Math.sin(t*6):.4;for(let i=0;i<n;i++){const a=i/n*TAU+t*(cur?1.5:.5);sp(m,Math.cos(a)*R,Math.sin(a)*R,0,.42,.42,.42,col,1,e);}});}
+  if(GM.act&&GM.act.id==='sweets')GMP.sweets.forEach((q,k)=>{if(GM.hit.has(k))return;MS.reset();M4.tr(m,q.x,q.y+Math.sin(t*2+k)*.25,q.z);M4.ry(m,t*1.5+k);sp(m,0,0,0,1.5,1,1,q.c,1,.3);for(const s of [-1,1]){MS.push();M4.tr(m,s*.95,0,0);M4.rz(m,s*Math.PI/2);co(m,0,.1,0,.8,.5,.8,q.c,1,.3);MS.pop();}bx(m,0,0,.52,1.2,.12,.02,'#ffffff',1,.5);});
+  OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawGM(t);}catch(e){noteErr('gmDraw',e);}};}
+// ---------- signs: where each golden mission starts ----------
+function gmLabels(){if(!ME)return;const sign=(id,x,y,z)=>{if(GM.act||GM.done.has(id))return;const d=GMBY[id];if(d2(x,z,ME.x,ME.z)>45)return;label('gm'+id,x,y,z,`${d.ic} ${esc(tr(d.n))} · 🧱<br><span style="font-size:13px">${esc(tr(d.how))}</span>`,'sign or');};
+  const R0=GMP.rings[0];if(R0&&G.blaze)sign('rings',R0.x,R0.y+5,R0.z);const P0=GMP.pins[0];if(P0&&heroOK('titan'))sign('bowl',P0.x+3,P0.y+5.5,P0.z);const S=CANDY.start;if(S&&G.rocket)sign('sweets',S.x+2,S.y+9.5,S.z);const P=GMP.pad;if(P&&G.mechOn)sign('mechtr',P.x,H[cid(P.x|0,P.z|0)]+7,P.z);}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{gmLabels();}catch(e){}};}
+MAPX.prov.push((add,realm)=>{if(realm!=='earth')return;const pins={rings:G.blaze&&GMP.rings[0],bowl:heroOK('titan')&&GMP.pins[0],sweets:G.rocket&&CANDY.start,mechtr:G.mechOn&&GMP.pad};for(const id in pins){const q=pins[id];if(!q||GM.done.has(id))continue;const d=GMBY[id];
+  add({id:'gm_'+id,cat:'fun',x:q.x,z:q.z,ic:d.ic,col:'#ffcf3a',t:tr(d.n),s:tr(d.how),pr:5});}});
+// ---------- two new hats ----------
+HATS.push({id:'dhorns',n:MV('Dragon Horns','قرون التنين'),p:-1},{id:'lolly',n:MV('Lollipop Hat','قبعة المصاصة'),p:-1});REWARD_HATS.add('dhorns');REWARD_HATS.add('lolly');HAT_ICON.dhorns='🐲';HAT_ICON.lolly='🍭';
+{const _dh=drawHatX;drawHatX=function(m,hat,acc,hair,t){if(hat==='dhorns'){for(const s of [-1,1]){MS.push();M4.tr(m,s*.24,.7,-.02);M4.rz(m,-s*.35);M4.rx(m,-.3);co(m,0,.14,0,.16,.34,.16,'#fff1a8',1);MS.pop();}cy(m,0,.62,0,.72,.06,.66,'#e8343f',1);return;}
+  if(hat==='lolly'){cy(m,0,.62,0,.66,.08,.62,'#ffffff',1);cy(m,0,.95,-.05,.05,.6,.05,'#ffffff',1);MS.push();M4.tr(m,0,1.35,-.05);M4.ry(m,t*.8);M4.rx(m,Math.PI/2);cy(m,0,0,0,.62,.1,.62,'#ff6fb5',1,.1);cy(m,0,-.06,0,.42,.02,.42,'#ffffff',1);cy(m,0,-.08,0,.2,.02,.2,'#ffcf3a',1);MS.pop();return;}
+  return _dh(m,hat,acc,hair,t);};}
+MV('Only Titan can knock over these giant pins!','تايتن وحده يستطيع إسقاط هذه القوارير العملاقة!');MV('{0} seconds. Go go go!','{0} ثانية. هيا هيا!');MV('{0} done!','{0} اكتمل!');MV('You won a golden brick!','ربحت طوبة ذهبية!');MV('Great job, again!','أحسنت، مرة أخرى!');MV('Out of time!','انتهى الوقت!');MV('Try again!','حاول مرة أخرى!');
+MV('Golden missions','المهمات الذهبية');MV('Dragon Rings, Titan Bowling, Sweet Rush and Mech Training: one on each golden island, and each wins a golden brick','حلقات التنين، وبولينغ تايتن، وسباق الحلوى، وتدريب الروبوت: مهمة على كل جزيرة ذهبية، وكل واحدة تربح طوبة ذهبية');
+// ---------- a golden gates page in the menu: every gate, its prize, and how close you are ----------
+function openGates(){let el=$('ggbox');if(!el){el=document.createElement('div');el.id='ggbox';el.className='modal';el.hidden=true;el.style.zIndex=34;document.body.appendChild(el);el.addEventListener('pointerdown',e=>{if(e.target===el)closeGates();});}
+  const n=G.gb.size;const rows=GGATES.map((g,i)=>{const open=ggOpen(g.id),pct=Math.min(100,Math.round(n/g.need*100));const prize=({titan:heroOK('titan'),dragon:!!G.blaze,candy:!!G.rocket,mech:!!G.mechOn})[g.id];
+    const st=open?(prize?'✅ '+esc(tr('Yours!')):'🔓 '+esc(tr('Open: go and get the prize!'))):`🧱 ${Math.min(n,g.need)} / ${g.need}`;
+    return `<div class="mi" data-i="${i}" style="--c:${g.col};cursor:pointer"><span style="font-size:26px">${open?g.ic:'🔒'}</span><div><b>${esc(tr(g.n))} · ${g.ic} ${esc(tr(g.prize))}</b><small>${st}</small>${open?'':`<div class="rprog" style="margin-top:4px"><i style="width:${pct}%"></i></div>`}</div><span class="ar">🧭</span></div>`;}).join('');
+  const ms=GMS.map(d=>`<span style="display:inline-block;margin:3px 6px">${d.ic} ${esc(tr(d.n))} ${GM.done.has(d.id)?'✅':'·'}</span>`).join('');
+  el.innerHTML=`<div class="mbox"><h2>🔓 ${esc(tr('Golden Gates'))}</h2><div class="small" style="text-align:center">${esc(trf('You have {0} golden bricks. Tap a gate and a trail leads you there',n))}</div>${rows}<div class="small" style="text-align:center;margin-top:8px">🏅 ${esc(tr('Golden missions'))}<br>${ms}</div><button class="mb" id="ggok" style="justify-content:center">${esc(tr("Let's play!"))}</button></div>`;
+  el.hidden=false;if(G.mode==='play')G.mode='menu';el.querySelectorAll('.mi').forEach(r=>r.onclick=()=>{const g=GGATES[+r.dataset.i];if(!g||!g.gate)return;closeGates();const open=ggOpen(g.id);const P=open?ggPrizeSpot(g):{x:g.gate.x,z:g.gate.z};navSet({x:P.x,z:P.z,label:tr(g.n),icon:open?g.ic:'🔒',col:g.col,realm:'earth'});toast('🧭 '+tr('Follow the trail!'));});
+  $('ggok').onclick=()=>closeGates();}
+function closeGates(){const el=$('ggbox');if(el)el.hidden=true;if(G.mode==='menu'&&$('pause').hidden)G.mode='play';}
+{const _rp=renderPause;renderPause=function(){_rp();if(PTAB!=='main'||$('pm_gates'))return;const h=$('pm_news')||$('pm_photo');const b=document.createElement('button');b.className='mb';b.id='pm_gates';b.innerHTML=`🔓 ${esc(tr('Golden Gates'))}`;
+  (h&&h.parentElement&&h.id!=='pm_news'?h.parentElement:(h||$('pm_heroes'))).after(b);b.onclick=()=>{closePause();openGates();};};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const el=$('ggbox');if(el&&!el.hidden&&G.mode==='play')el.hidden=true;};}
+MV('Golden Gates','البوابات الذهبية');MV('Yours!','لك!');MV('Open: go and get the prize!','مفتوحة: اذهب واحصل على الجائزة!');MV('You have {0} golden bricks. Tap a gate and a trail leads you there','لديك {0} طوبة ذهبية. اضغط على بوابة وسيقودك مسار إليها');
+// ================= the Crystal Caves: a glowing cave under the Frostpeak mountains =================
+// Walk into the cave mouth at the foot of the mountains and you are in a long dark cavern full of glowing crystals,
+// giant mushrooms, an old mine cart track and sleepy bats. Three golden bricks sit on top of the tallest crystals.
+PLACES.push({id:'caves',name:MV('Crystal Caves','كهوف الكريستال'),ic:'💎',col:'#7ef9ff',slot:10,w:60,d:28,fl:'tile',f1:'#3d3547',f2:'#352e3f',wall:'#2a2433',wm:12,trim:'#7ef9ff',
+  amb:{top:[.02,.02,.05],hor:[.05,.04,.1],sky:[.34,.36,.52],gnd:[.2,.2,.28],sun:[.46,.5,.72],n:.85},mood:[.95,.99,1.12],song:'space',hello:MV('The Crystal Caves! Everything glows down here','كهوف الكريستال! كل شيء يلمع هنا')});
+Object.assign(ROOMMAP,{11:10});
+{const P=PLACES[PLACES.length-1];PLACEBY[P.id]=P;const cx=INBOX.x0+(P.slot%INBOX.cols)*32,cz=INBOX.z0+Math.floor(P.slot/INBOX.cols)*32;P.x0=cx+((64-P.w)>>1);P.z0=cz+((32-P.d)>>1);P.x1=P.x0+P.w;P.z1=P.z0+P.d;
+  P.exit={x:P.x0+P.w/2,z:P.z1-.9};P.spawn={x:P.x0+P.w/2,z:P.z1-2.6};P.room=roomAt(P.x0+1,P.z0+1);}
+const CAVE={crys:[],bats:[],tops:[]};
+const CCOL=['#7ef9ff','#ff6fe3','#b28dff','#ffe27a','#5ef0a0'];
+PLACE_BUILD.caves=function(K){const P=K.P,q=mulberry(991);CAVE.crys.length=0;CAVE.tops.length=0;
+  // crystal clusters along the walls and a few giant ones in the middle
+  const cluster=(lx,lz,s,c)=>{const n=3+Math.floor(q()*3);for(let k=0;k<n;k++){const a=q()*TAU,r=q()*.8*s,h=(1.2+q()*2.2)*s;const x=lx+Math.cos(a)*r,z=lz+Math.sin(a)*r;const m=mat4At(K.X+x,FY,K.Z+z,q()*6);M4.rz(m,(q()-.5)*.6);M4.rx(m,(q()-.5)*.6);
+      sput('cone',m,0,h/2,0,.5*s,h,.5*s,c,1,.85,true);}K.solid(lx-.7*s,lz-.7*s,lx+.7*s,lz+.7*s,1.5*s);CAVE.crys.push({x:K.X+lx,z:K.Z+lz,c,s});};
+  for(let k=0;k<22;k++){const side=k%2,lx=2+q()*56,lz=side?1.2+q()*2:P.d-3.5-q()*2;if(Math.abs(lx-P.w/2)<4&&!side)continue;cluster(lx,lz,.8+q()*.6,CCOL[k%CCOL.length]);}
+  // three crystal towers, each with a golden brick on top
+  for(const [lx,lz,c] of [[12,11,'#7ef9ff'],[30,8,'#ff6fe3'],[48,12,'#ffe27a']]){const h=5.5;K.put('cyl',lx,0,lz,0,0,h/2,0,2.2,h,2.2,'#4a4058',0);for(let r=0;r<5;r++){const a2=r/5*TAU;K.put('cone',lx+Math.cos(a2)*.95,h,lz+Math.sin(a2)*.95,a2,0,.45,0,.35,.9,.35,c,1,.9);}K.solid(lx-1.1,lz-1.1,lx+1.1,lz+1.1,h);
+    for(let s=0;s<4;s++){const a=s/4*TAU+.4;K.put('cone',lx+Math.cos(a)*1.3,0,lz+Math.sin(a)*1.3,a,0,1.1,0,.6,2.2,.6,c,1,.8);}
+    // stepping stones up the side
+    for(let st=0;st<3;st++){const a=st*1.6+.8,r=2.3;K.box(lx+Math.cos(a)*r-.6,0,lz+Math.sin(a)*r-.6,1.2,1.3+st*1.4,1.2,'#554a66',0);K.solid(lx+Math.cos(a)*r-.6,lz+Math.sin(a)*r-.6,lx+Math.cos(a)*r+.6,lz+Math.sin(a)*r+.6,1.3+st*1.4);}
+    CAVE.tops.push({x:K.X+lx,z:K.Z+lz,y:FY+h+.9});}
+  // giant glowing mushrooms
+  for(const [lx,lz,c] of [[6,18,'#5ef0a0'],[22,20,'#b28dff'],[40,19,'#7ef9ff'],[55,6,'#ff6fe3']]){K.put('cyl',lx,0,lz,0,0,1.3,0,.5,2.6,.5,'#e8e0f0',1);K.put('sph',lx,0,lz,0,0,2.8,0,3.2,1.3,3.2,c,1,.7);for(let k=0;k<6;k++){const a=k/6*TAU;K.put('sph',lx+Math.cos(a)*.9,0,lz+Math.sin(a)*.9,0,0,3.2,0,.3,.2,.3,'#ffffff',1,.9);}K.solid(lx-.3,lz-.3,lx+.3,lz+.3,2.8);}
+  // an old mine cart track with a cart full of crystals
+  for(let lx=3;lx<57;lx+=1){K.box(lx,.02,14.2,.2,.08,1.6,'#6b4a2e',6);}for(const dz of [14.35,15.65])K.box(3,.1,dz,54,.1,.12,'#8f98a8',3);
+  K.box(34,.3,14.1,2.6,1.3,1.8,'#6b5a4a',3);for(let k=0;k<5;k++)K.put('cone',34.4+k*.45,1.3,15+Math.sin(k)*.4,k,0,.4,0,.4,.9,.4,CCOL[k%5],1,.9);K.solid(34,14.1,36.6,15.9,1.6);
+  // rocks and stalagmites
+  for(let k=0;k<16;k++){const lx=2+q()*56,lz=3+q()*22;if(Math.abs(lz-15)<2.2)continue;K.put('cone',lx,0,lz,q()*6,0,.9,0,.9+q()*.6,1.8+q()*1.6,.9+q()*.6,'#5d5470',0);}
+  // sleepy bats hanging around
+  CAVE.bats.length=0;for(let k=0;k<7;k++)CAVE.bats.push({x:K.X+5+q()*50,z:K.Z+4+q()*20,y:FY+6+q()*2,a:q()*TAU,r:2+q()*3,s:.6+q()*.5});};
+// the golden bricks join the list after everything else, so older saves keep theirs
+{const _bq=buildQuests;buildQuests=function(){_bq();try{for(const T0 of CAVE.tops){WORLD.gblocks.push({x:T0.x,z:T0.z,y:T0.y,hint:'Crystal Caves'});}}catch(e){noteErr('caveGB',e);}};}
+// the cave mouth at the foot of the Frostpeak mountains
+{const _pd=placeDoors;placeDoors=function(){const P=PLACEBY.caves;try{caveDoor(P);}catch(e){noteErr('caveDoor',e);}_pd();};}
+function caveDoor(P){const tw=townById('frost');if(!tw)return;const cx=(tw.X[0]+tw.X[tw.X.length-1])/2,cz=(tw.Z[0]+tw.Z[tw.Z.length-1])/2;let best=null,bs=1e9;
+  for(let a=0;a<48;a++){const ang=a/48*TAU;for(let d=40;d<110;d+=2){const x=cx+Math.cos(ang)*d,z=cz+Math.sin(ang)*d;if(!inMap(x|0,z|0))break;const h=hAt(x,z);if(h<WL+.8)break;
+      const x2=x+Math.cos(ang)*5,z2=z+Math.sin(ang)*5;const h2=hAt(x2,z2);if(h2-h>5&&flatAround(x,z,1)&&!RD[cid(x|0,z|0)]){const sc=d+Math.abs(h-6)*2;if(sc<bs){bs=sc;best={x,z,face:ang+Math.PI,h};}break;}}}
+  if(!best)return;const {x,z,h}=best;const f=best.face;const m=mat4At(x,h,z,f);
+  // a rocky arch with crystals, pushed into the mountain
+  for(const s of [-1,1]){sput('rbox',m,s*2.2,1.8,-.8,1.6,3.8,2.2,'#4a4458',0);sput('cone',m,s*2.9,.9,.4,.7,1.8,.7,s>0?'#7ef9ff':'#ff6fe3',1,.85);}sput('rbox',m,0,4,-.8,6,1.4,2.4,'#4a4458',0);sput('box',m,0,1.6,-1.6,2.8,3.2,.3,'#0e0b16',1);
+  for(let k=0;k<5;k++)sput('cone',m,-1.8+k*.9,4.9,-.4,.4,.8+(k%2)*.5,.4,CCOL[k%5],1,.9);
+  P.door={x:x+Math.sin(f)*.2,z:z+Math.cos(f)*.2,face:f,out:1.4};CAVE.mouth={x,z,y:h,f};}
+// bats flap about and squeak now and then
+function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;const m=MS.cur;const prev=OUT;OUT=DYN;
+  for(const b of CAVE.bats){const a=b.a+t*b.s;const x=b.x+Math.cos(a)*b.r,z=b.z+Math.sin(a)*b.r,y=b.y+Math.sin(t*2+b.a)*.4;MS.reset();M4.tr(m,x,y,z);M4.ry(m,a+Math.PI);sp(m,0,0,0,.35,.3,.4,'#1d1a26',1);
+    for(const s of [-1,1]){MS.push();M4.rz(m,s*Math.sin(t*14+b.a)*.7);bx(m,s*.35,0,0,.6,.04,.35,'#2a2433',1);MS.pop();}for(const s of [-1,1])sp(m,s*.08,.06,.18,.05,.05,.03,'#ff4f6d',1,1);}
+  // the crystals twinkle
+  if(R()<.4){const c=CAVE.crys[Math.floor(R()*CAVE.crys.length)];if(c)PARTS.push({x:c.x+Rr(-.6,.6),y:FY+Rr(.5,2.5),z:c.z+Rr(-.6,.6),vx:0,vy:.3,vz:0,life:1,s:.12,c:hex(c.c),e:1,g:0,k:'deb',rot:0});}OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawCaves(t);}catch(e){noteErr('caveDraw',e);}};}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{const P=PLACEBY.caves;if(!ME||!P||G.mode!=='play'||camRoom()!==P.room)return;CAVE.sqT=(CAVE.sqT||4)-dt;if(CAVE.sqT<=0){CAVE.sqT=5+R()*6;AU.tone(2600+R()*800,.06,'sine',.02,1.3);AU.tone(3000,.05,'sine',.015,1.2,.08);}}catch(e){}};}
+MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
+MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
+MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
   if(!want){if(el&&!el.hidden)el.hidden=true;return;}
@@ -9777,6 +10146,46 @@ function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHi
 MV("You're hosting!",'أنت المضيف!');MV('On the other iPads: open Block Buddies, tap Play online, then tap Join next to {0}','على أجهزة الآيباد الأخرى: افتح بلوك بديز، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');
 MV('On the other devices: open this same game, tap Play online, then tap Join next to {0}','على الأجهزة الأخرى: افتح هذه اللعبة نفسها، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');MV('{0} more friends can still join','ما زال بإمكان {0} أصدقاء الانضمام');
 MV('Everyone needs the internet. The same Wi-Fi works best.','يحتاج الجميع إلى الإنترنت. شبكة الواي فاي نفسها هي الأفضل.');MV('Tap to hide','اضغط للإخفاء');MV('Friends can join you now','يستطيع أصدقاؤك الانضمام إليك الآن');
+// ================= the edge of the world =================
+// The indoor rooms and the Moon are built far out in the north-east sea, where you can't normally go. Swimming, flying,
+// sailing or flying a plane into that corner used to throw you back to town (and the screen flickered between the worlds).
+// Now there is a soft invisible wall a few steps before it, and at the other map edges, with a friendly message.
+const FENCE={m:8,msgT:0};
+// if (x,z) is too close to the hidden north-east corner, return the nearest open spot just outside it
+function fenceOut(x,z,m){const M=MOONBOX,B=INBOX;const inMoon=x>=M.x0-m&&z<M.z1+m,inRooms=x>=B.x0-m&&z>=B.z0-m&&z<B.z1+m;if(!inMoon&&!inRooms)return null;
+  const wx=(z<M.z1+m?M.x0:B.x0)-m,sz=(x>=B.x0-m?B.z1:M.z1)+m;return (x-wx)<(sz-z)?{x:wx,z,side:'w'}:{x,z:sz,side:'s'};}
+// keep me (and whatever I ride) out; returns true when it had to push
+function fenceMe(p){if(!p||p.realm==='inside'||p.realm==='moon'||G.cine||p.inRocket)return false;let hit=false;const v=p.veh;
+  const o=fenceOut(v?v.x:p.x,v?v.z:p.z,FENCE.m);
+  if(o){hit=true;if(v){v.x=o.x;v.z=o.z;if(o.side==='w'){v.vx=Math.min(v.vx||0,0);}else v.vz=Math.max(v.vz||0,0);
+      const S=VSPEC[v.type]||{};if(S.air&&!v.landed){const nx=o.side==='w'?-1:0,nz=o.side==='s'?1:0;const fx=Math.sin(v.head),fz=Math.cos(v.head);if(fx*nx+fz*nz<.2)v.head=angLerp(v.head,Math.atan2(nx,nz),.08);}
+      else v.spd=(v.spd||0)*.3;p.x=v.x;p.z=v.z;}
+    else{p.x=o.x;p.z=o.z;if(o.side==='w')p.vx=Math.min(p.vx,0);else p.vz=Math.max(p.vz,0);}}
+  // the other map edges: vehicles stop a few steps before the end (heroes already do)
+  if(v){const lo=3,hi=N-3;if(v.x<lo||v.x>hi||v.z<lo||v.z>hi){hit=true;v.x=clamp(v.x,lo,hi);v.z=clamp(v.z,lo,hi);if(!(VSPEC[v.type]||{}).air)v.spd=(v.spd||0)*.3;p.x=v.x;p.z=v.z;}}
+  else if(p.x<=2.05||p.x>=N-2.05||p.z<=2.05||p.z>=N-2.05)hit=true;
+  if(hit&&G.mode==='play'&&FENCE.msgT<=0){FENCE.msgT=6;toast('🌊 '+tr('This is the edge of the world! Turn back'));}
+  return !!o;}
+MV('This is the edge of the world! Turn back','هذه نهاية العالم! ارجع للخلف');
+// after every move: check the fence, so the camera never looks into the hidden corner
+{const _um=updateMe;updateMe=function(dt,inp){_um(dt,inp);FENCE.msgT-=dt;try{fenceMe(ME);}catch(e){noteErr('fence',e);}};}
+// the camera stays out of the hidden corner too (it looks a little ahead of fast rides)
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);try{if(!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title'||G.cine)return;const o=fenceOut(CAM.tx,CAM.tz,1.5);if(o){const dx=o.x-CAM.tx,dz=o.z-CAM.tz;CAM.tx=o.x;CAM.tz=o.z;if(CAM.eye)CAM.eye=[CAM.eye[0]+dx,CAM.eye[1],CAM.eye[2]+dz];}}catch(e){}};}
+// red and white buoys float along the invisible wall, so you can see where the sea ends
+const FENCEL=()=>{const m=FENCE.m,M=MOONBOX,B=INBOX;return [[M.x0-m,0],[M.x0-m,M.z1+m],[B.x0-m,M.z1+m],[B.x0-m,B.z1+m],[N,B.z1+m]];};
+function fenceBuoys(){const P=FENCEL();let k=0;for(let i=0;i<P.length-1;i++){const [ax,az]=P[i],[bx,bz]=P[i+1];const L=Math.hypot(bx-ax,bz-az);const nx=(bz-az)/L,nz=-(bx-ax)/L;
+    for(let s=5;s<L;s+=10){const x=ax+(bx-ax)*s/L+nx*.9,z=az+(bz-az)*s/L+nz*.9;if(!inMap(x|0,z|0)||H[cid(x|0,z|0)]>WL-.4)continue;const red=(k++)%2===0;const m=mat4At(x,WL-.15,z,s*.37);
+      sput('sph',m,0,.25,0,1.1,.9,1.1,red?'#e8343f':'#ffffff',1);sput('cyl',m,0,.78,0,.7,.35,.7,red?'#ffffff':'#e8343f',1);sput('cyl',m,0,1.35,0,.08,1.1,.08,'#8f98a8',3);
+      sput('box',m,.22,1.7,0,.42,.28,.03,red?'#ffcf3a':'#e8343f',1);sput('sph',m,0,1.95,0,.18,.18,.18,'#ffe27a',1,.9);}}}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{fenceBuoys();}catch(e){noteErr('buoys',e);}};}
+// a sign on the water when you come close
+function fenceNear(x,z){const P=FENCEL();let best=null,bd=1e9;for(let i=0;i<P.length-1;i++){const [ax,az]=P[i],[bx,bz]=P[i+1];const dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz;const u=clamp(((x-ax)*dx+(z-az)*dz)/L2,0,1);const qx=ax+dx*u,qz=az+dz*u;const d=Math.hypot(x-qx,z-qz);if(d<bd){bd=d;best={x:qx,z:qz,d};}}return best;}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(!ME||ME.realm!=='earth')return;const q=fenceNear(ME.x,ME.z);if(q&&q.d<28)label('fence',q.x,WL+3.2,q.z,'🌊 '+esc(tr('The edge of the world')),'sign');}catch(e){}};}
+MV('The edge of the world','نهاية العالم');
+// the big map shows the edge as a red and white dashed line
+{const _dbm=drawBigMap;drawBigMap=function(){_dbm();try{if(MAPV.realm==='moon')return;const cv=$('bmap');if(!cv)return;const x=cv.getContext('2d');const d=MAPV.dpr||1;const P=FENCEL();
+  x.save();x.setTransform(1,0,0,1,0,0);x.lineWidth=3*d;x.lineCap='butt';x.setLineDash([7*d,6*d]);x.beginPath();P.forEach(([wx,wz],i)=>{const [a,b]=mapToS(wx,wz);if(i)x.lineTo(a,b);else x.moveTo(a,b);});
+  x.strokeStyle='rgba(255,255,255,.95)';x.stroke();x.lineDashOffset=6.5*d;x.strokeStyle='rgba(232,52,63,.95)';x.stroke();x.restore();}catch(e){}};}
 // ================= start =================
 boot();
 </script>
