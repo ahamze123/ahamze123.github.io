@@ -7614,7 +7614,7 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
 const NEWS={ver:27,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
-  {ic:'🎵',t:'Calm new music',s:'Soft strings, piano and harp in every place, and a gentle pulse in boss fights'},
+  {ic:'🎵',t:'Calm new music',s:'Soft piano, harp and bells in every place, and gentle plucked strings in boss fights'},
   {ic:'📷',t:'A new camera',s:'The camera is further back and follows your hero. Pinch with two fingers to zoom, or change it in Settings'},
   {ic:'🎨',t:'A calmer city',s:'Softer colours, fewer lamp posts, and faces without lines'},
   {ic:'✋',t:'Helping is easier',s:'When you hold ✋ Use, a ring fills up so you can see it working. Tapping it again and again works too'},
@@ -10298,7 +10298,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='23.6';window.BB_VER=BB_VER;
+const BB_VER='23.7';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -10580,7 +10580,7 @@ MV('A calmer city','مدينة أهدأ');MV('Softer colours, fewer lamp posts, 
   Object.assign(this.base,{harp:261.63,piano:261.63,pizz:196});};}
 // ---------- in the calm songs, the drums become soft orchestra drums ----------
 {const _hit=MUS.hit.bind(MUS);MUS.hit=function(name,t,vel,rate,rev,dly,pan){const S=this.S;if(S&&S.orch){
-    if(name==='kick'){name='timp';vel*=.4;rev=Math.max(rev||0,.3);}
+    if(name==='kick'){name='timp';vel*=.25;rev=Math.max(rev||0,.35);}
     else if(name==='clap'||name==='snare'){name='brush';vel*=.55;rev=Math.max(rev||0,.3);}
     else if(name==='hat'||name==='ohat')return;
     else if(name==='shaker')vel*=.4;
@@ -10589,7 +10589,7 @@ MV('A calmer city','مدينة أهدأ');MV('Softer colours, fewer lamp posts, 
     else if(name==='harp'){vel*=.72;dly=Math.min(dly||0,.2);rev=Math.max(rev||0,.4);}else if(name==='piano'){vel*=.75;rev=Math.max(rev||0,.4);}}
   return _hit(name,t,vel,rate,rev,dly,pan);};}
 // ---------- a string section instead of the synth pad ----------
-{const _pad=MUS.pad.bind(MUS);MUS.pad=function(t,notes,dur,vel,bright){if(!(this.S&&this.S.orch))return _pad(t,notes,dur,vel,bright);const c=this.c;
+{const _pad=MUS.pad.bind(MUS);MUS.pad=function(t,notes,dur,vel,bright){if(!(this.S&&this.S.orch))return _pad(t,notes,dur,vel,bright);if(!this.S.strings)return;const c=this.c;
   const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=(bright||1400)*.8;f.Q.value=.4;const g=c.createGain();const att=Math.min(2.2,dur*.35),v=vel*1.7;
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+att);g.gain.setValueAtTime(v,t+Math.max(att+.05,dur-.1));g.gain.exponentialRampToValueAtTime(.0004,t+dur+1.9);
   f.connect(g);g.connect(this.bus);const r=c.createGain();r.gain.value=.9;g.connect(r);r.connect(this.revIn);
@@ -10605,7 +10605,7 @@ MV('A calmer city','مدينة أهدأ');MV('Softer colours, fewer lamp posts, 
   o.connect(f);g2.connect(f);f.connect(g);g.connect(this.bus);const r=c.createGain();r.gain.value=.5;g.connect(r);r.connect(this.revIn);const e=c.createGain();e.gain.value=.14;g.connect(e);e.connect(this.dlyIn);
   o.start(t);o2.start(t);lfo.start(t);o.stop(t+dur+.4);o2.stop(t+dur+.4);lfo.stop(t+dur+.4);};}
 // ---------- cello and pizzicato bass ----------
-{const _bs=MUS.bass.bind(MUS);MUS.bass=function(t,m,dur,vel,type){if(type==='pizz'){this.note('pizz',t,m+12,vel*.9,.25,0);return;}if(type!=='cello')return _bs(t,m,dur,vel,type);
+{const _bs=MUS.bass.bind(MUS);MUS.bass=function(t,m,dur,vel,type){if(type==='pizz'){this.note('pizz',t,m+12,vel*.9,.25,0);return;}if(type==='pbass'){this.note('piano',t,m+12,vel*.55,.4,0);return;}if(type!=='cello')return _bs(t,m,dur,vel,type);
   const c=this.c,fr=MIDI(m),D=dur>=this.spb*7.5?this.spb*15:dur;const o=c.createOscillator();o.type='sawtooth';o.frequency.value=fr;const s=c.createOscillator();s.type='sine';s.frequency.value=fr;
   const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=540;f.Q.value=.7;const g=c.createGain(),att=Math.min(.2,D*.3);
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel*.85,t+att);g.gain.setValueAtTime(vel*.75,t+Math.max(att+.02,D*.85));g.gain.exponentialRampToValueAtTime(.0004,t+D+.45);
@@ -10631,44 +10631,43 @@ function calmMelody(S){const key='calm_'+S.name;if(MUS.mel[key])return MUS.mel[k
   if(this._leadOn&&S.lead){const bars=calmMelody(S),mb=bars[this.bar%bars.length];for(const n of mb)if(n.st===st){if(this.base[S.lead])this.note(S.lead,t,n.m,S.lead==='bell'?.055:S.lead==='piano'?.11:.085,.45,.18);else this.lead(t,n.m,this.spb*n.len,.034,S.lead);}}};}
 // ---------- the songs ----------
 const CALM={
-  // Brick City: a warm, slow theme (strings, a few harp notes, a quiet flute that comes and goes)
-  city:{bpm:66,key:60,minor:0,barsPer:2,prog:[[0,'add9'],[-3,'m7'],[5,'M7'],[7,'s2']],pad:1150,lead:'piano',keys:'piano',arp:'harp',bassType:'cello',vol:.14,
-    bassP:'x...............',keysP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp keys'],[8,'pad bass arp lead'],[8,'pad bass keys'],[8,'pad arp']]},
-  // Sunset Bay: soft harp by the sea
-  beach:{bpm:64,key:65,minor:0,barsPer:2,prog:[[0,'M7'],[5,'M7'],[2,'m7'],[7,'s2']],pad:1100,lead:'harp',keys:'',arp:'harp',bassType:'cello',vol:.14,
-    bassP:'x...............',arpP:'x.......x...x...',form:[[8,'pad arp'],[8,'pad bass arp'],[8,'pad bass arp lead'],[8,'pad bass arp']]},
-  // Frostpeak: slow bells and strings in the snow
-  frost:{bpm:60,key:62,minor:0,barsPer:2,prog:[[0,'add9'],[-3,'m7'],[5,'M7'],[7,'s2']],pad:1100,lead:'bell',keys:'',arp:'harp',bassType:'cello',vol:.15,
-    bassP:'x...............',arpP:'x...............',form:[[8,'pad arp'],[8,'pad bass arp lead'],[8,'pad bass arp'],[8,'pad']]},
-  // Cactus Canyon: a slow guitar and a soft flute
-  canyon:{bpm:64,key:52,minor:1,barsPer:2,prog:[[0,'m'],[-2,'M'],[-4,'M'],[-5,'7']],pad:900,lead:'harp',leadOct:12,keys:'pluck',strum:1,arp:'',bassType:'cello',vol:.16,
-    bassP:'x...............',keysP:'x...............',form:[[8,'pad keys'],[8,'pad bass keys lead'],[8,'pad bass keys'],[8,'pad keys']]},
-  // Star Harbor: starry bells over soft strings
-  space:{bpm:62,key:57,minor:1,barsPer:2,prog:[[0,'m9'],[-4,'M7'],[3,'add9'],[-2,'s2']],pad:1400,lead:'bell',keys:'',arp:'harp',bassType:'cello',vol:.15,
-    bassP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp lead'],[8,'pad bass arp'],[8,'pad']]},
-  // shops and cafes: a little, slow piano tune
-  cafe:{bpm:72,key:65,minor:0,barsPer:1,prog:[[0,'M7'],[-3,'m7'],[2,'m7'],[7,'7']],pad:1000,lead:'piano',keys:'piano',arp:'',bassType:'pizz',vol:.18,
-    bassP:'x...............',keysP:'x.......x.......',form:[[8,'pad keys'],[8,'pad bass keys'],[8,'pad bass keys lead'],[8,'pad keys']]},
+  // Brick City: a light, gentle tune (harp, soft piano; no held notes)
+  city:{bpm:66,key:60,minor:0,barsPer:2,prog:[[0,'add9'],[-3,'m7'],[5,'M7'],[7,'s2']],lead:'piano',keys:'piano',arp:'harp',bassType:'pbass',vol:.42,
+    bassP:'x...............',keysP:'x...............',arpP:'x...x...x...x...',form:[[8,'arp bass'],[8,'arp bass keys'],[8,'arp bass keys lead'],[8,'arp bass lead']]},
+  // Sunset Bay: harp by the sea
+  beach:{bpm:64,key:65,minor:0,barsPer:2,prog:[[0,'M7'],[5,'M7'],[2,'m7'],[7,'s2']],lead:'harp',keys:'',arp:'harp',bassType:'pbass',vol:.44,
+    bassP:'x...............',arpP:'x...x...x.x.x...',form:[[8,'arp bass'],[8,'arp bass lead'],[8,'arp bass'],[8,'arp bass lead']]},
+  // Frostpeak: little bells in the snow
+  frost:{bpm:62,key:62,minor:0,barsPer:2,prog:[[0,'add9'],[-3,'m7'],[5,'M7'],[7,'s2']],lead:'bell',keys:'',arp:'harp',bassType:'pbass',vol:.46,
+    bassP:'x...............',arpP:'x...x...x...x...',form:[[8,'arp bass'],[8,'arp bass lead'],[8,'arp bass'],[8,'arp bass lead']]},
+  // Cactus Canyon: a slow guitar
+  canyon:{bpm:64,key:52,minor:1,barsPer:2,prog:[[0,'m'],[-2,'M'],[-4,'M'],[-5,'7']],lead:'harp',keys:'pluck',strum:1,arp:'',bassType:'pbass',vol:.4,
+    bassP:'x...............',keysP:'x.......x.......',form:[[8,'keys bass'],[8,'keys bass lead'],[8,'keys bass'],[8,'keys bass lead']]},
+  // Star Harbor: starry bells
+  space:{bpm:62,key:57,minor:1,barsPer:2,prog:[[0,'m9'],[-4,'M7'],[3,'add9'],[-2,'s2']],lead:'bell',keys:'',arp:'harp',bassType:'pbass',vol:.46,
+    bassP:'x...............',arpP:'x...x...x...x...',form:[[8,'arp bass'],[8,'arp bass lead'],[8,'arp bass'],[8,'arp bass lead']]},
+  // shops and cafes: a little piano tune
+  cafe:{bpm:72,key:65,minor:0,barsPer:1,prog:[[0,'M7'],[-3,'m7'],[2,'m7'],[7,'7']],lead:'piano',keys:'piano',arp:'',bassType:'pbass',vol:.4,
+    bassP:'x...............',keysP:'x.......x.......',form:[[8,'keys bass'],[8,'keys bass lead'],[8,'keys bass'],[8,'keys bass lead']]},
   // the spooky manor: quiet and a little mysterious
-  spooky:{bpm:60,key:57,minor:1,barsPer:2,prog:[[0,'m'],[5,'m'],[-4,'M'],[-5,'7']],pad:800,lead:'bell',keys:'',arp:'pizz',bassType:'cello',vol:.15,
-    bassP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp'],[8,'pad bass arp lead'],[8,'pad']]},
+  spooky:{bpm:60,key:57,minor:1,barsPer:2,prog:[[0,'m'],[5,'m'],[-4,'M'],[-5,'7']],lead:'bell',keys:'',arp:'pizz',bassType:'pbass',vol:.46,
+    bassP:'x...............',arpP:'x...x...x...x...',form:[[8,'arp bass'],[8,'arp bass lead'],[8,'arp bass'],[8,'arp bass lead']]},
   // the Sky Kingdom: floating and dreamy
-  sky:{bpm:60,key:64,minor:0,barsPer:2,prog:[[0,'add9'],[5,'M7'],[-3,'m9'],[7,'s2']],pad:1250,lead:'bell',keys:'',arp:'harp',bassType:'cello',vol:.15,
-    bassP:'x...............',arpP:'x.......x.......',form:[[8,'pad arp'],[8,'pad bass arp lead'],[8,'pad bass arp'],[8,'pad']]},
-  // Dino Valley: soft, slow marimba
-  dino:{bpm:70,key:55,minor:1,barsPer:2,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'M7']],pad:900,lead:'marimba',keys:'marimba',arp:'',bassType:'cello',vol:.16,
-    bassP:'x...............',keysP:'x.......x.......',form:[[8,'pad keys'],[8,'pad bass keys'],[8,'pad bass keys lead'],[8,'pad keys']]},
-  // the Hero Castle: a gentle royal theme on a soft horn
-  castle:{bpm:66,key:62,minor:0,barsPer:2,prog:[[0,'M'],[5,'M'],[7,'M'],[0,'add9']],pad:1100,lead:'piano',keys:'piano',arp:'harp',bassType:'cello',vol:.14,
-    bassP:'x...............',keysP:'x...............',arpP:'x.......x.......',form:[[8,'pad keys'],[8,'pad bass keys arp'],[8,'pad bass arp lead'],[8,'pad bass keys']]},
-  // boss fights: a steady, soft pulse on strings and timpani (still calm, just a little more tense)
-  boss:{bpm:92,key:50,minor:1,barsPer:1,prog:[[0,'m'],[-4,'M'],[-2,'M'],[-5,'M']],pad:1200,lead:'piano',keys:'',arp:'pizz',bassType:'cello',vol:.12,
-    kick:'x...............',bassP:'x.......x.......',arpP:'x...x...x...x...',form:[[4,'pad bass kick'],[8,'pad bass kick arp'],[8,'pad bass kick arp lead']]}};
+  sky:{bpm:60,key:64,minor:0,barsPer:2,prog:[[0,'add9'],[5,'M7'],[-3,'m9'],[7,'s2']],lead:'bell',keys:'',arp:'harp',bassType:'pbass',vol:.46,
+    bassP:'x...............',arpP:'x...x...x...x...',form:[[8,'arp bass'],[8,'arp bass lead'],[8,'arp bass'],[8,'arp bass lead']]},
+  // Dino Valley: soft marimba
+  dino:{bpm:70,key:55,minor:1,barsPer:2,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'M7']],lead:'marimba',keys:'marimba',arp:'',bassType:'pbass',vol:.4,
+    bassP:'x...............',keysP:'x...x...x...x...',form:[[8,'keys bass'],[8,'keys bass lead'],[8,'keys bass'],[8,'keys bass lead']]},
+  // the Hero Castle: a gentle royal tune
+  castle:{bpm:66,key:62,minor:0,barsPer:2,prog:[[0,'M'],[5,'M'],[7,'M'],[0,'add9']],lead:'piano',keys:'piano',arp:'harp',bassType:'pbass',vol:.42,
+    bassP:'x...............',keysP:'x...............',arpP:'x...x...x...x...',form:[[8,'arp bass keys'],[8,'arp bass lead'],[8,'arp bass keys'],[8,'arp bass lead']]},
+  // boss fights: a little faster and more tense, still only plucked notes (no drones, no loud drums)
+  boss:{bpm:92,key:50,minor:1,barsPer:1,prog:[[0,'m'],[-4,'M'],[-2,'M'],[-5,'M']],lead:'piano',keys:'',arp:'pizz',bassType:'pbass',vol:.34,
+    kick:'x...............',bassP:'x.......x.......',arpP:'x.x.x.x.x.x.x.x.',form:[[4,'bass kick arp'],[8,'bass kick arp'],[8,'bass kick arp lead']]}};
 for(const k in CALM){const o=CALM[k];SONGS[k]=Object.assign({orch:1,name:k,leadOct:12,kick:'',clap:'',hat:'',oh:'',shk:'',rim:'',keysP:'',arpP:'',snare:'clap'},o);}
 // the Moon keeps its quiet space music, now with the soft drums too
-if(SONGS.moon){SONGS.moon.orch=1;SONGS.moon.vol=.3;}
-
-MV('Calm new music','موسيقى هادئة جديدة');MV('Soft strings, piano and harp in every place, and a gentle pulse in boss fights','أوتار ناعمة وبيانو وقيثارة في كل مكان، ونبض هادئ في معارك الزعماء');
+if(SONGS.moon){SONGS.moon.orch=1;SONGS.moon.vol=.3;SONGS.moon.bassType='pbass';}
+MV('Calm new music','موسيقى هادئة جديدة');MV('Soft piano, harp and bells in every place, and gentle plucked strings in boss fights','بيانو ناعم وقيثارة وأجراس في كل مكان، وأوتار خفيفة في معارك الزعماء');
 // ================= start =================
 boot();
 </script>
