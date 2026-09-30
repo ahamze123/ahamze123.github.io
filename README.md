@@ -7,6 +7,11 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
 ## On an iPad
 1. Open the link in Safari.
 2. Tap **Share → Add to Home Screen** to get a game icon that opens full screen.
+3. Open Block Buddies from the Home Screen icon. It fills the whole screen and a swipe never closes it (Safari's own full screen closes when you swipe down, which Apple does not let games stop).
+4. The Home Screen app keeps its own save. To bring a game you started in Safari: in Safari tap **Menu → Settings → 📦 Move my game → Copy my game**, then in the Home Screen app tap **📦 Bring my game from Safari**, paste and tap **Load this game** twice.
+- Double-tapping or pinching no longer zooms the page on iPad.
+
+**Playing online:** one player taps **Play online → Host a game**, the others tap **Play online** and **Join**. The online screen shows when it is connected and how many games it found. If a tablet's Wi-Fi drops for a moment (the screen locks, you switch apps), the game reconnects by itself and the Join button comes back.
 
 ## Heroes
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes.

@@ -20,7 +20,9 @@
   --display:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif;--ui:'Nunito','Segoe UI',system-ui,sans-serif;color-scheme:dark}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--sky);font-family:var(--ui);color:#fff;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none;overscroll-behavior:none}
-#gl{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none}
+/* iPad: no double-tap zoom anywhere (menus can still scroll) */
+body *{touch-action:manipulation}
 button{font-family:var(--ui);cursor:pointer;color:inherit}
 button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .big{font-family:var(--display);font-size:22px;letter-spacing:.02em;border:0;border-radius:14px;padding:12px 22px;background:var(--gold);color:var(--ink);box-shadow:0 5px 0 #c98f00,0 8px 18px rgba(0,0,0,.25);transition:transform .08s}
@@ -409,34 +411,48 @@ body.ar .small,body.ar .sub{line-height:1.5}
 // The free PeerJS cloud server (0.peerjs.com) is only used as a matchmaker to swap connection offers;
 // game data flows device-to-device. This file exposes the same small interface the game uses for the
 // claude.ai room (presence, onPeers, onConnection, join, leave), so the game code stays the same.
+// Tablets drop their connection to the matchmaker all the time (the screen locks, you switch apps, the Wi-Fi hiccups).
+// The server then takes the tablet back WITHOUT saying "OPEN", so we also count a quiet reconnect as connected, and
+// every few seconds each connection sends itself a tiny note through the server to prove it is still alive.
 (function(){
   if(typeof RTCPeerConnection==='undefined'||typeof WebSocket==='undefined')return;
   const Q=new URLSearchParams(location.search);
   const CFG={host:Q.get('peerhost')||'0.peerjs.com',port:+(Q.get('peerport')||443),secure:Q.get('peersecure')!=='0',key:'peerjs',path:'/'};
   const ICE=Q.get('peerice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
   const NS='bbuddies-'+(window.BB_FAMILY||'fam')+(Q.get('peerns')?'-'+Q.get('peerns'):'');
-  const GAMEID=NS+'-game';
+  // up to three games can be hosted at once (and a game a tablet left behind never blocks a new one)
+  const SLOTS=[NS+'-game',NS+'-game2',NS+'-game3'];const isSlot=id=>SLOTS.includes(id);
   const rid=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s;};
   const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
   const log=(...a)=>{if(window.__peerDebug)console.log('[peer]',...a);};
 
   // ---- signaling socket (PeerJS server protocol: OPEN / ID-TAKEN / HEARTBEAT, and relayed OFFER / ANSWER / CANDIDATE / EXPIRE) ----
-  function Sig(id,token,onMsg,onState){let ws=null,hb=null,closed=false,opened=false,tries=0;
+  function Sig(id,token,onMsg,onState){let ws=null,hb=null,closed=false,opened=false,tries=0,openT=null,lastPong=0,everPong=false,pingN=0,checkT=null;
     const url=()=>`${CFG.secure?'wss':'ws'}://${CFG.host}:${CFG.port}${CFG.path}peerjs?key=${CFG.key}&id=${encodeURIComponent(id)}&token=${token}&version=1.5.4`;
-    function connect(){if(closed)return;try{ws=new WebSocket(url());}catch(e){onState('closed');later();return;}
-      const me=ws;
-      ws.onopen=()=>{clearInterval(hb);hb=setInterval(()=>{try{if(me.readyState===1)me.send('{"type":"HEARTBEAT"}');}catch(e){}},5000);};
-      ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}
-        if(m.type==='OPEN'){opened=true;tries=0;log('open',id);onState('open');}
-        else if(m.type==='ID-TAKEN'||m.type==='ID_TAKEN'){log('taken',id);opened=false;closed=true;clearInterval(hb);try{me.close();}catch(e){}onState('taken');}
-        else if(m.type==='ERROR'){log('error',m.payload);onState('error');}
-        else if(m.type!=='HEARTBEAT')onMsg(m);};
-      ws.onerror=()=>{};
-      ws.onclose=()=>{if(me!==ws)return;clearInterval(hb);hb=null;opened=false;if(!closed){onState('closed');later();}};}
-    function later(){if(closed)return;tries=Math.min(tries+1,5);setTimeout(connect,700*tries);}
+    const setOpen=()=>{clearTimeout(openT);if(opened)return;opened=true;tries=0;log('open',id);onState('open');};
+    function connect(){if(closed||ws)return;clearTimeout(openT);let me;try{me=ws=new WebSocket(url());}catch(e){ws=null;onState('closed');later();return;}
+      me.onopen=()=>{if(me!==ws)return;lastPong=Date.now();clearInterval(hb);hb=setInterval(()=>{try{if(me.readyState===1)me.send('{"type":"HEARTBEAT"}');}catch(e){}},5000);
+        // a device that comes back with its own id and token is taken back without OPEN: after a moment of quiet we are in
+        openT=setTimeout(()=>{if(me===ws&&me.readyState===1&&!closed)setOpen();},1500);ping();};
+      me.onmessage=ev=>{if(me!==ws)return;let m;try{m=JSON.parse(ev.data);}catch(e){return;}
+        if(m.type==='OPEN'){setOpen();return;}
+        if(m.type==='ID-TAKEN'||m.type==='ID_TAKEN'){clearTimeout(openT);log('taken',id);opened=false;closed=true;clearInterval(hb);try{me.close();}catch(e){}onState('taken');return;}
+        if(m.type==='ERROR'){log('error',m.payload);onState('error');return;}
+        if(m.type==='HEARTBEAT')return;
+        if(m.src===id&&m.payload&&m.payload.bbping){lastPong=Date.now();everPong=true;if(!opened)setOpen();return;}
+        if(!opened)setOpen();onMsg(m);};
+      me.onerror=()=>{};
+      me.onclose=()=>{if(me!==ws)return;ws=null;clearInterval(hb);hb=null;clearTimeout(openT);opened=false;if(!closed){onState('closed');later();}};}
+    function later(){if(closed)return;tries=Math.min(tries+1,5);setTimeout(()=>{if(!ws)connect();},700*tries);}
+    function ping(){if(ws&&ws.readyState===1){try{ws.send(JSON.stringify({type:'OFFER',dst:id,payload:{bbping:++pingN}}));}catch(e){}}}
+    // a connection that stopped carrying anything is replaced with a fresh one
+    function restart(){if(closed)return;log('restart',id);const old=ws;ws=null;clearInterval(hb);hb=null;clearTimeout(openT);try{old&&old.close();}catch(e){}if(opened){opened=false;onState('closed');}tries=0;connect();}
+    const pingI=setInterval(()=>{if(closed){clearInterval(pingI);return;}ping();if(everPong&&ws&&ws.readyState===1&&Date.now()-lastPong>16000)restart();},5000);
     connect();
     return {id,get open(){return opened;},send(type,dst,payload){if(!ws||ws.readyState!==1||!opened)return false;try{ws.send(JSON.stringify({type,dst,payload}));return true;}catch(e){return false;}},
-      close(){closed=true;opened=false;clearInterval(hb);try{ws&&ws.close();}catch(e){}},kick(){if(!closed&&(!ws||ws.readyState>1)){tries=0;connect();}}};}
+      close(){closed=true;opened=false;clearInterval(hb);clearInterval(pingI);clearTimeout(openT);clearTimeout(checkT);const w=ws;ws=null;try{w&&w.close();}catch(e){}},
+      // back from the background: reconnect if it closed, and make sure an open-looking connection still works
+      kick(){if(closed)return;if(!ws){tries=0;connect();return;}if(ws.readyState>1){restart();return;}const t=Date.now();ping();clearTimeout(checkT);checkT=setTimeout(()=>{if(!closed&&everPong&&lastPong<t)restart();},4000);}};}
 
   // ---- one WebRTC link to another device ----
   function Link(sig,remote,cid,offerer,h){const pc=new RTCPeerConnection({iceServers:ICE});let dc=null,remoteSet=false,pend=[],dead=false;
@@ -488,37 +504,40 @@ body.ar .small,body.ar .sub{line-height:1.5}
     return R;}
 
   // ---- the lobby (what the game gets instead of claude.use('room')) ----
-  const LB={sig:null,pres:{},found:null,foundAt:0,peerL:[],errL:[],connL:[],pendJoin:[],host:null,probeAt:0,lastSig:''};
+  const LB={sig:null,pres:{},found:new Map(),peerL:[],errL:[],connL:[],pendJoin:[],host:null,lastSig:''};
   const myId=NS+'-'+rid(10);
-  function lobbyPeers(){const a=[{peer:myId,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:LB.pres}];if(LB.found)a.push({peer:GAMEID,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:LB.found});return a;}
-  function emitLobby(force){const sig=JSON.stringify(LB.found||0);if(!force&&sig===LB.lastSig)return;LB.lastSig=sig;const ps=lobbyPeers();for(const f of LB.peerL){try{f({peers:ps,joined:[],left:[],updated:[]});}catch(e){console.error(e);}}}
+  function lobbyPeers(){const a=[{peer:myId,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:LB.pres}];for(const [id,f] of LB.found)a.push({peer:id,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:f.pres});return a;}
+  function emitLobby(force){const sig=JSON.stringify([...LB.found].map(([k,v])=>[k,v.pres]));if(!force&&sig===LB.lastSig)return;LB.lastSig=sig;const ps=lobbyPeers();for(const f of LB.peerL){try{f({peers:ps,joined:[],left:[],updated:[]});}catch(e){console.error(e);}}}
   function connState(ok){for(const f of LB.connL){try{f(ok);}catch(e){}}}
   function onLobbyMsg(m){const p=m.payload||{};
-    if(m.type==='ANSWER'&&p.probe&&m.src===GAMEID){if(p.lobby&&p.lobby.bb===3){LB.found=p.lobby;LB.foundAt=Date.now();emitLobby();}return;}
-    if(m.type==='EXPIRE'&&m.src===GAMEID){if(LB.found&&Date.now()-LB.foundAt>4000){LB.found=null;emitLobby();}for(const j of LB.pendJoin.slice())j.expire();return;}
-    for(const j of LB.pendJoin)if(j.cid===p.cid){if(m.type==='ANSWER')j.answer(p);else if(m.type==='CANDIDATE')j.link.cand(p.candidate);}}
+    if(m.type==='ANSWER'&&p.probe&&isSlot(m.src)){if(p.lobby&&p.lobby.bb===3){LB.found.set(m.src,{pres:p.lobby,at:Date.now()});emitLobby();}return;}
+    if(m.type==='EXPIRE'&&isSlot(m.src)){const f=LB.found.get(m.src);if(f&&Date.now()-f.at>4000){LB.found.delete(m.src);emitLobby();}for(const j of LB.pendJoin.slice())if(j.target===m.src)j.expire();return;}
+    for(const j of LB.pendJoin)if(j.cid===p.cid&&j.target===m.src){if(m.type==='ANSWER')j.answer(p);else if(m.type==='CANDIDATE')j.link.cand(p.candidate);}}
   function startLobby(){LB.sig=Sig(myId,rid(16),onLobbyMsg,st=>{if(st==='open'){connState(true);probe();}else if(st==='closed'||st==='error'){connState(false);}});
-    setInterval(probe,2500);setInterval(()=>{if(LB.found&&Date.now()-LB.foundAt>9000){LB.found=null;emitLobby();}},1000);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden){LB.sig&&LB.sig.kick();LB.host&&LB.host._sig&&LB.host._sig.kick();}});}
-  function probe(){if(!LB.sig||!LB.sig.open||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;LB.sig.send('OFFER',GAMEID,{probe:1,ts:Date.now()});}
+    setInterval(probe,2500);setInterval(()=>{let ch=false;for(const [id,f] of LB.found)if(Date.now()-f.at>9000){LB.found.delete(id);ch=true;}if(ch)emitLobby();},1000);
+    const wake=()=>{if(document.hidden)return;LB.sig&&LB.sig.kick();LB.host&&LB.host._sig&&LB.host._sig.kick();setTimeout(probe,600);};
+    document.addEventListener('visibilitychange',wake);window.addEventListener('pageshow',wake);window.addEventListener('online',wake);}
+  function probe(){if(!LB.sig||!LB.sig.open||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;for(const s of SLOTS)LB.sig.send('OFFER',s,{probe:1,ts:Date.now()});}
 
-  // host: claim the family game id and answer probes + join offers
-  function hostGame(){return new Promise((res,rej)=>{const tok=ls.get('bb_ptok')||rid(16);ls.set('bb_ptok',tok);const room=GameRoom('host');let settled=false;
-    const sig=Sig(GAMEID,tok,m=>{const p=m.payload||{};
+  // host: claim the first free game id and answer probes + join offers
+  function hostGame(){return new Promise((res,rej)=>{const tok=ls.get('bb_ptok')||rid(16);ls.set('bb_ptok',tok);let i=0;
+    const next=()=>{if(i>=SLOTS.length){rej(new Error('taken'));return;}hostOn(SLOTS[i++],tok).then(res,e=>{if(e&&e.message==='taken')next();else rej(e);});};next();});}
+  function hostOn(gid,tok){return new Promise((res,rej)=>{const room=GameRoom('host');let settled=false;
+    const sig=Sig(gid,tok,m=>{const p=m.payload||{};
         if(m.type==='OFFER'){if(p.probe){sig.send('ANSWER',m.src,{probe:1,lobby:LB.pres});return;}
           if(!p.sdp||(p.ts&&Math.abs(Date.now()-p.ts)>45000))return;
           // room for 3 guests; a guest that reconnects replaces its old link
           if(!room._from(m.src)&&room._count()>=3){sig.send('ANSWER',m.src,{cid:p.cid,full:1});return;}
           const L=Link(sig,m.src,p.cid,false,{open:l=>room._open(l),data:(o,l)=>room._data(o,l),close:l=>room._lost(l)});room._add(L);L.accept(p.sdp).catch(e=>{log('accept fail',e);L.close();});}
         else if(m.type==='CANDIDATE'){const L=room._link(p.cid);if(L)L.cand(p.candidate);}},
-      st=>{if(st==='open'&&!settled){settled=true;res(room);}else if(st==='taken'&&!settled){settled=true;rej(new Error('taken'));}});
-    room._sig=sig;const leave0=room.leave;room.leave=()=>{LB.host=null;return leave0();};LB.host=room;
-    setTimeout(()=>{if(!settled){settled=true;LB.host=null;sig.close();rej(new Error('timeout'));}},10000);});}
+      st=>{if(st==='open'&&!settled){settled=true;res(room);}else if(st==='taken'&&!settled){settled=true;if(LB.host===room)LB.host=null;rej(new Error('taken'));}});
+    room._sig=sig;room.gid=gid;const leave0=room.leave;room.leave=()=>{if(LB.host===room)LB.host=null;return leave0();};LB.host=room;
+    setTimeout(()=>{if(!settled){settled=true;if(LB.host===room)LB.host=null;sig.close();rej(new Error('timeout'));}},12000);});}
 
-  // guest: offer a data channel to the family game id
-  function joinGame(){return new Promise((res,rej)=>{if(!LB.sig||!LB.sig.open){rej(new Error('offline'));return;}const room=GameRoom('guest');const cid=rid(8);let settled=false;
-    const L=Link(LB.sig,GAMEID,cid,true,{open:l=>{room._open(l);if(!settled){settled=true;drop();res(room);}},data:(o,l)=>room._data(o,l),close:l=>{drop();if(!settled){settled=true;rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
-    room._add(L);const J={cid,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){L.close();}};LB.pendJoin.push(J);
+  // guest: offer a data channel to the game we found
+  function joinGame(target){return new Promise((res,rej)=>{if(!LB.sig||!LB.sig.open){rej(new Error('offline'));return;}const room=GameRoom('guest');const cid=rid(8);let settled=false;
+    const L=Link(LB.sig,target,cid,true,{open:l=>{room._open(l);if(!settled){settled=true;drop();res(room);}},data:(o,l)=>room._data(o,l),close:l=>{drop();if(!settled){settled=true;rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
+    room._add(L);const J={cid,target,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){L.close();}};LB.pendJoin.push(J);
     const drop=()=>{const i=LB.pendJoin.indexOf(J);if(i>=0)LB.pendJoin.splice(i,1);};
     L.start().catch(()=>L.close());setTimeout(()=>{if(!settled){settled=true;drop();L.close();rej(new Error('timeout'));}},16000);});}
 
@@ -527,10 +546,13 @@ body.ar .small,body.ar .sub{line-height:1.5}
     onPeers(f,onErr){LB.peerL.push(f);if(onErr)LB.errL.push(onErr);setTimeout(()=>emitLobby(true),0);return ()=>{};},
     onConnection(f){LB.connL.push(f);setTimeout(()=>f(!!(LB.sig&&LB.sig.open)),0);return ()=>{};},
     connected:()=>!!(LB.sig&&LB.sig.open),peers:()=>lobbyPeers(),emit(){return Promise.resolve();},on(){return ()=>{};},
-    // the game asks for 'bb2-<code>': join the game we found in the lobby, otherwise host a new one
-    join(name){const code=String(name||'').replace(/^bb2-/,'');if(LB.found&&LB.found.code===code)return joinGame();return hostGame();},
+    // the game asks for 'bb2-<code>': join the game with that code (Join button), or host a new one (Host button)
+    join(name){const code=String(name||'').replace(/^bb2-/,'');const joining=typeof NET!=='undefined'&&NET&&NET.connecting;
+      if(joining){let t=null;for(const [id,f] of LB.found)if(f.pres&&f.pres.code===code){t=id;break;}if(!t&&LB.found.size===1)t=[...LB.found.keys()][0];
+        if(!t)return Promise.reject(new Error('gone'));return joinGame(t);}
+      return hostGame();},
     leave(){return Promise.resolve();},
-    status:()=>({online:!!(LB.sig&&LB.sig.open),found:LB.found,hosting:!!LB.host})};
+    status:()=>({online:!!(LB.sig&&LB.sig.open),found:LB.found.size,hosting:!!LB.host,slot:LB.host?LB.host.gid:null,id:myId})};
   window.__peerRoom=lobby;startLobby();
 })();
 </script><script>
@@ -7453,8 +7475,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:23,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:24,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'⛶',t:'Full screen',s:'Tap ⛶ on the title screen or next to the menu button. On a tablet the game goes full screen by itself when you tap Play',act:()=>{if(typeof fsPress==='function')fsPress();}},
+  {ic:'🌐',t:'Online play works better',s:"Your friend's game shows up again after a Wi-Fi hiccup, and the screen tells you when it is looking for games"},
+  {ic:'👆',t:'No more zooming',s:'Double-tapping the screen does not zoom in on the iPad any more'},
   {ic:'💎',t:'Crystal Caves',s:'A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks',go:()=>{if(typeof CAVE==='undefined'||!CAVE.mouth)return null;const M=CAVE.mouth;return dd({x:M.x+Math.sin(M.f)*3,z:M.z+Math.cos(M.f)*3,label:tr('Crystal Caves'),icon:'💎',col:'#7ef9ff'});}},
   {ic:'🍭',t:'Candy Island',s:'Golden gate number three (50 golden bricks): gumdrop hills, lollipop trees, a chocolate race track and the Rocket Racer',go:()=>{if(typeof GGBY==='undefined')return null;const g=GGBY.candy,s=g.gate;if(!s)return null;return ggOpen('candy')?dd({x:g.x,z:g.z,label:tr(g.n),icon:'🍭',col:g.col}):dd({x:s.x,z:s.z,label:tr(g.n),icon:'🔒',col:g.col});}},
   {ic:'🚀',t:'Rocket Racer',s:'The fastest car in Blocktopia! Power fires the rocket, jump makes it hop. Watch for it zooming along the highways'},
@@ -10146,6 +10171,12 @@ function hostCard(){let el=$('hostcard');const want=NET.role==='host'&&!NET.hcHi
 MV("You're hosting!",'أنت المضيف!');MV('On the other iPads: open Block Buddies, tap Play online, then tap Join next to {0}','على أجهزة الآيباد الأخرى: افتح بلوك بديز، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');
 MV('On the other devices: open this same game, tap Play online, then tap Join next to {0}','على الأجهزة الأخرى: افتح هذه اللعبة نفسها، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');MV('{0} more friends can still join','ما زال بإمكان {0} أصدقاء الانضمام');
 MV('Everyone needs the internet. The same Wi-Fi works best.','يحتاج الجميع إلى الإنترنت. شبكة الواي فاي نفسها هي الأفضل.');MV('Tap to hide','اضغط للإخفاء');MV('Friends can join you now','يستطيع أصدقاؤك الانضمام إليك الآن');
+// the online screen says what is going on: connected or not, looking for games, how many games were found
+function lobbyNetLine(){const st=$('onstat');if(!st)return;let el=$('onnet');if(!el){el=document.createElement('div');el.id='onnet';el.className='small';el.style.cssText='font-weight:800;opacity:.92';st.parentNode.insertBefore(el,st.nextSibling);}
+  if(!NET.avail){if(el.textContent)el.textContent='';return;}const SA=!!(NET.room&&NET.room.standalone);const s=SA&&NET.room.status?NET.room.status():null;const on=SA?!!(s&&s.online):true;
+  const n=(NET.lobby||[]).filter(p=>p.presence&&p.presence.st==='host').length;const t=!on?'🟠 '+tr('Reconnecting…'):n?'🟢 '+trf(n===1?'{0} game found':'{0} games found',n):'🟢 '+tr('Online · looking for games…');if(el.textContent!==t)el.textContent=t;}
+{const _ls=UI.lobbyStatus;UI.lobbyStatus=function(){_ls.call(UI);try{lobbyNetLine();}catch(e){}};}
+MV('Reconnecting…','جارٍ إعادة الاتصال…');MV('{0} game found','تم العثور على لعبة واحدة');MV('{0} games found','تم العثور على {0} ألعاب');MV('Online · looking for games…','متصل · نبحث عن ألعاب…');
 // ================= the edge of the world =================
 // The indoor rooms and the Moon are built far out in the north-east sea, where you can't normally go. Swimming, flying,
 // sailing or flying a plane into that corner used to throw you back to town (and the screen flickered between the worlds).
@@ -10186,6 +10217,125 @@ MV('The edge of the world','نهاية العالم');
 {const _dbm=drawBigMap;drawBigMap=function(){_dbm();try{if(MAPV.realm==='moon')return;const cv=$('bmap');if(!cv)return;const x=cv.getContext('2d');const d=MAPV.dpr||1;const P=FENCEL();
   x.save();x.setTransform(1,0,0,1,0,0);x.lineWidth=3*d;x.lineCap='butt';x.setLineDash([7*d,6*d]);x.beginPath();P.forEach(([wx,wz],i)=>{const [a,b]=mapToS(wx,wz);if(i)x.lineTo(a,b);else x.moveTo(a,b);});
   x.strokeStyle='rgba(255,255,255,.95)';x.stroke();x.lineDashOffset=6.5*d;x.strokeStyle='rgba(232,52,63,.95)';x.stroke();x.restore();}catch(e){}};}
+// ================= full screen, easy to find (and automatic on Android tablets) =================
+// A ⛶ button now sits on the title screen and next to the menu button while you play. On an Android tablet, tapping Play,
+// Play online, Host or Join also switches to full screen by itself. On an iPad, Safari's full screen closes whenever you
+// swipe down (Apple does not let games stop that), so there the button explains how to add Block Buddies to the Home
+// Screen instead: that app always fills the whole screen, swipes never close it, and online play works there too.
+const FSX={userExit:false,mine:false,wasOn:false};
+const fsIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+const fsApp=()=>{try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;}catch(e){return false;}};
+const fsAPI=()=>{const d=document,e=d.documentElement;return !!(d.fullscreenEnabled||d.webkitFullscreenEnabled)&&!!(e.requestFullscreen||e.webkitRequestFullscreen);};
+const fsTouch=()=>(navigator.maxTouchPoints||0)>0||(typeof TOUCH!=='undefined'&&TOUCH.on);
+// the settings button shows unless the game already fills the screen as a Home Screen app
+fsOK=function(){return !fsApp();};
+function fsEnter(){const e=document.documentElement;try{if(e.requestFullscreen){const r=e.requestFullscreen({navigationUI:'hide'});if(r&&r.catch)r.catch(()=>{});return true;}
+    if(e.webkitRequestFullscreen){e.webkitRequestFullscreen();return true;}}catch(err){}return false;}
+fsToggle=function(){if(fsOn()){FSX.userExit=true;FSX.mine=true;const d=document;try{(d.exitFullscreen||d.webkitExitFullscreen).call(d);}catch(e){}return;}fsPress();};
+// the ⛶ button: go full screen, or explain how when this browser can't
+function fsPress(){try{AU.init();}catch(e){}if(fsOn()){fsToggle();return;}if(fsIOS()&&!fsApp()){fsHelp();return;}if(!fsAPI()||!fsEnter()){fsHelp();return;}FSX.userExit=false;setTimeout(()=>{if(!fsOn()&&!fsApp())fsHelp();},1200);}
+function fsHelp(){let el=$('fshelp');if(!el){el=document.createElement('div');el.id='fshelp';el.className='modal';el.hidden=true;document.body.appendChild(el);el.addEventListener('click',e=>{if(e.target===el)fsHelpClose();});}
+  const claude=!window.BB_STANDALONE,ios=fsIOS();const li=s=>`<li style="margin:6px 0">${s}</li>`;
+  const home=[li(tr('Tap Share ⬆ at the top of Safari')),li(`<b>${esc(tr('Add to Home Screen'))}</b>`),li(tr('Open Block Buddies from the Home Screen: it fills the whole screen'))];
+  let body='';
+  const saves=`<p class="small" style="margin:2px 0">📦 ${esc(tr('The Home Screen app keeps its own save. Tap Move my game first to take your heroes, golden bricks and coins with you.'))}</p>`;
+  if(claude)body=`<p class="small" style="margin:2px 0">${esc(tr('Games cannot go full screen inside Claude.'))}</p><p class="small" style="margin:2px 0"><b>${esc(tr('For full screen on the iPad:'))}</b></p><ol class="small" style="margin:0;padding-inline-start:22px">${li(`${esc(tr('Open this in Safari:'))} <b dir="ltr">ahamze123.github.io</b>`)}${home.join('')}</ol><p class="small" style="margin:2px 0">${esc(tr('Online play works there too. Everyone who plays together should use the same one.'))}</p>${saves}`;
+  else if(ios)body=`<p class="small" style="margin:2px 0">${esc(tr("On an iPad, Safari's full screen closes every time you swipe down, and games are not allowed to stop that. The Home Screen app fills the whole screen and never closes:"))}</p><ol class="small" style="margin:0;padding-inline-start:22px">${home.join('')}</ol><p class="small" style="margin:2px 0">${esc(tr('Online play works there too.'))}</p>${saves}`;
+  else body=`<p class="small" style="margin:2px 0">${esc(tr('This browser does not allow full screen here. Try pressing F11, or open the game in its own tab.'))}</p>`;
+  const mv=(claude||ios)&&typeof openMove==='function';
+  el.innerHTML=`<div class="mbox" style="max-width:min(480px,94vw)"><h2>⛶ ${esc(tr('Full screen'))}</h2>${body}${mv?`<button class="big mint" id="fshmove">📦 ${esc(tr('Move my game'))}</button>`:''}<button class="big" id="fshok">${esc(tr('OK'))}</button></div>`;
+  $('fshok').onclick=fsHelpClose;if($('fshmove'))$('fshmove').onclick=()=>{fsHelpClose();openMove();};el.hidden=false;FSX.help=G.mode==='play';if(FSX.help)G.mode='menu';}
+function fsHelpClose(){const el=$('fshelp');if(el)el.hidden=true;if(FSX.help&&G.mode==='menu'){G.mode='play';}FSX.help=false;}
+// the buttons: on the title screen (top left) and next to the menu button while playing
+function fsLabels(){const on=fsOn(),app=fsApp();const t=$('tfs');if(t){t.hidden=app||on;t.textContent='⛶ '+tr('Full screen');}
+  const b=$('bfs');if(b){b.hidden=app||on;b.title=tr('Full screen');b.setAttribute('aria-label',tr('Full screen'));}}
+{const T=$('title');if(T&&!$('tfs')){const row=document.createElement('div');row.id='ttop';row.style.cssText='position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:3;display:flex;gap:8px;pointer-events:auto';
+    const b=document.createElement('button');b.id='tfs';b.type='button';b.className='langb';b.style.position='static';b.addEventListener('click',()=>{try{SFX.click();}catch(e){}fsPress();});row.appendChild(b);
+    const lb=$('blang');if(lb){lb.style.position='static';row.appendChild(lb);}T.appendChild(row);}
+  const pb=$('pbtns');if(pb&&!$('bfs')){const b=document.createElement('button');b.className='ib';b.id='bfs';b.textContent='⛶';b.addEventListener('click',()=>fsPress());pb.insertBefore(b,$('bpause')||null);}
+  fsLabels();}
+// tapping Play, Play online, Host or Join on a tablet goes full screen by itself (unless you left full screen on purpose)
+document.addEventListener('click',e=>{try{const t=e.target&&e.target.closest?e.target.closest('#bplay,#bonline,#bhost,#games .game,#games button'):null;if(!t)return;
+  if(fsTouch()&&!fsIOS()&&fsAPI()&&!fsApp()&&!fsOn()&&!FSX.userExit)fsEnter();}catch(err){}},true);
+// notice when full screen starts or stops (a swipe or the ✕ can end it)
+for(const ev of ['fullscreenchange','webkitfullscreenchange'])document.addEventListener(ev,()=>{const on=fsOn();if(!on&&FSX.wasOn&&!FSX.mine)FSX.userExit=true;FSX.mine=false;FSX.wasOn=on;fsLabels();if(G.mode==='menu'&&PTAB==='set'&&!$('pause').hidden)try{renderPause();}catch(e){}});
+setInterval(()=>{try{const on=fsOn();if(on!==FSX.wasOn){if(!on&&FSX.wasOn&&!FSX.mine)FSX.userExit=true;FSX.mine=false;FSX.wasOn=on;fsLabels();}}catch(e){}},500);
+{const _al=applyLang;applyLang=function(){_al();try{fsLabels();}catch(e){}};}
+// a tip on the title screen for iPad and iPhone players in Safari
+{const tipOK=()=>window.BB_STANDALONE&&fsIOS()&&!fsApp();const sh=$('savehint');if(sh&&tipOK()&&!$('fstip')){const d=document.createElement('div');d.id='fstip';d.className='small';d.style.cssText='opacity:.85;margin-top:4px';sh.parentNode.insertBefore(d,sh.nextSibling);}
+  const upd=()=>{const d=$('fstip');if(d)d.textContent='📱 '+tr('Tip: tap Share ⬆ then Add to Home Screen, and the game fills the whole screen');};upd();{const _al=applyLang;applyLang=function(){_al();try{upd();}catch(e){}};}}
+MV('Full screen','ملء الشاشة');MV('OK','حسنًا');MV('Tap Share ⬆ at the top of Safari','اضغط زر المشاركة ⬆ أعلى سفاري');MV('Add to Home Screen','إضافة إلى الشاشة الرئيسية');
+MV('Open Block Buddies from the Home Screen: it fills the whole screen','افتح بلوك بديز من الشاشة الرئيسية: ستملأ اللعبة الشاشة كلها');
+MV('Games cannot go full screen inside Claude.','لا تستطيع الألعاب ملء الشاشة داخل Claude.');MV('For full screen on the iPad:','لملء الشاشة على الآيباد:');MV('Open this in Safari:','افتح هذا في سفاري:');
+MV('Online play works there too. Everyone who plays together should use the same one.','اللعب عبر الإنترنت يعمل هناك أيضًا. يجب أن يستخدم كل من يلعبون معًا النسخة نفسها.');
+MV('Safari on this device does not let games go full screen, but the Home Screen app does:','سفاري على هذا الجهاز لا يسمح للألعاب بملء الشاشة، لكن تطبيق الشاشة الرئيسية يفعل ذلك:');MV('Online play works there too.','اللعب عبر الإنترنت يعمل هناك أيضًا.');
+MV('This browser does not allow full screen here. Try pressing F11, or open the game in its own tab.','هذا المتصفح لا يسمح بملء الشاشة هنا. جرّب الضغط على F11، أو افتح اللعبة في تبويب خاص بها.');
+MV('Tip: tap Share ⬆ then Add to Home Screen, and the game fills the whole screen','نصيحة: اضغط مشاركة ⬆ ثم إضافة إلى الشاشة الرئيسية، فتملأ اللعبة الشاشة كلها');
+MV("On an iPad, Safari's full screen closes every time you swipe down, and games are not allowed to stop that. The Home Screen app fills the whole screen and never closes:",'على الآيباد، يُغلق ملء الشاشة في سفاري كلما سحبت للأسفل، ولا يُسمح للألعاب بمنع ذلك. أما تطبيق الشاشة الرئيسية فيملأ الشاشة كلها ولا يُغلق أبدًا:');
+MV('The Home Screen app keeps its own save. Tap Move my game first to take your heroes, golden bricks and coins with you.','تطبيق الشاشة الرئيسية يحفظ لعبته وحده. اضغط «انقل لعبتي» أولًا لتأخذ أبطالك وطوبك الذهبي وعملاتك معك.');
+// ================= no zooming by accident on iPad =================
+// Double-tapping or pinching used to zoom the whole page on iPad. The game has its own zoom where it needs one
+// (the map and the photo camera), so the page itself never zooms now.
+(function(){const stop=e=>{try{if(e.cancelable)e.preventDefault();}catch(x){}};const typing=t=>!!(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]'));
+  for(const ev of ['gesturestart','gesturechange','gestureend'])document.addEventListener(ev,stop,{passive:false});
+  document.addEventListener('dblclick',e=>{if(!typing(e.target))stop(e);},{passive:false});
+  // a second tap right after the first is the double-tap zoom
+  let last=0;document.addEventListener('touchend',e=>{const now=Date.now();if(!typing(e.target)&&now-last<350&&e.touches.length===0)stop(e);last=now;},{passive:false});
+  // two fingers on the page never zoom it (the map, the photo camera and the touch controls handle their own fingers)
+  document.addEventListener('touchmove',e=>{if(e.touches.length>1&&!(e.target&&e.target.closest&&e.target.closest('#bmap,#phdrag,.jz,.cz,.tb')))stop(e);},{passive:false});
+  try{const c='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';let m=document.querySelector('meta[name=viewport]');if(!m){m=document.createElement('meta');m.name='viewport';document.head.appendChild(m);}m.setAttribute('content',c);}catch(e){}})();
+// the What's new card for this patch
+MV('Tap ⛶ on the title screen or next to the menu button. On a tablet the game goes full screen by itself when you tap Play','اضغط ⛶ في شاشة البداية أو بجانب زر القائمة. على الجهاز اللوحي تملأ اللعبة الشاشة وحدها عندما تضغط «العب»');
+MV('Online play works better','اللعب عبر الإنترنت أفضل الآن');MV("Your friend's game shows up again after a Wi-Fi hiccup, and the screen tells you when it is looking for games",'لعبة صديقك تظهر من جديد بعد انقطاع الواي فاي، والشاشة تخبرك عندما تبحث عن ألعاب');
+MV('No more zooming','لا مزيد من التكبير');MV('Double-tapping the screen does not zoom in on the iPad any more','النقر مرتين على الشاشة لم يعد يكبّرها على الآيباد');
+// ================= move my game: take your progress to the Home Screen app, or to another tablet =================
+// On an iPad, Safari and the Home Screen app keep separate saves (and the Claude page is separate again). Move my game
+// turns your whole save into a game code: copy it, open the game where you want it, and paste it there.
+const MVG={code:'',armed:false};
+function mvB64(u8){let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s);}
+function mvUnB64(str){const s=atob(str);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
+async function mvMake(){try{if(G.mode==='play'||G.mode==='menu')saveGame();}catch(e){}let raw='';try{raw=localStorage.getItem(SAVE_KEY)||'';}catch(e){}if(!raw)return '';
+  const json=JSON.stringify({v:1,save:raw,lang:LANG});
+  try{if(typeof CompressionStream!=='undefined'){const cs=new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));return 'BBG1:'+mvB64(new Uint8Array(await new Response(cs).arrayBuffer()));}}catch(e){}
+  return 'BBJ1:'+mvB64(new TextEncoder().encode(json));}
+async function mvRead(code){code=String(code||'').replace(/\s+/g,'');if(code.length<12||code.length>6e6)return null;let json=null;
+  try{if(code.startsWith('BBG1:')){const ds=new Blob([mvUnB64(code.slice(5))]).stream().pipeThrough(new DecompressionStream('gzip'));json=await new Response(ds).text();}
+    else if(code.startsWith('BBJ1:'))json=new TextDecoder().decode(mvUnB64(code.slice(5)));else return null;
+    const o=JSON.parse(json);if(!o||typeof o.save!=='string'||!o.save)return null;const s=JSON.parse(o.save);if(!s||typeof s!=='object'||!s.prof)return null;return {o,s};}catch(e){return null;}}
+function openMove(){let el=$('movebox');if(!el){el=document.createElement('div');el.id='movebox';el.className='modal';el.hidden=true;el.style.zIndex=35;document.body.appendChild(el);el.addEventListener('click',e=>{if(e.target===el)closeMove();});}
+  const ta='width:100%;box-sizing:border-box;height:64px;border-radius:12px;border:0;padding:8px;font:600 11px/1.3 ui-monospace,monospace;word-break:break-all;-webkit-user-select:text;user-select:text;background:rgba(255,255,255,.92);color:#1c1846;resize:none';
+  el.innerHTML=`<div class="mbox" style="max-width:min(520px,94vw)"><h2>📦 ${esc(tr('Move my game'))}</h2>
+    <p class="small" style="margin:2px 0">${esc(tr('Safari, the Home Screen app and the Claude page each keep their own save. Move your game with a game code:'))}</p>
+    <b>📤 ${esc(tr('Take my game with me'))}</b><textarea id="mvout" readonly style="${ta}" placeholder="…"></textarea><button class="big mint" id="mvcopy">📋 ${esc(tr('Copy my game'))}</button><div class="small" id="mvcmsg" style="min-height:1.2em;color:var(--gold);font-weight:900"></div>
+    <b>📥 ${esc(tr('Bring a game here'))}</b><textarea id="mvin" style="${ta}" placeholder="${esc(tr('Paste a game code here'))}"></textarea>
+    <div class="row2"><button class="mb" id="mvpaste">📋 ${esc(tr('Paste'))}</button><button class="mb" id="mvload">📥 ${esc(tr('Load this game'))}</button></div><div class="small" id="mvlmsg" style="min-height:1.2em;color:var(--gold);font-weight:900"></div>
+    <button class="big alt sm" id="mvclose">${esc(tr('Close'))}</button></div>`;
+  el.hidden=false;MVG.help=G.mode==='play';if(MVG.help)G.mode='menu';MVG.armed=false;MVG.code='';
+  const out=$('mvout'),cm=$('mvcmsg'),lm=$('mvlmsg');out.value='…';
+  mvMake().then(c=>{MVG.code=c;out.value=c||tr('There is no saved game here yet.');});
+  $('mvcopy').onclick=()=>{const c=MVG.code;if(!c){cm.textContent=tr('There is no saved game here yet.');return;}
+    const done=()=>{cm.textContent='✅ '+tr('Copied! Now open the game where you want it, tap Move my game there, and paste it.');};
+    const fallback=()=>{try{out.focus();out.select();out.setSelectionRange(0,c.length);const ok=document.execCommand('copy');if(ok)done();else cm.textContent=tr('Press and hold the code, then choose Copy.');}catch(e){cm.textContent=tr('Press and hold the code, then choose Copy.');}};
+    try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,fallback);else fallback();}catch(e){fallback();}};
+  $('mvpaste').onclick=()=>{try{navigator.clipboard.readText().then(t=>{$('mvin').value=t||'';lm.textContent='';},()=>{lm.textContent=tr('Press and hold in the box, then choose Paste.');$('mvin').focus();});}catch(e){lm.textContent=tr('Press and hold in the box, then choose Paste.');$('mvin').focus();}};
+  $('mvload').onclick=async()=>{const r=await mvRead($('mvin').value);if(!r){lm.textContent='❌ '+tr('That is not a Block Buddies game code.');MVG.armed=false;return;}
+    const P=r.s.prof||{},b=P.boy||{},g=P.girl||{};const what=trf('{0} Lv {1} · {2} Lv {3} · {4} golden bricks',b.name||'?',b.level||1,g.name||'?',g.level||1,(r.s.gb||[]).length);
+    if(!MVG.armed){MVG.armed=true;lm.textContent='⚠️ '+what+'. '+tr('This replaces the game on this device. Tap Load again to do it.');return;}
+    try{localStorage.setItem(SAVE_KEY,r.o.save);if(r.o.lang==='ar'||r.o.lang==='en')localStorage.setItem('bb2_lang',r.o.lang);}catch(e){lm.textContent='❌ '+tr('Could not save here.');return;}
+    lm.textContent='✅ '+tr('Game loaded! Starting again…');G.mode='boot';setTimeout(()=>location.reload(),700);};
+  $('mvclose').onclick=closeMove;}
+function closeMove(){const el=$('movebox');if(el)el.hidden=true;if(MVG.help&&G.mode==='menu')G.mode='play';MVG.help=false;}
+// in Settings, and on the title screen
+{const _rp=renderPause;renderPause=function(){_rp();try{if(PTAB!=='set'||$('ps_move'))return;const B=$('pbox');const last=B.querySelector('#ps_fs')||B.querySelector('#ps_dn');const b=document.createElement('button');b.className='mb';b.id='ps_move';b.textContent='📦 '+tr('Move my game');b.onclick=()=>openMove();if(last)last.after(b);else B.appendChild(b);}catch(e){}};}
+{const tm=$('tmain');const sh=$('savehint');if(tm&&sh&&!$('tmove')){const b=document.createElement('button');b.id='tmove';b.type='button';b.className='big alt sm';b.style.cssText='margin-top:6px';b.onclick=()=>{try{SFX.click();}catch(e){}openMove();};sh.parentNode.insertBefore(b,sh.nextSibling);}
+  const upd=()=>{const b=$('tmove');if(!b)return;const app=typeof fsApp==='function'&&fsApp();b.textContent='📦 '+tr(app&&!G.hasSave?'Bring my game from Safari':'Move my game');};upd();{const _al=applyLang;applyLang=function(){_al();try{upd();}catch(e){}};}
+  {const _rt=refreshTitle;refreshTitle=function(){_rt();try{upd();}catch(e){}};}}
+MV('Move my game','انقل لعبتي');MV('Safari, the Home Screen app and the Claude page each keep their own save. Move your game with a game code:','سفاري وتطبيق الشاشة الرئيسية وصفحة Claude يحفظ كلٌّ منها لعبته وحده. انقل لعبتك برمز اللعبة:');
+MV('Take my game with me','خذ لعبتي معي');MV('Copy my game','انسخ لعبتي');MV('Bring a game here','أحضر لعبة إلى هنا');MV('Paste a game code here','الصق رمز اللعبة هنا');MV('Paste','لصق');MV('Load this game','حمّل هذه اللعبة');MV('Close','إغلاق');
+MV('There is no saved game here yet.','لا توجد لعبة محفوظة هنا بعد.');MV('Copied! Now open the game where you want it, tap Move my game there, and paste it.','تم النسخ! افتح اللعبة حيث تريدها، واضغط «انقل لعبتي» هناك، ثم الصقها.');
+MV('Press and hold the code, then choose Copy.','اضغط مطولًا على الرمز، ثم اختر نسخ.');MV('Press and hold in the box, then choose Paste.','اضغط مطولًا داخل المربع، ثم اختر لصق.');MV('That is not a Block Buddies game code.','هذا ليس رمز لعبة بلوك بديز.');
+MV('{0} Lv {1} · {2} Lv {3} · {4} golden bricks','{0} مستوى {1} · {2} مستوى {3} · {4} طوبة ذهبية');MV('This replaces the game on this device. Tap Load again to do it.','سيحل هذا محل اللعبة على هذا الجهاز. اضغط «حمّل» مرة أخرى لتأكيد ذلك.');
+MV('Could not save here.','تعذّر الحفظ هنا.');MV('Game loaded! Starting again…','تم تحميل اللعبة! نبدأ من جديد…');MV('Bring my game from Safari','أحضر لعبتي من سفاري');
 // ================= start =================
 boot();
 </script>
