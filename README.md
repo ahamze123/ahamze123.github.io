@@ -56,6 +56,13 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - Races, build zones (build like Minecraft), soccer, hide and seek, jobs, golden bricks, treasure chests, a sticker album and three daily challenges.
 - The **Hall of Heroes** has a statue for all 50 heroes (covered until you unlock them), your trophies and your golden bricks.
 
+## Mine and craft
+- Every build zone goes down too. Tap 🧱, then hold ⛏️ to dig through dirt and stone. Deeper down there is coal, iron, gold, diamonds and rubies (and crystals in the Moon zone).
+- Hold jump against a wall to climb out of a hole.
+- Chop the trees near a zone for wood, then use the crafting table (⚒️) to make planks, sticks, four pickaxes (wood, stone, iron and diamond), swords, torches, helmets, crowns and TNT. Better pickaxes dig faster, and the hardest ores need them.
+- Put TNT down in a zone, then dig it to light it. Run!
+- Sell ores at the crafting table for coins. Your digging is saved, and friends playing online see it.
+
 ## Sound
 - Every ride has its own engine, and the car horn is a friendly beep-beep.
 - You hear footsteps on grass, sand, snow and wood, birds in the trees, waves on the beach and wind up high.

@@ -119,7 +119,31 @@ kbd{font:800 11.5px var(--ui);background:#fff;color:var(--ink);border-radius:5px
 .tag{position:absolute;left:0;top:0;white-space:nowrap;font-weight:900;font-size:13px;padding:2px 8px;border-radius:8px;background:rgba(26,22,66,.75)}
 .tag.name{font-size:14px}.tag.alert{background:var(--gold);color:var(--ink);font-family:var(--display);font-size:24px;padding:0 12px;animation:bob 1s ease-in-out infinite}@keyframes bob{50%{margin-top:-6px}}
 .tag.emote{background:#fff;color:var(--ink);font-size:22px;padding:2px 10px;border-radius:14px}
-.tag.sign{font-family:var(--display);font-size:18px;background:var(--red);letter-spacing:.05em;box-shadow:0 3px 0 #b3223b}.tag.sign.or{background:#ff8a1f;box-shadow:0 3px 0 #b35a10}.tag.sign.gr{background:#3fb45a;box-shadow:0 3px 0 #22803a}.tag.say{background:none;padding:0;white-space:normal;pointer-events:none}
+.tag.sign{font-family:var(--display);font-size:18px;background:var(--red);letter-spacing:.05em;box-shadow:0 3px 0 #b3223b}.tag.sign.or{background:#ff8a1f;box-shadow:0 3px 0 #b35a10}.tag.sign.gr{background:#3fb45a;box-shadow:0 3px 0 #22803a}/* crafting */
+#craft .cbox{width:min(640px,100%)}
+#craft h3{margin:4px 0 0;font-family:var(--display);font-weight:400;font-size:20px}
+.cbags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.cbag{display:inline-flex;align-items:center;gap:3px;background:var(--panel2);border-radius:10px;padding:4px 8px;font-size:18px}
+.cbag b{font-size:14px}
+.ctools{text-align:center;font-weight:800;color:#cfcaf7}
+.crl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.crc{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;background:var(--panel2);border-radius:14px;padding:8px 10px;border-inline-start:5px solid rgba(255,255,255,.18)}
+.crc.ok{border-inline-start-color:var(--mint)}
+.crc.done{opacity:.55}
+.cri{font-size:30px;text-align:center}
+.crt b{display:block;font-size:15px}
+.crt small{display:block;color:#cfcaf7;font-weight:700;font-size:12px;line-height:1.2}
+.crn{margin-top:3px;font-size:14px;font-weight:900}
+.crn .miss{opacity:.45}
+.crb{padding:8px 12px;background:var(--mint);color:var(--ink)}
+.crb:disabled{background:var(--panel2);color:#cfcaf7;opacity:.6}
+.crd{font-family:var(--display);color:var(--mint);font-size:22px;padding:0 6px}
+.ctrs{display:flex;flex-wrap:wrap;gap:6px}
+.ctr{padding:8px 10px}
+.ctr:disabled{opacity:.4}
+#bbar .bsw small.cnt{position:absolute;right:2px;bottom:1px;font-size:11px;font-weight:900;color:#fff;text-shadow:0 1px 2px #000}
+#bbar .bsw.craftb span{font-size:20px}
+.tag.say{background:none;padding:0;white-space:normal;pointer-events:none}
 .tag.say .sb{display:block;position:relative;background:#fff;color:#1a1642;font-size:14px;font-weight:800;line-height:1.2;padding:6px 11px;border-radius:14px;max-width:210px;width:max-content;text-align:center;box-shadow:0 3px 0 rgba(0,0,0,.22);animation:sayin .28s cubic-bezier(.2,1.6,.4,1) both;margin-bottom:8px}
 .tag.say .sb::after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-7px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #fff}
 .tag.say.yay .sb{background:#fff4b8}.tag.say.yay .sb::after{border-top-color:#fff4b8}
@@ -1059,6 +1083,9 @@ Object.assign(AR,{'Skater Zak':'زاك المتزلّج','Rocky Rockstar':'رو�
 Object.assign(AR,{'{0} hits!':'{0} ضربات!','Combo x{0}!':'سلسلة x{0}!','Combo King':'ملك السلاسل','Hit baddies 25 times in a row':'اضرب الأشرار 25 مرة متتالية','Hero of the day: {0} earns +50% coins!':'بطل اليوم: {0} يربح عملات أكثر بنسبة 50%!',
 'Play again:':'العب مجددًا:','Level {0} unlocks {1}!':'المستوى {0} يفتح {1}!'});
 // ---- v18: flying down, hero landing, pools ----
+Object.assign(AR,{'Dig down!':'احفر للأسفل!','Every build zone has dirt, stone and shiny ores underneath. Tap 🧱 and hold ⛏️ to dig':'تحت كل منطقة بناء تراب وحجر وخامات لامعة. اضغط 🧱 ثم اضغط مطولاً على ⛏️ لتحفر',
+'Crafting':'الصناعة','Chop trees for wood, find coal, iron, gold and diamonds, then craft pickaxes, swords, torches, helmets and TNT':'اقطع الأشجار لتحصل على الخشب، واعثر على الفحم والحديد والذهب والألماس، ثم اصنع الفؤوس والسيوف والمشاعل والخوذ والديناميت',
+'TNT!':'ديناميت!','Craft TNT, put it down in a build zone, then dig it to light it. Run!':'اصنع الديناميت، وضعه في منطقة بناء، ثم احفره لتشعله. اهرب!'});
 Object.assign(AR,{'People talk to you!':'الناس يتحدثون إليك!','People in the street say hi, cheer when you beat baddies, and shout "Watch out!" when you drive too fast':'الناس في الشارع يلقون التحية، ويهتفون عندما تهزم الأشرار، ويصرخون "انتبه!" عندما تقود بسرعة كبيرة',
 'All new sounds':'أصوات جديدة كليًا','Richer sound effects, a friendly car horn, engines for every ride, footsteps, birds and waves':'مؤثرات صوتية أغنى، وبوق سيارة لطيف، ومحركات لكل مركبة، ووقع الأقدام، والعصافير، والأمواج'});
 Object.assign(AR,{'40 new missions!':'40 مهمة جديدة!','Catch runaway animals, put out fires, take photos, train like a knight and more':'أمسك الحيوانات الهاربة، وأطفئ النيران، والتقط الصور، وتدرّب مثل الفرسان، والمزيد',
@@ -1212,6 +1239,7 @@ void main(){
  else if(mt==6){spec=.14;gloss=14.;}
  else if(mt==7){spec=.05;gloss=6.;alb*=.86+.26*hash12(floor(vW.xz*2.5+vW.y*3.1));}
  else if(mt==8){spec=1.3;gloss=150.;}
+ else if(mt==16){float fdo=1.-smoothstep(18.,55.,length(vW-uCam));vec3 qo=vW-N*.02;float ho=hash13(floor(qo*8.));float ho2=hash13(floor(qo*4.)+vec3(7.,3.,1.));float spk=step(.72,ho)*step(.3,ho2);vec3 sto=vec3(.52,.54,.58)*(.84+.26*hash13(floor(qo*8.)+vec3(3.)));alb=mix(sto,alb*1.1,mix(.35,spk,fdo));spec=mix(.12,1.,spk);gloss=mix(12.,100.,spk);em*=spk;}
  else if(mt>=9&&mt<=15){// build blocks: chunky pixel textures that fade out with distance
    float fd=1.-smoothstep(18.,50.,length(vW-uCam));vec3 q=vW-N*.02;float h=hash13(floor(q*8.));spec=.12;gloss=12.;
    if(mt==9){alb*=mix(1.,.84+.32*h,fd);}
@@ -1317,7 +1345,7 @@ void main(){vec3 w=vec3(aP.x+uOff.x,uY,aP.y+uOff.y);w.y+=sin(w.x*.5+uTime*1.2)*.
 const FS_WATER=`#version 300 es
 precision highp float;in vec3 vW;uniform sampler2D uH;uniform float uN;uniform float uTime;uniform vec3 uCam;uniform vec3 uFogC;uniform float uFogD;uniform vec3 uSun;uniform vec3 uSky;uniform float uY;uniform float uNight;out vec4 o;
 float h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-void main(){vec2 uv=vW.xz/uN;float h=-8.;if(uv.x>0.&&uv.x<1.&&uv.y>0.&&uv.y<1.)h=texture(uH,uv).r;float depth=clamp((uY-h)/3.2,0.,1.);
+void main(){vec2 uv=vW.xz/uN;float h=-8.;if(uv.x>0.&&uv.x<1.&&uv.y>0.&&uv.y<1.)h=texture(uH,uv).r;if(h>uY+1.)discard;float depth=clamp((uY-h)/3.2,0.,1.);
  float t=uTime;vec2 g=vec2(cos(vW.x*.9+t*1.6)*.5+cos(vW.x*2.3-vW.z*1.1+t*2.3)*.25+cos((vW.x+vW.z)*3.7+t*3.)*.1,
   cos(vW.z*.8-t*1.3)*.5+cos(vW.z*2.1+vW.x*.9+t*2.)*.25+cos((vW.z-vW.x)*3.3+t*2.7)*.1);
  vec3 n=normalize(vec3(g.x*.16,1.,g.y*.16));vec3 V=normalize(uCam-vW);vec3 Rf=reflect(-V,n);
@@ -1929,9 +1957,9 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
     if(p.swim){ax=-2.5+Math.sin(t*6+(s>0?0:Math.PI))*1.3;az=s*.25;}if(p.glide){ax=-1.6;az=s*1.1;}if(p.chute){ax=-2.85;az=s*.42;}if(XS&&XS.chg>0&&s===-1){ax=-1.5;az=.25;}if(XS&&XS.spin>0){ax=-1.55;az=s*1.35;}
     M4.rx(m,ax);M4.rz(m,az);cy(m,0,-.26,0,.18,.44,.18,cos==='astro'?suit:suit,smat);
     const glove=p.gad&&p.gad.gloves;sp(m,0,-.55,0,glove?.32:.21,glove?.3:.21,glove?.32:.21,glove?hex('#7fdcff'):(cos==='knight'||cos==='robot'?suit:skinC),glove?1:6,glove?.2:0);
-    if(own&&CC.hx&&s===1)drawHandX(m,CC,t,A);
+    if(own&&CC.hx&&s===1&&!(p.dig&&BUILD.on))drawHandX(m,CC,t,A);if(own&&s===1&&typeof drawPickHand==='function')drawPickHand(m,t,A,p);
     if(A.charge>0)sp(m,0,-.62,.05,.25+A.charge*.3,.25+A.charge*.3,.25+A.charge*.3,'#7ef9ff',1,1);
-    if(A.punch>.05&&s===A.pside&&!p.carry){cy(m,0,-.78,0,.05,.34,.05,'#ff5fa8',1,.3);MS.push();M4.tr(m,0,-.98,0);M4.rx(m,Math.PI/2);for(let k=0;k<8;k++){const a=k/8*TAU;sp(m,Math.cos(a)*.13,0,Math.sin(a)*.13,.06,.06,.06,'#9be7ff',1,.8);}MS.pop();}MS.pop();}
+    if(A.punch>.05&&s===A.pside&&!p.carry&&!(p.dig&&BUILD.on)){cy(m,0,-.78,0,.05,.34,.05,'#ff5fa8',1,.3);MS.push();M4.tr(m,0,-.98,0);M4.rx(m,Math.PI/2);for(let k=0;k<8;k++){const a=k/8*TAU;sp(m,Math.cos(a)*.13,0,Math.sin(a)*.13,.06,.06,.06,'#9be7ff',1,.8);}MS.pop();}MS.pop();}
   // cape
   if(L.cape&&L.cape!=='none'){const cc=hex(CAPES[idxOf(CAPES,L.cape)].c);MS.push();M4.tr(m,0,1.24,-.2);M4.rx(m,A.cape.p);const w=.56;
     rb(m,0,-.3,-.03,w,.62,.05,cc,6);M4.tr(m,0,-.6,0);M4.rx(m,A.cape.p*.45);rb(m,0,-.22,-.03,w+.04,.5,.05,L.cape==='rainbow'?hex('#7ef9ff'):shd(cc,.9),6);
@@ -2273,7 +2301,7 @@ function updateMe(dt,inp){const p=ME,A=p.anim,pr=prof();
   if(!p.fly&&inWater(p.x,p.z,p.y)&&!(typeof CRS!=='undefined'&&CRS.act)){swimMe(p,dt);}
   else if(!p.fly&&inWater(p.x,p.z,p.y)){p.tossed=false;A.spin=0;SFX.splash();burst(p.x,WL,p.z,'#bff4ff',18,3,.18,.5);p.x=p.safe.x;p.y=p.safe.y+.3;p.z=p.safe.z;p.vx=p.vz=p.vy=0;p.invT=1;floatText(p.x,p.y+2.2,p.z,'Splash!','blue');}
   else if(p.ground&&chAt(p.x,p.z)>=WL){p.swim=false;p.safeT-=dt;if(p.safeT<=0){p.safe={x:p.x,y:p.y,z:p.z};p.safeT=.5;}}
-  if(p.y<-2&&!p.fly){p.x=p.safe.x;p.y=p.safe.y+.3;p.z=p.safe.z;p.vy=0;}
+  if(p.y<-2&&!p.fly&&!(typeof MINE!=='undefined'&&MINE.cell[cid(clamp(Math.floor(p.x),0,N-1),clamp(Math.floor(p.z),0,N-1))])){p.x=p.safe.x;p.y=p.safe.y+.3;p.z=p.safe.z;p.vy=0;}
   animSprings(p,dt);}
 function animSprings(p,dt){const A=p.anim;const hs=Math.hypot(p.vx,p.vz);A.walk+=hs*dt*2.2;A.amp=lerp(A.amp,p.ground?Math.min(1,hs/6):.3,Math.min(1,10*dt));A.bob=p.ground?Math.abs(Math.sin(A.walk))*.07*A.amp:0;
   spring(A.lean,p.ground?hs*.025:-.06,120,10,dt);spring(A.tilt,0,120,6,dt);spring(A.sq,1,260,9,dt);spring(A.hx,-p.vy*.01+hs*.015,90,5,dt);spring(A.hz,Math.sin(A.walk)*.05*A.amp,90,5,dt);
@@ -3460,7 +3488,7 @@ const BGAP=new Set();// build cells that have air gaps (their collision depends 
 const BST=new Map();
 const BUILD={on:false,sel:'a0',tab:'bricks',rot:0,dirty:false,set:null,max:12000,tgt:null,lastRb:0,chT:0,chDirty:false,recent:new Map(),bsIter:0,msgT:0};
 const HOME_PRICE=20000;
-const isBrick=k=>(k>='a'&&k<='z')||'GLZEHIJNU'.includes(k);
+const isBrick=k=>(k>='a'&&k<='z')||'GLZEHIJNUK'.includes(k);
 function pieceH(c){return isBrick(c[0])?1:(FURNH[c[0]]||1);}
 function colTop(i){const e=BST.get(i);if(!e)return CH[i];let y=e.base;for(const c of e.p)y+=pieceH(c);return y;}
 function effBase(i){return H[i]<WL-.5?WL-.8:CH[i];}
@@ -3469,7 +3497,7 @@ function setColumn(i,code,fromNet){if(!(i>=0&&i<N*N))return;code=String(code||''
   let e=BST.get(i);if(!e){if(!code)return;e={base:effBase(i),base0:CH[i],p:[]};BST.set(i,e);}
   e.p=[];for(let k=0;k<code.length;k+=2){const c=code.slice(k,k+2);if(isBrick(c[0])||FURNH[c[0]]!==undefined)e.p.push(c);}
   // solid parts of the column (air pieces leave gaps you can walk through)
-  let y=e.base,top=e.base,gap=false,cur=null;const segs=[];for(const c of e.p){const h=pieceH(c);if(c[0]==='Z'){gap=true;cur=null;}else{if(cur&&Math.abs(cur[1]-y)<1e-4)cur[1]=y+h;else{cur=[y,y+h];segs.push(cur);}top=y+h;}y+=h;}
+  let y=e.base,top=e.base,gap=false,cur=null;const segs=[];for(const c of e.p){const h=pieceH(c);if(c[0]==='Z'||c[0]==='K'){gap=true;cur=null;}else{if(cur&&Math.abs(cur[1]-y)<1e-4)cur[1]=y+h;else{cur=[y,y+h];segs.push(cur);}top=y+h;}y+=h;}
   e.segs=gap?segs:null;if(gap)BGAP.add(i);else BGAP.delete(i);
   CH[i]=e.p.length?Math.max(top,e.base0):e.base0;BUILD.dirty=true;BUILD.chDirty=true;if(!fromNet)BUILD.recent.set(i,performance.now());}
 function colCode(i){const e=BST.get(i);return e?e.p.join(''):'';}
@@ -7405,8 +7433,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:19,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:20,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'⛏️',t:'Dig down!',s:'Every build zone has dirt, stone and shiny ores underneath. Tap 🧱 and hold ⛏️ to dig',go:()=>{if(!ME||!WORLD.plots)return null;const L=WORLD.plots.filter(q=>!inMoonBox(q.x,q.z)).sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const q=L[0];return q?dd({x:q.x,z:q.z0-3,label:tr(q.name),icon:'⛏️',col:'#8fd14f'}):null;}},
+  {ic:'⚒️',t:'Crafting',s:'Chop trees for wood, find coal, iron, gold and diamonds, then craft pickaxes, swords, torches, helmets and TNT'},
+  {ic:'🧨',t:'TNT!',s:'Craft TNT, put it down in a build zone, then dig it to light it. Run!'},
   {ic:'💬',t:'People talk to you!',s:'People in the street say hi, cheer when you beat baddies, and shout "Watch out!" when you drive too fast'},
   {ic:'🔊',t:'All new sounds',s:'Richer sound effects, a friendly car horn, engines for every ride, footsteps, birds and waves'},
   {ic:'⭐',t:'40 new missions!',s:'Catch runaway animals, put out fires, take photos, train like a knight and more',go:()=>{if(!ME||typeof MP==='undefined')return null;const L=MP.ids.map(qDef).filter(q=>q&&qAvailable(q)).map(q=>NPCS.find(n=>n.id===q.giver)).filter(n=>n&&!inInBox(n.x,n.z)&&realmAt(n.x,n.z)==='earth').sort((a,b)=>d2(a.x,a.z,ME.x,ME.z)-d2(b.x,b.z,ME.x,ME.z));const n=L[0];return n?dd({x:n.x,z:n.z,label:tr(n.name),icon:'⭐',col:'#ffcf3a'}):null;}},
@@ -8832,6 +8863,260 @@ function streetLabels(){for(const b of STREET.bubs){const q=b.q;const y=(q.y||0)
 {const _cr=SFX.crash;SFX.crash=function(...a){const r=_cr.apply(SFX,a);try{if(ME&&ME.veh){const L=nearPeds(ME.x,ME.z,16);if(L.length&&Math.random()<.7)setTimeout(()=>pedSay(L[0],'crash'),500);}}catch(e){}return r;};}
 // finishing a quest where people can see it
 {const _bn=banner;banner=function(t,...a){const r=_bn(t,...a);try{if((t==='Quest complete!'||t===tr('Quest complete!'))&&ME){const L=nearPeds(ME.x,ME.z,18);if(L.length)setTimeout(()=>pedSay(L[0],'hooray',true),900);}}catch(e){}return r;};}
+// ================= Mine & Craft: dig down in the build zones, find ores, chop trees and craft tools, Minecraft style =================
+// Every build zone now has 11 layers of ground under it: grass (or sand, snow, moon rock), dirt, stone, deep slate and
+// unbreakable bedrock at the bottom, with coal, iron, gold, diamonds and rubies hidden inside (crystals on the Moon).
+// In build mode, the ⛏️ button digs: hold it on the ground in front of you (or hold ⬇ to dig straight down).
+// What you dig goes into your backpack. Chop the trees around the zones for wood, then craft at a crafting table.
+const MN=(en,ar)=>{if(ar)AR[en]=ar;return en;};
+const VX=[null,
+  {k:'grass',n:MN('Grass','عشب'),col:'#6cc24a',h:.45,drop:'dirt'},{k:'dirt',n:MN('Dirt','تراب'),col:'#8a5a3a',h:.45,drop:'dirt'},{k:'stone',n:MN('Stone','حجر'),col:'#8e939c',h:1.3,drop:'stone'},
+  {k:'coal',n:MN('Coal Ore','خام الفحم'),col:'#26262c',h:1.5,drop:'coal',ore:1},{k:'iron',n:MN('Iron Ore','خام الحديد'),col:'#e0a47e',h:1.8,drop:'iron',ore:1},
+  {k:'gold',n:MN('Gold Ore','خام الذهب'),col:'#ffd23f',h:2,drop:'gold',ore:1,e:.15},{k:'diamond',n:MN('Diamond Ore','خام الألماس'),col:'#46e6ff',h:2.4,drop:'diamond',ore:1,need:3,e:.3},
+  {k:'ruby',n:MN('Ruby Ore','خام الياقوت'),col:'#ff3b5c',h:2.4,drop:'ruby',ore:1,need:3,e:.3},{k:'bedrock',n:MN('Bedrock','الصخر الأساسي'),col:'#2e3036',h:1e9},
+  {k:'sand',n:MN('Sand','رمل'),col:'#e8d59a',h:.4,drop:'sand'},{k:'snow',n:MN('Snow','ثلج'),col:'#f4f8ff',h:.35,drop:'snow'},{k:'deep',n:MN('Deep Stone','حجر عميق'),col:'#5d626b',h:1.8,drop:'stone'},
+  {k:'moon',n:MN('Moon Rock','صخر القمر'),col:'#b9bcc6',h:1.3,drop:'moonrock'},{k:'crystal',n:MN('Moon Crystal','بلورة القمر'),col:'#b28dff',h:2,drop:'crystal',ore:1,e:.35},
+  {k:'sandstone',n:MN('Sandstone','حجر رملي'),col:'#d9b877',h:1,drop:'sand'}];
+const VXI={};VX.forEach((v,i)=>{if(v)VXI[v.k]=i;});
+// things in your backpack
+const ITEMS={wood:{ic:'🪵',n:MN('Wood','خشب')},planks:{ic:'🟫',n:MN('Planks','ألواح')},stick:{ic:'🥢',n:MN('Sticks','عصي')},dirt:{ic:'🟤',n:MN('Dirt','تراب')},stone:{ic:'🪨',n:MN('Stone','حجر')},
+  coal:{ic:'⚫',n:MN('Coal','فحم')},iron:{ic:'⚙️',n:MN('Iron','حديد')},gold:{ic:'🟡',n:MN('Gold','ذهب')},diamond:{ic:'💎',n:MN('Diamond','ألماس')},ruby:{ic:'❤️',n:MN('Ruby','ياقوت')},
+  crystal:{ic:'🔮',n:MN('Moon Crystal','بلورة القمر')},moonrock:{ic:'🌑',n:MN('Moon Rock','صخر القمر')},sand:{ic:'🏖️',n:MN('Sand','رمل')},snow:{ic:'❄️',n:MN('Snowball','كرة ثلج')},
+  torch:{ic:'🔥',n:MN('Torch','شعلة')},tnt:{ic:'🧨',n:MN('TNT','ديناميت')}};
+const TIERS=[{n:MN('Hands','اليدان'),sp:1,col:null},{n:MN('Wooden','خشبي'),sp:2,col:'#b5824a'},{n:MN('Stone','حجري'),sp:3,col:'#8e939c'},{n:MN('Iron','حديدي'),sp:4.5,col:'#dfe3ea'},{n:MN('Diamond','ألماسي'),sp:7,col:'#46e6e0'}];
+const MINE={D:12,list:[],cell:new Int16Array(N*N),built:false,prog:0,key:'',tick:0,near:'',tnt:[],sent:0};
+G.inv=G.inv||{};G.tools=G.tools||{pick:0,sword:0};
+const invN=k=>G.inv[k]|0;const invAdd=(k,n)=>{G.inv[k]=Math.max(0,(G.inv[k]|0)+n);};
+// ---------- building the ground under every zone ----------
+function mineGen(P,idx){const moon=inMoonBox(P.x0+P.s/2,P.z0+P.s/2),s=P.s,D=moon?10:MINE.D,S=P.h,bot=S-D;const vox=new Uint8Array(s*s*D);const g=mulberry(9000+P.id*131);
+  const top=moon?VXI.moon:P.id===5?VXI.snow:[1,2,6,7].includes(P.id)?VXI.sand:VXI.grass,sub=moon?VXI.moon:[1,2,6,7].includes(P.id)?VXI.sand:VXI.dirt,desert=[6,7].includes(P.id);
+  for(let ly=0;ly<D;ly++){const d=D-1-ly;for(let lz=0;lz<s;lz++)for(let lx=0;lx<s;lx++){let t;if(ly===0)t=VXI.bedrock;else if(d===0)t=top;else if(d<=3)t=sub;else if(moon)t=VXI.moon;else if(desert&&d<=5)t=VXI.sandstone;else if(d>=8)t=VXI.deep;else t=VXI.stone;
+      if(ly===1&&g()<.35)t=VXI.bedrock;vox[lx+lz*s+ly*s*s]=t;}}
+  // ore veins: little wandering clumps (rarer and deeper for the shiny ones)
+  const vein=(type,n,d0,d1,size)=>{for(let v=0;v<n;v++){let x=Math.floor(g()*s),z=Math.floor(g()*s),d=d0+Math.floor(g()*(d1-d0+1));const len=size[0]+Math.floor(g()*(size[1]-size[0]+1));
+      for(let k=0;k<len;k++){const ly=D-1-d;if(x>=0&&x<s&&z>=0&&z<s&&ly>=1&&ly<D-1){const i=x+z*s+ly*s*s;if(vox[i]!==VXI.bedrock)vox[i]=type;}
+        const r=g();if(r<.3)x+=g()<.5?1:-1;else if(r<.6)z+=g()<.5?1:-1;else d=Math.max(d0,Math.min(d1,d+(g()<.5?1:-1)));}}};
+  if(moon){vein(VXI.crystal,9,2,8,[2,5]);vein(VXI.diamond,1,7,8,[1,2]);}
+  else{vein(VXI.coal,12,2,9,[3,6]);vein(VXI.iron,8,4,9,[2,4]);vein(VXI.gold,4,6,9,[2,3]);vein(VXI.diamond,2,8,9,[1,3]);vein(VXI.ruby,1,8,9,[1,2]);}
+  const m={id:idx,P,x0:P.x0,z0:P.z0,s,S,D,bot,vox,seg:new Array(s*s),broken:new Set(),moon};
+  for(let lz=0;lz<s;lz++)for(let lx=0;lx<s;lx++){const i=cid(P.x0+lx,P.z0+lz);MINE.cell[i]=idx+1;}return m;}
+const mineOf=i=>{const k=MINE.cell[i];return k?MINE.list[k-1]:null;};
+const vIdx=(m,lx,ly,lz)=>lx+lz*m.s+ly*m.s*m.s;
+function vAt(m,lx,ly,lz){if(ly<0)return VXI.bedrock;if(lx<0||lz<0||lx>=m.s||lz>=m.s)return ly<m.D?VXI.stone:0;if(ly>=m.D)return 0;return m.vox[vIdx(m,lx,ly,lz)];}
+// the solid parts of a column (the ground you dug plus anything built on it), for walking, jumping and tunnels
+function mineColumn(m,lx,lz){const i=cid(m.x0+lx,m.z0+lz);const segs=[];let cur=null;for(let ly=0;ly<m.D;ly++){const t=m.vox[vIdx(m,lx,ly,lz)];const y=m.bot+ly;if(t){if(cur&&Math.abs(cur[1]-y)<1e-4)cur[1]=y+1;else{cur=[y,y+1];segs.push(cur);}}else cur=null;}
+  const e=BST.get(i);if(e&&e.p.length){let y=e.base;for(const c of e.p){const h=pieceH(c);if(c[0]!=='Z'&&c[0]!=='K'){const last=segs[segs.length-1];if(last&&Math.abs(last[1]-y)<1e-4)last[1]=y+h;else segs.push([y,y+h]);}y+=h;}}
+  segs.sort((a,b)=>a[0]-b[0]);m.seg[lx+lz*m.s]=segs;const top=segs.length?segs[segs.length-1][1]:m.bot;CH[i]=top;BUILD.chDirty=true;return segs;}
+function mineSegs(i){const m=mineOf(i);if(!m)return null;const x=i%N,z=(i/N)|0;const li=(x-m.x0)+(z-m.z0)*m.s;return m.seg[li]||mineColumn(m,x-m.x0,z-m.z0);}
+{const _g=groundAt;groundAt=function(x,z,y){const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=N||zi>=N||!MINE.cell[xi+zi*N])return _g(x,z,y);const i=xi+zi*N;if(y===undefined)return CH[i];
+    const m=mineOf(i),segs=mineSegs(i);let g0=m.bot;for(const q of segs){if(q[1]<=y+1.05)g0=Math.max(g0,q[1]);else if(q[0]<y+1.75)return q[1];}return g0;};}
+{const _c=ceilAt;ceilAt=function(x,z,y){const xi=Math.floor(x),zi=Math.floor(z);if(xi<0||zi<0||xi>=N||zi>=N||!MINE.cell[xi+zi*N])return _c(x,z,y);const segs=mineSegs(xi+zi*N);for(const q of segs)if(q[0]>=y+1.2)return q[0];return 1e9;};}
+// moveBody only asks about ceilings when somebody has built a tunnel; mines always count
+{const _mb=moveBody;moveBody=function(e,dt,r,grav){if(e.vy>0&&MINE.list.length&&MINE.cell[cid(clamp(Math.floor(e.x),0,N-1),clamp(Math.floor(e.z),0,N-1))]){const y0=e.y;const res=_mb(e,dt,r,grav);
+    const c=Math.min(ceilAt(e.x-r,e.z-r,y0),ceilAt(e.x+r,e.z-r,y0),ceilAt(e.x-r,e.z+r,y0),ceilAt(e.x+r,e.z+r,y0));if(e.y+1.8>c){e.y=Math.max(y0,c-1.8);e.vy=Math.min(e.vy,0);}return res;}return _mb(e,dt,r,grav);};}
+// no water in a dug hole, even when it is deeper than the sea
+{const _iw=inWater;inWater=function(x,z,y){const xi=Math.floor(x),zi=Math.floor(z);if(xi>=0&&zi>=0&&xi<N&&zi<N&&MINE.cell[xi+zi*N])return false;return _iw(x,z,y);};}
+// changes to build columns on top of a mine update the mine's walking heights too
+{const _sc=setColumn;setColumn=function(i,code,fromNet){_sc(i,code,fromNet);const m=mineOf(i);if(m){const x=i%N,z=(i/N)|0;mineColumn(m,x-m.x0,z-m.z0);}};}
+// the zone ground: lower the ground mesh under each zone so the blocks fill the hole (the rest of the game still sees the surface)
+{const _pb=plotsBuild;plotsBuild=function(){_pb();MINE.list=[];MINE.cell.fill(0);for(const P of WORLD.plots||[])MINE.list.push(mineGen(P,MINE.list.length));
+    for(const m of MINE.list)for(let lz=0;lz<m.s;lz++)for(let lx=0;lx<m.s;lx++)mineColumn(m,lx,lz);MINE.built=true;mineTreesAndTables();};}
+{const _mc=meshChunk;meshChunk=function(ch){if(!MINE.list.length)return _mc(ch);const saved=[];for(const m of MINE.list){if(m.x0+m.s<=ch.x0||m.x0>=ch.x0+CS||m.z0+m.s<=ch.z0||m.z0>=ch.z0+CS)continue;
+      for(let lz=0;lz<m.s;lz++)for(let lx=0;lx<m.s;lx++){const x=m.x0+lx,z=m.z0+lz;if(x<ch.x0||x>=ch.x0+CS||z<ch.z0||z>=ch.z0+CS)continue;const i=cid(x,z);saved.push([i,H[i]]);H[i]=m.bot;}}
+    try{return _mc(ch);}finally{for(const [i,h] of saved)H[i]=h;}};}
+// ---------- drawing the blocks you can see (buried ones are skipped) ----------
+function vxDraw(S,t,x,y,z){const A=(ax,ay,az,sx,sy,sz,c,mt,e)=>S.box.aabb(ax,ay,az,sx,sy,sz,hex(c),PK(mt,e||0));const V=VX[t];
+  if(t===VXI.grass){A(x,y,z,1,.8,1,'#8a5a3a',9);A(x,y+.8,z,1,.2,1,'#6cc24a',9);}else if(t===VXI.snow){A(x,y,z,1,.78,1,'#8a5a3a',9);A(x,y+.78,z,1,.22,1,'#f4f8ff',9);}
+  else if(V.ore)A(x,y,z,1,1,1,V.col,16,V.e||0);else if(t===VXI.bedrock||t===VXI.deep||t===VXI.moon)A(x,y,z,1,1,1,V.col,13);else if(t===VXI.sandstone)A(x,y,z,1,1,1,V.col,12);else A(x,y,z,1,1,1,V.col,9);}
+function mineDrawInto(S){if(!MINE.list.length)return;const cx=CAM.tx,cz=CAM.tz;for(const m of MINE.list){const mx=m.x0+m.s/2,mz=m.z0+m.s/2;if(Math.abs(mx-cx)>95||Math.abs(mz-cz)>95)continue;const s=m.s;
+    for(let ly=0;ly<m.D;ly++)for(let lz=0;lz<s;lz++)for(let lx=0;lx<s;lx++){const t=m.vox[lx+lz*s+ly*s*s];if(!t)continue;
+      if(vAt(m,lx,ly+1,lz)&&vAt(m,lx,ly-1,lz)&&vAt(m,lx+1,ly,lz)&&vAt(m,lx-1,ly,lz)&&vAt(m,lx,ly,lz+1)&&vAt(m,lx,ly,lz-1))continue;vxDraw(S,t,m.x0+lx,m.bot+ly,m.z0+lz);}}}
+{const _rb=rebuildBuilds;rebuildBuilds=function(){_rb();try{const S=BUILD.set;const prev=OUT;OUT=S;mineDrawInto(S);OUT=prev;setUpload(S);}catch(e){noteErr('minedraw',e);}};}
+// rebuild when the camera gets near a different zone
+function mineNearKey(){let k='';for(const m of MINE.list){if(Math.abs(m.x0+m.s/2-CAM.tx)<=95&&Math.abs(m.z0+m.s/2-CAM.tz)<=95)k+=m.id+',';}return k;}
+// ---------- digging ----------
+function mineTarget(p,down){const fx=Math.sin(p.face),fz=Math.cos(p.face);
+  if(down){const xi=Math.floor(p.x),zi=Math.floor(p.z);const m=mineOf(cid(xi,zi));if(m){const lx=xi-m.x0,lz=zi-m.z0,ly=Math.round(p.y-m.bot)-1;if(ly>=0&&ly<m.D&&m.vox[vIdx(m,lx,ly,lz)])return {m,lx,ly,lz};}return null;}
+  let cx=null,cz=null;for(const dd of [.8,1.25,1.8]){const x=Math.floor(p.x+fx*dd),z=Math.floor(p.z+fz*dd);if(x!==Math.floor(p.x)||z!==Math.floor(p.z)){cx=x;cz=z;break;}}if(cx===null)return null;
+  const m=mineOf(cid(cx,cz));if(!m)return null;const lx=cx-m.x0,lz=cz-m.z0;const lyF=Math.floor(p.y-m.bot+.05);
+  for(const ly of [lyF,lyF+1])if(ly>=0&&ly<m.D&&m.vox[vIdx(m,lx,ly,lz)])return {m,lx,ly,lz};
+  for(let ly=Math.min(m.D-1,lyF-1);ly>=Math.max(0,lyF-3);ly--)if(m.vox[vIdx(m,lx,ly,lz)])return {m,lx,ly,lz};return null;}
+{const _bt=buildTarget;buildTarget=function(){const T=_bt();try{if(!ME)return T;const mt=mineTarget(ME,!!(BUILD.inpDown));if(mt){const t=mt.m.vox[vIdx(mt.m,mt.lx,mt.ly,mt.lz)];
+      const own=T&&T.has&&T.cx===mt.m.x0+mt.lx&&T.cz===mt.m.z0+mt.lz&&T.y>mt.m.bot+mt.ly+1.05;if(!own){const R0=T||{i:cid(mt.m.x0+mt.lx,mt.m.z0+mt.lz),cx:mt.m.x0+mt.lx,cz:mt.m.z0+mt.lz,y:mt.m.bot+mt.ly+1,why:'Nothing to build on here',has:false,top:null};return {...R0,mine:{...mt,t},mx:mt.m.x0+mt.lx,my:mt.m.bot+mt.ly,mz:mt.m.z0+mt.lz};}}}catch(e){noteErr('mtgt',e);}return T;};}
+{const _br=buildRemove;buildRemove=function(){const T=BUILD.tgt;if(T&&T.mine)return;return _br();};}
+function mineBreak(m,vi,byNet,who){if(!m||!m.vox[vi])return 0;const t=m.vox[vi];if(t===VXI.bedrock)return 0;m.vox[vi]=0;m.broken.add(vi);const s=m.s,lx=vi%s,lz=Math.floor(vi/s)%s,ly=Math.floor(vi/(s*s));
+  mineColumn(m,lx,lz);BUILD.dirty=true;const x=m.x0+lx+.5,y=m.bot+ly+.5,z=m.z0+lz+.5;const V=VX[t];
+  AU.at(x,z,()=>{brickBurst(x,y,z,V.ore?[V.col,'#8e939c','#ffffff']:[V.col,'#5a4a3a'],V.ore?14:9,3.5);SND.play(V.h>1?'break_hard':'break_soft');if(V.ore)SND.play('ore_ding',1,t===VXI.diamond||t===VXI.ruby?1.25:1);});
+  if(!byNet){netEvent('mine',m.id,vi);if(V.drop){invAdd(V.drop,1);const it=ITEMS[V.drop];floatText(x,y+.9,z,'+1 '+(it?it.ic:''),V.ore?'gold':'white');mineFly(x,y,z,V.col);}
+    stInc('dug');if(V.ore)stInc('ore_'+V.drop);if(t===VXI.diamond&&!G.firstDia){G.firstDia=1;banner('💎 '+tr('A diamond!'),tr('Craft a diamond pickaxe or sell it for coins'),'#46e6ff');}saveSoon();}return t;}
+// the little block that flies into your backpack
+const MFLY=[];function mineFly(x,y,z,col){MFLY.push({x,y,z,vx:Rr(-1,1),vy:4,vz:Rr(-1,1),t:0,col});}
+function mineFlyUpdate(dt){for(let k=MFLY.length-1;k>=0;k--){const f=MFLY[k];f.t+=dt;if(f.t<.25){f.x+=f.vx*dt;f.y+=f.vy*dt;f.z+=f.vz*dt;f.vy-=12*dt;}else{const tx=ME.x,ty=ME.y+1.2,tz=ME.z;const a=Math.min(1,dt*9);f.x+=(tx-f.x)*a;f.y+=(ty-f.y)*a;f.z+=(tz-f.z)*a;
+      if(Math.hypot(tx-f.x,ty-f.y,tz-f.z)<.4||f.t>1.4){MFLY.splice(k,1);SND.play('pickup',.8,1+Math.random()*.2);}}}}
+function mineFlyDraw(t){if(!MFLY.length)return;const m=MS.cur;OUT=DYN;for(const f of MFLY){MS.reset();M4.tr(m,f.x,f.y,f.z);M4.ry(m,t*6);M4.rx(m,t*4);bx(m,0,0,0,.26,.26,.26,f.col,1,.2);}}
+// holding ⛏️: the hero swings, the block cracks, then pops
+{const _bi=buildInput;buildInput=function(inp){BUILD.inpDown=!!inp.down;_bi(inp);try{const T=BUILD.tgt;const mt=T&&T.mine;const key=mt?mt.m.id+':'+vIdx(mt.m,mt.lx,mt.ly,mt.lz):'';
+    if(!mt||!inp.power){MINE.prog=0;MINE.key='';ME.dig=false;return;}if(key!==MINE.key){MINE.key=key;MINE.prog=0;}const V=VX[mt.t];const tier=G.tools.pick|0;
+    if(V.need&&tier<V.need){if(inp.powerP){SND.play('nope');buildMsg(trf('Too hard! You need an {0} pickaxe',tr(TIERS[V.need].n)));}return;}
+    ME.dig=true;MINE.prog+=(MINE.dtNow||.016)*TIERS[tier].sp/V.h;MINE.tick-=MINE.dtNow;if(MINE.tick<=0){MINE.tick=.24;ME.anim.punch=1;ME.anim.pside=1;
+      AU.at(mt.m.x0+mt.lx+.5,mt.m.z0+mt.lz+.5,()=>SND.play(V.h>1?'dig_hard':'dig_soft',.9,.95+Math.random()*.1));if(R()<.7)brickBurst(mt.m.x0+mt.lx+.5,mt.m.bot+mt.ly+.8,mt.m.z0+mt.lz+.5,[V.col],3,2);}
+    if(MINE.prog>=1){MINE.prog=0;MINE.key='';mineBreak(mt.m,vIdx(mt.m,mt.lx,mt.ly,mt.lz),false);}}catch(e){noteErr('dig',e);}};}
+{const _ub=updateBuild;updateBuild=function(dt){MINE.dtNow=dt;_ub(dt);};}
+// the highlight around the block you are digging, with cracks that grow
+{const _dg=drawBuildGhost;drawBuildGhost=function(t){_dg(t);const T=BUILD.tgt;if(!BUILD.on||!T||!T.mine)return;const m=MS.cur;OUT=DYN;const x=T.mx,y=T.my,z=T.mz;const e=.03,c=MINE.prog>0?'#ffffff':'#ffe066';
+  for(const [a,b] of [[0,0],[1,0],[0,1],[1,1]]){bx(m,x+a,y+.5,z+b,e*2,1+e*2,e*2,c,1,.9);bx(m,x+.5,y+a,z+b,1+e*2,e*2,e*2,c,1,.9);bx(m,x+a,y+b,z+.5,e*2,e*2,1+e*2,c,1,.9);}
+  if(MINE.prog>0){const n=Math.floor(MINE.prog*8);for(let k=0;k<n;k++){const h=(k*.618)%1,h2=(k*.382+.2)%1;bx(m,x+.2+h*.6,y+1.006,z+.2+h2*.6,.34,.012,.05,'#23232f',1);bx(m,x-.006,y+.2+h2*.6,z+.2+h*.6,.012,.05,.34,'#23232f',1);bx(m,x+1.006,y+.2+h*.6,z+.2+h2*.6,.012,.05,.34,'#23232f',1);bx(m,x+.2+h2*.6,y+.2+h*.6,z-.006,.34,.05,.012,'#23232f',1);bx(m,x+.2+h*.6,y+.2+h2*.6,z+1.006,.34,.05,.012,'#23232f',1);}}};}
+// ---------- climbing out of a hole: hold jump against the wall ----------
+{const _um=updateMe;updateMe=function(dt,inp){_um(dt,inp);const p=ME;if(!p||p.fly||p.veh||!inp)return;const i=cid(clamp(Math.floor(p.x),0,N-1),clamp(Math.floor(p.z),0,N-1));const m=mineOf(i);if(!m&&!MINE.cell[i])return;
+  if(inp.jump&&(inp.mx||inp.mz)){const fx=Math.sin(p.face),fz=Math.cos(p.face);const g=groundAt(p.x+fx*.6,p.z+fz*.6,p.y);if(g>p.y+.55&&g<p.y+14){p.vy=Math.max(p.vy,6.2);p.vx+=fx*.8;p.vz+=fz*.8;p.climbT=.2;if(R()<.2)burst(p.x+fx*.4,p.y+1,p.z+fz*.4,['#8a5a3a','#c8b090'],1,1,.1,.5);
+      if(!G.climbTip){G.climbTip=1;toast('🧗 '+tr('Climbing! Keep holding jump against the wall'));}}}};}
+// ---------- trees to chop around every zone ----------
+BRKT.mtree={r:.55,top:4.6,hp:3,v:0,cols:['#6b4a2e','#3f9e52']};
+function mineTreesAndTables(){WORLD.mtables=[];for(const m of MINE.list){const P=m.P,g=mulberry(7000+P.id*17);let placed=0;
+    for(let t=0;t<200&&placed<(m.moon?0:5);t++){const side=Math.floor(g()*4),u=g()*(P.s+8)-4,off=4+g()*4;let x=side===0?P.x0+u:side===1?P.x0+u:side===2?P.x0-off:P.x0+P.s+off,z=side===0?P.z0-off:side===1?P.z0+P.s+off:P.z0+u;
+      const i=cid(clamp(x|0,0,N-1),clamp(z|0,0,N-1));if(H[i]<WL+.3||RD[i]||CH[i]>H[i]+.05||MINE.cell[i]||(typeof inInBox==='function'&&inInBox(x,z)))continue;if(WORLD.brk.some(b=>d2(b.x,b.z,x,z)<3))continue;
+      if(Math.abs(x-(P.x0+P.s/2))<3&&z<P.z0)continue;addBrk('mtree',x+.5,z+.5,g()*6);placed++;}
+    WORLD.mtables.push({m,x:P.x0+P.s/2-3.2,z:P.z0-2.4,y:P.h});}}
+{const _db=drawBrk;drawBrk=function(b,t){if(b.t!=='mtree')return _db(b,t);const m=MS.cur;MS.reset();M4.tr(m,b.x,b.y,b.z);if(b.wob>0)M4.rz(m,Math.sin(t*40)*b.wob*.1);
+  for(let k=0;k<4;k++)bx(m,0,k*.9+.45,0,.6,.9,.6,'#6b4a2e',11);for(const [a,c,d,s] of [[0,3.4,0,2.2],[.6,3,.4,1.3],[-.6,3.1,-.3,1.3],[0,4.5,0,1.3],[.2,2.8,-.7,1.1]])bx(m,a,c+s*.4,d,s,s*.8,s,'#3f9e52',7);};}
+{const _sb=smashBrk;smashBrk=function(b,fromNet){const r=_sb(b,fromNet);if(b.t==='mtree'){b.respT=35;if(!fromNet&&ME&&d2(b.x,b.z,ME.x,ME.z)<9){invAdd('wood',3);floatText(b.x,b.y+2.2,b.z,'+3 🪵','white');for(let k=0;k<3;k++)mineFly(b.x,b.y+1+k*.5,b.z,'#6b4a2e');
+      SND.play('chop');stInc('wood');if(!G.woodTip){G.woodTip=1;toast('🪵 '+tr('Wood! Craft it into planks and sticks at a crafting table'));}saveSoon();}burst(b.x,b.y+3,b.z,['#3f9e52','#56c05a'],18,3,.18,1);}return r;};}
+{const _rs=respawnBrk;respawnBrk=function(dt){_rs(dt);for(const b of WORLD.brk){if(b.t!=='mtree'||!b.broken)continue;if(b.respT<=0&&d2(b.x,b.z,ME.x,ME.z)>2.5){b.broken=false;b.hp=BRKT.mtree.hp;}}};}
+{const _hb=hitBrk;hitBrk=function(b,dmg,fromNet){if(b&&b.t==='mtree'&&!b.broken){SND.play('chop',.8);}return _hb(b,dmg,fromNet);};}
+// ---------- crafting tables (and the crafting menu) ----------
+function drawTables(t){if(!WORLD.mtables||camRealm()!=='earth')return;const m=MS.cur;OUT=DYN;for(const T0 of WORLD.mtables){if(Math.abs(T0.x-CAM.tx)>80||Math.abs(T0.z-CAM.tz)>80||!inView(T0.x,T0.z))continue;const y=chAt(T0.x,T0.z);MS.reset();M4.tr(m,T0.x,y,T0.z);
+    bx(m,0,.45,0,1,.9,1,'#b5824a',10);bx(m,0,.97,0,1.04,.14,1.04,'#8a5a3a',10);for(let k=1;k<3;k++){bx(m,-.5+k*.333,1.045,0,.025,.012,1,'#5a3a20',1);bx(m,0,1.045,-.5+k*.333,1,.012,.025,'#5a3a20',1);}
+    MS.push();M4.tr(m,.22,1.09,.12);M4.ry(m,.6);bx(m,0,0,0,.06,.06,.42,'#8a5a3a',6);bx(m,0,0,.2,.34,.08,.1,'#8e939c',3);MS.pop();bx(m,-.28,.42,-.51,.3,.3,.02,'#8e939c',3);bx(m,.28,.42,.51,.3,.2,.02,'#6b4a2e',6);}}
+function mineLabels(){if(!WORLD.mtables)return;for(const T0 of WORLD.mtables)if(d2(T0.x,T0.z,ME.x,ME.z)<12)label('mtab'+T0.m.id,T0.x,chAt(T0.x,T0.z)+1.9,T0.z,'⚒️ '+tr('Crafting table'),'sign or');}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawTables(t);mineFlyDraw(t);mineTntDraw(t);}catch(e){noteErr('mtab',e);}};}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{mineLabels();}catch(e){}};}
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(!WORLD.mtables)return;for(const T0 of WORLD.mtables)cand({x:T0.x,z:T0.z,y:chAt(T0.x,T0.z)},'craft','⚒️ '+tr('Craft tools'),2.6,6,{fn:()=>openCraft()});};}
+// recipes: what you need, and what you get
+const RECIPES=[
+  {id:'planks',ic:'🟫',n:MN('Planks','ألواح'),need:{wood:1},give:{planks:4},d:MN('Chop trees for wood','اقطع الأشجار لتحصل على الخشب')},
+  {id:'stick',ic:'🥢',n:MN('Sticks','عصي'),need:{planks:2},give:{stick:4},d:MN('Handles for tools','مقابض للأدوات')},
+  {id:'pick1',ic:'⛏️',n:MN('Wooden Pickaxe','فأس خشبية'),need:{planks:3,stick:2},tool:['pick',1],d:MN('Digs twice as fast','تحفر بسرعة الضعف')},
+  {id:'pick2',ic:'⛏️',n:MN('Stone Pickaxe','فأس حجرية'),need:{stone:3,stick:2},tool:['pick',2],d:MN('Digs 3 times as fast','تحفر بسرعة 3 أضعاف')},
+  {id:'pick3',ic:'⛏️',n:MN('Iron Pickaxe','فأس حديدية'),need:{iron:3,stick:2},tool:['pick',3],d:MN('Fast, and it can dig diamonds and rubies','سريعة، وتستطيع حفر الألماس والياقوت')},
+  {id:'pick4',ic:'⛏️',n:MN('Diamond Pickaxe','فأس ألماسية'),need:{diamond:3,stick:2},tool:['pick',4],d:MN('The fastest pickaxe of all!','أسرع فأس على الإطلاق!')},
+  {id:'sword1',ic:'🗡️',n:MN('Wooden Sword','سيف خشبي'),need:{planks:2,stick:1},tool:['sword',1],d:MN('All your attacks +20%','كل هجماتك أقوى بـ 20%')},
+  {id:'sword2',ic:'🗡️',n:MN('Stone Sword','سيف حجري'),need:{stone:2,stick:1},tool:['sword',2],d:MN('All your attacks +40%','كل هجماتك أقوى بـ 40%')},
+  {id:'sword3',ic:'🗡️',n:MN('Iron Sword','سيف حديدي'),need:{iron:2,stick:1},tool:['sword',3],d:MN('All your attacks +60%','كل هجماتك أقوى بـ 60%')},
+  {id:'sword4',ic:'🗡️',n:MN('Diamond Sword','سيف ألماسي'),need:{diamond:2,stick:1},tool:['sword',4],d:MN('All your attacks twice as strong!','كل هجماتك أقوى مرتين!')},
+  {id:'torch',ic:'🔥',n:MN('Torches','مشاعل'),need:{coal:1,stick:1},give:{torch:4},d:MN('Glowing lights to put anywhere','أضواء متوهجة تضعها في أي مكان')},
+  {id:'tnt',ic:'🧨',n:MN('TNT','ديناميت'),need:{sand:4,coal:2},give:{tnt:1},d:MN('Boom! Blows up blocks in a build zone','بوم! يفجّر المكعبات في منطقة البناء')},
+  {id:'goldhelm',ic:'⛑️',n:MN('Golden Helmet','خوذة ذهبية'),need:{gold:5},hat:'goldhelm',d:MN('A shiny helmet for any hero','خوذة لامعة لأي بطل')},
+  {id:'diahelm',ic:'💎',n:MN('Diamond Helmet','خوذة ألماسية'),need:{diamond:5},hat:'diahelm',d:MN('The coolest helmet ever','أروع خوذة على الإطلاق')},
+  {id:'rubycrown',ic:'👑',n:MN('Ruby Crown','تاج الياقوت'),need:{ruby:3,gold:3},hat:'rubycrown',d:MN('A crown fit for a king or queen','تاج يليق بملك أو ملكة')},
+  {id:'crystalcrown',ic:'🔮',n:MN('Crystal Crown','تاج البلور'),need:{crystal:6},hat:'crystalcrown',d:MN('Glows like the Moon','يتوهج مثل القمر')}];
+const TRADES=[['coal',20],['iron',60],['gold',150],['crystal',250],['diamond',400],['ruby',500]];
+function canCraft(r){for(const k in r.need)if(invN(k)<r.need[k])return false;if(r.tool&&(G.tools[r.tool[0]]|0)>=r.tool[1])return false;if(r.hat&&(prof().owned.hat||[]).includes(r.hat))return false;return true;}
+function doCraft(id){const r=RECIPES.find(q=>q.id===id);if(!r||!canCraft(r)){SND.play('nope');return;}for(const k in r.need)invAdd(k,-r.need[k]);if(r.give)for(const k in r.give)invAdd(k,r.give[k]);
+  if(r.tool){G.tools[r.tool[0]]=r.tool[1];}if(r.hat)giveRewards({rw:[{t:'hat',id:r.hat}]});SND.play('craft');stInc('craft');if(r.id==='pick4'&&!G.craftDia){G.craftDia=1;}
+  toast(r.ic+' '+trf('You made: {0}',tr(r.n)));if(ME)ME.anim.cheer=1;saveSoon();openCraft(true);}
+function openCraft(keep){let el=$('craft');if(!el){el=document.createElement('div');el.id='craft';el.className='modal';el.hidden=true;document.body.appendChild(el);el.addEventListener('pointerdown',e=>{if(e.target===el)closeCraft();});}
+  const bag=Object.keys(ITEMS).filter(k=>invN(k)>0).map(k=>`<span class="cbag" title="${esc(tr(ITEMS[k].n))}">${ITEMS[k].ic}<b>${invN(k)}</b></span>`).join('')||`<span class="small">${esc(tr('Your backpack is empty. Chop trees and dig!'))}</span>`;
+  const tl=`<div class="ctools">⛏️ ${esc(tr(TIERS[G.tools.pick|0].n))} · 🗡️ ${esc(tr(TIERS[G.tools.sword|0].n))}</div>`;
+  const card=r=>{const ok=canCraft(r);const done=(r.tool&&(G.tools[r.tool[0]]|0)>=r.tool[1])||(r.hat&&(prof().owned.hat||[]).includes(r.hat));
+    const need=Object.keys(r.need).map(k=>`<span class="${invN(k)>=r.need[k]?'have':'miss'}">${ITEMS[k].ic}${r.need[k]}</span>`).join(' ');
+    return `<div class="crc ${ok?'ok':''} ${done?'done':''}"><div class="cri">${r.ic}</div><div class="crt"><b>${esc(tr(r.n))}</b><small>${esc(tr(r.d))}</small><div class="crn">${need}</div></div>${done?'<span class="crd">✓</span>':`<button class="mb crb" data-r="${r.id}" ${ok?'':'disabled'}>${esc(tr('Craft'))}</button>`}</div>`;};
+  const trades=TRADES.map(([k,v])=>`<button class="mb ctr" data-s="${k}" ${invN(k)>0?'':'disabled'}>${ITEMS[k].ic} → 🪙 ${v}</button>`).join('');
+  const nm=mineNear();el.innerHTML=`<div class="mbox cbox"><h2>⚒️ ${esc(tr('Crafting'))}</h2><div class="cbags">${bag}</div>${tl}<div class="crl">${RECIPES.map(card).join('')}</div><h3>🪙 ${esc(tr('Sell for coins'))}</h3><div class="ctrs">${trades}</div>${nm&&nm.broken.size?`<button class="mb" id="craft_refill">🔄 ${esc(tr('Fill the ground in this zone again'))}</button>`:''}<button class="mb" id="craft_x">${esc(tr('Done'))}</button></div>`;
+  const rf=$('craft_refill');if(rf)rf.onclick=e=>{e.stopPropagation();if(!rf.dataset.sure){rf.dataset.sure=1;rf.textContent='⚠️ '+tr('Tap again to fill it. Holes will be gone!');return;}mineRefill(nm,false);SND.play('craft');closeCraft();};
+  el.querySelectorAll('.crb').forEach(b=>b.onclick=e=>{e.stopPropagation();doCraft(b.dataset.r);});
+  el.querySelectorAll('.ctr').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.s,v=(TRADES.find(q=>q[0]===k)||[])[1];if(!v||invN(k)<=0){SND.play('nope');return;}invAdd(k,-1);addCoins(v);SFX.coin(v);saveSoon();openCraft(true);});
+  $('craft_x').onclick=e=>{e.stopPropagation();closeCraft();};if(!keep){el.hidden=false;G.mode='menu';G.uiT=performance.now();SND.play('open',1,1.1,0);}}
+function mineNear(){if(!ME)return null;let best=null,bd=14;for(const m of MINE.list){const dx=Math.max(m.x0-ME.x,0,ME.x-(m.x0+m.s)),dz=Math.max(m.z0-ME.z,0,ME.z-(m.z0+m.s));const d=Math.hypot(dx,dz);if(d<bd){bd=d;best=m;}}return best;}
+function mineRefill(m,byNet){if(!m)return;const fresh=mineGen(m.P,m.id);MINE.list[m.id]=fresh;for(let lz=0;lz<fresh.s;lz++)for(let lx=0;lx<fresh.s;lx++)mineColumn(fresh,lx,lz);BUILD.dirty=true;
+  if(ME&&MINE.cell[cid(clamp(Math.floor(ME.x),0,N-1),clamp(Math.floor(ME.z),0,N-1))]===m.id+1&&ME.y<fresh.S){ME.y=fresh.S+.2;ME.vy=0;}if(!byNet){netEvent('mreset',m.id);toast('🔄 '+tr('The ground is back!'));saveSoon();}}
+function closeCraft(){const el=$('craft');if(el)el.hidden=true;if(G.mode==='menu')G.mode='play';}
+// swords make every attack stronger
+{const _pm=typeof heroPowMul==='function'?heroPowMul:null;if(_pm)heroPowMul=function(pr){return _pm(pr)*[1,1.2,1.4,1.6,2][G.tools.sword|0];};}
+// ---------- the backpack tab in build mode: torches and TNT from your backpack ----------
+BTABS.push(['pack','🎒','Backpack']);
+{const _pal=paletteList;paletteList=function(){if(BUILD.tab!=='pack'){const L=_pal();return BUILD.tab==='blocks'?L.filter(q=>q.c[0]!=='N'&&q.c[0]!=='K'):L;}return [{c:'K0',ico:'🔥',n:trf('Torch ×{0}',invN('torch')),col:'#6b4a2e'},{c:'N0',ico:'🧨',n:trf('TNT ×{0}',invN('tnt')),col:'#e8343f'}];};}
+{const _rbb=renderBBar;renderBBar=function(){_rbb();const bb=$('bbar');if(!bb)return;if(BUILD.tab==='pack')bb.querySelectorAll('.bsw[data-c]').forEach(b=>{const k=b.dataset.c[0]==='K'?'torch':'tnt';const s=document.createElement('small');s.className='cnt';s.textContent=invN(k);b.appendChild(s);});
+    if(!bb.querySelector('.bsw.craftb')){const c=document.createElement('button');c.className='bsw craftb';c.title=tr('Crafting');c.innerHTML='<span>⚒️</span>';c.onclick=e=>{e.stopPropagation();openCraft();};const x=bb.querySelector('#bbx');bb.insertBefore(c,x);}};}
+{const _bp=buildPlace;buildPlace=function(){const c=BUILD.sel||'';if(BUILD.tab==='pack'||c[0]==='K'||c[0]==='N'){const k=c[0]==='K'?'torch':c[0]==='N'?'tnt':null;if(k&&invN(k)<=0){buildMsg(k==='torch'?'Craft torches first (coal + a stick)':'Craft TNT first (sand + coal)');SND.play('nope');return;}
+      const n0=bstCount();_bp();if(k&&bstCount()>n0){invAdd(k,-1);renderBBar();}return;}return _bp();};}
+// torches: a stick with a flame; you can walk through them
+{const _db2=drawBlock;drawBlock=function(S,k,x,y,z){if(k!=='K')return _db2(S,k,x,y,z);const A=(ax,ay,az,sx,sy,sz,c,m,e)=>S.box.aabb(ax,ay,az,sx,sy,sz,hex(c),PK(m,e||0));
+  A(x+.44,y,z+.44,.12,.62,.12,'#6b4a2e',11);A(x+.41,y+.62,z+.41,.18,.16,.18,'#ff8a1f',1,1);A(x+.45,y+.74,z+.45,.1,.12,.1,'#fff2a8',1,1);};}
+MCB.push({c:'K',n:MN('Torch','شعلة'),col:'#ff8a1f',ic:'🔥'});MCBC.K=MCB[MCB.length-1];
+// ---------- TNT: dig (⛏️) a TNT block to light it... then run! ----------
+{const _br2=buildRemove;buildRemove=function(){const T=BUILD.tgt;if(T&&T.has&&T.top&&T.top[0]==='N'&&plotAt(T.cx+.5,T.cz+.5)){const e=BST.get(T.i);let y=e.base;for(let k=0;k<e.p.length-1;k++)y+=pieceH(e.p[k]);tntLight(T.i,e.p.length-1,T.cx+.5,y,T.cz+.5,false);return;}return _br2();};}
+function tntLight(i,pi,x,y,z,byNet){if(MINE.tnt.some(q=>q.i===i&&q.pi===pi))return;MINE.tnt.push({i,pi,x,y,z,t:2.2,net:!!byNet});if(!byNet)netEvent('tntl',i,pi);AU.at(x,z,()=>SND.play('fuse'));}
+function tntUpdate(dt){for(let k=MINE.tnt.length-1;k>=0;k--){const q=MINE.tnt[k];q.t-=dt;if(R()<.5)PARTS.push({x:q.x+Rr(-.1,.1),y:q.y+1.05,z:q.z+Rr(-.1,.1),vx:Rr(-.5,.5),vy:Rr(1,2),vz:Rr(-.5,.5),life:.4,s:.07,c:hex('#ffcf3a'),e:1,g:-1,k:'deb',rot:0});if(q.t<=0){MINE.tnt.splice(k,1);tntBoom(q);}}}
+function mineTntDraw(t){const m=MS.cur;OUT=DYN;for(const q of MINE.tnt){if(Math.floor(q.t*8)%2)continue;MS.reset();M4.tr(m,q.x,q.y+.5,q.z);bx(m,0,0,0,1.06,1.06,1.06,'#ffffff',1,.9);}}
+function tntBoom(q){const R0=2.7;shake(.7);AU.at(q.x,q.z,()=>{SND.play('explode');});ringFx(q.x,q.y+.3,q.z,'#ff8a1f',R0*2);for(let k=0;k<5;k++)smokePuff(q.x+Rr(-1.5,1.5),q.y+Rr(0,2),q.z+Rr(-1.5,1.5),1.6,'#9aa0ac');
+  burst(q.x,q.y+.5,q.z,['#ffcf3a','#ff8a1f','#ff4f1a','#ffffff'],50,9,.24,.9);stInc('boom');
+  // build blocks nearby (only inside build zones)
+  const cols=new Map();for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++){const cx=Math.floor(q.x)+dx,cz=Math.floor(q.z)+dz;if(!inMap(cx,cz)||!plotAt(cx+.5,cz+.5))continue;const i=cid(cx,cz);const e=BST.get(i);if(!e||!e.p.length)continue;
+    let y=e.base;const keep=[];const chain=[];e.p.forEach((c,pi)=>{const h=pieceH(c);const dy=y+h/2-(q.y+.5),dd=Math.hypot(dx+.5-(q.x-Math.floor(q.x)),dy,dz+.5-(q.z-Math.floor(q.z)));if(dd<=R0&&!(i===q.i&&pi===q.pi)){if(c[0]==='N')chain.push([pi,y]);keep.push('Z0');}else if(i===q.i&&pi===q.pi)keep.push('Z0');else keep.push(c);y+=h;});
+    while(keep.length&&keep[keep.length-1]==='Z0')keep.pop();cols.set(i,keep.join(''));for(const [pi,yy] of chain)MINE.tnt.push({i,pi,x:cx+.5,y:yy,z:cz+.5,t:.35+R()*.25,net:q.net});}
+  for(const [i,code] of cols){setColumn(i,code,true);}
+  // the ground around it
+  for(const m of MINE.list){if(q.x<m.x0-4||q.x>m.x0+m.s+4||q.z<m.z0-4||q.z>m.z0+m.s+4)continue;for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){const lx=Math.floor(q.x)-m.x0+dx,lz=Math.floor(q.z)-m.z0+dz,ly=Math.floor(q.y+.5-m.bot)+dy;
+      if(lx<0||lz<0||lx>=m.s||lz>=m.s||ly<0||ly>=m.D)continue;if(Math.hypot(lx+.5-(q.x-m.x0),ly+.5-(q.y+.5-m.bot),lz+.5-(q.z-m.z0))>R0)continue;const vi=vIdx(m,lx,ly,lz);const t=m.vox[vi];if(!t||t===VXI.bedrock)continue;
+      m.vox[vi]=0;m.broken.add(vi);if(VX[t].ore&&!q.net&&R()<.6)invAdd(VX[t].drop,1);}for(let lz=0;lz<m.s;lz++)for(let lx=0;lx<m.s;lx++)mineColumn(m,lx,lz);}
+  BUILD.dirty=true;// push everyone and everything away
+  for(const p of [ME,...netFriends()]){if(!p)continue;const dx=p.x-q.x,dz=p.z-q.z,d=Math.hypot(dx,dz);if(d<5&&p===ME){ME.vx+=dx/(d||1)*10;ME.vz+=dz/(d||1)*10;ME.vy=Math.max(ME.vy,9);ME.ground=false;}}
+  for(const e of EN)if(!e.dead&&d2(e.x,e.z,q.x,q.z)<R0+1.5)hitEnemy(e,12,(e.x-q.x)*4,(e.z-q.z)*4);saveSoon();}
+// ---------- the pickaxe in your hand while you build ----------
+function drawPickHand(m,t,A,p){if(p!==ME||!BUILD.on)return;const tier=G.tools.pick|0;if(!tier)return;const col=TIERS[tier].col;cy(m,0,-.85,.06,.05,.64,.05,'#8a5a3a',6);MS.push();M4.tr(m,0,-1.15,.06);
+  bx(m,0,0,0,.62,.1,.1,col,tier>=3?3:9,tier===4?.25:0);bx(m,-.34,-.04,0,.08,.08,.08,col,tier>=3?3:9);bx(m,.34,-.04,0,.08,.08,.08,col,tier>=3?3:9);MS.pop();}
+// ---------- saving, and sharing with friends online ----------
+function mineSave(){const o={};for(const m of MINE.list)if(m.broken.size)o[m.id]=[...m.broken].map(v=>v.toString(36)).join(',');return o;}
+function mineApply(o){if(!o||typeof o!=='object')return;for(const k in o){const m=MINE.list[+k];if(!m||typeof o[k]!=='string')continue;for(const s of o[k].split(',')){const vi=parseInt(s,36);if(vi>=0&&vi<m.vox.length&&m.vox[vi]!==VXI.bedrock){m.vox[vi]=0;m.broken.add(vi);}}
+    for(let lz=0;lz<m.s;lz++)for(let lx=0;lx<m.s;lx++)mineColumn(m,lx,lz);}BUILD.dirty=true;}
+function mineResetAll(){const L=(WORLD.plots||[]).map((P,i)=>mineGen(P,i));MINE.list=L;for(const m of L)for(let lz=0;lz<m.s;lz++)for(let lx=0;lx<m.s;lx++)mineColumn(m,lx,lz);BUILD.dirty=true;}
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.mn=NET.role==='guest'?(G.myMine||{}):mineSave();o.inv=G.inv;o.tl=G.tools;return o;};
+  extraLoad=function(x){_el(x);G.mineSaved=x&&x.mn&&typeof x.mn==='object'?x.mn:null;G.inv=x&&x.inv&&typeof x.inv==='object'?Object.fromEntries(Object.entries(x.inv).filter(([k,v])=>ITEMS[k]&&typeof v==='number').map(([k,v])=>[k,Math.max(0,v|0)])):{};
+    G.tools=x&&x.tl&&typeof x.tl==='object'?{pick:clamp(x.tl.pick|0,0,4),sword:clamp(x.tl.sword|0,0,4)}:{pick:0,sword:0};if(MINE.built&&G.mineSaved){mineApply(G.mineSaved);G.mineSaved=null;}};}
+{const _baw=buildAfterWorld;buildAfterWorld=function(){_baw();if(G.mineSaved){mineApply(G.mineSaved);G.mineSaved=null;}};}
+{const _eg=enterGuestWorld;enterGuestWorld=function(){G.myMine=mineSave();mineResetAll();return _eg();};}
+{const _rw=restoreMyWorld;restoreMyWorld=function(){const r=_rw();mineResetAll();mineApply(G.myMine||{});return r;};}
+// friends: every dig and every TNT is shared right away; the host also slowly re-sends what has been dug so late joiners catch up
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='mine'){const m=MINE.list[num(a[0],-1)];const vi=num(a[1],-1);if(m&&vi>=0&&vi<m.vox.length)mineBreak(m,vi,true);return;}
+    if(type==='tntl'){const i=num(a[0],-1),pi=num(a[1],-1);const e=BST.get(i);if(e&&e.p[pi]&&e.p[pi][0]==='N'){let y=e.base;for(let k=0;k<pi;k++)y+=pieceH(e.p[k]);tntLight(i,pi,(i%N)+.5,y,((i/N)|0)+.5,true);}return;}
+    if(type==='mreset'){const m=MINE.list[num(a[0],-1)];if(m)mineRefill(m,true);return;}
+    if(type==='mdiff'){const m=MINE.list[num(a[0],-1)];if(m&&typeof a[1]==='string'&&NET.role==='guest'){let ch=false;for(const s of a[1].split(',')){const vi=parseInt(s,36);if(vi>=0&&vi<m.vox.length&&m.vox[vi]&&m.vox[vi]!==VXI.bedrock){m.vox[vi]=0;m.broken.add(vi);ch=true;}}
+      if(ch){for(let lz=0;lz<m.s;lz++)for(let lx=0;lx<m.s;lx++)mineColumn(m,lx,lz);BUILD.dirty=true;}}return;}return _ae(type,a,rp);};}
+function mineShare(dt){if(NET.role!=='host'||!netFriends().length)return;MINE.sent-=dt;if(MINE.sent>0)return;MINE.sent=2.5;const L=MINE.list.filter(m=>m.broken.size);if(!L.length)return;MINE.rr=((MINE.rr|0)+1)%L.length;const m=L[MINE.rr];
+  const all=[...m.broken];const k0=((MINE.rk=(MINE.rk|0)+1)*90)%all.length;netEvent('mdiff',m.id,all.slice(k0,k0+90).map(v=>v.toString(36)).join(','));}
+// ---------- every frame ----------
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(!MINE.list.length)return;const k=mineNearKey();if(k!==MINE.near){MINE.near=k;BUILD.dirty=true;}mineFlyUpdate(dt);tntUpdate(dt);mineShare(dt);
+    const inZ=plotAt(ME.x,ME.z);if(inZ&&!G.mineTip){G.mineTip=1;setTimeout(()=>toast('⛏️ '+tr(TOUCH.on?'New! Tap 🧱 then hold ⛏️ on the ground to dig down':'New! Press B, then hold K on the ground to dig down')),2500);}}catch(e){noteErr('mine',e);}};}
+// ---------- sounds for digging, chopping and crafting ----------
+{const T2=Math.PI*2,E=Math.exp,S=Math.sin,rnd=()=>Math.random()*2-1,reg=(k,g,fn)=>{SND.gen[k]=fn;SND.G[k]=g;SND.order.push(k);},mk=(s,f)=>SND.mk(AU.ctx,s,f);
+  reg('dig_soft',.16,()=>mk(.12,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*.25;d[i]=lp*(.5+.5*Math.abs(S(T2*90*t)))*Math.min(1,t/.004)*E(-t*38)+S(T2*110*t)*E(-t*50)*.3;}}));
+  reg('dig_hard',.14,()=>mk(.14,(d,sr,n)=>{for(let i=0;i<n;i++){const t=i/sr;d[i]=(S(T2*1850*t)*.6+S(T2*2930*t)*.4)*E(-t*60)+rnd()*E(-t*200)*.5+S(T2*160*t)*E(-t*45)*.3;}}));
+  reg('break_soft',.2,()=>mk(.25,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*.18;d[i]=lp*(Math.random()<.15?1:.35)*E(-t*16)+S(T2*(90+60*E(-t*30))*t)*E(-t*28)*.5;}}));
+  reg('break_hard',.2,()=>mk(.35,(d,sr,n)=>{let hp=0,pv=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.7*(hp+z-pv);pv=z;d[i]=hp*(Math.random()<.12?1:.25)*E(-t*11)+S(T2*(130+80*E(-t*30))*t)*E(-t*22)*.5;}}));
+  reg('ore_ding',.16,()=>mk(.6,(d,sr,n)=>{for(const [t0,f] of [[0,1760],[.07,2637]]){const i0=t0*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=(S(T2*f*t)+.3*S(T2*f*2.76*t)*E(-t*20))*E(-t*7)*Math.min(1,t/.002);}}}));
+  reg('pickup',.1,()=>mk(.09,(d,sr,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=T2*(700+900*Math.min(1,t/.05))/sr;d[i]=S(ph)*E(-t*40);}}));
+  reg('chop',.2,()=>mk(.18,(d,sr,n)=>{for(let i=0;i<n;i++){const t=i/sr;d[i]=(S(T2*420*t)+.6*S(T2*860*t))*E(-t*40)+rnd()*E(-t*120)*.5+S(T2*140*t)*E(-t*30)*.3;}}));
+  reg('craft',.22,()=>mk(.9,(d,sr,n)=>{for(const t0 of [0,.14]){const i0=t0*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=(S(T2*1100*t)*.5+S(T2*2710*t)*.3+S(T2*4270*t)*.15)*E(-t*9)*.7+(t<.004?rnd()*.4:0);}}
+    for(const [t0,f] of [[.3,1568],[.36,2093],[.42,2637]]){const i0=t0*sr|0;for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=S(T2*f*t)*E(-t*8)*.35;}}}));
+  reg('fuse',.14,()=>mk(2.2,(d,sr,n)=>{let hp=0,pv=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();hp=.95*(hp+z-pv);pv=z;d[i]=hp*(.6+.4*S(T2*23*t))*Math.min(1,t/.05)*(t>2.1?E(-(t-2.1)*40):1);}}));
+  reg('explode',.36,()=>mk(1.5,(d,sr,n)=>{let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=(rnd()-lp)*(1-E(-T2*(2600*E(-t*3)+140)/sr));d[i]=Math.tanh(2.2*S(T2*(26+70*E(-t*7))*t))*E(-t*2.3)*.8+lp*Math.min(1,t/.003)*E(-t*2)*1.2;}}));}
+// ---------- new hats you can craft ----------
+for(const [id,n,ar,ic] of [['goldhelm','Golden Helmet','خوذة ذهبية','⛑️'],['diahelm','Diamond Helmet','خوذة ألماسية','💎'],['rubycrown','Ruby Crown','تاج الياقوت','👑'],['crystalcrown','Crystal Crown','تاج البلور','🔮']]){if(!HATS.some(h=>h.id===id))HATS.push({id,n:MN(n,ar),p:-1});REWARD_HATS.add(id);HAT_ICON[id]=ic;}
+{const _dh=drawHatX;drawHatX=function(m,hat,acc,hair,t){if(hat==='goldhelm'||hat==='diahelm'){const c=hat==='goldhelm'?'#ffd23f':'#5ef0e0';bx(m,0,.5,0,.82,.5,.82,c,hat==='goldhelm'?3:14,hat==='goldhelm'?.12:.2);bx(m,0,.3,.36,.84,.1,.14,c,3,.1);
+    bx(m,0,.78,0,.12,.1,.86,c,3,.1);return;}
+  if(hat==='rubycrown'||hat==='crystalcrown'){const c=hat==='rubycrown'?'#ffd23f':'#dfe6ff',g=hat==='rubycrown'?'#ff3b5c':'#b28dff';cy(m,0,.62,0,.66,.16,.62,c,3,.2);for(let k=0;k<5;k++){const a=k/5*TAU;co(m,Math.cos(a)*.27,.8,Math.sin(a)*.27,.1,.2,.1,c,3,.2);sp(m,Math.cos(a)*.3,.66,Math.sin(a)*.3,.07,.07,.05,g,8,.6);}return;}
+  return _dh(m,hat,acc,hair,t);};}
+// ---------- stickers for miners ----------
+STICKERS.push({id:'m_dig',ic:'⛏️',n:MN('Miner','عامل منجم'),d:MN('Dig 100 blocks','احفر 100 مكعب'),f:()=>sv('dug'),t:100},{id:'m_dia',ic:'💎',n:MN('Diamond Hunter','صياد الألماس'),d:MN('Find 5 diamonds','اعثر على 5 ماسات'),f:()=>sv('ore_diamond'),t:5},
+  {id:'m_craft',ic:'⚒️',n:MN('Master Crafter','الحِرفي الماهر'),d:MN('Craft 10 things','اصنع 10 أشياء'),f:()=>sv('craft'),t:10},{id:'m_boom',ic:'🧨',n:MN('Kaboom!','كابووم!'),d:MN('Blow up TNT','فجّر الديناميت'),f:()=>sv('boom'),t:1});
+MN('A diamond!','ماسة!');MN('Craft a diamond pickaxe or sell it for coins','اصنع فأسًا ألماسية أو بعها مقابل العملات');MN('Too hard! You need an {0} pickaxe','صعب جدًا! تحتاج إلى فأس {0}');
+MN('Climbing! Keep holding jump against the wall','تسلّق! استمر في الضغط على القفز مقابل الجدار');MN('Wood! Craft it into planks and sticks at a crafting table','خشب! حوّله إلى ألواح وعصي عند طاولة الصناعة');
+MN('Crafting table','طاولة الصناعة');MN('Craft tools','اصنع الأدوات');MN('You made: {0}','صنعت: {0}');MN('Crafting','الصناعة');MN('Your backpack is empty. Chop trees and dig!','حقيبتك فارغة. اقطع الأشجار واحفر!');
+MN('Craft','اصنع');MN('Sell for coins','بع مقابل العملات');MN('Done','تم');MN('Backpack','الحقيبة');MN('Torch ×{0}','شعلة ×{0}');MN('TNT ×{0}','ديناميت ×{0}');
+MN('Craft torches first (coal + a stick)','اصنع مشاعل أولاً (فحم + عصا)');MN('Craft TNT first (sand + coal)','اصنع الديناميت أولاً (رمل + فحم)');
+MN('New! Tap 🧱 then hold ⛏️ on the ground to dig down','جديد! اضغط 🧱 ثم اضغط مطولاً على ⛏️ فوق الأرض لتحفر للأسفل');MN('New! Press B, then hold K on the ground to dig down','جديد! اضغط B، ثم اضغط مطولاً على K فوق الأرض لتحفر للأسفل');
+MN('Fill the ground in this zone again','املأ الأرض في هذه المنطقة من جديد');MN('Tap again to fill it. Holes will be gone!','اضغط مرة أخرى لتملأها. ستختفي الحفر!');MN('The ground is back!','عادت الأرض كما كانت!');
+MN('Nothing to build on here','لا يوجد شيء تبني عليه هنا');
 // ================= start =================
 boot();
 </script>
