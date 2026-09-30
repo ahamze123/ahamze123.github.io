@@ -2371,7 +2371,11 @@ function inWater(x,z,y){return chAt(x,z)<WL-.2&&y<WL+.2;}
 const CAM={yaw:0,pitch:.34,dist:10,tx:0,ty:0,tz:0,manualT:9,eye:[0,20,0],fov:1,dYaw:0,dPitch:0,zoom:0};
 function camForward(){return [-Math.sin(CAM.yaw),-Math.cos(CAM.yaw)];}
 // camera distance presets: 0 close, 1 normal, 2 far
-const CAMD=[{d:1.3,p:.07},{d:1.69,p:.1},{d:2.1,p:.15}];// v23.8: 30% further again
+const CAMD=[{d:1.36,p:.17},{d:1.78,p:.205},{d:2.24,p:.26}];// v23.8: 30% further again; v23.9: and 30% higher up (same distance along the ground)
+// is the thing in the camera's way small (a tree, a lamp post, a mushroom, a kiosk)? Look sideways: at most 5 tall cells across.
+// Small things fade out around the hero instead of pulling the camera in; hills and big buildings still pull it in.
+function camThin(x,z,lim,px,pz){let w=1;for(const g of [1,-1])for(let k=1;k<=4;k++){if(chAt(x+px*k*g,z+pz*k*g)>lim)w++;else break;}return w<=5;}
+function camHill(x,z,lim){const xi=Math.floor(x),zi=Math.floor(z);return inMap(xi,zi)&&H[xi+zi*N]>lim;}
 function updateCamera(dt){const p=ME;const v=p.veh;let tx=p.x,ty=p.y+1.5,tz=p.z;let dist=10.4,pitch=.31;
   if(G.mode==='title'){CAM.yaw+=dt*.05;tx=C+8;tz=C+10;ty=14;dist=46;pitch=.34;}
   else if(G.cine&&G.cine.draw){const d=G.cine.draw;tx=d.x;ty=d.y+(G.cine.arrived?4:9);tz=d.z;dist=G.cine.arrived?26:36;pitch=G.cine.arrived?.32:.12;CAM.yaw+=dt*.12;CAM.cd=null;}
@@ -2392,10 +2396,24 @@ function updateCamera(dt){const p=ME;const v=p.veh;let tx=p.x,ty=p.y+1.5,tz=p.z;
   dist*=1+CAM.zoom;CAM.dist=lerp(CAM.dist,dist,Math.min(1,dt*3));
   // collision: pull in, and if blocked very close raise the camera over the obstacle
   let d=CAM.dist;let pUse=pt;
-  if(G.mode!=='title'&&!G.cine&&p.realm!=='inside'){const ray=(pp,dd)=>{const hd=Math.cos(pp),vd=Math.sin(pp),dx=Math.sin(CAM.yaw)*hd,dz=Math.cos(CAM.yaw)*hd;for(let s=.6;s<=dd;s+=.4){const x=CAM.tx+dx*s,y=CAM.ty+vd*s,z=CAM.tz+dz*s;if(chAt(x,z)>y-.45)return s-.5;}return dd;};
-    d=ray(pt,CAM.dist);if(d<3.4){for(let k=1;k<=7;k++){const p2=Math.min(1.4,pt+k*.17);const d2=ray(p2,CAM.dist);if(d2>=3.4||k===7){pUse=p2;d=Math.max(d,d2);break;}}}}
-  CAM.pAdj=lerp(CAM.pAdj??pUse,pUse,Math.min(1,dt*(pUse>(CAM.pAdj??pUse)?8:2)));const pp=CAM.pAdj;const hd=Math.cos(pp),vd=Math.sin(pp);const dx=Math.sin(CAM.yaw)*hd,dy=vd,dz=Math.cos(CAM.yaw)*hd;
-  CAM.cd=lerp(CAM.cd||d,d,d<(CAM.cd||d)?.6:Math.min(1,dt*2.5));d=Math.min(d,CAM.cd);
+  // v23.9: trees, lamp posts and mushrooms no longer pull the camera in (they fade out around the hero instead), and three rays
+  // side by side decide together, so the camera stops jumping in and out while you walk through a forest; a wall still pulls it in
+  if(G.mode!=='title'&&!G.cine&&p.realm!=='inside'){const ray=(pp,dd,off)=>{const hd=Math.cos(pp),vd=Math.sin(pp),dx=Math.sin(CAM.yaw)*hd,dz=Math.cos(CAM.yaw)*hd,ox=Math.cos(CAM.yaw)*off,oz=-Math.sin(CAM.yaw)*off;
+      for(let s=.6;s<=dd;s+=.4){const w=Math.min(1,s/3);const x=CAM.tx+dx*s+ox*w,y=CAM.ty+vd*s,z=CAM.tz+dz*s+oz*w;const lim=y-.45;
+        // something thin (a tree, a lamp post, a mushroom: only a few tall cells around) is see-through for the camera: it fades out instead
+        if(chAt(x,z)>lim){if(camHill(x,z,lim))return s-.5;if(!camThin(x,z,lim,Math.cos(CAM.yaw),-Math.sin(CAM.yaw)))return Math.max(s-.5,Math.min(dd,5));}}return dd;};
+    const ray3=(pp,dd)=>{const a=ray(pp,dd,0),b=ray(pp,dd,1.2),c=ray(pp,dd,-1.2);return Math.max(Math.min(a,b),Math.min(Math.max(a,b),c));};CAM.ray3=ray3;
+    // blocked behind (a hill, a wall): look down from a little higher up, just enough to see over it, and stay there until the
+    // way has been clear for a second, so the camera does not bob up and down
+    const want=CAM.dist,need=Math.min(want,Math.max(6,want*.6)),dB=ray3(pt,want);
+    if(dB<need){let up=CAM.pUp||0;for(let k=1;k<=6;k++){const u=k*.1;if(pt+u>1.15||k===6){up=Math.max(up,Math.min(.6,1.15-pt));break;}if(ray3(pt+u,want)>=need){up=Math.max(up,u);break;}}CAM.pUp=up;CAM.pUpT=0;}
+    else if(CAM.pUp>0){CAM.pUpT=(CAM.pUpT||0)+dt;if(CAM.pUpT>1)CAM.pUp=Math.max(0,CAM.pUp-dt*.25);}
+    pUse=pt+(CAM.pUp||0);}else CAM.pUp=0;
+  CAM.pAdj=lerp(CAM.pAdj??pUse,pUse,Math.min(1,dt*(pUse>(CAM.pAdj??pUse)?6:2)));const pp=CAM.pAdj;const hd=Math.cos(pp),vd=Math.sin(pp);const dx=Math.sin(CAM.yaw)*hd,dy=vd,dz=Math.cos(CAM.yaw)*hd;
+  // how far back the camera can go, along the angle it really looks from
+  if(G.mode!=='title'&&!G.cine&&p.realm!=='inside'&&CAM.ray3)d=CAM.ray3(pp,CAM.dist);
+  // pull in quickly but smoothly, and only go back out once the way has been clear for a moment (no flickering in and out)
+  if(!CAM.cd||d<CAM.cd-.05){CAM.cdT=0;CAM.cd=lerp(CAM.cd||d,d,Math.min(1,dt*6));}else{CAM.cdT=(CAM.cdT||0)+dt;if(CAM.cdT>1)CAM.cd=lerp(CAM.cd,d,Math.min(1,dt*1.5));}d=Math.min(d,CAM.cd);
   let sx=0,sy=0;if(G.shake>0){G.shake=Math.max(0,G.shake-dt*1.8);sx=Rr(-1,1)*G.shake*.5;sy=Rr(-1,1)*G.shake*.5;}
   CAM.eye=[CAM.tx+dx*d+sx,CAM.ty+dy*d+sy,CAM.tz+dz*d];}
 
@@ -7612,11 +7630,13 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:28,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:29,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
   {ic:'🎵',t:'Our own songs',s:'New music everywhere: Skyline Exploration in the city, Gliding Over Green Valleys in the green places, Quiet Horizons in the snow, space and on the Moon, and Subtle Quests and Flying Capes in missions and boss fights'},
   {ic:'🔇',t:'Quieter streets',s:'Cars do not beep at you any more, and jumping makes a soft swish instead of a boing'},
-  {ic:'📷',t:'A wider camera',s:'The camera is further back so you can see more. It follows your hero. Pinch with two fingers to zoom, or change it in Settings'},
+  {ic:'📷',t:'A steadier camera',s:'The camera is higher up and further back, and it no longer jumps around near trees, mushrooms and houses. Pinch with two fingers to zoom, or change it in Settings'},
+  {ic:'🚗',t:'Solid cars',s:'Heroes walk around cars now (and can jump up on the roof). Getting out of a car works every time'},
+  {ic:'😊',t:'Friendly people',s:'People in the street only say nice things now'},
   {ic:'🎨',t:'A calmer city',s:'Softer colours, fewer lamp posts, and faces without lines'},
   {ic:'✋',t:'Helping is easier',s:'When you hold ✋ Use, a ring fills up so you can see it working. Tapping it again and again works too'},
   {ic:'⛶',t:'Full screen',s:'Tap ⛶ on the title screen or next to the menu button. On a tablet the game goes full screen by itself when you tap Play',act:()=>{if(typeof fsPress==='function')fsPress();}},
@@ -10299,7 +10319,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='23.8';window.BB_VER=BB_VER;
+const BB_VER='23.9';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -10846,6 +10866,51 @@ function trkGain(v,tc){if(Math.abs(v-TRK.gT)<.001)return;TRK.gT=v;if(TRK.g&&AU.c
 {const _up=MUS.update.bind(MUS);MUS.update=function(){if(trkOK()){if(TRK.a){try{trkUpdate();}catch(e){}}if(this.bus&&this.c&&this.gainT!==0){this.gainT=0;this.bus.gain.setTargetAtTime(0,this.c.currentTime,.3);}return;}return _up();};}
 // the tablet goes to sleep or another app opens: pause, and carry on when the game comes back
 document.addEventListener('visibilitychange',()=>{const a=TRK.a;if(!a||TRK.failed)return;if(document.hidden){if(!a.paused){if(TRK.cur)TRK.pos[TRK.cur]=a.currentTime;a.pause();TRK.bg=true;}}else if(TRK.bg){TRK.bg=false;if(AU.music&&TRK.st!=='off')trkPlay();}});
+// ================= v23.9: getting out of the car =================
+// Pressing 🚪 Get out got you out, but the same press was still held down when the car became "the thing next to you",
+// so letting go of it counted as a tap on the car and got you straight back in. Now a press that already did something
+// (getting out, talking, opening, throwing...) has to be let go before it can do anything else.
+{const _hi=handleInteract;handleInteract=function(dt,inp){
+  if(G.iaWait){if(inp.interact&&!inp.interactP){G.ia=findInteract(ME);G.iaHold=0;G.iaUsed=true;return;}G.iaWait=false;G.iaHold=0;G.iaUsed=false;}
+  _hi(dt,inp);const ia=G.ia;if(inp.interactP&&ia&&!ia.hold&&!(ia.k==='drive'&&ia.lift))G.iaWait=true;};}
+// ================= v23.9: cars are solid =================
+// The hero used to walk straight through parked cars. Now every car near the hero is a solid box: you walk around it,
+// and you can jump up and stand on the roof. (Boats, planes and animals you ride are left as they were.)
+const CARBOX={L:[],roof:{bus:2.9,firetruck:2.6,truck:2.5,van:2.3,icecream:2.4,getaway:2.2,monster:2.5,mech:3.2,rocket:2.2,scooter:1.1,hover:1,buggy:1.4,sports:1.25}};
+function carBoxes(){const L=CARBOX.L;L.length=0;if(!ME||ME.realm==='inside')return;for(const v of VEH){if(v===ME.veh||v.carried||v.dead)continue;const S=VSPEC[v.type];
+    if(!S||!S.w||!S.l||S.water||S.air||S.animal||!isFinite(v.x))continue;if(Math.abs(v.x-ME.x)>14||Math.abs(v.z-ME.z)>14)continue;const y=v.y||0;
+    L.push({x:v.x,z:v.z,c:Math.cos(v.head),s:Math.sin(v.head),hl:S.l*.5-.15,hw:S.w*.5-.12,y0:y-.5,top:y+(CARBOX.roof[v.type]||1.6)});}}
+{const _g=groundAt;groundAt=function(x,z,y){const g=_g(x,z,y);const L=CARBOX.L;if(!L.length)return g;let t=g;
+  for(const b of L){if(b.top<=t||(y!==undefined&&y<b.y0))continue;const dx=x-b.x,dz=z-b.z,lf=dx*b.s+dz*b.c,ls=dx*b.c-dz*b.s;if(lf<b.hl&&lf>-b.hl&&ls<b.hw&&ls>-b.hw)t=b.top;}return t;};}
+{const _um=updateMe;updateMe=function(dt,inp){try{carBoxes();}catch(e){CARBOX.L.length=0;}return _um(dt,inp);};}
+// ================= v23.9: kind words from the people in the street =================
+// Some of the jokes people shouted were cheeky ("Rude!", "Show-off!", "Crazy driver!", "Are you lost?"). Now everything they
+// say is friendly: cheering, thank-yous, gentle "careful!"s, and happy surprise when something bumps into them.
+Object.assign(SAYS,{
+  hi:[SL('Hi, {0}!','مرحبًا يا {0}!'),SL('Whoa! It\'s really {0}!','واو! إنه {0} حقًا!'),SL('Can I have your autograph?','هل يمكنني الحصول على توقيعك؟'),SL('Nice cape, hero!','عباءة رائعة أيها البطل!'),
+    SL('Go get \'em, {0}!','انطلق يا {0}!'),SL('You\'re my favorite hero!','أنت بطلي المفضل!'),SL('Hero! Wave at me! Yay!','أيها البطل! لوّح لي! ياي!'),SL('Stay awesome, {0}!','ابقَ رائعًا يا {0}!'),
+    SL('Is that {0}?! Best day ever!','هل هذا {0}؟! أجمل يوم في حياتي!'),SL('Hero high five!','كفّك يا بطل!'),SL('Have a super day, {0}!','أتمنى لك يومًا رائعًا يا {0}!'),
+    SL('Thank you for helping our city!','شكرًا لأنك تساعد مدينتنا!'),SL('My little brother wants to be just like you!','أخي الصغير يريد أن يصبح مثلك تمامًا!')],
+  night:[SL('Good evening, {0}!','مساء الخير يا {0}!'),SL('Thanks for keeping us safe tonight!','شكرًا لأنك تحمينا الليلة!'),SL('Look at all the stars, hero!','انظر إلى كل هذه النجوم أيها البطل!')],
+  rain:[SL('Stay dry, hero!','ابقَ جافًا أيها البطل!'),SL('I love the rain! Do you?','أحب المطر! وأنت؟')],
+  pet:[SL('Aww, your pet is SO cute!','أووه، حيوانك الأليف لطيف جدًا!'),SL('What a lovely pet!','يا له من حيوان أليف جميل!')],
+  famous:[SL('It\'s the famous {0}! Everyone look!','إنه {0} المشهور! انظروا جميعًا!'),SL('Level {1}! Amazing!','المستوى {1}! رائع!')],
+  thanks:[SL('Thank you, hero!','شكرًا أيها البطل!'),SL('My hero!','بطلي!'),SL('You saved the day!','لقد أنقذت اليوم!'),SL('That was AMAZING!','كان ذلك مذهلًا!'),SL('Woo-hoo! Go {0}!','هووو! انطلق يا {0}!'),
+    SL('I\'m telling everyone about this!','سأخبر الجميع بهذا!'),SL('Best. Hero. Ever!','أفضل. بطل. على الإطلاق!'),SL('Can you teach me that move?','هل تعلّمني تلك الحركة؟'),SL('Phew! Thanks, {0}!','فيو! شكرًا يا {0}!')],
+  watch:[SL('Careful, hero!','انتبه أيها البطل!'),SL('Whoa, that was fast!','واو، كان ذلك سريعًا!'),SL('Drive safely, {0}!','قُد بأمان يا {0}!'),SL('Zoom zoom! Be careful!','زوم زوم! انتبه!')],
+  honk:[SL('Hello to you too!','مرحبًا بك أيضًا!'),SL('What a cute horn!','يا له من بوق لطيف!'),SL('Toot toot!','توت توت!')],
+  bump:[SL('Oops! That\'s okay!','أوبس! لا بأس!'),SL('Whoa, careful!','واو، انتبه!'),SL('Hehe, that tickles!','هههه، هذا يدغدغ!'),SL('Is that a new super move?','هل هذه حركة خارقة جديدة؟')],
+  shot:[SL('That tickles!','هذا يدغدغ!'),SL('It\'s okay, I\'m fine!','لا بأس، أنا بخير!'),SL('Oops! The baddies are over there!','أوبس! الأشرار هناك!'),SL('Who ordered a bubble bath?','من طلب حمّام فقاعات؟')],
+  fly:[SL('Whoa, a flying hero!','واو، بطل طائر!'),SL('Look up! Up there!','انظروا إلى الأعلى! هناك!'),SL('Can you teach me to fly?','هل تعلّمني الطيران؟'),SL('Bring me back a cloud!','أحضر لي غيمة!')],
+  land:[SL('Ten out of ten landing!','هبوط يستحق عشرة من عشرة!'),SL('Super landing!','هبوط خارق!'),SL('Wow! Did you see that?','واو! هل رأيتم ذلك؟')],
+  idle:[SL('Taking a little rest, hero? You deserve it!','تأخذ استراحة قصيرة أيها البطل؟ أنت تستحقها!'),SL('Nice weather for being a hero, huh?','طقس جميل للأبطال، أليس كذلك؟'),
+    SL('Psst! The baddies went THAT way!','بسس! الأشرار ذهبوا من ذلك الطريق!'),SL('Need a hint? Look at your map!','تحتاج تلميحًا؟ انظر إلى خريطتك!')],
+  crash:[SL('Oops! Is everyone okay?','أوبس! هل الجميع بخير؟'),SL('Careful, hero!','انتبه أيها البطل!'),SL('Bumpy ride!','رحلة مليئة بالمطبات!')]});
+// the bubbles for surprises are blue "wow" bubbles now, not red angry ones
+Object.assign(SAYMOOD,{watch:'wow',honk:'yay',bump:'wow',shot:'wow',crash:'wow'});
+MV('A steadier camera','كاميرا أكثر ثباتًا');MV('The camera is higher up and further back, and it no longer jumps around near trees, mushrooms and houses. Pinch with two fingers to zoom, or change it in Settings','الكاميرا أعلى وأبعد، ولم تعد تقفز قرب الأشجار والفطر والبيوت. قرّب أو بعّد بإصبعين، أو غيّرها من الإعدادات');
+MV('Solid cars','سيارات صلبة');MV('Heroes walk around cars now (and can jump up on the roof). Getting out of a car works every time','الأبطال يمشون حول السيارات الآن (ويمكنهم القفز على سقفها). والنزول من السيارة يعمل في كل مرة');
+MV('Friendly people','ناس لطفاء');MV('People in the street only say nice things now','الناس في الشارع يقولون كلامًا لطيفًا فقط الآن');
 // ================= start =================
 boot();
 </script>

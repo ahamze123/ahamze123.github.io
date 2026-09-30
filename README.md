@@ -18,6 +18,7 @@ A brick hero adventure for kids. It has 50 heroes to collect, five connected isl
 
 ## Camera
 - The camera follows your hero: it swings round behind them as they run. Turn it yourself any time (drag on the right side of the screen, or the mouse on a computer); a moment after you let go it starts following again.
+- It sits high and far back so you can see a lot. Trees, lamp posts, mushrooms and small houses between the camera and your hero fade out instead of making the camera jump; only hills and big buildings bring it closer, gently.
 - **Menu → Settings → Camera** switches between Close, Normal and Far, and **Camera follows me** turns the following off. On a tablet, pinch with two fingers on the right side of the screen to zoom.
 
 ## Holding ✋ Use
@@ -98,6 +99,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - The music is our own songs: **Skyline Exploration** in the city, **Gliding Over Green Valleys** in the green and sunny places, **Quiet Horizons** in the snow, at Star Harbor and on the Moon, and **Subtle Quests and Flying Capes** in missions and boss fights. When a song ends the next one starts, and going back to a place picks its song up where it stopped.
 - The songs stream from the `music` folder. Without internet the game plays its own calm backup music instead.
 - Cars in traffic don't beep. Your own horn is a soft, low toot, and jumping makes a soft swish.
+- People in the street cheer, say thank you and give friendly tips; they never say anything mean.
 - You hear footsteps on grass, sand, snow and wood, birds in the trees, waves on the beach and wind up high.
 - Attacks, coins, doors, splashes and landings each have their own sound.
 
