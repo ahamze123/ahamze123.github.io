@@ -1,5 +1,22 @@
 {
  "heroes": {
+  "bella": {
+   "model": {
+    "id": "01a0f797-d7b6-75bd-8a9b-5333e7a30071",
+    "made": "2026-10-01 13:11",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "bilal": {
    "model": {
     "credits": 30,
