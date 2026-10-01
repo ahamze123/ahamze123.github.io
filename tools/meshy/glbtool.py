@@ -6,9 +6,10 @@
         make the pictures inside smaller (JPEG unless they need see-through parts)
   python3 glbtool.py armature IN.glb OUT.glb
         keep only the skeleton and the animations (no mesh, no pictures)
-  python3 glbtool.py merge MODEL.glb OUT.glb ANIM.glb[:new_name] ...
+  python3 glbtool.py merge MODEL.glb OUT.glb [--mode=copy|delta|world] ANIM.glb[:new_name] ...
         copy the animations of other files onto the model's skeleton, matching bones by name.
         name the clip(s) of a file with :new_name (one clip) or :old=new,old2=new2
+        --mode=world turns each bone the way the other skeleton's bone turns (any rest pose or axes)
 
 The block heroes' 3D models come from Meshy (image to 3D, then rigging and animations).
 """
@@ -299,6 +300,164 @@ def merge_animations(model, src, rename=None, mode='copy', hips_scale=True, only
     return added
 
 
+# ---------- retargeting in world space (skeletons with the same bones but different rest poses or axes) ----------
+def _q_mul(a, b):
+    import numpy as np
+    ax, ay, az, aw = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    bx, by, bz, bw = b[..., 0], b[..., 1], b[..., 2], b[..., 3]
+    return np.stack([aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx,
+                     aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz], -1)
+
+
+def _q_inv(q):
+    import numpy as np
+    return q * np.array([-1, -1, -1, 1.0])
+
+
+def _q_rot(q, v):
+    import numpy as np
+    qv = np.concatenate([v, np.zeros(v.shape[:-1] + (1,))], -1)
+    return _q_mul(_q_mul(q, qv), _q_inv(q))[..., :3]
+
+
+def _mat_to_trs(m):
+    import numpy as np
+    M = np.array(m, dtype=float).reshape(4, 4).T  # glTF matrices are column-major
+    t = M[:3, 3]; sx, sy, sz = [np.linalg.norm(M[:3, i]) for i in range(3)]
+    R = M[:3, :3] / np.array([sx, sy, sz])
+    w = math.sqrt(max(0, 1 + R[0, 0] + R[1, 1] + R[2, 2])) / 2
+    if w > 1e-4:
+        q = np.array([(R[2, 1] - R[1, 2]) / (4 * w), (R[0, 2] - R[2, 0]) / (4 * w), (R[1, 0] - R[0, 1]) / (4 * w), w])
+    else:
+        i = int(np.argmax([R[0, 0], R[1, 1], R[2, 2]])); j, k = (i + 1) % 3, (i + 2) % 3
+        r = math.sqrt(max(0, 1 + R[i, i] - R[j, j] - R[k, k])); q = np.zeros(4); q[i] = r / 2
+        q[j] = (R[j, i] + R[i, j]) / (2 * r); q[k] = (R[k, i] + R[i, k]) / (2 * r); q[3] = (R[k, j] - R[j, k]) / (2 * r)
+    return t, q / np.linalg.norm(q), np.array([sx, sy, sz])
+
+
+class _Skel:
+    def __init__(self, doc):
+        import numpy as np
+        J = doc.J; nodes = J.get('nodes', [])
+        self.n = len(nodes); self.parent = [-1] * self.n
+        for i, nd in enumerate(nodes):
+            for c in nd.get('children', []): self.parent[c] = i
+        self.T = np.zeros((self.n, 3)); self.R = np.tile([0, 0, 0, 1.0], (self.n, 1)); self.S = np.ones((self.n, 3))
+        for i, nd in enumerate(nodes):
+            if 'matrix' in nd:
+                self.T[i], self.R[i], self.S[i] = _mat_to_trs(nd['matrix'])
+            else:
+                self.T[i] = nd.get('translation', [0, 0, 0]); self.R[i] = nd.get('rotation', [0, 0, 0, 1]); self.S[i] = nd.get('scale', [1, 1, 1])
+        self.order = []
+        seen = set()
+        def visit(i):
+            if i in seen: return
+            seen.add(i); self.order.append(i)
+            for c in nodes[i].get('children', []): visit(c)
+        for i in range(self.n):
+            if self.parent[i] < 0: visit(i)
+        self.names = [nd.get('name', '') for nd in nodes]
+
+    def world(self, T, R, S):
+        """world rotation (F x n x 4) and position (F x n x 3) for local T, R, S (F x n x k)"""
+        import numpy as np
+        F = R.shape[0]
+        WR = np.zeros((F, self.n, 4)); WP = np.zeros((F, self.n, 3)); WS = np.ones((F, self.n, 3))
+        for i in self.order:
+            p = self.parent[i]
+            if p < 0:
+                WR[:, i] = R[:, i]; WP[:, i] = T[:, i]; WS[:, i] = S[:, i]
+            else:
+                WR[:, i] = _q_mul(WR[:, p], R[:, i]); WS[:, i] = WS[:, p] * S[:, i]
+                WP[:, i] = WP[:, p] + _q_rot(WR[:, p], WS[:, p] * T[:, i])
+        return WR, WP, WS
+
+
+def _sample(times, vals, t, rot):
+    import numpy as np
+    times = np.asarray(times, float); vals = np.asarray(vals, float)
+    if len(times) == 1: return np.repeat(vals[:1], len(t), 0)
+    idx = np.clip(np.searchsorted(times, t, side='right') - 1, 0, len(times) - 2)
+    t0, t1 = times[idx], times[idx + 1]; f = np.clip((t - t0) / np.maximum(t1 - t0, 1e-9), 0, 1)[:, None]
+    a, b = vals[idx], vals[idx + 1]
+    if not rot: return a + (b - a) * f
+    d = np.sum(a * b, -1, keepdims=True); b = np.where(d < 0, -b, b); out = a + (b - a) * f  # nlerp is plenty at 30 frames a second
+    return out / np.linalg.norm(out, axis=-1, keepdims=True)
+
+
+def retarget_world(model, src, rename=None, fps=30, only=None):
+    """copy src's clips onto model: every bone turns in the world the way the same bone turns in src (from each one's own
+    rest pose), and the hips move up and down scaled to the model's size. Works across different exporters and axes."""
+    import numpy as np
+    tg, sk = _Skel(model), _Skel(src)
+    skel = set()
+    for s in model.J.get('skins', []): skel.update(s['joints'])
+    smap = {}
+    for i, nm in enumerate(sk.names): smap.setdefault(bone_key(nm), i)
+    pairs = {i: smap[bone_key(tg.names[i])] for i in skel if bone_key(tg.names[i]) in smap}
+    hips_t = next((i for i in tg.order if i in skel and ('hips' in bone_key(tg.names[i]) or 'pelvis' in bone_key(tg.names[i]))), None)
+    # rest pose of both (frame axis of size 1)
+    sWR0, sWP0, _ = sk.world(sk.T[None], sk.R[None], sk.S[None]); tWR0, tWP0, tWS0 = tg.world(tg.T[None], tg.R[None], tg.S[None])
+    k = 1.0
+    if hips_t is not None and hips_t in pairs:
+        hs, ht = sWP0[0, pairs[hips_t]], tWP0[0, hips_t]
+        # heights above the lowest bone of each skeleton
+        lo_s = min(sWP0[0, j, 1] for j in pairs.values()); lo_t = min(tWP0[0, j, 1] for j in pairs)
+        if hs[1] - lo_s > 1e-6: k = (ht[1] - lo_t) / (hs[1] - lo_s)
+    added = []
+    for an in src.J.get('animations', []):
+        name = an.get('name', '')
+        if only and name not in only: continue
+        new_name = (rename if isinstance(rename, str) else (rename or {}).get(name, name)) if rename else name
+        chans = []
+        dur = 0
+        for ch in an.get('channels', []):
+            t = ch.get('target', {}); smp = an['samplers'][ch['sampler']]
+            if t.get('node') is None or t.get('path') not in ('rotation', 'translation', 'scale'): continue
+            if smp.get('interpolation', 'LINEAR') == 'CUBICSPLINE': continue
+            tm = [v[0] for v in src.accessor_values(smp['input'])]; dur = max(dur, tm[-1] if tm else 0)
+            chans.append((t['node'], t['path'], tm, src.accessor_values(smp['output']), smp.get('interpolation', 'LINEAR')))
+        if not chans: continue
+        F = max(2, int(round(dur * fps)) + 1); times = np.linspace(0, dur, F)
+        T = np.repeat(sk.T[None], F, 0); R = np.repeat(sk.R[None], F, 0); S = np.repeat(sk.S[None], F, 0)
+        for node, path, tm, vals, ip in chans:
+            v = _sample(tm, vals, times, path == 'rotation')
+            if path == 'rotation': R[:, node] = v
+            elif path == 'translation': T[:, node] = v
+            else: S[:, node] = v
+        sWR, sWP, _ = sk.world(T, R, S)
+        # the model, bone by bone from the root: wanted world turn -> local turn
+        tR = np.repeat(tg.R[None], F, 0); tT = np.repeat(tg.T[None], F, 0)
+        WR = np.zeros((F, tg.n, 4)); WP = np.zeros((F, tg.n, 3)); WS = np.ones((F, tg.n, 3))
+        for i in tg.order:
+            p = tg.parent[i]
+            pR = WR[:, p] if p >= 0 else np.tile([0, 0, 0, 1.0], (F, 1)); pS = WS[:, p] if p >= 0 else np.ones((F, 3)); pP = WP[:, p] if p >= 0 else np.zeros((F, 3))
+            if i in pairs:
+                j = pairs[i]
+                want = _q_mul(_q_mul(sWR[:, j], _q_inv(sWR0[0, j])[None]), tWR0[0, i][None])
+                tR[:, i] = _q_mul(_q_inv(pR), want)
+                if i == hips_t:
+                    wpos = tWP0[0, i][None] + (sWP[:, j] - sWP0[0, j][None]) * k
+                    tT[:, i] = _q_rot(_q_inv(pR), wpos - pP) / np.maximum(pS, 1e-9)
+            WR[:, i] = _q_mul(pR, tR[:, i]); WS[:, i] = pS * tg.S[i]; WP[:, i] = pP + _q_rot(pR, pS * tT[:, i])
+        # keep the turns continuous (no flips between frames)
+        for i in pairs:
+            q = tR[:, i]
+            for f2 in range(1, F):
+                if np.dot(q[f2], q[f2 - 1]) < 0: q[f2] = -q[f2]
+        out = {'name': new_name, 'channels': [], 'samplers': []}
+        tin = model.add_float_accessor([(float(x),) for x in times], 'SCALAR', minmax=True)
+        for i in sorted(pairs):
+            out['samplers'].append({'input': tin, 'output': model.add_float_accessor([tuple(map(float, r)) for r in tR[:, i]], 'VEC4'), 'interpolation': 'LINEAR'})
+            out['channels'].append({'sampler': len(out['samplers']) - 1, 'target': {'node': i, 'path': 'rotation'}})
+        if hips_t is not None and hips_t in pairs:
+            out['samplers'].append({'input': tin, 'output': model.add_float_accessor([tuple(map(float, r)) for r in tT[:, hips_t]], 'VEC3'), 'interpolation': 'LINEAR'})
+            out['channels'].append({'sampler': len(out['samplers']) - 1, 'target': {'node': hips_t, 'path': 'translation'}})
+        model.J['animations'] = [a for a in model.J.get('animations', []) if a.get('name') != new_name] + [out]
+        added.append(new_name)
+    return added
+
+
 def info(path):
     d = Doc.load(path); J = d.J
     print(path, '| JSON nodes', len(J.get('nodes', [])), '| BIN', round(len(d.BIN) / 1e6, 2), 'MB')
@@ -350,7 +509,10 @@ def main(argv):
             if ren:
                 rename = dict(p.split('=', 1) for p in ren.split(',')) if '=' in ren else ren
             src = Doc.load(path)
-            print(' from', path, '->', merge_animations(model, src, rename, mode))
+            if mode == 'world':
+                print(' from', path, '->', retarget_world(model, src, rename))
+            else:
+                print(' from', path, '->', merge_animations(model, src, rename, mode))
         n = model.save(out); print('wrote', out, round(n / 1e6, 2), 'MB'); return 0
     print(__doc__); return 1
 
