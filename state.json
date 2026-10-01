@@ -1324,6 +1324,7 @@
    }
   },
   "lina": {
+   "extra": {},
    "full": {
     "bytes": 2492572,
     "pictures": [
@@ -1444,6 +1445,12 @@
    }
   },
   "majid": {
+   "full": {
+    "bytes": 2345420,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
