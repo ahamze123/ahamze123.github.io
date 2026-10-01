@@ -7676,8 +7676,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:41,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:42,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🎨',t:'Hero Maker: make your own heroes',s:'Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too'},
   {ic:'💾',t:'Keep your game safe',s:'Menu, Settings, 💾 My game: Save a copy keeps your whole game in a file (in Files, or send it to Mum or Dad). Open a copy brings it back on any tablet'},
   {ic:'🦋',t:'Butterfly Basma',s:'Butterfly Basma flutters in! Purple suit, blue hair and big colourful butterfly wings. She can fly. Pick her on the first screen or in 🦸'},
   {ic:'🧜‍♀️',t:'Luna the mermaid',s:'Luna the mermaid joins the heroes! She swims super fast and dives deep. Pick her on the first screen or in 🦸'},
@@ -10386,7 +10387,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.5';window.BB_VER=BB_VER;
+const BB_VER='26.6';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11531,9 +11532,9 @@ const BWING={up:'#ff7ad0',low:'#c77dff',spots:[[.12,.08,'#ffd23f',.17],[-.12,-.0
 {const _xb=drawHeroX;drawHeroX=function(m,C,A,t,p,suit,acc,hair){_xb(m,C,A,t,p,suit,acc,hair);if(C.x!=='bwings')return;
   const fast=(A.fly||0)>.1||p.glide;const fa=Math.sin(t*(fast?16:3))*(fast?.45:.16);
   for(const s of [-1,1]){MS.push();M4.tr(m,s*.07,1.15,-.22);M4.ry(m,s*(.3+fa));
-    MS.push();M4.tr(m,s*.4,.2,-.05);M4.rz(m,s*.3);sp(m,0,0,0,.72,.62,.04,BWING.up,1,.25);sp(m,0,0,0,.56,.46,.045,'#ff9fe0',1,.25);
+    MS.push();M4.tr(m,s*.4,.2,-.05);M4.rz(m,s*.3);sp(m,0,0,0,.72,.62,.04,C.wc||BWING.up,1,.25);sp(m,0,0,0,.56,.46,.045,C.wc3||'#ff9fe0',1,.25);
       for(const [x,y,c,r] of BWING.spots)for(const z of [.03,-.03])sp(m,s*x,y,z,r,r,.02,c,1,.45);MS.pop();
-    MS.push();M4.tr(m,s*.28,-.24,-.05);M4.rz(m,-s*.35);sp(m,0,0,0,.42,.46,.04,BWING.low,1,.25);for(const z of [.03,-.03]){sp(m,0,-.05,z,.15,.15,.02,'#46e6ff',1,.5);sp(m,s*.08,.1,z,.08,.08,.02,'#ffd23f',1,.5);}MS.pop();
+    MS.push();M4.tr(m,s*.28,-.24,-.05);M4.rz(m,-s*.35);sp(m,0,0,0,.42,.46,.04,C.wc2||BWING.low,1,.25);for(const z of [.03,-.03]){sp(m,0,-.05,z,.15,.15,.02,'#46e6ff',1,.5);sp(m,s*.08,.1,z,.08,.08,.02,'#ffd23f',1,.5);}MS.pop();
     MS.pop();}
   if(R()<(fast?.25:.05)&&typeof burst==='function')burst(p.x+Rr(-.6,.6),p.y+1.2,p.z+Rr(-.6,.6),['#ff7ad0','#ffd23f','#46e6ff','#c77dff'],1,.6,.08,1);};}
 // ---------- her portrait (until she has a picture card): the wings behind her and the antennae ----------
@@ -11994,6 +11995,151 @@ MV('{0} is further in the story: you go on from chapter {1} together!','{0} وص
 MV("You play {0}'s story together. The chapters count in your game too!",'تلعبان قصة {0} معًا. الفصول تُحسب في لعبتك أيضًا!');
 MV('Your friend','صديقك');MV('Chapters {0} to {1} done!','انتهت الفصول من {0} إلى {1}!');
 MV('One story online','قصة واحدة عبر الإنترنت');MV('Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too','عند اللعب عبر الإنترنت تكملون من عند من وصل أبعد في القصة، وكل فصل تنهونه معًا يُحسب على كل جهاز. وقطع الصاروخ مشتركة أيضًا');
+// ================= v26.6: 🎨 Hero Maker: the kids make their own heroes =================
+// Menu > 🎨 Hero Maker (or 🦸 > Make your own hero). Pick skin, hair, suit colours, boots and gloves, a chest picture, a hat,
+// a face extra, a cape, wings or a jetpack, legs, a dress or a mermaid tail, something in the hand, two attacks, a special
+// move, a super power and a walk, give the hero a name and save. While you make it, your hero turns slowly in front of you.
+// The family's own heroes (up to 12) are kept in the game's save (so "Save a copy" keeps them too), show in the Boys and the
+// Girls lists, can be played straight away, and friends playing online see them (their recipe travels with your looks).
+const HM={open:false,d:null,tab:'look',yaw:0,spin:true,off:.85,snapIn:0,snapCb:null,netCache:{},drag:null};
+const MYH={list:[],max:12};
+const HMPAL=['#e8343f','#ff7a1a','#ffcf3a','#9be22d','#1faa5c','#12b0b0','#46e6ff','#46b0ff','#2f6bff','#2b3a8a','#8a4ff0','#c77dff','#ff5fa8','#ff9ec0','#ffffff','#c8ccd4','#8a5a3a','#23232f'];
+const HMSKIN=['#f7d6bf','#f2c29b','#e0a67a','#c68a5a','#8d5a3b','#5e3b26','#8fe07a','#7ec8ff','#c9a8ff'];
+const HMHS=[['spiky','⚡','Spiky'],['swoop','🌊','Swoop'],['curly','🌀','Curly'],['mohawk','🦔','Mohawk'],['long','💇','Long'],['pony','🎀','Ponytail'],['pigtails','👧','Pigtails'],['buns','🍡','Buns'],['bald','🥚','No hair']];
+const HMEM=[['star','⭐'],['heart','❤️'],['bolt','⚡'],['flame','🔥'],['snow','❄️'],['leaf','🍃'],['paw','🐾'],['note','🎵'],['moon','🌙'],['shell','🐚'],['bfly','🦋'],['planet','🪐'],['gem','💎'],['ball','⚽'],['anchor','⚓'],['shield','🛡️'],['brick','🧱'],['cloud','☁️'],['eye','👁️'],['drop','💧'],['wave','🌊'],['fist','✊'],['bee','🐝'],['shuriken','✴️'],['compass','🧭'],['flag','🏁'],['claw','🦖']];
+const HMHAT=[['none','🚫'],['cap','🧢'],['cat','🐱'],['flower','🌸'],['beanie','🧶'],['wizard','🧙'],['crown','👑'],['tiara','👸'],['pirate','🏴‍☠️'],['tophat','🎩'],['horns','😈'],['bunny','🐰'],['unicorn','🦄'],['bflyband','🦋'],['beeband','🐝'],['antenna','👽'],['pearlmoon','🌕'],['crescent','🌙'],['halo','😇'],['witch','🧹'],['chef','👨‍🍳'],['firehat','🧑‍🚒'],['hardhat','👷'],['racer','🏁'],['cowboy','🤠'],['explorer','🧭'],['viking','🛡️'],['feather','🪶'],['beret','🎨'],['propeller','🚁'],['earmuffs','🎧'],['shell','🐚'],['icecream','🍦'],['lolly','🍭'],['pumpkin','🎃'],['helmet','👩‍🚀']];
+const HMACC=[['','🚫'],['shades','🕶️'],['domino','🦸'],['headband','🎽'],['goggles','🥽'],['phones','🎧'],['mustache','🥸'],['beard','🧔'],['star','⭐'],['heartclip','💗'],['flower','🌸'],['snowclip','❄️'],['scarf','🧣']];
+const HMCAPE=[['none','🚫'],['red','🟥'],['blue','🟦'],['purple','🟪'],['gold','🟨'],['black','⬛'],['rainbow','🌈']];
+const HMX=[['','🚫'],['fwings','🧚'],['bwings','🦋'],['jet','🚀'],['tail','🐱'],['parrot','🦜'],['guitar','🎸'],['bow','🏹'],['board','🛹'],['broom','🧹']];
+const HMLEGS=[['legs','🦵','Legs'],['dress','👗','Dress'],['tail','🧜','Mermaid tail']];
+const HMHX=[['','🚫'],['wand','🪄'],['hammer','🔨'],['mic','🎤'],['brush','🖌️'],['claws','🐾']];
+const HMNAMES=['Super Star','Captain Sparkle','Thunder Kid','Rainbow Rocket','Night Ninja','Sky Dancer','Lightning Lily','Blaze Boy','Crystal Queen','Turbo Tiger','Moon Hopper','Coral Kid','Flash Fox','Bubble Hero','Storm Pal','Sunny Jet'];
+const hmAtk=()=>Object.keys(SHOTDEF).filter(k=>k!=='tpunch'&&k!=='quake');
+// ---------- a hero's recipe -> a hero (the same kind of entry as every other hero) ----------
+const hmLight=(h,k)=>{const c=hex(h);return '#'+c.map(v=>Math.round((v+(1-v)*k)*255).toString(16).padStart(2,'0')).join('');};
+function hmDef(d){const tail=d.legs==='tail',dress=d.legs==='dress';const D={id:d.id,mine:1,g:'both',n:d.n||tr('My hero'),bg:d.cs,skin:d.skin,hs:d.hs,hair:d.hair,suit:'blue',cs:d.cs,ca:d.ca,
+    pt:tail?d.tc:d.pt,cape:d.cape,acc:d.acc,em:d.em,perk:d.perk,a:d.a,b:d.b,mv:d.mv,st:d.st};
+  if(!tail){D.bt=d.bt;D.bc=d.ca;}if(d.gl){D.gl=d.gl;D.gc=d.gl;}if(d.hat&&d.hat!=='none')D.hat=d.hat;if(d.x)D.x=d.x;if(d.hx)D.hx=d.hx;if(dress)D.robe=1;
+  if(tail){D.mer=d.tc;D.mers=hmLight(d.tc,.55);D.merf=d.tf||'#46e6ff';}if(d.x==='bwings'){D.wc=d.wc;D.wc2=hmLight(d.wc,.3);D.wc3=hmLight(d.wc,.45);}if(d.pic)D.pic=d.pic;return D;}
+function hmRecipe(C){return {id:C.id,n:C.n,skin:C.skin,hs:C.hs,hair:C.hair,cs:C.cs,ca:C.ca,pt:C.mer?'#2b3a8a':C.pt,bt:C.bt||'#ffffff',gl:C.gl||'',cape:C.cape||'none',acc:C.acc||'',em:C.em,hat:C.hat||'none',x:C.x||'',
+  wc:C.wc||'#ff7ad0',legs:C.mer?'tail':C.robe?'dress':'legs',tc:C.mer||'#12b0b0',tf:C.merf,hx:C.hx||'',a:C.a,b:C.b,mv:C.mv||'superjump',perk:C.perk,st:C.st||'hero',pic:C.pic};}
+// tags for the hero gates: the same as the heroes who have those attacks
+function hmTags(C){const t=new Set();for(const k of [C.a,C.b]){const o=CHARS.find(c=>!c.mine&&(c.a===k||c.b===k));if(o&&HERO_TAGS[o.id])for(const g of HERO_TAGS[o.id])t.add(g);}return [...t];}
+function hmRegister(D,remote){let C=CHARBY[D.id];if(C&&C!==D){for(const k of Object.keys(C))delete C[k];Object.assign(C,D);}else{C=D;CHARBY[D.id]=C;}
+  if(!remote&&D.id!=='my_draft'&&!CHARS.includes(C))CHARS.push(C);HMOVE[C.id]=[STP[C.st]?C.st:'hero',ABIL[C.mv]?C.mv:'superjump'];HERO_TAGS[C.id]=hmTags(C);return C;}
+// a saved or a friend's recipe is checked piece by piece (a broken one is left out)
+function hmClean(o,withPic){if(!o||typeof o!=='object')return null;const id=typeof o.id==='string'&&/^my_[a-z0-9]{4,12}$/.test(o.id)?o.id:null;if(!id)return null;
+  const col=(v,dv)=>typeof v==='string'&&/^#[0-9a-fA-F]{6}$/.test(v)?v:dv;const of=(v,L,dv)=>L.some(q=>q[0]===v)?v:dv;
+  const d={id,n:String(o.n||'').replace(/[<>&"]/g,'').slice(0,16)||'Hero',skin:col(o.skin,'#e0a67a'),hs:of(o.hs,HMHS,'spiky'),hair:HAIRS.some(h=>h.id===o.hair)?o.hair:'brown',cs:col(o.cs,'#2f6bff'),ca:col(o.ca,'#ffd23f'),
+    pt:col(o.pt,'#2b3a8a'),bt:col(o.bt,'#ffffff'),gl:col(o.gl,''),cape:of(o.cape,HMCAPE,'none'),acc:of(o.acc,HMACC,''),em:of(o.em,HMEM,'star'),hat:of(o.hat,HMHAT,'none'),x:of(o.x,HMX,''),wc:col(o.wc,'#ff7ad0'),
+    legs:o.mer?'tail':o.robe?'dress':'legs',tc:col(o.mer,'#12b0b0'),tf:col(o.merf,'#46e6ff'),hx:of(o.hx,HMHX,''),a:SHOTDEF[o.a]&&o.a!=='tpunch'&&o.a!=='quake'?o.a:'fire',b:SHOTDEF[o.b]&&o.b!=='tpunch'&&o.b!=='quake'?o.b:'ice',
+    mv:ABIL[o.mv]?o.mv:'superjump',perk:PERKS[o.perk]?o.perk:'strong',st:STP[o.st]?o.st:'hero'};
+  if(withPic&&typeof o.pic==='string'&&o.pic.startsWith('data:image/jpeg;base64,')&&o.pic.length<90000)d.pic=o.pic;return hmDef(d);}
+function hmLoadList(arr){if(!Array.isArray(arr))return;for(const C of MYH.list){if(!arr.some(o=>o&&o.id===C.id)){const i=CHARS.indexOf(C);if(i>=0)CHARS.splice(i,1);delete CHARBY[C.id];}}
+  const L=[];for(const o of arr.slice(0,MYH.max)){const D=hmClean(o,true);if(D&&!L.some(c=>c.id===D.id))L.push(hmRegister(D));}MYH.list=L;}
+// ---------- kept in the game's save ----------
+{const _xs=extraSave;extraSave=function(){const x=_xs.apply(this,arguments);try{x.myh=MYH.list.map(C=>({...C}));}catch(e){}return x;};}
+{const _xl=extraLoad;extraLoad=function(x){const r=_xl.apply(this,arguments);try{if(x&&Array.isArray(x.myh))hmLoadList(x.myh);}catch(e){noteErr('hmload',e);}return r;};}
+try{const s=loadSave();if(s&&s.x12&&Array.isArray(s.x12.myh))hmLoadList(s.x12.myh);}catch(e){}
+// ---------- online: the recipe travels with your looks; a friend's hero is kept as "r_<id>" (never mixed with your own) ----------
+const HMNET=new WeakMap();
+function hmNetStr(C){let s=HMNET.get(C);if(s&&s.k===C.n+C.cs+C.a+C.hat+C.x+C.hs+C.mer)return s.v;const o={...C};delete o.pic;delete o.mine;delete o.g;delete o.suit;delete o.bg;const v=JSON.stringify(o);HMNET.set(C,{k:C.n+C.cs+C.a+C.hat+C.x+C.hs+C.mer,v});return v;}
+{const _la=lookArr;lookArr=function(L){const a=_la.apply(this,arguments);try{const C=L&&CHARBY[L.ch];if(C&&C.mine){a[7]=Math.max(0,CHARS.findIndex(c=>c.id===(G.hero==='boy'?'leo':'mia')));a[8]=hmNetStr(C);}}catch(e){}return a;};}
+{const _orp=onRemotePresence;onRemotePresence=function(peer){const r=_orp.apply(this,arguments);try{const o=peer&&peer.presence;const lk=o&&Array.isArray(o.lk)?o.lk:null;if(!lk||typeof lk[8]!=='string'||lk[8].length>4000)return r;
+    const id=typeof o.id==='string'&&o.id?o.id.slice(0,16):'p'+String(peer.peer).slice(0,20);const rp=NET.peers[id];if(!rp||!rp.looks)return r;
+    let D=HM.netCache[lk[8]];if(D===undefined){let raw=null;try{raw=JSON.parse(lk[8]);}catch(e){}D=hmClean(raw,false);if(D){D.id='r_'+D.id;D.mine=0;D.remote=1;D=hmRegister(D,true);}HM.netCache[lk[8]]=D||null;}
+    if(D)rp.looks.ch=D.id;}catch(e){noteErr('hmnet',e);}return r;};}
+// ---------- the hero's picture (taken when the hero is saved) for the lists and the corner of the screen ----------
+const HMPIC={};
+function hmPicImg(C){if(!C||!C.pic)return null;let im=HMPIC[C.id];if(!im||im.src!==C.pic){im=new Image();im.src=C.pic;HMPIC[C.id]=im;}return im;}
+{const _dp=drawPortrait;drawPortrait=function(cv,C,sil){try{const im=C&&!sil&&hmPicImg(C);if(im){const x=cv.getContext('2d'),W=cv.width,H=cv.height;const go=()=>{x.clearRect(0,0,W,H);x.save();const r=Math.min(W,H)*.1;x.beginPath();if(x.roundRect)x.roundRect(0,0,W,H,r);else x.rect(0,0,W,H);x.clip();x.drawImage(im,0,0,W,H);x.restore();};
+      if(im.complete&&im.naturalWidth){go();return;}im.addEventListener('load',()=>{try{if(cv.isConnected)go();}catch(e){}},{once:true});}}catch(e){}return _dp(cv,C,sil);};}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const av=document.querySelector('#me .av');if(!av)return;const C=charOf(prof());if(!C||!C.mine||!C.pic){if(av._hm){av._hm='';av.style.backgroundImage='';av.style.color='';}return;}
+    if(av._hm===C.pic.length+C.id)return;av._hm=C.pic.length+C.id;av.style.backgroundImage=`url(${C.pic})`;av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.style.color='transparent';}catch(e){}};}
+// ---------- the maker ----------
+function hmNewRecipe(){return {id:null,n:'',skin:'#e0a67a',hs:'spiky',hair:'brown',cs:'#2f6bff',ca:'#ffd23f',pt:'#2b3a8a',bt:'#ffffff',gl:'',cape:'red',acc:'',em:'star',hat:'none',x:'',wc:'#ff7ad0',legs:'legs',tc:'#12b0b0',hx:'',a:'fire',b:'ice',mv:'superjump',perk:'strong',st:'hero'};}
+function hmRandom(){const P=a=>a[Math.floor(Math.random()*a.length)];const d=HM.d;d.skin=P(HMSKIN.slice(0,6).concat(HMSKIN.slice(0,6),HMSKIN));d.hs=P(HMHS)[0];d.hair=P(HAIRS.filter(h=>!h.id.startsWith('sk_'))).id;
+  d.cs=P(HMPAL);d.ca=P(HMPAL.filter(c=>c!==d.cs));d.pt=Math.random()<.5?d.cs:P(HMPAL);d.bt=P(HMPAL);d.gl=Math.random()<.35?'':P(HMPAL);d.em=P(HMEM)[0];d.hat=Math.random()<.4?'none':P(HMHAT)[0];d.acc=Math.random()<.5?'':P(HMACC)[0];
+  d.cape=Math.random()<.5?'none':P(HMCAPE)[0];d.x=Math.random()<.5?'':P(HMX)[0];d.wc=P(HMPAL);d.legs=Math.random()<.75?'legs':P(HMLEGS)[0];d.tc=P(HMPAL);d.hx=Math.random()<.6?'':P(HMHX)[0];
+  const A=hmAtk();d.a=P(A);d.b=P(A.filter(k=>k!==d.a));d.mv=P(Object.keys(ABIL));d.perk=P(Object.keys(PERKS));d.st=P(Object.keys(STP));if(!d.n||HMNAMES.some(n=>n===d.n||tr(n)===d.n))d.n=tr(P(HMNAMES));}
+function hmApply(){const D=hmDef({...HM.d,id:'my_draft'});hmRegister(D);const pr=prof();ME.looks={...pr.looks,ch:'my_draft',suit:'blue',hair:HM.d.hair,cape:HM.d.cape,hat:'none',costume:'none',psuit:'none',mask:'none'};}
+function hmOpen(id){if(HM.open)return;if(ME.veh){toast(tr('Get out of the car first'));return;}if(G.mode!=='play'&&G.mode!=='menu')return;
+  for(const k of ['pause','roster','shop'])if($(k))$(k).hidden=true;G.mode='menu';G.uiT=performance.now();
+  const C=id&&CHARBY[id]&&CHARBY[id].mine?CHARBY[id]:null;HM.d=C?hmRecipe(C):hmNewRecipe();if(!C)HM.d.n='';HM.edit=C?C.id:null;HM.tab='look';HM.yaw=0;HM.spin=true;HM.open=true;HM.saved=false;
+  HM.hud=[$('hud')&&$('hud').hidden,$('touch')&&$('touch').hidden];if($('hud'))$('hud').hidden=true;if($('touch'))$('touch').hidden=true;if($('tags'))$('tags').style.visibility='hidden';
+  hmUI();hmApply();hmRender();try{SFX.click();}catch(e){}}
+function hmClose(){if(!HM.open)return;HM.open=false;const el=$('hmaker');if(el)el.hidden=true;delete CHARBY.my_draft;delete HMOVE.my_draft;syncMeProfile();
+  if($('hud'))$('hud').hidden=!!(HM.hud&&HM.hud[0]);if($('touch'))$('touch').hidden=!!(HM.hud&&HM.hud[1]);if($('tags'))$('tags').style.visibility='';if(G.mode==='menu')G.mode='play';saveSoon();}
+// the camera looks at your hero from the front (your hero stands on the right, the maker on the left) and turns slowly
+{const _uc=updateCamera;updateCamera=function(dt){if(!HM.open)return _uc.apply(this,arguments);if(G.mode!=='menu'){hmClose();return _uc.apply(this,arguments);}
+  if(HM.spin&&!HM.drag)HM.yaw+=dt*.5;const a=(ME.face||0)+HM.yaw,d=3.5,rx=Math.cos(a),rz=-Math.sin(a);const off=innerWidth>innerHeight*1.15?HM.off:0;
+  CAM.tx=ME.x-rx*off;CAM.ty=ME.y+1.0;CAM.tz=ME.z-rz*off;CAM.lookY=0;CAM.lax=0;CAM.laz=0;CAM.eye=[ME.x+Math.sin(a)*d-rx*off,ME.y+1.5,ME.z+Math.cos(a)*d-rz*off];};}
+// the picture: taken from the screen right after a frame is drawn, a square around the hero
+function hmProj(x,y,z){const m=RF.vp,cw=canvas.width,ch=canvas.height;const X=m[0]*x+m[4]*y+m[8]*z+m[12],Y=m[1]*x+m[5]*y+m[9]*z+m[13],W=m[3]*x+m[7]*y+m[11]*z+m[15];if(W<=0)return null;return [(X/W*.5+.5)*cw,(1-(Y/W*.5+.5))*ch];}
+{const _rf=renderFrame;renderFrame=function(){const r=_rf.apply(this,arguments);if(HM.snapIn>0&&--HM.snapIn===0&&HM.snapCb){const cb=HM.snapCb;HM.snapCb=null;let url=null;
+    try{const t=hmProj(ME.x,ME.y+2.35,ME.z),b=hmProj(ME.x,ME.y-.12,ME.z),c=hmProj(ME.x,ME.y+1.1,ME.z);if(t&&b&&c){const s=Math.max(40,(b[1]-t[1])*1.02);const k=document.createElement('canvas');k.width=k.height=200;const x=k.getContext('2d');
+      x.fillStyle=HM.d.cs||'#2a2550';x.fillRect(0,0,200,200);const sx=c[0]-s/2,sy=(t[1]+b[1])/2-s/2,cw=canvas.width,ch=canvas.height;const x0=Math.max(0,sx),y0=Math.max(0,sy),x1=Math.min(cw,sx+s),y1=Math.min(ch,sy+s);
+      if(x1>x0+4&&y1>y0+4)x.drawImage(canvas,x0,y0,x1-x0,y1-y0,(x0-sx)/s*200,(y0-sy)/s*200,(x1-x0)/s*200,(y1-y0)/s*200);url=k.toDataURL('image/jpeg',.82);}}catch(e){url=null;}try{cb(url);}catch(e){}}return r;};}
+function hmSave(){const d=HM.d;d.n=String(($('hm_name')&&$('hm_name').value)||d.n||'').replace(/[<>&"]/g,'').trim().slice(0,16);if(!d.n){HM.tab='name';hmRender();const i=$('hm_name');if(i)i.focus();hmMsg('✏️ '+tr('Give your hero a name first'));return;}
+  if(!HM.edit&&MYH.list.length>=MYH.max){hmMsg('⚠️ '+trf('You can keep {0} heroes. Change or remove one first',MYH.max));return;}
+  HM.spin=false;HM.yaw=0;HM.snapIn=3;hmMsg('📸 …');HM.snapCb=(url)=>{const id=HM.edit||('my_'+Math.random().toString(36).slice(2,9).replace(/[^a-z0-9]/g,'x').padEnd(6,'0'));d.id=id;if(url)d.pic=url;
+    const C=hmRegister(hmDef(d));if(!MYH.list.includes(C))MYH.list.push(C);HM.edit=id;HM.saved=true;saveGame();try{SFX.buy();}catch(e){}hmRender();hmMsg('✅ '+trf('{0} is saved! Tap Play to play as them',C.n));HM.spin=true;};}
+function hmPlay(){const C=HM.edit&&CHARBY[HM.edit];if(!C)return;const pr=prof();applyChar(pr,C);hmClose();syncMeProfile();if(typeof touchLabels==='function')touchLabels();saveGame();toast('🦸 '+trf('You are {0}!',C.n));try{SFX.levelup?SFX.levelup():SFX.buy();}catch(e){}}
+function hmDelete(){const C=HM.edit&&CHARBY[HM.edit];if(!C)return;if(!HM.delArm){HM.delArm=true;hmMsg('⚠️ '+trf('Tap Remove again to remove {0}',C.n));return;}HM.delArm=false;
+  const i=CHARS.indexOf(C);if(i>=0)CHARS.splice(i,1);MYH.list=MYH.list.filter(c=>c!==C);delete CHARBY[C.id];for(const g of ['boy','girl']){const pr=PROF[g];if(pr&&pr.char===C.id)applyChar(pr,CHARBY[g==='boy'?'leo':'mia']);}
+  saveGame();HM.edit=null;HM.d=hmNewRecipe();hmApply();hmRender();hmMsg('🗑️ '+tr('Removed'));}
+function hmMsg(t){const m=$('hm_msg');if(m)m.textContent=t;}
+// ---------- the panel ----------
+function hmUI(){let el=$('hmaker');if(!el){el=document.createElement('div');el.id='hmaker';document.body.appendChild(el);const st=document.createElement('style');st.textContent=`
+#hmaker{position:fixed;inset:0;z-index:30;pointer-events:none;font-family:var(--body,system-ui,sans-serif)}#hmaker[hidden]{display:none}
+#hmaker .hmp{position:absolute;left:calc(8px + env(safe-area-inset-left,0px));top:8px;bottom:8px;width:min(430px,54vw);background:rgba(20,16,56,.93);border-radius:18px;padding:8px 10px;display:flex;flex-direction:column;pointer-events:auto;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+#hmaker h2{margin:2px 0 6px;font-size:20px;display:flex;align-items:center;gap:6px}#hmaker h2 .sp{flex:1}
+#hmaker .hmtabs{display:flex;gap:4px;margin-bottom:6px}#hmaker .hmtab{flex:1;border:0;border-radius:12px;padding:7px 2px;background:rgba(255,255,255,.12);color:#fff;font-weight:900;font-size:12px;line-height:1.1}#hmaker .hmtab.on{background:#ffd23f;color:#1c1846}
+#hmaker .hmtab b{display:block;font-size:19px}#hmaker .hmb{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+#hmaker h4{margin:9px 0 5px;font-size:14px;color:#ffe9a8}#hmaker .hmg{display:flex;flex-wrap:wrap;gap:6px}
+#hmaker .hmsw{width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.25);padding:0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}#hmaker .hmsw.on{border-color:#fff;transform:scale(1.12)}
+#hmaker .hmop{min-width:52px;border:2px solid transparent;border-radius:12px;padding:5px 6px;background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px}
+#hmaker .hmop span{font-size:22px;line-height:1.1}#hmaker .hmop.on{border-color:#ffd23f;background:rgba(255,210,63,.28)}#hmaker .hmop.wide{min-width:96px;flex-direction:row;gap:6px;font-size:12px}
+#hmaker .hmtop{position:absolute;right:calc(10px + env(safe-area-inset-right,0px));top:10px;display:flex;gap:8px;pointer-events:auto}
+#hmaker .hmtop button{border:0;border-radius:14px;padding:9px 13px;font-weight:900;font-size:15px;background:rgba(20,16,56,.85);color:#fff}#hmaker .hmtop .ok{background:#46e6b0;color:#14303a}
+#hmaker .hmview{position:absolute;top:60px;bottom:0;right:0;left:min(450px,56vw);pointer-events:auto;touch-action:none}
+#hmaker input{width:100%;box-sizing:border-box;border-radius:12px;border:0;padding:10px 12px;font-size:18px;font-weight:800}#hmaker .hmmsg{min-height:1.3em;color:#ffd23f;font-weight:900;font-size:13px;margin-top:4px}`;document.head.appendChild(st);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b||!el.contains(b))return;const k=b.dataset.k,v=b.dataset.v;HM.d[k]=v;hmApply();hmRender();try{SFX.click();}catch(x){}});}
+  el.hidden=false;
+  el.innerHTML=`<div class="hmp"><h2>🎨 <span>${esc(tr('Hero Maker'))}</span><span class="sp"></span></h2><div class="hmtabs">${[['look','🧑','Look'],['outfit','👕','Outfit'],['extras','🎩','Extras'],['powers','⚡','Powers'],['name','✏️','Name']].map(([k,ic,l])=>`<button class="hmtab" data-t="${k}"><b>${ic}</b>${esc(tr(l))}</button>`).join('')}</div><div class="hmb" id="hm_body"></div><div class="hmmsg" id="hm_msg"></div></div>
+    <div class="hmtop"><button id="hm_rand">🎲 ${esc(tr('Surprise me'))}</button><button id="hm_turn">🔄</button><button class="ok" id="hm_save">✅ ${esc(tr('Save'))}</button><button id="hm_x">✕</button></div><div class="hmview" id="hm_view"></div>`;
+  el.querySelectorAll('.hmtab').forEach(b=>b.onclick=()=>{HM.tab=b.dataset.t;hmRender();try{SFX.click();}catch(e){}});
+  $('hm_rand').onclick=()=>{hmRandom();hmApply();hmRender();try{SFX.pop?SFX.pop():SFX.click();}catch(e){}};$('hm_turn').onclick=()=>{HM.spin=!HM.spin;};$('hm_save').onclick=hmSave;$('hm_x').onclick=hmClose;
+  const V=$('hm_view');V.onpointerdown=e=>{HM.drag={x:e.clientX,y0:HM.yaw};try{V.setPointerCapture(e.pointerId);}catch(x){}};V.onpointermove=e=>{if(HM.drag)HM.yaw=HM.drag.y0-(e.clientX-HM.drag.x)*.012;};V.onpointerup=V.onpointercancel=()=>{HM.drag=null;};}
+function hmRender(){const B=$('hm_body');if(!B)return;const d=HM.d;document.querySelectorAll('#hmaker .hmtab').forEach(b=>b.classList.toggle('on',b.dataset.t===HM.tab));
+  const sw=(k,L)=>`<div class="hmg">${L.map(c=>`<button class="hmsw ${d[k]===c?'on':''}" data-k="${k}" data-v="${c}" style="background:${c}"></button>`).join('')}</div>`;
+  const op=(k,L,wide)=>`<div class="hmg">${L.map(([v,ic,l])=>`<button class="hmop ${wide?'wide':''} ${d[k]===v?'on':''}" data-k="${k}" data-v="${v}"><span>${ic}</span>${l?esc(tr(l)):''}</button>`).join('')}</div>`;
+  const h=t=>`<h4>${esc(tr(t))}</h4>`;let s='';
+  if(HM.tab==='look'){s=h('Skin')+sw('skin',HMSKIN)+h('Hair')+op('hs',HMHS)+h('Hair colour')+`<div class="hmg">${HAIRS.filter(q=>!q.id.startsWith('sk_')).map(q=>`<button class="hmsw ${d.hair===q.id?'on':''}" data-k="hair" data-v="${q.id}" style="background:${q.c}"></button>`).join('')}</div>`;}
+  else if(HM.tab==='outfit'){s=h('Suit')+sw('cs',HMPAL)+h('Trim and chest picture')+sw('ca',HMPAL)+(d.legs==='tail'?'':h('Legs')+sw('pt',HMPAL)+h('Boots')+sw('bt',HMPAL))+h('Gloves')+`<div class="hmg"><button class="hmop ${!d.gl?'on':''}" data-k="gl" data-v=""><span>🚫</span></button></div>`+sw('gl',HMPAL)+h('Chest picture')+op('em',HMEM);}
+  else if(HM.tab==='extras'){s=h('Hat')+op('hat',HMHAT)+h('Face')+op('acc',HMACC)+h('Cape')+op('cape',HMCAPE)+h('On the back')+op('x',HMX)+(d.x==='bwings'?h('Wing colour')+sw('wc',HMPAL):'')+h('Legs, dress or tail')+op('legs',HMLEGS,1)+(d.legs==='tail'?h('Tail colour')+sw('tc',HMPAL):'')+h('In the hand')+op('hx',HMHX);}
+  else if(HM.tab==='powers'){const A=hmAtk().map(k=>[k,SHOTDEF[k].ic,SHOTDEF[k].s||SHOTDEF[k].n]);s=h('Attack 1 (the red button)')+op('a',A)+h('Attack 2 (the purple button)')+op('b',A)+h('Special move')+op('mv',Object.entries(ABIL).map(([k,v])=>[k,v.ic,v.n]),1)
+    +h('Super power')+op('perk',Object.entries(PERKS).map(([k,v])=>[k,v.ic,tr(v.n).split(/[:：]/)[0]]),1)+h('How they walk')+op('st',Object.entries(STP).map(([k,v])=>[k,{hero:'🦸',stomp:'🦶',ninja:'🥷',bouncy:'🐇',dancer:'💃',robot:'🤖',skate:'⛸️',float:'🎈',beast:'🐯',royal:'👑',cool:'😎',sporty:'🏃',swim:'🐬'}[k]||'🦸',v.n||k]),1);}
+  else{s=h('Name')+`<input id="hm_name" maxlength="16" placeholder="${esc(tr('My hero'))}" value="${esc(d.n||'')}">`+`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="big sm" id="hm_save2">✅ ${esc(tr('Save'))}</button>${HM.edit&&HM.saved!==null?`<button class="big sm mint" id="hm_play">▶ ${esc(tr('Play'))}</button>`:''}${HM.edit?`<button class="big sm alt" id="hm_del">🗑️ ${esc(tr('Remove'))}</button>`:''}</div>`
+    +`<p class="small" style="margin-top:10px">${esc(trf('Your heroes: {0} of {1}',MYH.list.length,MYH.max))}</p>`;}
+  B.innerHTML=s;const nm=$('hm_name');if(nm)nm.oninput=()=>{d.n=nm.value.slice(0,16);};const s2=$('hm_save2');if(s2)s2.onclick=hmSave;const pl=$('hm_play');if(pl)pl.onclick=hmPlay;const dl=$('hm_del');if(dl)dl.onclick=hmDelete;}
+// ---------- the ways in: Menu, and 🦸 Heroes ----------
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='main'||$('pm_maker'))return r;const h=$('pm_heroes');if(!h)return r;const b=document.createElement('button');b.className='mb';b.id='pm_maker';b.textContent='🎨 '+tr('Hero Maker');b.onclick=()=>{$('pause').hidden=true;hmOpen();};h.after(b);}catch(e){}return r;};}
+{const _rr=renderRoster;renderRoster=function(){const r=_rr.apply(this,arguments);try{const B=$('rbox');const tabs=B&&B.querySelector('.rtabs');if(tabs&&!$('hm_new')){const b=document.createElement('button');b.className='big sm mint';b.id='hm_new';b.style.cssText='display:block;margin:6px auto';b.textContent='🎨 '+tr('Make your own hero');b.onclick=()=>{closeRoster();hmOpen();};tabs.after(b);}}catch(e){}return r;};}
+{const _rd=rosterDetail;rosterDetail=function(){const r=_rd.apply(this,arguments);try{const C=CHARBY[ROS.sel];const D=$('rdet');if(C&&C.mine&&D&&!$('hm_edit')){const ri=D.querySelector('.ri')||D;const b=document.createElement('button');b.className='big sm';b.id='hm_edit';b.style.marginTop='6px';b.textContent='✏️ '+tr('Change this hero');b.onclick=()=>{closeRoster();hmOpen(C.id);};ri.appendChild(b);}}catch(e){}return r;};}
+// Escape closes the maker
+addEventListener('keydown',e=>{if(HM.open&&e.code==='Escape'){e.preventDefault();hmClose();}});
+MV('Hero Maker','صانع الأبطال');MV('Make your own hero','اصنع بطلك');MV('Change this hero','غيّر هذا البطل');MV('Surprise me','فاجئني');MV('Save','احفظ');MV('Play','العب');MV('Remove','احذف');MV('Removed','تم الحذف');
+MV('Look','الشكل');MV('Outfit','الملابس');MV('Extras','إضافات');MV('Powers','القوى');MV('Name','الاسم');MV('Skin','البشرة');MV('Hair','الشعر');MV('Hair colour','لون الشعر');MV('Suit','البدلة');
+MV('Trim and chest picture','الحزام وصورة الصدر');MV('Legs','الساقان');MV('Boots','الحذاء');MV('Gloves','القفازات');MV('Chest picture','صورة الصدر');MV('Hat','القبعة');MV('Face','الوجه');MV('Cape','العباءة');
+MV('On the back','على الظهر');MV('Wing colour','لون الأجنحة');MV('Legs, dress or tail','ساقان أو فستان أو ذيل');MV('Tail colour','لون الذيل');MV('In the hand','في اليد');MV('Dress','فستان');MV('Mermaid tail','ذيل حورية');
+MV('Attack 1 (the red button)','الهجوم 1 (الزر الأحمر)');MV('Attack 2 (the purple button)','الهجوم 2 (الزر البنفسجي)');MV('Special move','الحركة الخاصة');MV('Super power','القوة الخارقة');MV('How they walk','طريقة المشي');
+MV('My hero','بطلي');MV('Give your hero a name first','أعطِ بطلك اسمًا أولًا');MV('You can keep {0} heroes. Change or remove one first','يمكنك الاحتفاظ بـ {0} أبطال. غيّر أو احذف واحدًا أولًا');
+MV('{0} is saved! Tap Play to play as them','تم حفظ {0}! اضغط «العب» لتلعب به');MV('You are {0}!','أنت الآن {0}!');MV('Tap Remove again to remove {0}','اضغط «احذف» مرة أخرى لحذف {0}');MV('Your heroes: {0} of {1}','أبطالك: {0} من {1}');
+MV('Get out of the car first','انزل من السيارة أولًا');MV('Spiky','شوكي');MV('Swoop','منسدل');MV('Curly','مجعد');MV('Mohawk','موهوك');MV('Long','طويل');MV('Ponytail','ذيل حصان');MV('Pigtails','ضفيرتان');MV('Buns','كعكتان');MV('No hair','بلا شعر');
+MV('Super Star','النجم الخارق');MV('Captain Sparkle','كابتن لمعة');MV('Thunder Kid','فتى الرعد');MV('Rainbow Rocket','صاروخ قوس قزح');MV('Night Ninja','نينجا الليل');MV('Sky Dancer','راقصة السماء');MV('Lightning Lily','ليلى البرق');
+MV('Blaze Boy','فتى اللهب');MV('Crystal Queen','ملكة الكريستال');MV('Turbo Tiger','النمر السريع');MV('Moon Hopper','قافز القمر');MV('Coral Kid','فتى المرجان');MV('Flash Fox','الثعلب البرق');MV('Bubble Hero','بطل الفقاعات');MV('Storm Pal','صديق العاصفة');MV('Sunny Jet','نفاثة الشمس');
+MV('Hero Maker: make your own heroes','صانع الأبطال: اصنع أبطالك');MV('Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too','القائمة، 🎨 صانع الأبطال: اختر الشعر والألوان والأجنحة أو ذيل الحورية والقبعة والهجمات والحركة الخاصة، وسمِّ بطلك والعب به. الأصدقاء على الإنترنت يرونه أيضًا');
 // ================= v25.6: one broken thing never stops the whole game =================
 // The moving things of the world (heroes, pets, cars, enemies, quest markers, the glowing trail...) were drawn in one big
 // step. If one of them could not be drawn, the whole picture stopped, and after a few seconds the game said "Oops! The game
