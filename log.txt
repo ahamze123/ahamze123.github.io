@@ -325,3 +325,4 @@
 2026-10-01 13:05:11 [majid] rigging IN_PROGRESS 63%
 2026-10-01 13:05:21 [majid] rigging IN_PROGRESS 90%
 2026-10-01 13:05:22 [bilal] image-to-3d SUCCEEDED 100%
+2026-10-01 13:05:27 [bilal] rig task made 01a0f791-d17a-7611-bf07-40a390710d63
