@@ -8,7 +8,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - The Glitch King stole Blocktopia's five Power Crystals and locked the roads with glitch force fields. A picture story explains it at the start, and **📖** (next to the menu button) opens the Story Book any time, with every chapter, its prize and a **Show me the way** button.
 - There are 8 chapters: The Bank Robbery (Brick City), Puppy Rescue (Mushroom Forest), Robot Factory (Canyon Desert), Frozen Peaks, Slime Farm (Happy Farm), Glitch Castle (Glitch Island), Rocket to the Moon and UFO Showdown. Each one breaks the next force field and opens a new place, until the whole world (the towns, the Moon and the Sky Kingdom) is open.
 - Each chapter gives a big prize, and the prizes grow: new heroes, a puppy and a bunny, the police car, hot rod, monster truck, hover bike and hero car, and coins. Then a friend calls on the hero radio to say where to go next.
-- Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests and jobs only send you to places that are already open.
+- Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests, jobs and trails only send you to places that are already open: if you pick a locked place (on the map, a hidden hero coin, the Moon), the game says which chapter opens it.
 - Playing online, everyone follows the host's story, and each tablet gets its own prizes.
 
 ## Missions that make you think
@@ -31,7 +31,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 ## Camera
 - The camera follows your hero: it swings round behind them as they run. Turn it yourself any time (drag on the right side of the screen, or the mouse on a computer); a moment after you let go it starts following again.
 - It sits high and far back so you can see a lot, and it looks a little ahead of your hero, so more of the screen shows where you are going. It aims the way you run, stays calm when you jump (only big jumps lift it), and widens a little when you go fast.
-- Trees, lamp posts, mushrooms and small houses between the camera and your hero fade out instead of making the camera jump; only hills and big buildings bring it closer, gently.
+- Trees, lamp posts, mushrooms and small houses between the camera and your hero fade out instead of making the camera jump. Next to hills, cliffs and big buildings the camera tilts up and looks over them, and if it has to come closer it glides in (it never jumps right up to your hero). It also rides up over the ground instead of dipping into a hill, and it follows steps and stairs softly.
 - **Menu → Settings → Camera** switches between Close, Normal and Far, and **Camera follows me** turns the following off. On a tablet, pinch with two fingers on the right side of the screen to zoom.
 
 ## Graphics
@@ -43,7 +43,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - Some jobs need you to hold **✋ Use** (or **E** on a keyboard): helping the lost hikers, fixing things on quests, helping a knocked-out friend up and cooking. A ring fills up while you hold, so you can see it working. Tapping again and again works too, and if you let go the ring only drains slowly.
 
 ## Heroes
-- Pick **Boys** or **Girls** on the first screen, then one of your heroes.
+- Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
 - There are **50 heroes**: 25 boys and 25 girls. Each has their own look, a special skill and two attacks of their own.
 - Tap 🦸 in the game to see every hero. A locked hero shows how to get them:
   - ⭐ finish their mission,

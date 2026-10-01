@@ -397,7 +397,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
         <div class="chinfo small" id="chinfo"></div>
         <div class="hname"><label class="small" for="n0" data-i18n>Your hero's name</label><input id="n0" maxlength="12" placeholder="Leo" aria-label="Boy hero name" data-i18n-attr="aria-label"><input id="n1" maxlength="12" placeholder="Mia" aria-label="Girl hero name" data-i18n-attr="aria-label" hidden></div>
       </div>
-      <div class="small" id="pickhint" data-i18n>Boys lift cars and pull handles, girls charge power sockets. In solo you can swap between your boy and girl hero any time.</div>
+      <div class="small" id="pickhint" data-i18n>Boys lift cars and pull handles, girls charge power sockets. Tap ⇄ to swap between your boy and girl hero any time, online too.</div>
       <div class="tbtns"><button class="big" id="bplay" data-i18n>Play solo</button><button class="big mint" id="bonline" data-i18n>Play online</button></div>
       <div class="small" id="savehint"></div>
       <div class="keys" id="keyshelp"><b>Move</b><span><kbd>W A S D</kbd> · camera <kbd>←</kbd><kbd>→</kbd> or drag mouse</span><b>Actions</b><span><kbd>Space</kbd> jump · <kbd>J</kbd>/click attack · <kbd>K</kbd> power · <kbd>E</kbd> interact · <kbd>Shift</kbd> fly down · <kbd>L</kbd> land</span><b>More</b><span><kbd>Tab</kbd> swap hero · <kbd>M</kbd> map · <kbd>T</kbd> emotes · <kbd>B</kbd> build · <kbd>C</kbd> photo · <kbd>Esc</kbd> menu</span></div>
@@ -2404,7 +2404,7 @@ function updateCamera(dt){const p=ME;const v=p.veh;
       CAM.backT=ad>2.5?(CAM.backT||0)+dt:0;const w=ad>2.5?(CAM.backT>1.1?1.8:0):Math.min(1.1,ad*1.2);CAM.yaw+=Math.sign(df)*Math.min(ad,w*dt*Math.min(1,hs/6));}else CAM.backT=0;}
   else if(G.mode!=='title'&&!v&&CAM.manualT>1.4){const hs=Math.hypot(p.vx,p.vz);if(hs>2){const want=Math.atan2(-p.vx,-p.vz);const lat=Math.abs(Math.sin(angDiff(CAM.yaw,want)));CAM.yaw=angLerp(CAM.yaw,want,Math.min(1,dt*.55*lat*(hs/7)));}}
   CAM.manualT+=dt;CAM.yaw+=CAM.dYaw;CAM.pitch=clamp(CAM.pitch+CAM.dPitch,-.1,1.2);CAM.dYaw=0;CAM.dPitch=0;
-  const pt=G.cine?pitch:clamp(pitch+(CAM.pitch-.34),-.05,1.25);if(G.mode==='title'){CAM.pAdj=pt;}const k=Math.min(1,dt*10);CAM.tx=lerp(CAM.tx,tx,k);CAM.tz=lerp(CAM.tz,tz,k);CAM.ty=lerp(CAM.ty,ty,Math.min(1,dt*6));
+  const pt=G.cine?pitch:clamp(pitch+(CAM.pitch-.34),-.05,1.25);if(G.mode==='title'){CAM.pAdj=pt;}const k=Math.min(1,dt*10);CAM.tx=lerp(CAM.tx,tx,k);CAM.tz=lerp(CAM.tz,tz,k);CAM.ty=lerp(CAM.ty,ty,Math.min(1,dt*(Math.abs(ty-CAM.ty)>3||v||p.fly||p.swim?6:3.5)));
   dist*=1+CAM.zoom;CAM.dist=lerp(CAM.dist,dist,Math.min(1,dt*3));
   // collision: pull in, and if blocked very close raise the camera over the obstacle
   let d=CAM.dist;let pUse=pt;
@@ -2413,21 +2413,31 @@ function updateCamera(dt){const p=ME;const v=p.veh;
   if(G.mode!=='title'&&!G.cine&&p.realm!=='inside'){const ray=(pp,dd,off)=>{const hd=Math.cos(pp),vd=Math.sin(pp),dx=Math.sin(CAM.yaw)*hd,dz=Math.cos(CAM.yaw)*hd,ox=Math.cos(CAM.yaw)*off,oz=-Math.sin(CAM.yaw)*off;
       for(let s=.6;s<=dd;s+=.4){const w=Math.min(1,s/3);const x=CAM.tx+dx*s+ox*w,y=CAM.ty+vd*s,z=CAM.tz+dz*s+oz*w;const lim=y-.45;
         // something thin (a tree, a lamp post, a mushroom: only a few tall cells around) is see-through for the camera: it fades out instead
-        if(chAt(x,z)>lim){if(camHill(x,z,lim))return s-.5;if(!camThin(x,z,lim,Math.cos(CAM.yaw),-Math.sin(CAM.yaw)))return Math.max(s-.5,Math.min(dd,5));}}return dd;};
+        if(chAt(x,z)>lim){if(camHill(x,z,lim))return Math.max(s-.5,Math.min(dd,4));if(!camThin(x,z,lim,Math.cos(CAM.yaw),-Math.sin(CAM.yaw)))return Math.max(s-.5,Math.min(dd,5));}}return dd;};
     const ray3=(pp,dd)=>{const a=ray(pp,dd,0),b=ray(pp,dd,1.2),c=ray(pp,dd,-1.2);return Math.max(Math.min(a,b),Math.min(Math.max(a,b),c));};CAM.ray3=ray3;
-    // blocked behind (a hill, a wall): look down from a little higher up, just enough to see over it, and stay there until the
-    // way has been clear for a second, so the camera does not bob up and down
-    const want=CAM.dist,need=Math.min(want,Math.max(6,want*.6)),dB=ray3(pt,want);
-    if(dB<need){let up=CAM.pUp||0;for(let k=1;k<=6;k++){const u=k*.1;if(pt+u>1.15||k===6){up=Math.max(up,Math.min(.6,1.15-pt));break;}if(ray3(pt+u,want)>=need){up=Math.max(up,u);break;}}CAM.pUp=up;CAM.pUpT=0;}
-    else if(CAM.pUp>0){CAM.pUpT=(CAM.pUpT||0)+dt;if(CAM.pUpT>1)CAM.pUp=Math.max(0,CAM.pUp-dt*.25);}
+    // v25.2: something big behind the hero (a hill, a cliff, a big building): the camera tilts up to look over all of it (up to
+    // about 70 degrees) and only comes closer when tilting is not enough. It stays tilted until the way has been clear for a
+    // moment, so it does not bob up and down on hills and steps (it used to tilt only a little and then jump in close)
+    const want=CAM.dist,dB=ray3(pt,want);let need=0;
+    if(dB<want-.3){need=-1;let bu=0,bf=dB;for(let u=.05;u<=.651;u+=.05){if(pt+u>1.2)break;const f=ray3(pt+u,want);if(f>=want-.3){need=u;break;}if(f>bf+.5){bf=f;bu=u;}}if(need<0)need=bu;}
+    if(need>=(CAM.pUp||0)-.001){CAM.pUp=need;CAM.pUpT=0;}else{CAM.pUpT=(CAM.pUpT||0)+dt;if(CAM.pUpT>1.2)CAM.pUp=Math.max(need,CAM.pUp-dt*.3);}
     pUse=pt+(CAM.pUp||0);}else CAM.pUp=0;
-  CAM.pAdj=lerp(CAM.pAdj??pUse,pUse,Math.min(1,dt*(pUse>(CAM.pAdj??pUse)?6:2)));const pp=CAM.pAdj;const hd=Math.cos(pp),vd=Math.sin(pp);const dx=Math.sin(CAM.yaw)*hd,dy=vd,dz=Math.cos(CAM.yaw)*hd;
+  // tilt smoothly (at most about 60 degrees a second up and 25 down), but follow your finger at once when you tilt it yourself
+  {const c0=CAM.pAdj??pUse,df=pUse-c0;CAM.pAdj=G.mode==='title'||CAM.manualT<.4?lerp(c0,pUse,Math.min(1,dt*12)):c0+clamp(df*Math.min(1,dt*5),-.42*dt,1.05*dt);}
+  const pp=CAM.pAdj;const hd=Math.cos(pp),vd=Math.sin(pp);const dx=Math.sin(CAM.yaw)*hd,dy=vd,dz=Math.cos(CAM.yaw)*hd;
   // how far back the camera can go, along the angle it really looks from
   if(G.mode!=='title'&&!G.cine&&p.realm!=='inside'&&CAM.ray3)d=CAM.ray3(pp,CAM.dist);
-  // pull in quickly but smoothly, and only go back out once the way has been clear for a moment (no flickering in and out)
-  if(!CAM.cd||d<CAM.cd-.05){CAM.cdT=0;CAM.cd=lerp(CAM.cd||d,d,Math.min(1,dt*6));}else{CAM.cdT=(CAM.cdT||0)+dt;if(CAM.cdT>1)CAM.cd=lerp(CAM.cd,d,Math.min(1,dt*1.5));}d=Math.min(d,CAM.cd);
+  // pull in quickly but smoothly, and only go back out once the way has been clear for a moment (no flickering in and out).
+  // v25.2: never a jump: it used to snap straight to the wall (on hills even right up to the hero's head) and back out again
+  if(CAM.cd==null||!isFinite(CAM.cd)||G.mode==='title'||G.cine)CAM.cd=d;
+  if(d<CAM.cd-.05){CAM.cdT=0;CAM.cd=Math.max(d,CAM.cd-Math.min(24*dt,(CAM.cd-d)*Math.min(1,dt*7)));}else{CAM.cdT=(CAM.cdT||0)+dt;if(CAM.cdT>1)CAM.cd=lerp(CAM.cd,d,Math.min(1,dt*1.5));}d=CAM.cd;
   let sx=0,sy=0;if(G.shake>0){G.shake=Math.max(0,G.shake-dt*1.8);sx=Rr(-1,1)*G.shake*.5;sy=Rr(-1,1)*G.shake*.5;}
-  CAM.eye=[CAM.tx+dx*d+sx,CAM.ty+dy*d+sy,CAM.tz+dz*d];}
+  const ex=CAM.tx+dx*d,ez=CAM.tz+dz*d;let ey=CAM.ty+dy*d;
+  // and never under the ground: the camera rides up over a hill it would sink into (looking around the cells next to it too,
+  // so it rises before a step, and comes down again gently)
+  if(G.mode!=='title'&&p.realm!=='inside'){let gh=-1e9;for(const [ox,oz] of [[0,0],[1.5,0],[-1.5,0],[0,1.5],[0,-1.5],[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]){const xi=Math.floor(ex+ox),zi=Math.floor(ez+oz);if(inMap(xi,zi))gh=Math.max(gh,H[xi+zi*N]);}
+    const lift=Math.max(0,gh+1-ey),l0=CAM.lift||0;CAM.lift=lift>l0?Math.min(lift,l0+Math.max(18*dt,(lift-l0)*Math.min(1,dt*8))):lerp(l0,lift,Math.min(1,dt*2));ey+=CAM.lift;}else CAM.lift=0;
+  CAM.eye=[ex+sx,ey+sy,ez];}
 
 // ================= local player =================
 function heroSpeed(){return 7.2*(boostOn('speed')?1.3:1)*(perkOf(prof())==='quick'?1.12:1)*(ME.gad.sneakers?1.35:1)*(ME.carry||ME.carryF?.8:1)*(ME.dash?2.3:1)*(ME.swim?(perkOf(prof())==='swim'?1.25:.7):1);}
@@ -3287,7 +3297,7 @@ function updateHUD(dt){if(G.mode==='title'||G.mode==='boot')return;const pr=prof
   const rp=NET.remote;friendCards();
   HUD.shownCoins+=(G.coins-HUD.shownCoins)*Math.min(1,dt*8);if(Math.abs(G.coins-HUD.shownCoins)<1)HUD.shownCoins=G.coins;$('coinv').textContent=fmt(HUD.shownCoins);HUD.coinPop=Math.max(0,HUD.coinPop-dt);$('coins').classList.toggle('pop',HUD.coinPop>0);
   {const el=$('gbv'),h=typeof ggHudHTML==='function'?ggHudHTML():String(G.gb.size);if(el._h!==h){el._h=h;el.innerHTML=h;}}setH($('crys'),'cr',Object.keys(CRYC).map(k=>`<i class="cry ${WS.done&MBIT[k]?'got':''}" style="--c:${CRYC[k]}"></i>`).join(''));
-  $('bswap').hidden=NET.role!=='solo';
+  $('bswap').hidden=false;
   const ob=(typeof navObjective==='function'&&navObjective())||G.obj,oe=$('obj');oe.hidden=!ob;if(ob){const d=ob.t?Math.round(d2(ob.t.x,ob.t.z,p.x,p.z)):0;setH(oe,'ob',`${esc(tr(ob.text))}${ob.t?`<small>${esc(trf('{0} m away',d))}</small>`:''}`);oe.style.setProperty('--c',ob.col);}
   const boss=EN.find(e=>e.boss&&!e.dead&&d2(e.x,e.z,p.x,p.z)<70)||EN.find(e=>e.type==='van'&&!e.dead);$('boss').hidden=!boss;if(boss){setH($('bossn'),'bn',esc(tr(ETYPE[boss.type].name||'Boss')));$('bossf').style.width=Math.max(0,(boss.hpLocal??boss.hp)/(boss.maxHp||ETYPE[boss.type].hp)*100)+'%';}
   const ia=G.ia,pe=$('prompt');const showP=ia&&G.mode==='play'&&!p.ko;pe.hidden=!showP;if(showP){const hold=ia.hold||ia.lift;let key=ia.k==='wiggle'?(TOUCH.on?'⬆':'Space'):KEYNAME.interact();let prog=null;if(ia.k==='build'){prog=Math.min(1,Math.max(WS.bp[ia.o.id]||0,ia.o.localP||0));}else if(ia.k==='socket')prog=WS.sock[ia.i];else if(ia.k==='handle')prog=WS.hand;else if(HOLD_T[ia.k])prog=G.iaHold>.02?Math.min(1,G.iaHold/HOLD_T[ia.k]):null;else if(ia.pg)prog=ia.pg();
@@ -6438,7 +6448,7 @@ function heroQuests(){const W=WORLD;
   rewardInfo=function(r){if(r&&r.t==='hero'){const C=CHARBY[r.id];return {ic:'🦸',k:'New hero!',n:C?C.n:r.id,d:'Play as them from the 🦸 Heroes button'};}return _ri(r);};}
 rqNext=function(){const el=$('rcard');const c=RQ.shift();if(!c||!el){rqBusy=false;return;}rqBusy=true;clearTimeout(rqNext.t);
   const done=()=>{el.onclick=null;clearTimeout(rqNext.t);el.classList.remove('show');setTimeout(()=>{el.hidden=true;rqNext();},260);};
-  if(c.hero){const C=CHARBY[c.hero];const can=gOK(C,G.hero)||NET.role==='solo';
+  if(c.hero){const C=CHARBY[c.hero];const can=true;
     el.innerHTML=`<div class="rc-in hc"><div class="rc-k">${esc(tr('New hero unlocked!'))}</div><canvas class="rc-hp" width="200" height="200" style="background:${C.bg}"></canvas><div class="rc-n">${esc(tr(C.n))}</div><div class="rc-d">${PERKS[C.perk].ic} ${esc(tr(PERKS[C.perk].n))}<br>${SHOTDEF[C.a].ic} ${esc(tr(SHOTDEF[C.a].n))} · ${SHOTDEF[C.b].ic} ${esc(tr(SHOTDEF[C.b].n))}</div><div class="rc-bt">${can?`<button class="big sm" id="rc_play">${esc(trf('Play as {0}!',tr(C.n)))}</button>`:''}<button class="big sm alt" id="rc_later">${esc(tr(can?'Later':'OK'))}</button></div></div>`;
     drawPortrait(el.querySelector('canvas'),C);el.hidden=false;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');SFX.heroUnlock();
     if(ME)for(let k=0;k<4;k++)setTimeout(()=>burst(ME.x,ME.y+3,ME.z,[C.bg,'#ffcf3a','#ffffff','#46e6b0'],26,7,.2,1),k*250);
@@ -6448,7 +6458,7 @@ rqNext=function(){const el=$('rcard');const c=RQ.shift();if(!c||!el){rqBusy=fals
 // ---------- switching heroes ----------
 function playHero(id){const C=CHARBY[id];if(!C)return false;if(!heroOK(id)){toast(tr('This hero is still locked'));return false;}
   if(ME.veh){toast(tr('Get out of the car first'));return false;}if(ME.carry||ME.carryF){toast(tr('Put it down first'));return false;}
-  if(!gOK(C,G.hero)){if(NET.role!=='solo'){toast(tr(C.g==='girl'?'Girl heroes are for girl players online':'Boy heroes are for boy players online'));return false;}swapHero();}
+  if(!gOK(C,G.hero))swapHero();
   const pr=prof();if(pr.char===id)return true;const nm=pr.name;applyChar(pr,C);if(!nm||isHeroName(nm))pr.name=tr(C.n);syncMeProfile();ME.xs=null;ME.swim=false;ME.hp=Math.min(ME.hp,maxHp(pr));
   burst(ME.x,ME.y+1,ME.z,[C.bg,'#ffffff','#ffcf3a'],34,6,.2,1);smokePuff(ME.x,ME.y+1,ME.z,8,'#ffffff');SFX.fly&&SFX.fly();ME.anim.cheer=1;touchLabels();toast(trf('Now playing as {0}!',tr(C.n)));saveSoon();return true;}
 function heroHint(id){const U=HERO_UNLOCK[id];const Q=U&&qDef(U.q);if(!Q)return '';if(QS.act===Q.id)return trf('You are doing "{0}" now!',tr(Q.title));const P=Q.place&&PLACEBY[Q.place];const g=NPCS.find(n=>n.id===Q.giver);
@@ -6471,12 +6481,12 @@ function renderRoster(){const B=$('rbox');const pr=prof();const n=CHARS.filter(c
 function rosterDetail(){const D=$('rdet');if(!D)return;const C=CHARBY[ROS.sel]||charOf(prof());const ok=heroOK(C.id),pr=prof(),cur=pr.char===C.id;
   const tags=heroTags(C).map(t=>`<span class="rtag">${TAGS[t].ic} ${esc(tr(TAGS[t].n))}</span>`).join('');let btn='';
   if(ok){if(cur)btn=`<button class="big sm" disabled>✓ ${esc(tr('Playing now'))}</button>`;else if(gOK(C,G.hero))btn=`<button class="big sm" id="rd_play">${esc(trf('Play as {0}!',tr(C.n)))}</button>`;
-    else if(NET.role==='solo')btn=`<button class="big sm mint" id="rd_play">${esc(trf('Swap to {0} and play',PROF[C.g].name))}</button>`;else btn=`<div class="small">${esc(tr(C.g==='girl'?'Girl heroes are for girl players online':'Boy heroes are for boy players online'))}</div>`;}
+    else btn=`<button class="big sm mint" id="rd_play">${esc(trf('Swap to {0} and play',PROF[C.g].name))}</button>`;}
   else btn=`<div class="small">🔒 ${esc(heroHint(C.id))}</div><button class="big sm mint" id="rd_way">🧭 ${esc(tr('Show me the way'))}</button>`;
   D.innerHTML=`<canvas width="220" height="220" style="background:${ok?C.bg:'#2a2550'}"></canvas><div class="ri"><div class="rn">${esc(tr(C.n))}</div><div class="ratk">${PERKS[C.perk].ic} ${esc(tr(PERKS[C.perk].n))}</div>
     <div class="ratk">${SHOTDEF[C.a].ic} <b>${esc(tr(SHOTDEF[C.a].n))}</b> · ${esc(tr(SHOTDESC[C.a]||''))}</div><div class="ratk">${SHOTDEF[C.b].ic} <b>${esc(tr(SHOTDEF[C.b].n))}</b> · ${esc(tr(SHOTDESC[C.b]||''))}</div><div class="rtags">${tags}</div>${btn}</div>`;
   drawPortrait(D.querySelector('canvas'),C,!ok);const pb=$('rd_play');if(pb)pb.onclick=()=>{if(playHero(C.id))closeRoster();};
-  const wb=$('rd_way');if(wb)wb.onclick=()=>{if(heroGuide(C.id)){closeRoster();toast(tr('Follow the glowing trail!'));}else toast(tr('Finish more missions first!'));};}
+  const wb=$('rd_way');if(wb)wb.onclick=()=>{const ok=heroGuide(C.id);if(typeof NAVG!=='undefined'&&NAVG.refused){NAVG.refused=false;return;}if(ok){closeRoster();toast(tr('Follow the glowing trail!'));}else toast(tr('Finish more missions first!'));};}
 $('bheroes').onclick=()=>{if(G.mode==='play')openRoster();};$('roster').addEventListener('click',e=>{if(e.target===$('roster')&&performance.now()-(G.uiT||0)>450)closeRoster();});
 // ---------- the Missions list gets a hero section ----------
 function heroRows(){const L=Object.keys(HERO_UNLOCK);const n=L.filter(heroOK).length;
@@ -7653,8 +7663,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:32,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:33,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'⇄',t:'Swap heroes online too',s:'Tap ⇄ to switch between your boy and girl hero any time, even when you play online, so you always have the right power'},
+  {ic:'⛰️',t:'A calm camera in the mountains',s:'Next to hills and cliffs the camera tilts up and looks over them, instead of jumping right up to your hero'},
+  {ic:'🧭',t:'Trails only go where you can go',s:'If a place is still behind a force field, the game tells you which chapter opens it and shows you the way to your chapter'},
   {ic:'☀️',t:'Always sunny',s:'It is always day in Blocktopia now, with blue skies and no rain. The clock towers show the real time'},
   {ic:'🖼️',t:'Sharper pictures',s:'The game is drawn sharper on tablets, with smooth edges instead of jaggy ones. If a tablet starts to slow down, the picture gets a little softer by itself so the game stays smooth'},
   {ic:'🎥',t:'A camera that looks ahead',s:'The camera stays up high, but it looks a bit further ahead, so you can see where you are going. It looks the way you run, and it stays calm when you jump'},
@@ -8070,7 +8083,7 @@ renderRoster=function(){const B=$('rbox');const pr=prof();const n=CHARS.filter(c
     <div class="ratk">${SHOTDEF[C.a].ic} <b>${esc(tr(SHOTDEF[C.a].n))}</b> · ${esc(tr(SHOTDESC[C.a]||''))}</div><div class="ratk">${SHOTDEF[C.b].ic} <b>${esc(tr(SHOTDEF[C.b].n))}</b> · ${esc(tr(SHOTDESC[C.b]||''))}</div><div class="rtags">${tags}</div>
     <div class="small rhow">${esc(unlockLine(C.id))}</div>${btn}</div>`;
   drawPortrait(D.querySelector('canvas'),C,true);const bb=$('rd_buy');if(bb)bb.onclick=()=>buyHero(C.id);
-  const wb=$('rd_way');if(wb)wb.onclick=()=>{if(heroGuide(C.id)){closeRoster();toast(tr('Follow the glowing trail!'));}else toast(tr('Explore more to find it!'));};};}
+  const wb=$('rd_way');if(wb)wb.onclick=()=>{const ok=heroGuide(C.id);if(typeof NAVG!=='undefined'&&NAVG.refused){NAVG.refused=false;return;}if(ok){closeRoster();toast(tr('Follow the glowing trail!'));}else toast(tr('Explore more to find it!'));};};}
 // ================= the new heroes' attacks =================
 // Projectiles share one engine: each attack is a recipe (speed, gravity, homing, bouncing, coming back, rolling, falling
 // from the sky, a splash at the end, a puddle that stays for a while...). Instant attacks (cones, rings, dashes, walking
@@ -10348,7 +10361,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.1';window.BB_VER=BB_VER;
+const BB_VER='25.2';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11357,6 +11370,32 @@ MV('Nicer light and colours','ضوء وألوان أجمل');MV('No more black s
   DN.rain=0;DN.bow=0;DN.wxT=1e9;})();
 {const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);const b=$('ps_dn');if(b)b.remove();return r;};}
 MV('Always sunny','مشمس دائمًا');MV('It is always day in Blocktopia now, with blue skies and no rain. The clock towers show the real time','صار الوقت نهارًا دائمًا في بلوكتوبيا، بسماء زرقاء وبلا مطر. وساعات الأبراج تُظهر الوقت الحقيقي');
+// ================= v25.2: the trail never leads into a place the story has not opened yet =================
+// A place picked on the map, a hidden hero coin, a golden gate or a news item can be behind a glitch force field, or on the
+// Moon before the rocket chapter. The trail used to lead there anyway (on Earth it said "Build the rocket first: talk to
+// Commander Nova" in Star Harbor, a town that was still locked). Now:
+//  - asking for the way to a locked place says which chapter opens it, and the trail you had stays as it was;
+//  - a trail that already points into a locked place (an old save, the story changing online) becomes the way to the
+//    chapter you are on;
+//  - a quest or job step in a locked place shows the way to the chapter you are on instead.
+const NAVG={refused:false};
+function destNeed(d){if(!d||!isFinite(d.x)||!isFinite(d.z))return 0;let n=d.realm==='moon'?7:0;
+  try{n=Math.max(n,areaNeed(d.x,d.z,d.y));if(d.inside&&d.inside.place&&typeof PLACEBY!=='undefined'){const P=PLACEBY[d.inside.place];if(P&&P.door)n=Math.max(n,areaNeed(P.door.x,P.door.z));}}catch(e){}
+  return n;}
+function lockText(need){const C=STORY[need-1];return '🔒 '+trf('A glitch force field! Finish chapter {0}, {1}, to open {2}',need,tr(C?C.n:''),tr(AREANAME[need]||''));}
+function storyDest(){const so=typeof storyObjective==='function'?storyObjective():null;if(!so||!so.t||!isFinite(so.t.x))return null;
+  return {x:so.t.x,z:so.t.z,realm:inMoonBox(so.t.x,so.t.z)?'moon':'earth',label:String(so.text||'').replace(/^📖\s*/,''),icon:'📖',col:so.col||'#ffcf3a'};}
+{const _ns=navSet;navSet=function(d){NAVG.refused=false;try{const cur=storyDone();const need=destNeed(d);if(cur<8&&need>cur){NAVG.refused=true;toast(lockText(need));try{SFX.nope&&SFX.nope();}catch(e){}return;}}catch(e){noteErr('navg',e);}return _ns(d);};}
+{const _ng=navGoal;navGoal=function(){try{const d=NAV.dest,cur=storyDone();if(d&&cur<8&&destNeed(d)>cur){const sd=storyDest();
+      if(sd&&destNeed(sd)<=cur){NAV.dest=sd;G.dest={x:+sd.x.toFixed(1),z:+sd.z.toFixed(1),realm:sd.realm,label:sd.label,sub:'',col:sd.col,icon:sd.icon,go:null,pin:0,inside:null};}
+      else{NAV.dest=null;G.dest=null;}saveSoon();if(!NAV.dest)return null;}}catch(e){noteErr('navg2',e);}return _ng();};}
+{const _mo=MIS.objective.bind(MIS);MIS.objective=function(){const o=_mo();try{const cur=storyDone();if(o&&o.t&&isFinite(o.t.x)&&cur<8&&destNeed({x:o.t.x,z:o.t.z,y:o.t.y})>cur){const so=storyObjective();
+      if(so&&so.t&&destNeed({x:so.t.x,z:so.t.z})<=cur)return so;}}catch(e){}return o;};}
+// ---------- words ----------
+MV('Boys lift cars and pull handles, girls charge power sockets. Tap ⇄ to swap between your boy and girl hero any time, online too.','الأولاد يرفعون السيارات ويسحبون المقابض، والبنات يشحنّ مقابس الطاقة. اضغط ⇄ للتبديل بين بطلك الولد وبطلتك البنت في أي وقت، وحتى في اللعب عبر الإنترنت.');
+MV('Swap heroes online too','بدّل أبطالك عبر الإنترنت أيضًا');MV('Tap ⇄ to switch between your boy and girl hero any time, even when you play online, so you always have the right power','اضغط ⇄ للتبديل بين بطلك الولد وبطلتك البنت في أي وقت، حتى عندما تلعب عبر الإنترنت، لتكون معك القوة المناسبة دائمًا');
+MV('A calm camera in the mountains','كاميرا هادئة في الجبال');MV('Next to hills and cliffs the camera tilts up and looks over them, instead of jumping right up to your hero','قرب التلال والمنحدرات تميل الكاميرا للأعلى وتنظر من فوقها، بدل أن تقفز حتى تلتصق ببطلك');
+MV('Trails only go where you can go','المسارات تذهب فقط إلى حيث تستطيع');MV('If a place is still behind a force field, the game tells you which chapter opens it and shows you the way to your chapter','إذا كان المكان ما زال خلف حقل قوة، تخبرك اللعبة أي فصل يفتحه وتريك الطريق إلى فصلك');
 // ================= start =================
 boot();
 </script>
