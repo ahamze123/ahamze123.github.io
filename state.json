@@ -262,6 +262,23 @@
     "status": "PENDING"
    }
   },
+  "noor": {
+   "model": {
+    "id": "01a0f780-35f5-71bf-a0bb-e5a557ee4553",
+    "made": "2026-10-01 12:46",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "omar": {
    "model": {
     "credits": 30,
