@@ -7666,7 +7666,7 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
 const NEWS={ver:37,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
-  {ic:'🧸',t:'Real 3D heroes',s:'Every hero now looks just like their picture card: real 3D heroes made from our family\'s drawings. They stand, walk, run, jump, punch, wave, cheer, sit in cars and swim',act:()=>{if(typeof openRoster==='function')openRoster();}},
+  {ic:'🧸',t:'Real 3D heroes',s:'Every hero also has a real 3D figure made from their picture card. To play with them, turn on Menu, Settings, 3D heroes'},
   {ic:'🤝',t:'One story online',s:'Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too'},
   {ic:'🧭',t:'Show me the way, fixed',s:'After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field'},
   {ic:'🃏',t:'Hero cards',s:'Every hero has their own picture card now, made by our family. Tap a hero\'s picture in 🦸 to see the whole card',act:()=>{if(typeof openRoster==='function')openRoster();}},
@@ -10368,7 +10368,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.0';window.BB_VER=BB_VER;
+const BB_VER='26.1';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11700,9 +11700,10 @@ function g3dModel(id){if(!G3D.on||!G3D.P)return null;g3dList();const m=G3D.model
 {const _dh=drawHero;drawHero=function(p,t){try{if(G3D.on&&p&&p.looks&&OUT===CHR){const L=p.looks;const CC=charOfLooks(L,p.hero);
       const own=(!L.psuit||L.psuit==='none')&&(!L.costume||L.costume==='none');if(own){const M=g3dModel(CC.id);if(M){g3dQueue(M,p,t);return;}}}}catch(e){noteErr('g3d',e);}return _dh(p,t);};}
 MV('Real 3D heroes','أبطال حقيقيون ثلاثيو الأبعاد');
-MV('Every hero now looks just like their picture card: real 3D heroes made from our family\'s drawings. They stand, walk, run, jump, punch, wave, cheer, sit in cars and swim','كل بطل يشبه الآن بطاقته تمامًا: أبطال حقيقيون ثلاثيو الأبعاد صُنعوا من رسومات عائلتنا. يقفون ويمشون ويركضون ويقفزون ويلكمون ويلوّحون ويهتفون ويجلسون في السيارات ويسبحون');
-// Settings: the 3D heroes can be switched off on this tablet (then everyone is drawn as their block figure again)
-try{if(localStorage.getItem('bb_3d')==='0')G3D.on=false;}catch(e){}
+MV('Every hero also has a real 3D figure made from their picture card. To play with them, turn on Menu, Settings, 3D heroes','لكل بطل أيضًا مجسّم حقيقي ثلاثي الأبعاد صُنع من بطاقته. لتلعب بها، شغّل: القائمة، الإعدادات، الأبطال ثلاثيو الأبعاد');
+// Settings: the 3D heroes can be switched on and off on each tablet. v26.1: the kids liked the block figures better, so the
+// block figures are back by default and the 3D heroes are there for whoever switches them on.
+G3D.on=false;try{if(localStorage.getItem('bb_3d')==='1')G3D.on=true;}catch(e){}
 {const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='set'||$('ps_3d'))return r;const after=$('ps_q');if(!after)return r;
   const b=document.createElement('button');b.className='mb';b.id='ps_3d';b.textContent='🧸 '+trf('3D heroes: {0}',tr(G3D.on?'On':'Off'));after.after(b);
   b.onclick=()=>{G3D.on=!G3D.on;try{localStorage.setItem('bb_3d',G3D.on?'1':'0');}catch(e){}renderPause();};}catch(e){}return r;};}
