@@ -527,3 +527,6 @@
 2026-10-01 13:19:29 [yasmin] image-to-3d IN_PROGRESS 67%
 2026-10-01 13:19:31 [zara] image-to-3d SUCCEEDED 100%
 2026-10-01 13:19:31 [bushra] rigging IN_PROGRESS 63%
+2026-10-01 13:19:36 [tala] rigging IN_PROGRESS 90%
+2026-10-01 13:19:39 [yasmin] image-to-3d IN_PROGRESS 84%
+2026-10-01 13:19:39 [zara] rig task made 01a0f79e-c945-70fd-8ca9-d661408db743
