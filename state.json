@@ -2666,6 +2666,7 @@
    }
   },
   "tala": {
+   "extra": {},
    "full": {
     "bytes": 2930880,
     "pictures": [
@@ -2786,6 +2787,12 @@
    }
   },
   "wanda": {
+   "full": {
+    "bytes": 2784804,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
