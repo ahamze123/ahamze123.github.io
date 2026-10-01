@@ -484,3 +484,6 @@
 2026-10-01 13:16:42 [salma] image-to-3d IN_PROGRESS 74%
 2026-10-01 13:16:45 [wanda] rigging IN_PROGRESS 63%
 2026-10-01 13:16:45 [tala] model task made 01a0f79c-349d-7095-83a0-d9d8ae0bd281
+2026-10-01 13:16:47 [tala] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:16:52 [mira] rigging SUCCEEDED 100%
+2026-10-01 13:16:52 [mira] rigged: {"model": {"bytes": 1913280, "triangles": 20540, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35456, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30820, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
