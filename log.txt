@@ -73,3 +73,4 @@
 2026-10-01 12:45:25 [zayd] rigging IN_PROGRESS 10%
 2026-10-01 12:45:26 [kenji] rigging IN_PROGRESS 36%
 2026-10-01 12:45:29 [omar] image-to-3d SUCCEEDED 100%
+2026-10-01 12:45:35 [omar] rig task made 01a0f77f-9f99-7062-9363-a70ab97ab7b5
