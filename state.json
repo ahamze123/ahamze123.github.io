@@ -2483,6 +2483,7 @@
    }
   },
   "sama": {
+   "extra": {},
    "full": {
     "bytes": 2548360,
     "pictures": [
@@ -2603,6 +2604,12 @@
    }
   },
   "sara": {
+   "full": {
+    "bytes": 2358008,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
