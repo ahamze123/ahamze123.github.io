@@ -34,6 +34,23 @@
     "status": "PENDING"
    }
   },
+  "kat": {
+   "model": {
+    "id": "01a0f784-1d45-7580-a559-0ec06d0bfe09",
+    "made": "2026-10-01 12:50",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "kenji": {
    "model": {
     "credits": 30,
