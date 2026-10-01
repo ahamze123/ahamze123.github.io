@@ -3,3 +3,12 @@
 2026-10-01 12:19:58 animation library saved
 2026-10-01 12:20:00 [kira] model task made 01a0f768-426e-76b6-a54a-6be315a3940b
 2026-10-01 12:20:01 [leo] model task made 01a0f768-426b-734f-9a17-da7d765e9cc4
+2026-10-01 12:20:02 [kira] image-to-3d IN_PROGRESS 1%
+2026-10-01 12:20:03 [leo] image-to-3d IN_PROGRESS 1%
+2026-10-01 12:21:14 [leo] image-to-3d IN_PROGRESS 33%
+2026-10-01 12:21:55 [kira] image-to-3d IN_PROGRESS 36%
+2026-10-01 12:21:55 [leo] image-to-3d IN_PROGRESS 59%
+2026-10-01 12:22:25 [kira] image-to-3d IN_PROGRESS 59%
+2026-10-01 12:22:36 [leo] image-to-3d IN_PROGRESS 84%
+2026-10-01 12:23:16 [kira] image-to-3d IN_PROGRESS 84%
+2026-10-01 12:23:37 [leo] image-to-3d SUCCEEDED 100%
