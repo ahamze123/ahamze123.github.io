@@ -1990,6 +1990,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "yasmin": {
+   "model": {
+    "id": "01a0f79d-4bd2-75ee-aae8-f1a13fa415f1",
+    "made": "2026-10-01 13:17",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "zak": {
    "model": {
     "credits": 30,
