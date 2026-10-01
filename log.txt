@@ -554,3 +554,4 @@
 2026-10-01 13:20:28 [sara] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:20:38 [yasmin] rigging SUCCEEDED 100%
 2026-10-01 13:20:38 [yasmin] rigged: {"model": {"bytes": 1880652, "triangles": 20801, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35500, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30860, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 13:20:41 [amira] model task made 01a0f79f-ce3f-7202-8ee4-8b84e5813c62

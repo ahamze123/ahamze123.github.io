@@ -1,5 +1,22 @@
 {
  "heroes": {
+  "amira": {
+   "model": {
+    "id": "01a0f79f-ce3f-7202-8ee4-8b84e5813c62",
+    "made": "2026-10-01 13:20",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "bella": {
    "model": {
     "credits": 30,
