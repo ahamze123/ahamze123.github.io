@@ -1,6 +1,7 @@
 {
  "heroes": {
   "aisha": {
+   "extra": {},
    "full": {
     "bytes": 2540436,
     "pictures": [
@@ -364,6 +365,12 @@
    }
   },
   "comet": {
+   "full": {
+    "bytes": 2490016,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
