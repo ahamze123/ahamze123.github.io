@@ -967,10 +967,30 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f794-8b9a-7242-a1b9-f72e25cf790e/output/preview.png?Expires=1791119437&Signature=YP9IOesGsnKBfRppn0KFQDSnyMvqJrn2ceb12X-Dkm2Kx--SNHP9j29IptVTTLSfz0CXK9ziiGjMoLU1FaD1wBhAwooyIKLjZScj90IszU8R1mDkF8H3RPvkdf9OEJoezG8T6CEcPWsjLGC2zeD6wwbPiA4Xq5ylvlOCNtwPmsw8C5KkMesVixNGFhhabCoMTojNjxtSx~k1PPbTIb8YvSw6npNEJgLVkynVS5-Hr0t-X9l-Eb2jWKYrGTEbISznhquEYuJKC7Wk7H5GyfDmHEM51V7Av~IHIwX2Hck9ViGwS9BYCwiuRrz6El4m3qJ1~IWvAJftWeu9Bc6b1Nzzcg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 1766264,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20657
+     },
+     "walking": {
+      "bytes": 35436,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a0f796-ad50-754f-9b9c-cd56136f33d3",
     "made": "2026-10-01 13:10",
     "model": "01a0f794-8b9a-7242-a1b9-f72e25cf790e",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "noor": {
@@ -1656,6 +1676,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f795-4a0f-7760-b60e-291ae3ddb1e9/output/preview.png?Expires=1791119471&Signature=dIMn8Z~R~JZd5gdS934tEqgf27lqE3A74iv0mfmBkgU8RS7K0E5cVez1CFN1mkoPn1Gx-uBgO2C7al16LljJpfSDk-CFbmmlPBFWVgAQsThwOLJUjwpTG112MxUolxyAlbo7954rAHCbMM4Q2V1lX~FCdeZNZ4TD7AKy9SLdvdqx2WPpDbd7Jnv3dAYq5qYY52gBOWbWTHRrsOsq1lJABBTi1rpFLsw2TXoaGJKMb1o-PQtOjuUEM17Bcs42CU0se3cHvAzBZlR8GAO7cE6gKHMC2i50XrJOkbAs0MvYDmJWyC19zNL4G78aRsA18jmRKNla0yjwHFkx5JySZr8AIA__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a0f797-377a-7030-ae9a-bb347164d411",
+    "made": "2026-10-01 13:11",
+    "model": "01a0f795-4a0f-7760-b60e-291ae3ddb1e9",
+    "status": "PENDING"
    }
   }
  },
