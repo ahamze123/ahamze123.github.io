@@ -18,3 +18,8 @@
 2026-10-01 12:24:05 [leo] rigging IN_PROGRESS 63%
 2026-10-01 12:24:07 [kira] image-to-3d SUCCEEDED 100%
 2026-10-01 12:24:13 [kira] rig task made 01a0f76c-1070-769b-ad9b-7b767a542aab
+2026-10-01 12:24:14 [kira] rigging IN_PROGRESS 10%
+2026-10-01 12:24:15 [leo] rigging IN_PROGRESS 90%
+2026-10-01 12:24:24 [kira] rigging IN_PROGRESS 36%
+2026-10-01 12:24:25 [leo] rigging SUCCEEDED 100%
+2026-10-01 12:24:26 [leo] rigged: {"model": {"bytes": 1502064, "triangles": 20788, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35376, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30748, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
