@@ -140,3 +140,6 @@
 2026-10-01 12:49:15 [layla] rigged: {"model": {"bytes": 1671480, "triangles": 20744, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35428, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30780, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 12:49:16 [dan] model task made 01a0f783-0a36-73f2-9ac0-3ec6694523ce
 2026-10-01 12:49:16 [finn] model task made 01a0f783-0a56-71a8-a82f-59f9fa4c819d
+2026-10-01 12:49:19 [dan] image-to-3d IN_PROGRESS 1%
+2026-10-01 12:49:20 [finn] image-to-3d IN_PROGRESS 1%
+2026-10-01 12:49:21 [sami] model task made 01a0f783-1def-7427-b95b-6eedcac0fe56

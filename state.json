@@ -549,7 +549,23 @@
     "status": "SUCCEEDED"
    }
   },
-  "sami": {},
+  "sami": {
+   "model": {
+    "id": "01a0f783-1def-7427-b95b-6eedcac0fe56",
+    "made": "2026-10-01 12:49",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "zayd": {
    "model": {
     "credits": 30,
