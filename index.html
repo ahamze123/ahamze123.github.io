@@ -7676,8 +7676,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:38,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:39,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🌪️',t:'Tornado Spin',s:'Tap 🌪️ Spin and your hero whirls into a tornado in their own colours, knocking baddies away. Every hero can do it (keyboard: R)'},
   {ic:'👢',t:'Heroes dressed like their cards',s:'Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders'},
   {ic:'🧸',t:'Real 3D heroes',s:'Every hero also has a real 3D figure made from their picture card. To play with them, turn on Menu, Settings, 3D heroes'},
   {ic:'🤝',t:'One story online',s:'Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too'},
@@ -10382,7 +10383,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.2';window.BB_VER=BB_VER;
+const BB_VER='26.3';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11557,6 +11558,62 @@ function drawCardBody(m,K,A,t,p,suit,acc){
   if(K.sk==='leaf'){co(m,0,.62,0,.86,.4,.6,suit,6);for(let k=0;k<8;k++){const a=k/8*TAU;MS.push();M4.tr(m,Math.sin(a)*.4,.44,Math.cos(a)*.28);M4.ry(m,a);M4.rx(m,Math.PI);co(m,0,0,0,.16,.16,.06,k%2?'#7ed957':'#3fae4a',6);MS.pop();}}
   else if(K.sk==='tutu'){co(m,0,.64,0,.94,.36,.68,suit,6);co(m,0,.6,0,.98,.22,.72,shd(suit,.9),6);}}
 MV('Heroes dressed like their cards','أبطال بملابس بطاقاتهم');MV('Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders','كل بطل من المكعبات صار عنده الحذاء والقفازات والألوان من بطاقته. آية الفضائية عندها سماعاتها الوردية، والشعر الطويل ينزل على الكتفين');
+// ================= v26.3: 🌪️ Tornado Spin: every hero can whirl into a tornado in their own colours =================
+// Tap 🌪️ Spin (keyboard R, a gamepad's left trigger): the hero spins inside a tornado of their suit and trim colours for
+// 2.5 seconds, runs a little faster, and baddies that come close are hit and swirled away (enemy shots bounce off).
+// Then it needs 4 seconds to come back (the button fills up again). Friends playing online see your tornado too.
+const TOR={dur:2.5,cd:4,R:2.3,tick:.2};
+Object.assign(SFX,{tornado(){AU.noise(1.1,.12,900);AU.tone(160,1.1,'sine',.05,2.6);AU.tone(320,.9,'triangle',.02,2.2,.1);},tornadoLoop(){AU.noise(.32,.045,1300);}});
+const torOn=p=>!!(p&&p.xs&&p.xs.spinK==='tornado'&&p.xs.spin>0);
+// the tornado's colours: the hero's suit and trim (as on their card), and white
+function torCols(p){const L=(p&&p.looks)||{};const C=charOfLooks(L,p&&p.hero);const S=SUITS[idxOf(SUITS,L.suit)]||SUITS[0];
+  const own=!(L.psuit&&L.psuit!=='none')&&(!L.costume||L.costume==='none');const card=own&&(C.cs||L.suit===C.suit);
+  return [(card&&(C.kc||C.cs))||S.c,(card&&(C.ka||C.ca))||S.a,'#ffffff'];}
+function startTornado(p){const xs=hx(p);xs.spin=TOR.dur;xs.spinK='tornado';xs.spinT=TOR.dur;xs.tick=0;xs.snd=.3;xs.torHit=new WeakSet();p.torT=TOR.dur+TOR.cd;
+  if(p.ground&&!p.swim)p.vy=Math.max(p.vy||0,5);SFX.tornado();ringFx2(p.x,p.y,p.z,torCols(p),3,12);shake(.12);shotNet('tornado',{x:p.x,y:p.y,z:p.z,f:p.face});}
+// every baddie close by is hit and swirled round and away; boxes and benches break, people giggle
+function torHit(p,xs){const dmg=Math.max(1,x3dmg(.45));const W=xs.torHit||(xs.torHit=new WeakSet());
+  for(const e of EN){if(!e||e.dead)continue;const dx=e.x-p.x,dz=e.z-p.z,dd=Math.hypot(dx,dz)||1;if(dd>TOR.R+(e.rad||.5)||Math.abs(e.y-p.y)>3)continue;
+    hitEnemy(e,dmg,dx/dd*7-dz/dd*5,dz/dd*7+dx/dd*5);}
+  for(const c of MIS.cores())if(!c.dead&&d2(c.x,c.z,p.x,p.z)<TOR.R+1.2)MIS.hitCore(c,dmg);
+  brkNear(p.x,p.z,TOR.R*.8,b=>{if(!W.has(b)){W.add(b);hitBrk(b,1);}});for(const q of PEDS)if(!q.fall&&d2(q.x,q.z,p.x,p.z)<TOR.R)pedGiggle(q);}
+// ---------- the button, keyboard R and the gamepad's left trigger ----------
+{const _ri=readInput;readInput=function(dt){let sp=!!(TOUCH.p&&TOUCH.p.spin)||PRESS.has('KeyR');
+  try{const pads=navigator.getGamepads?[...navigator.getGamepads()].filter(Boolean):[];for(const pad of pads){const pv=PADPREV[pad.index];for(const i of [6,10]){const b=pad.buttons[i];if(b&&b.pressed&&!(pv&&pv[i]))sp=true;}}}catch(e){}
+  const I=_ri.apply(this,arguments);if(I&&sp)I.spinP=true;return I;};}
+{const _hp=heroPrimary;heroPrimary=function(p,inp,dt){
+  if(inp&&inp.spinP&&p===ME&&!torOn(p)){if(p.torT>0||p.veh||BUILD.on||DLG||p.zip||(typeof hsFreeze==='function'&&hsFreeze())){if(p.torT>0)SFX.nope();}else{startTornado(p);return;}}
+  if(torOn(p))return;return _hp(p,inp,dt);};}
+{const _hs=heroSecondary;heroSecondary=function(p,inp,dt){if(torOn(p))return;return _hs(p,inp,dt);};}
+{const _s=heroSpeed;heroSpeed=function(){const v=_s();return torOn(ME)?v*1.25:v;};}
+// ---------- while spinning (every hero on screen runs it, only your own one hits) ----------
+{const _xt=xsTick;xsTick=function(p,xs,dt,local){
+  if(xs.spinK==='tornado'&&xs.spin>0){xs.spinY=(xs.spinY||0)+dt*6;
+    if(local){xs.tick=(xs.tick||0)-dt;if(xs.tick<=0){xs.tick=TOR.tick;torHit(p,xs);}
+      for(const s of PROJ)if(s.enemy&&s.life>0&&d2(s.x,s.z,p.x,p.z)<TOR.R+.6&&Math.abs(s.y-(p.y+1))<2.6){s.life=0;burst(s.x,s.y,s.z,['#ffffff','#bfe9ff'],6,3,.1,.6);}
+      xs.snd=(xs.snd||0)-dt;if(xs.snd<=0){xs.snd=.34;SFX.tornadoLoop();}}
+    if(inView(p.x,p.z)){const c=torCols(p);if(R()<.6){const a=R()*TAU,r=.9+R()*.6;PARTS.push({x:p.x+Math.cos(a)*r,y:p.y+.2+R()*2,z:p.z+Math.sin(a)*r,vx:-Math.sin(a)*7,vy:Rr(.5,2.5),vz:Math.cos(a)*7,life:.45,s:.16,c:hex(Rpick(c)),e:1,g:0,k:'deb',rot:0});}
+      if(p.ground&&R()<.3)burst(p.x+Rr(-.9,.9),p.y+.05,p.z+Rr(-.9,.9),['#e8e0d0','#ffffff'],1,1.5,.18,0);}}
+  return _xt(p,xs,dt,local);};}
+{const _hs=heroStates;heroStates=function(dt){_hs(dt);if(ME&&ME.torT>0)ME.torT=Math.max(0,ME.torT-dt);};}
+// the hero floats a little inside their tornado
+{const _dh=drawHero;drawHero=function(p,t){if(!torOn(p))return _dh(p,t);const y0=p.yv;p.yv=(y0||0)+.22+Math.sin(t*7)*.05;try{return _dh(p,t);}finally{p.yv=y0;}};}
+// ---------- the tornado: rings of streaks in the hero's colours, wider at the top ----------
+function drawTornado(p,t){const xs=p.xs,m=MS.cur;const T=xs.spinT||TOR.dur;const k=Math.max(.05,Math.min(1,(T-xs.spin)*5,xs.spin*3));const c=torCols(p);
+  for(let i=0;i<8;i++){const r=(.35+i*.17)*k,y=.05+i*.28,L=TAU*r/10*.78;MS.reset();M4.tr(m,p.x,p.y,p.z);M4.ry(m,t*(9+i*.4)+i*.5);const ci=c[i%2];
+    for(let q=0;q<10;q++){const a=q/10*TAU;MS.push();M4.tr(m,Math.cos(a)*r,y,Math.sin(a)*r);M4.ry(m,-a);M4.rx(m,-.35);bx(m,0,0,0,.06,.1,L,q%3===2?c[2]:ci,1,.55);MS.pop();}}}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{const keep=OUT;OUT=DYN;for(const p of [ME,...netFriends()])if(torOn(p)&&inView(p.x,p.z))drawTornado(p,t);OUT=keep;}catch(e){noteErr('tornado',e);}};}
+// a friend's tornado (online)
+{const _sf=shotFx;shotFx=function(k,x,y,z,f,a,rp){if(k!=='tornado')return _sf(k,x,y,z,f,a,rp);AU.at(x,z,()=>SFX.tornado());if(rp){const q=hx(rp);q.spin=TOR.dur;q.spinK='tornado';q.spinT=TOR.dur;q.spinY=0;}ringFx2(x,y,z,rp?torCols(rp):['#bfe9ff','#ffffff'],3,12);};}
+// ---------- the 🌪️ button: it fills up again while the tornado comes back ----------
+{const st=document.createElement('style');st.textContent='.tb.spin{right:170px;bottom:40px;width:60px;height:60px;background:conic-gradient(rgba(0,0,0,0) calc(var(--rd,1)*360deg),rgba(8,6,30,.62) 0),linear-gradient(135deg,#19c2a8,#2f6bff);color:#fff}.tb.spin[hidden]{display:none}.tb.spin.wait .ic{opacity:.55}';document.head.appendChild(st);}
+{const _bt=buildTouch;buildTouch=function(){_bt();const T=$('touch');if(!T||T.hidden)return;const tbs=T.querySelector('.tbs');if(!tbs||tbs.querySelector('.tb.spin'))return;
+  const b=document.createElement('button');b.className='tb spin';b.innerHTML=`<span class="ic">🌪️</span><span class="lb">${esc(tr('Spin'))}</span>`;tbWire(b,'spin');tbs.appendChild(b);};}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const b=document.querySelector('#touch .tb.spin');if(!b||!ME)return;const hide=!!(ME.veh||BUILD.on);if(b.hidden!==hide)b.hidden=hide;
+  const rd=ME.torT>0?Math.round((1-ME.torT/(TOR.dur+TOR.cd))*20)/20:1;if(b.dataset.rd!==String(rd)){b.dataset.rd=String(rd);b.style.setProperty('--rd',rd);b.classList.toggle('wait',rd<1);}
+  if(!TOR.tip&&G.mode==='play'&&!DLG&&ME.torT===undefined&&(G.t||0)>8){TOR.tip=1;let seen=false;try{seen=localStorage.getItem('bb_tortip')==='1';localStorage.setItem('bb_tortip','1');}catch(e){}if(!seen)toast(tr('🌪️ New: tap Spin and your hero whirls into a tornado!'));}}catch(e){}};}
+MV('Spin','دوران');MV('🌪️ New: tap Spin and your hero whirls into a tornado!','🌪️ جديد: اضغط دوران ويدور بطلك مثل الإعصار!');
+MV('Tornado Spin','دوامة الإعصار');MV('Tap 🌪️ Spin and your hero whirls into a tornado in their own colours, knocking baddies away. Every hero can do it (keyboard: R)','اضغط 🌪️ دوران فيدور بطلك داخل إعصار بألوانه، ويطيّر الأشرار بعيدًا. كل الأبطال يقدرون عليها (لوحة المفاتيح: R)');
 // ================= v26: real 3D heroes made from the family's cards (glTF .glb files) =================
 // A hero with a 3D model file (models/<hero>.glb, listed in models/list.json) is drawn with it: a textured model with a
 // skeleton that plays its own animations (idle, walk, run, jump, punch, wave, cheer...), lit and shadowed like the rest of
