@@ -416,3 +416,11 @@
 2026-10-01 13:12:35 [sam] rigging SUCCEEDED 100%
 2026-10-01 13:12:36 [sam] rigged: {"model": {"bytes": 1856448, "triangles": 20745, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35548, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30920, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:12:40 [lulu] model task made 01a0f798-771b-74be-9683-73c1174d3f86
+2026-10-01 13:12:41 [lulu] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:12:46 [idris] image-to-3d IN_PROGRESS 36%
+2026-10-01 13:12:51 [bella] image-to-3d IN_PROGRESS 33%
+2026-10-01 13:12:58 [saif] image-to-3d IN_PROGRESS 67%
+2026-10-01 13:13:18 [saif] image-to-3d IN_PROGRESS 99%
+2026-10-01 13:13:21 [bella] image-to-3d IN_PROGRESS 67%
+2026-10-01 13:13:26 [idris] image-to-3d IN_PROGRESS 67%
+2026-10-01 13:13:28 [saif] image-to-3d SUCCEEDED 100%
