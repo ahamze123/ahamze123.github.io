@@ -143,3 +143,5 @@
 2026-10-01 12:49:19 [dan] image-to-3d IN_PROGRESS 1%
 2026-10-01 12:49:20 [finn] image-to-3d IN_PROGRESS 1%
 2026-10-01 12:49:21 [sami] model task made 01a0f783-1def-7427-b95b-6eedcac0fe56
+2026-10-01 12:49:22 [sami] image-to-3d IN_PROGRESS 1%
+2026-10-01 12:49:35 [rex] image-to-3d SUCCEEDED 100%

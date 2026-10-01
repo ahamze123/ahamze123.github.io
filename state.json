@@ -480,6 +480,8 @@
   },
   "rex": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f781-257c-755f-8260-dd610b7551e1",
     "made": "2026-10-01 12:47",
     "run": 4,
@@ -492,7 +494,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f781-257c-755f-8260-dd610b7551e1/output/preview.png?Expires=1791118171&Signature=An6miVLsVl4i10yx6K9srMViBzXyL9YdBvOkYG7q4CHXS9jH3hu4igZlRdNfEYKColYdnKMLjm0nLhRHCmzsvWshzmtKP6hHMW0uBBcLEz96GgTNP~NJK7uFk-IeOBhnZ7TFjayhG5hoNltaioDHLlhKJ9gTEimnCzGwUerT-nuxkiEuTOVg7zU~~-7okSQiOk-GYfY8~sIivHpy1uTVQ0eiM8cEa~Qq2J-~UQu0G5KVNMALxatP3Eg4WznFiaHC~akxrI1b5OYtyiLsUaJGeCPXbDKzT9JY66UhLRAahherxq5JT5gwHsIWabUTK5M8ew1R2TqCABs89h1xTZKRrA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "ruby": {
