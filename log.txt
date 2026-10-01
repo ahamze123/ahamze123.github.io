@@ -290,3 +290,12 @@
 2026-10-01 13:01:21 [karim] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:01:23 [salem] image-to-3d SUCCEEDED 100%
 2026-10-01 13:01:29 [salem] rig task made 01a0f78e-2f31-77a7-a523-f8c4e9b663b3
+2026-10-01 13:01:31 [salem] rigging IN_PROGRESS 10%
+2026-10-01 13:01:41 [salem] rigging IN_PROGRESS 36%
+2026-10-01 13:01:51 [salem] rigging IN_PROGRESS 63%
+2026-10-01 13:02:01 [majid] image-to-3d IN_PROGRESS 27%
+2026-10-01 13:02:01 [salem] rigging IN_PROGRESS 95%
+2026-10-01 13:02:09 [bilal] image-to-3d IN_PROGRESS 36%
+2026-10-01 13:02:12 [salem] rigging SUCCEEDED 100%
+2026-10-01 13:02:12 [karim] image-to-3d SUCCEEDED 100%
+2026-10-01 13:02:12 [salem] rigged: {"model": {"bytes": 1729696, "triangles": 20820, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35528, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30884, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
