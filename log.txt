@@ -474,3 +474,10 @@
 2026-10-01 13:16:21 [lulu] rigging IN_PROGRESS 63%
 2026-10-01 13:16:21 [mira] rigging IN_PROGRESS 36%
 2026-10-01 13:16:23 [wanda] rig task made 01a0f79b-d297-73cd-9d38-01808345cdf0
+2026-10-01 13:16:25 [wanda] rigging IN_PROGRESS 10%
+2026-10-01 13:16:31 [lulu] rigging IN_PROGRESS 90%
+2026-10-01 13:16:31 [mira] rigging IN_PROGRESS 68%
+2026-10-01 13:16:35 [wanda] rigging IN_PROGRESS 36%
+2026-10-01 13:16:41 [lulu] rigging SUCCEEDED 100%
+2026-10-01 13:16:42 [mira] rigging IN_PROGRESS 90%
+2026-10-01 13:16:42 [lulu] rigged: {"model": {"bytes": 2030316, "triangles": 20839, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35424, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30788, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
