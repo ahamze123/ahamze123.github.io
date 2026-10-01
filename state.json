@@ -2849,6 +2849,7 @@
    }
   },
   "yasmin": {
+   "extra": {},
    "full": {
     "bytes": 2691480,
     "pictures": [
@@ -2969,6 +2970,12 @@
    }
   },
   "zara": {
+   "full": {
+    "bytes": 2848488,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
