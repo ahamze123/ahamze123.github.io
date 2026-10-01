@@ -11518,7 +11518,10 @@ function g3dIdx(J,BIN,i){const a=J.accessors[i],bv=J.bufferViews[a.bufferView],o
   if(a.componentType===5125){const r=new Uint32Array(a.count);const dv=new DataView(BIN.buffer,o);for(let k=0;k<a.count;k++)r[k]=dv.getUint32(k*4,true);return r;}
   if(a.componentType===5123){const r=new Uint16Array(a.count);const dv=new DataView(BIN.buffer,o);for(let k=0;k<a.count;k++)r[k]=dv.getUint16(k*2,true);return r;}
   const r=new Uint16Array(a.count);const dv=new DataView(BIN.buffer,o);for(let k=0;k<a.count;k++)r[k]=dv.getUint8(k);return r;}
-async function g3dLoad(id){const r=await fetch(G3D.base+id+'.glb');if(!r.ok)throw new Error('model '+id+': '+r.status);return g3dParse(id,await r.arrayBuffer());}
+// the Claude page can only hold text files, so there each model is stored as base64 text (models/<hero>.txt)
+async function g3dLoad(id){const txt=!window.BB_STANDALONE;const r=await fetch(G3D.base+id+(txt?'.txt':'.glb'));if(!r.ok)throw new Error('model '+id+': '+r.status);
+  let ab;if(txt){const s=atob((await r.text()).replace(/\s+/g,''));const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);ab=u.buffer;}else ab=await r.arrayBuffer();
+  return g3dParse(id,ab);}
 async function g3dParse(id,ab){const dv=new DataView(ab);if(dv.getUint32(0,true)!==0x46546C67)throw new Error('not a glb');let off=12,J=null,BIN=null;
   while(off+8<=ab.byteLength){const len=dv.getUint32(off,true),type=dv.getUint32(off+4,true),s=off+8;if(type===0x4E4F534A)J=JSON.parse(new TextDecoder().decode(new Uint8Array(ab,s,len)));else if(type===0x004E4942)BIN=new Uint8Array(ab,s,len);off=s+len;}
   if(!J)throw new Error('no json');const NOSUP=(J.extensionsRequired||[]).filter(e=>/draco|meshopt|basisu|ktx|webp/i.test(e));if(NOSUP.length)throw new Error('needs '+NOSUP.join(','));
