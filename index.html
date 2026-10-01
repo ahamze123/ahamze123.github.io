@@ -1397,23 +1397,23 @@ void main(){
  vec2 sf=fract(vW.xz*2.)-.5;float sr=length(sf);float saa=fwidth(sr)*1.3+.002;
  vec2 cc=floor(vW.xz-N.xz*.5);float t=hash12(cc);float t2=hash12(floor(vW.xz*3.));
  float spec=.04,gloss=8.;float htop=top?vW.y:texelFetch(uH,ivec2(clamp(cc,vec2(0.),vec2(uN-1.))),0).r;float below=htop-vW.y;
- if(m==0){alb*=.935+.1*t;alb*=.975+.04*t2;if(!top&&below>.3)alb=vec3(.56,.4,.27)*(.88+.14*t)*(.93+.07*step(.5,fract(vW.y*.5)));}
+ if(m==0){alb*=.95+.1*vn2(vW.xz*.09);alb*=.985+.03*t;if(!top){if(below>1.2)alb=vec3(.62,.46,.32)*(.92+.08*t)*(.95+.05*step(.5,fract(vW.y*.5)));else alb*=.94;}}
  else if(m==1){alb*=.98+.03*t;spec=.25;gloss=34.;if(top)studs(alb,N,sf,sr,saa,1.-smoothstep(10.,26.,length(vW-uCam)));}
- else if(m==2){alb*=.95+.07*t2;spec=.12;gloss=18.;if(!top)alb*=.75;}
- else if(m==3){alb*=.94+.1*t;alb*=.96+.04*sin(vW.x*1.9+vW.z*.7);if(!top)alb*=.84;}
+ else if(m==2){alb*=.96+.06*vn2(vW.xz*.18);alb*=.99+.02*t2;spec=.12;gloss=18.;if(!top)alb*=.8;}
+ else if(m==3){alb*=.95+.08*vn2(vW.xz*.12);alb*=.98+.03*sin(vW.x*1.9+vW.z*.7);if(!top)alb*=.9;}
  else if(m==4){alb*=.97+.05*t;spec=.4;gloss=28.;if(!top&&below>.35)alb=vec3(.6,.64,.72)*(.9+.12*t);}
- else if(m==5){alb*=.86+.2*t;if(!top)alb*=.9+.1*step(.5,fract(vW.y*.5));}
- else if(m==6){alb*=.9+.15*t;if(!top)alb*=.82;}
+ else if(m==5){alb*=.9+.12*t;alb*=.95+.08*vn2(vW.xz*.2+vW.y*.3);if(!top)alb*=.92+.08*step(.5,fract(vW.y*.5));}
+ else if(m==6){alb*=.93+.09*t;if(!top)alb*=.92;}
  else if(m==7){alb*=top?(.72+.4*step(.5,fract(vW.x*.5))):.72;if(!top&&below<.3)alb=vec3(.42,.62,.26);}
  else if(m==8){alb*=.88+.16*t;spec=.25;gloss=24.;}
- else if(m==9){alb*=.9+.14*t;if(!top)alb*=.86+.14*step(.5,fract(vW.y*.4));}
+ else if(m==9){alb*=.93+.09*t;if(!top)alb*=.88+.12*step(.5,fract(vW.y*.4));}
  float ao=1.;
  if(uAO>.5){if(top){float occ=0.;float nS=0.;for(int i=0;i<8;i++){if(uAO<1.5&&(i==1||i==3||i==5||i==7))continue;nS+=1.;float a=float(i)*.785398;vec2 d=vec2(cos(a),sin(a));float h1=texture(uCH,(vW.xz+d*.8)/uN).r;float h2=texture(uCH,(vW.xz+d*1.8)/uN).r;
      occ+=clamp((h1-vW.y)*.8,0.,1.)*.6+clamp((h2-vW.y)*.4,0.,1.)*.4;}ao=1.-clamp(occ/nS,0.,1.)*.72;}
-   else{float hn=texture(uCH,(vW.xz+N.xz*.55)/uN).r;ao=mix(.55,1.,smoothstep(0.,1.4,vW.y-hn));}}
+   else{float hn=texture(uCH,(vW.xz+N.xz*.55)/uN).r;ao=mix(.8,1.,smoothstep(0.,1.4,vW.y-hn));}}
  if(uSnow.z>1e4&&top&&(m==0||m==3||m==5||m==6||m==7||m==9)){float sn=snowMask(vW,N)*(.75+.25*vn2(vW.xz*.3));alb=mix(alb,vec3(.93,.96,1.),sn);if(sn>.5)m=4;}
  bool dryish=(m==4||m==10||m==11);float wet=(top&&!dryish&&vW.y>uWL-.1)?uWet:0.;alb*=1.-wet*.3;spec=mix(spec,.6,wet);gloss=mix(gloss,60.,wet);
- alb*=ao;float sh=shadowF(N);vec3 c=light(alb,N,vW,sh,spec,gloss);
+ alb*=ao;float sh=shadowF(N);vec3 c=light(alb,N,vW,sh,spec,gloss);if(!top)c+=alb*(uSky+uGnd)*.11;
  if(m==4&&top)c+=step(.996,hash12(floor(vW.xz*9.)+floor(uCam.xz*.3)))*.5;
  if(wet>0.&&(m==1||m==2||m==6||m==8||m==0)){float pd=smoothstep(.6,.74,vn2(vW.xz*.21+vec2(3.1,7.7)))*wet*(m==0?.5:1.);if(pd>0.){vec3 V=normalize(uCam-vW);vec3 Rr=reflect(-V,vec3(0.,1.,0.));
    vec3 sk=mix(uFogC,uSky*1.35+vec3(.04,.06,.1),clamp(Rr.y*1.6,0.,1.));sk+=uSunCol*pow(max(dot(Rr,uSun),0.),160.)*2.;vec2 rq=fract(vW.xz*.7)-.5;float rip=smoothstep(.9,1.,sin(length(rq)*42.-uTime*7.+hash12(floor(vW.xz*.7))*6.))*(1.-smoothstep(.2,.5,length(rq)));
@@ -1474,9 +1474,9 @@ void main(){vec2 uv=vW.xz/uN;float h=-8.;if(uv.x>0.&&uv.x<1.&&uv.y>0.&&uv.y<1.)h
  vec3 n=normalize(vec3(g.x*.16,1.,g.y*.16));vec3 V=normalize(uCam-vW);vec3 Rf=reflect(-V,n);
  vec3 sky=mix(uFogC,uSky*1.25+vec3(.05,.08,.12),clamp(Rf.y*1.6,0.,1.));float fres=.05+.95*pow(1.-max(dot(n,V),0.),4.);
  vec3 base=mix(vec3(.1,.74,.76),vec3(.02,.3,.56),smoothstep(0.,.75,depth));vec3 c=mix(base,sky,fres*.75);
- c+=vec3(1.,.95,.8)*pow(max(dot(Rf,uSun),0.),240.)*2.5;float day=1.-uNight*.8;
- c+=vec3(1.,.85,.6)*pow(max(dot(Rf,uSun),0.),22.)*.2*day;c+=vec3(1.)*step(.972,h21(floor(vW.xz*4.)+floor(t*5.)))*pow(max(dot(Rf,uSun),0.),5.)*1.1*day*(1.-fres*.5);
- float foam=smoothstep(.13,0.,depth)*(.55+.45*sin(t*2.2+vW.x*2.1+vW.z*1.4));foam+=smoothstep(.8,1.,g.x*g.y+.5)*.12*(1.-depth*.5);
+ c+=vec3(1.,.95,.8)*min(pow(max(dot(Rf,uSun),0.),240.)*1.6,.5);float day=1.-uNight*.8;
+ c+=vec3(1.,.85,.6)*pow(max(dot(Rf,uSun),0.),22.)*.2*day;{vec2 gc=vW.xz*3.;vec2 gf=fract(gc)-.5;float hh=h21(floor(gc)+floor(t*2.5));c+=vec3(1.)*step(.985,hh)*smoothstep(.22,.06,length(gf))*pow(max(dot(Rf,uSun),0.),5.)*.9*day*(1.-fres*.5);}
+ float foam=smoothstep(.13,0.,depth)*(.55+.45*sin(t*2.2+vW.x*2.1+vW.z*1.4));foam+=smoothstep(.8,1.,g.x*g.y+.5)*.06*(1.-depth*.5);
  c=mix(c,vec3(.97,1.,1.),clamp(foam,0.,1.)*.8);
  float d=length(vW-uCam);float f=1.-exp(-d*d*uFogD*uFogD);c=mix(c,uFogC,clamp(f,0.,1.));
  o=vec4(c,clamp(mix(.72,.94,smoothstep(0.,.5,depth))+foam*.3,0.,1.));}`;
@@ -2372,11 +2372,23 @@ const CAM={yaw:0,pitch:.34,dist:10,tx:0,ty:0,tz:0,manualT:9,eye:[0,20,0],fov:1,d
 function camForward(){return [-Math.sin(CAM.yaw),-Math.cos(CAM.yaw)];}
 // camera distance presets: 0 close, 1 normal, 2 far
 const CAMD=[{d:1.36,p:.17},{d:1.78,p:.205},{d:2.24,p:.26}];// v23.8: 30% further again; v23.9: and 30% higher up (same distance along the ground)
+// v25: the camera stays just as high and far as before, but it looks at a point higher up (up) than the hero's chest: the hero
+// sits a little lower in the picture and more of the street ahead shows, instead of so much ground behind
+const CAMLOOK={up:1.7,upCar:1.2,fov:1,fovP:1.2};
 // is the thing in the camera's way small (a tree, a lamp post, a mushroom, a kiosk)? Look sideways: at most 5 tall cells across.
 // Small things fade out around the hero instead of pulling the camera in; hills and big buildings still pull it in.
 function camThin(x,z,lim,px,pz){let w=1;for(const g of [1,-1])for(let k=1;k<=4;k++){if(chAt(x+px*k*g,z+pz*k*g)>lim)w++;else break;}return w<=5;}
 function camHill(x,z,lim){const xi=Math.floor(x),zi=Math.floor(z);return inMap(xi,zi)&&H[xi+zi*N]>lim;}
-function updateCamera(dt){const p=ME;const v=p.veh;let tx=p.x,ty=p.y+1.5,tz=p.z;let dist=10.4,pitch=.31;
+function updateCamera(dt){const p=ME;const v=p.veh;
+  // v25: the camera aims a little ahead of where the hero is running (CAM.lax/laz: only where it looks, not where it stands, so
+  // it does not swing about) and it does not bob up and down with every jump
+  let gy=p.y;if(!v&&!p.fly&&!p.swim&&!p.zip&&G.mode!=='title'){if(p.ground||CAM.gy===undefined||p.y<CAM.gy||Math.abs(p.y-CAM.gy)>40)CAM.gy=p.y;const air=p.y-CAM.gy;gy=CAM.gy+(air<=4?air*.3:1.2+(air-4));}else CAM.gy=p.y;
+  const hs0=Math.hypot(p.vx||0,p.vz||0),la=v||p.fly||G.mode!=='play'?0:Math.min(1.8,hs0*.22),lk=Math.min(1,dt*2.5);
+  CAM.lax=lerp(CAM.lax||0,hs0>.5?p.vx/hs0*la:0,lk);CAM.laz=lerp(CAM.laz||0,hs0>.5?p.vz/hs0*la:0,lk);
+  // going fast (a car, a dash) widens the lens a little, for a sense of speed
+  const spd0=v?Math.abs(v.spd||0):hs0;CAM.fovK=lerp(CAM.fovK||0,Math.min(.1,Math.max(0,spd0-8)*.004),Math.min(1,dt*2));
+  let tx=p.x,ty=gy+1.5,tz=p.z;let dist=10.4,pitch=.31;
+  const lookUp=(G.mode==='play'||G.mode==='menu'||G.mode==='dialog')&&!(G.cine&&G.cine.draw)&&p.realm!=='inside'&&!p.fly?(v?CAMLOOK.upCar:CAMLOOK.up):0;CAM.lookY=lerp(CAM.lookY||0,lookUp,Math.min(1,dt*3));
   if(G.mode==='title'){CAM.yaw+=dt*.05;tx=C+8;tz=C+10;ty=14;dist=46;pitch=.34;}
   else if(G.cine&&G.cine.draw){const d=G.cine.draw;tx=d.x;ty=d.y+(G.cine.arrived?4:9);tz=d.z;dist=G.cine.arrived?26:36;pitch=G.cine.arrived?.32:.12;CAM.yaw+=dt*.12;CAM.cd=null;}
   else if(v){const sp=Math.abs(v.spd);dist=13.6+sp*.13;pitch=.28;ty=v.y+1.6;tx=v.x+Math.sin(v.head)*sp*.12;tz=v.z+Math.cos(v.head)*sp*.12;if(CAM.manualT>1.2)CAM.yaw=angLerp(CAM.yaw,v.head+Math.PI,Math.min(1,dt*(1.2+sp*.08)));}
@@ -3070,13 +3082,24 @@ let visChunks=[];
 const chunkShown=(ch,cr,crm)=>{const r=realmAt(ch.x0+1,ch.z0+1);return r===cr&&(cr!=='inside'||roomAt(ch.x0+1,ch.z0+1)===crm);};
 function cullChunks(){visChunks=[];const e=CAM.eye;const cr=camRealm(),crm=camRoom();for(const ch of CHUNKS){if(!ch.terr)continue;if(!chunkShown(ch,cr,crm))continue;const cx=ch.x0+CS/2,cz=ch.z0+CS/2;const d=Math.hypot(cx-e[0],cz-e[2]);if(d>300)continue;
   if(!M4.boxIn(RF.planes,ch.x0,ch.y0,ch.z0,ch.x0+CS,ch.y1,ch.z0+CS))continue;ch.dist=d;visChunks.push(ch);}}
-function renderFrame(){const q=G.quality;const scale=q==='high'?1:q==='med'?.85:.66;const dpr=Math.min(devicePixelRatio||1,q==='high'?2:1.5)*scale;
+// v25: the picture is drawn as sharp as the tablet can keep up with. The resolution goes up while the game runs smoothly and
+// comes down a little when it starts to slow (between 0.75x and the screen's own sharpness, at most 2x), and the edges are
+// smoothed with real multisampling where the tablet allows it
+const RES={s:0,acc:0,n:0,last:0,max:2,min:.75,hold:0};
+function resPick(q){const dpr=window.devicePixelRatio||1;RES.max=q==='low'?Math.min(dpr,1):Math.min(dpr,q==='high'?2:1.75);RES.min=q==='low'?.6:.75;
+  if(!RES.s){const ios=/iPad|iPhone|Macintosh/.test(navigator.userAgent)&&'ontouchend' in document;RES.s=Math.min(RES.max,q==='low'?.9:ios?1.5:1.25);}
+  RES.s=clamp(RES.s,RES.min,RES.max);return RES.s;}
+function resTune(){const now=performance.now();const dt=RES.last?(now-RES.last)/1000:0;RES.last=now;if(!(dt>0&&dt<.5)||document.hidden)return;
+  if(G.mode!=='play'||window.__noAutoQ){RES.acc=0;RES.n=0;return;}RES.acc+=dt;RES.n++;if(RES.acc<2)return;const fps=RES.n/RES.acc;RES.acc=0;RES.n=0;
+  if(fps<44&&RES.s>RES.min){RES.s=Math.max(RES.min,RES.s-(fps<32?.25:.1));RES.hold=8;}else if(fps>56&&RES.s<RES.max){if(RES.hold>0)RES.hold--;else RES.s=Math.min(RES.max,RES.s+.1);}}
+function renderFrame(){const q=G.quality;resTune();const dpr=resPick(q);
   const w=Math.max(2,Math.floor(innerWidth*dpr)),h=Math.max(2,Math.floor(innerHeight*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
-  const samples=q==='high'?Math.min(4,GLX.maxS):0;rtEnsure(w,h,samples);const asp=w/h;
-  M4.persp(RF.proj,asp<1?1.2:.98,asp,.25,520);M4.look(RF.view,CAM.eye,[CAM.tx,CAM.ty,CAM.tz],[0,1,0]);M4.mul(RF.vp,RF.proj,RF.view);M4.inv(RF.ivp,RF.vp);M4.planes(RF.vp,RF.planes);
+  const px=w*h,samples=q==='low'?0:q==='high'?Math.min(px<4.2e6?4:2,GLX.maxS):(px<3.4e6?Math.min(2,GLX.maxS):0);rtEnsure(w,h,samples);const asp=w/h;
+  M4.persp(RF.proj,(asp<1?CAMLOOK.fovP:CAMLOOK.fov)+(CAM.fovK||0),asp,.25,520);M4.look(RF.view,CAM.eye,[CAM.tx+(CAM.lax||0),CAM.ty+(CAM.lookY||0),CAM.tz+(CAM.laz||0)],[0,1,0]);M4.mul(RF.vp,RF.proj,RF.view);M4.inv(RF.ivp,RF.vp);M4.planes(RF.vp,RF.planes);
   buildDyn();cullChunks();
   const shOn=q!=='low';const ext=q==='high'?44:34;
-  if(shOn){const c=[Math.round(CAM.tx),Math.round(CAM.ty),Math.round(CAM.tz)];M4.ortho(RF.t1,-ext,ext,-ext,ext,1,260);M4.look(RF.t2,[c[0]+SUN[0]*120,c[1]+SUN[1]*120,c[2]+SUN[2]*120],c,[0,1,0]);M4.mul(RF.lvp,RF.t1,RF.t2);
+  if(shOn){// v25: the shadow area is moved ahead of the hero, where the camera is looking (it used to waste half of it behind the camera)
+    const fx=CAM.tx-CAM.eye[0],fz=CAM.tz-CAM.eye[2],fl=Math.hypot(fx,fz)||1,sk=ext*.3;const c=[Math.round(CAM.tx+fx/fl*sk),Math.round(CAM.ty),Math.round(CAM.tz+fz/fl*sk)];M4.ortho(RF.t1,-ext,ext,-ext,ext,1,260);M4.look(RF.t2,[c[0]+SUN[0]*120,c[1]+SUN[1]*120,c[2]+SUN[2]*120],c,[0,1,0]);M4.mul(RF.lvp,RF.t1,RF.t2);
     gl.bindFramebuffer(gl.FRAMEBUFFER,SHM.fb);gl.viewport(0,0,SHM.size,SHM.size);gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1.6,3);
     gl.useProgram(PR.dt.p);gl.uniformMatrix4fv(PR.dt.u.uLVP,false,RF.lvp);const cr=camRealm(),crm=camRoom();const near=CHUNKS.filter(ch=>ch.terr&&chunkShown(ch,cr,crm)&&Math.hypot(ch.x0+CS/2-c[0],ch.z0+CS/2-c[2])<ext*1.5+24);
     for(const ch of near){gl.bindVertexArray(ch.terr.vao);gl.drawElements(gl.TRIANGLES,ch.terr.n,ch.terr.type,0);}
@@ -7630,8 +7653,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:30,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:31,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🖼️',t:'Sharper pictures',s:'The game is drawn sharper on tablets, with smooth edges instead of jaggy ones. If a tablet starts to slow down, the picture gets a little softer by itself so the game stays smooth'},
+  {ic:'🎥',t:'A camera that looks ahead',s:'The camera stays up high, but it looks a bit further ahead, so you can see where you are going. It looks the way you run, and it stays calm when you jump'},
+  {ic:'🌳',t:'Nicer light and colours',s:'No more black steps in the shade, softer grass and sand, shadows further ahead, and the sea sparkles instead of glaring'},
   {ic:'📖',t:'Story Mode',s:'A real story in 8 chapters: win back the Power Crystals from the Glitch King. Each chapter opens a new place and gives a big prize. Tap 📖 to see your Story Book',act:()=>{if(typeof openStoryBook==='function')openStoryBook();}},
   {ic:'🧩',t:'Missions that make you think',s:'Fixing, rescuing, building and opening things are puzzles now: memory, patterns, counting, sums and wires. Make them easier or harder in Settings'},
   {ic:'🎵',t:'Our own songs',s:'New music everywhere: Skyline Exploration in the city, Gliding Over Green Valleys in the green places, Quiet Horizons in the snow, space and on the Moon, and Subtle Quests and Flying Capes in missions and boss fights'},
@@ -10321,7 +10347,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='24.0';window.BB_VER=BB_VER;
+const BB_VER='25.0';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11311,6 +11337,12 @@ Object.assign(SAYMOOD,{watch:'wow',honk:'yay',bump:'wow',shot:'wow',crash:'wow'}
 MV('A steadier camera','كاميرا أكثر ثباتًا');MV('The camera is higher up and further back, and it no longer jumps around near trees, mushrooms and houses. Pinch with two fingers to zoom, or change it in Settings','الكاميرا أعلى وأبعد، ولم تعد تقفز قرب الأشجار والفطر والبيوت. قرّب أو بعّد بإصبعين، أو غيّرها من الإعدادات');
 MV('Solid cars','سيارات صلبة');MV('Heroes walk around cars now (and can jump up on the roof). Getting out of a car works every time','الأبطال يمشون حول السيارات الآن (ويمكنهم القفز على سقفها). والنزول من السيارة يعمل في كل مرة');
 MV('Friendly people','ناس لطفاء');MV('People in the street only say nice things now','الناس في الشارع يقولون كلامًا لطيفًا فقط الآن');
+// ================= v25: sharper pictures, nicer light, a camera that looks ahead =================
+// (the work itself is in 01_core.js: the terrain and water shaders, 05_play.js: the camera, 08_render.js: the picture's
+// sharpness, multisampling and the shadow area). Here: the What's new card's words in Arabic.
+MV('Sharper pictures','صور أوضح');MV('The game is drawn sharper on tablets, with smooth edges instead of jaggy ones. If a tablet starts to slow down, the picture gets a little softer by itself so the game stays smooth','اللعبة تُرسم بوضوح أكبر على الأجهزة اللوحية، بحواف ناعمة بدل الحواف المسنّنة. وإذا بدأ الجهاز يبطئ، تصير الصورة أنعم قليلًا وحدها لتبقى اللعبة سلسة');
+MV('A camera that looks ahead','كاميرا تنظر إلى الأمام');MV('The camera stays up high, but it looks a bit further ahead, so you can see where you are going. It looks the way you run, and it stays calm when you jump','الكاميرا ما زالت عالية، لكنها تنظر أبعد قليلًا إلى الأمام لترى أين تذهب. تنظر نحو الجهة التي تركض إليها، وتبقى هادئة عندما تقفز');
+MV('Nicer light and colours','ضوء وألوان أجمل');MV('No more black steps in the shade, softer grass and sand, shadows further ahead, and the sea sparkles instead of glaring','لا مزيد من الدرجات السوداء في الظل، عشب ورمل أنعم، ظلال أبعد إلى الأمام، والبحر يلمع بدل الوهج الأبيض');
 // ================= start =================
 boot();
 </script>

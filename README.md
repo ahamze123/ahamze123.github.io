@@ -30,8 +30,14 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 
 ## Camera
 - The camera follows your hero: it swings round behind them as they run. Turn it yourself any time (drag on the right side of the screen, or the mouse on a computer); a moment after you let go it starts following again.
-- It sits high and far back so you can see a lot. Trees, lamp posts, mushrooms and small houses between the camera and your hero fade out instead of making the camera jump; only hills and big buildings bring it closer, gently.
+- It sits high and far back so you can see a lot, and it looks a little ahead of your hero, so more of the screen shows where you are going. It aims the way you run, stays calm when you jump (only big jumps lift it), and widens a little when you go fast.
+- Trees, lamp posts, mushrooms and small houses between the camera and your hero fade out instead of making the camera jump; only hills and big buildings bring it closer, gently.
 - **Menu → Settings → Camera** switches between Close, Normal and Far, and **Camera follows me** turns the following off. On a tablet, pinch with two fingers on the right side of the screen to zoom.
+
+## Graphics
+- The picture is drawn as sharp as the tablet can keep up with: sharper while the game runs smoothly, a little softer by itself if the tablet starts to slow down. With the Balanced and Pretty graphics the edges are smoothed (multisampling), so lines and roofs are not jaggy.
+- The shady sides of steps and cliffs get light from the sky, so they are never black. Shadows reach further ahead of your hero, and the sun on the sea makes small sparkles instead of a big white glare.
+- **Menu → Settings → Graphics** switches between Fast, Balanced and Pretty. If the game gets slow it lowers the graphics by itself.
 
 ## Holding ✋ Use
 - Some jobs need you to hold **✋ Use** (or **E** on a keyboard): helping the lost hikers, fixing things on quests, helping a knocked-out friend up and cooking. A ring fills up while you hold, so you can see it working. Tapping again and again works too, and if you let go the ring only drains slowly.
