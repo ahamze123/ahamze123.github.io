@@ -81,6 +81,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - **Entrance Hall**: a free snack that fills your hearts, and a super juice for double XP.
 
 ## The world
+- It is always a sunny day in Blocktopia: no night and no rain. The clock towers show the real time. (Photo mode can still take a sunset or night photo.)
 - **Brick City** (the home island), **Sunset Bay**, **Star Harbor**, **Frostpeak** and **Cactus Canyon**, joined by highway bridges and trains.
 - **The Sky Kingdom**: floating islands on towers of cloud. Take the hot-air balloon from the Sky Port in Brick City and meet Queen Celeste.
 - **Dino Valley** in Cactus Canyon has friendly dinosaurs, a stepped volcano and Trixie the triceratops to ride.
@@ -101,7 +102,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - **Combos**: keep hitting baddies without a break for bonus coins. The **hero of the day** earns 50% more coins.
 - **Obstacle courses**: Rainbow Steps, Sky Tower and Iceberg Hop. Beat your best time.
 - **Boss of the Week** at the Champion Arena. There is a new boss every Monday.
-- **Festivals** on special dates (Eid Lanterns, Pumpkin Festival, Winter Lights, Green Day, Flower Festival), with hidden things to find and prize hats. There are fireworks on festival and weekend nights.
+- **Festivals** on special dates (Eid Lanterns, Pumpkin Festival, Winter Lights, Green Day, Flower Festival), with hidden things to find and prize hats. Fireworks go off whenever you win a trophy.
 - **Photo mode** (📸): pose your hero, pick a filter, a frame and the time of day, then save photos to the iPad.
 - Races, build zones (build like Minecraft), soccer, hide and seek, jobs, golden bricks, treasure chests, a sticker album and three daily challenges.
 - The **Hall of Heroes** has a statue for all 50 heroes (covered until you unlock them), your trophies and your golden bricks.

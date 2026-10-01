@@ -4509,7 +4509,7 @@ function drawTownDyn(t){const nr=(x,z,r)=>Math.abs(x-CAM.tx)<r&&Math.abs(z-CAM.t
     for(let k=0;k<f.n;k++){const a=k/f.n*TAU+t*.25;const cx=f.x-Math.sin(a)*f.r,cy2=f.y+Math.cos(a)*f.r;MS.reset();M4.tr(m,cx,cy2-1.1,f.z);rb(m,0,0,0,1.6,1.3,1.8,BEACHT[k%BEACHT.length],1);bx(m,0,.75,0,1.8,.12,2,'#ffffff',1);}
     MS.reset();M4.tr(m,f.x,f.y,f.z);for(let k=0;k<24;k++){MS.push();M4.rz(m,k/24*TAU+t*.25);sp(m,0,f.r+.2,1.35,.18,.18,.18,['#ffcf3a','#ff7aa2','#46e6ff'][k%3],1,1);sp(m,0,f.r+.2,-1.35,.18,.18,.18,['#ffcf3a','#ff7aa2','#46e6ff'][k%3],1,1);MS.pop();}}
   for(const c of WORLD.carousels||[]){if(!nr(c.x,c.z,100))continue;MS.reset();M4.tr(m,c.x,c.y,c.z);M4.ry(m,t*.8);for(let k=0;k<6;k++){MS.push();M4.ry(m,k/6*TAU);const up=Math.sin(t*2.4+k)*.3;M4.tr(m,0,1+up,c.r);cy(m,0,.6,0,.08,2.4,.08,'#ffcf3a',3);rb(m,0,0,0,.5,.6,1.2,['#ffffff','#ffd6e0','#c9f0ff'][k%3],1);sp(m,0,.35,.5,.3,.35,.3,['#ffffff','#ffd6e0','#c9f0ff'][k%3],1);MS.pop();}}
-  for(const c of WORLD.clocks||[]){if(!nr(c.x,c.z,120))continue;const hr=(DN.t*24)%12,mi=(DN.t*24*60)%60;for(let k=0;k<4;k++){MS.reset();M4.tr(m,c.x,c.y,c.z);M4.ry(m,k*Math.PI/2);M4.tr(m,0,0,c.r+.08);MS.push();M4.rz(m,-hr/12*TAU);bx(m,0,.45,0,.14,.9,.04,'#23233a',1);MS.pop();MS.push();M4.rz(m,-mi/60*TAU);bx(m,0,.6,0,.1,1.2,.04,'#23233a',1);MS.pop();}}
+  for(const c of WORLD.clocks||[]){if(!nr(c.x,c.z,120))continue;const nw=new Date(),mi=nw.getMinutes()+nw.getSeconds()/60,hr=nw.getHours()%12+mi/60;for(let k=0;k<4;k++){MS.reset();M4.tr(m,c.x,c.y,c.z);M4.ry(m,k*Math.PI/2);M4.tr(m,0,0,c.r+.08);MS.push();M4.rz(m,-hr/12*TAU);bx(m,0,.45,0,.14,.9,.04,'#23233a',1);MS.pop();MS.push();M4.rz(m,-mi/60*TAU);bx(m,0,.6,0,.1,1.2,.04,'#23233a',1);MS.pop();}}
   const S=WORLD.skilift;if(S&&(nr(S.ax,S.az,200)||nr(S.bx,S.bz,200))){const L=Math.hypot(S.bx-S.ax,S.bz-S.az),ang=Math.atan2(S.bx-S.ax,S.bz-S.az);MS.reset();M4.tr(m,(S.ax+S.bx)/2,(S.ay+S.by)/2,(S.az+S.bz)/2);M4.ry(m,ang);M4.rx(m,-Math.atan2(S.by-S.ay,L));bx(m,.8,0,0,.05,.05,L,'#23233a',3);bx(m,-.8,0,0,.05,.05,L,'#23233a',3);
     for(let k=0;k<10;k++){const u=((k/10+t*.02)%1);const x=lerp(S.ax,S.bx,u),y=lerp(S.ay,S.by,u),z=lerp(S.az,S.bz,u);MS.reset();M4.tr(m,x,y,z);M4.ry(m,ang);bx(m,.8,-.9,0,.06,1.8,.06,'#23233a',3);bx(m,.8,-1.9,0,1,.12,.7,['#ff5d73','#3f7cff','#ffcf3a'][k%3],1);bx(m,.8,-1.5,-.3,1,.8,.1,['#ff5d73','#3f7cff','#ffcf3a'][k%3],1);}}
   if(WORLD.light2&&nr(WORLD.light2.x,WORLD.light2.z,220)){MS.reset();M4.tr(m,WORLD.light2.x,WORLD.light2.y,WORLD.light2.z);M4.ry(m,t*.8);bx(m,0,0,8,.9,.9,16,'#fff6c8',1,.9);}}
@@ -7653,8 +7653,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:31,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:32,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'☀️',t:'Always sunny',s:'It is always day in Blocktopia now, with blue skies and no rain. The clock towers show the real time'},
   {ic:'🖼️',t:'Sharper pictures',s:'The game is drawn sharper on tablets, with smooth edges instead of jaggy ones. If a tablet starts to slow down, the picture gets a little softer by itself so the game stays smooth'},
   {ic:'🎥',t:'A camera that looks ahead',s:'The camera stays up high, but it looks a bit further ahead, so you can see where you are going. It looks the way you run, and it stays calm when you jump'},
   {ic:'🌳',t:'Nicer light and colours',s:'No more black steps in the shade, softer grass and sand, shadows further ahead, and the sea sparkles instead of glaring'},
@@ -10347,7 +10348,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.0';window.BB_VER=BB_VER;
+const BB_VER='25.1';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11343,6 +11344,19 @@ MV('Friendly people','ناس لطفاء');MV('People in the street only say nice
 MV('Sharper pictures','صور أوضح');MV('The game is drawn sharper on tablets, with smooth edges instead of jaggy ones. If a tablet starts to slow down, the picture gets a little softer by itself so the game stays smooth','اللعبة تُرسم بوضوح أكبر على الأجهزة اللوحية، بحواف ناعمة بدل الحواف المسنّنة. وإذا بدأ الجهاز يبطئ، تصير الصورة أنعم قليلًا وحدها لتبقى اللعبة سلسة');
 MV('A camera that looks ahead','كاميرا تنظر إلى الأمام');MV('The camera stays up high, but it looks a bit further ahead, so you can see where you are going. It looks the way you run, and it stays calm when you jump','الكاميرا ما زالت عالية، لكنها تنظر أبعد قليلًا إلى الأمام لترى أين تذهب. تنظر نحو الجهة التي تركض إليها، وتبقى هادئة عندما تقفز');
 MV('Nicer light and colours','ضوء وألوان أجمل');MV('No more black steps in the shade, softer grass and sand, shadows further ahead, and the sea sparkles instead of glaring','لا مزيد من الدرجات السوداء في الظل، عشب ورمل أنعم، ظلال أبعد إلى الأمام، والبحر يلمع بدل الوهج الأبيض');
+// ================= v25.1: always a sunny day =================
+// The family asked for no day and night and no rain. The game's clock stays at a bright morning (DN.t, as on the title
+// screen), the sky stays clear (no rain, so no rainbow after it and no sandstorm in the canyon), and the Settings switch
+// for day and night is gone. Photo mode can still pick a time of day for one photo (PHOTO.tod). Snow still falls up in the
+// snowy mountains: that is the place, not the weather. Fireworks still go off when you win a trophy.
+(function(){const DAY=.3;
+  // anything that sets the time or the weather (an old save, the Settings switch, a friend's tablet online) is ignored
+  Object.defineProperty(DN,'t',{get(){return (typeof PHOTO!=='undefined'&&PHOTO.on&&PHOTO.tod!=null)?PHOTO.tod:DAY;},set(v){},configurable:true});
+  Object.defineProperty(DN,'on',{get(){return false;},set(v){},configurable:true});
+  Object.defineProperty(DN,'wx',{get(){return 0;},set(v){},configurable:true});
+  DN.rain=0;DN.bow=0;DN.wxT=1e9;})();
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);const b=$('ps_dn');if(b)b.remove();return r;};}
+MV('Always sunny','مشمس دائمًا');MV('It is always day in Blocktopia now, with blue skies and no rain. The clock towers show the real time','صار الوقت نهارًا دائمًا في بلوكتوبيا، بسماء زرقاء وبلا مطر. وساعات الأبراج تُظهر الوقت الحقيقي');
 // ================= start =================
 boot();
 </script>
