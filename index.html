@@ -7663,8 +7663,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:34,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:35,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🧭',t:'Show me the way, fixed',s:'After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field'},
   {ic:'🃏',t:'Hero cards',s:'Every hero has their own picture card now, made by our family. Tap a hero\'s picture in 🦸 to see the whole card',act:()=>{if(typeof openRoster==='function')openRoster();}},
   {ic:'🧭',t:'Trails go around force fields',s:'The glowing trail takes the way around places that are still locked, instead of leading you into a force field'},
   {ic:'🗣️',t:'Nicer voices',s:'Everyone talks with the tablet\'s best voice now. Settings shows which voice it is and how to get an even more natural one'},
@@ -10364,7 +10365,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.3';window.BB_VER=BB_VER;
+const BB_VER='25.4';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11066,7 +11067,7 @@ function openStoryBook(){const el=mkModal('storybox');const cur=storyDone();stor
   el.hidden=false;$('stx').onclick=closeStoryBook;el.onclick=e=>{if(e.target===el)closeStoryBook();};$('stintro').onclick=()=>{closeStoryBook();openIntro();};
   if($('stgo'))$('stgo').onclick=()=>{closeStoryBook();storyGuide();};}
 function closeStoryBook(){const el=$('storybox');if(el)el.hidden=true;storyPause(false);}
-function storyGuide(){const o=storyObjective()||MIS.objective();if(!o||!o.t)return;try{navSet({x:o.t.x,z:o.t.z,label:String(o.text||'').replace(/^📖\s*/,''),icon:'📖',col:o.col||'#ffcf3a'});}catch(e){}}
+function storyGuide(){const o=storyObjective()||MIS.objective();if(!o||!o.t)return;try{navSet({x:o.t.x,z:o.t.z,realm:inMoonBox(o.t.x,o.t.z)?'moon':'earth',label:String(o.text||'').replace(/^📖\s*/,''),icon:'📖',col:o.col||'#ffcf3a'});}catch(e){}}
 // a 📖 button next to the menu button
 (function(){const pb=$('pbtns'),bp=$('bpause');if(!pb||!bp||$('bstory'))return;const b=document.createElement('button');b.className='ib';b.id='bstory';b.title=tr('Story Book');b.setAttribute('aria-label',tr('Story Book'));b.textContent='📖';
   b.onclick=()=>{if(G.mode==='play'){try{SFX.click();}catch(e){}openStoryBook();}};pb.insertBefore(b,bp);})();
@@ -11397,11 +11398,23 @@ function storyDest(){const so=typeof storyObjective==='function'?storyObjective(
 // v25.3: the glowing trail itself goes around places that are still locked (it used to take the shortest way, straight
 // through a force field, even when the place it led to was open)
 function navLockFn(){try{const cur=storyDone();if(cur>=8)return null;return (x,z)=>areaNeed(x,z)>cur;}catch(e){return null;}}
+// v25.4: "Show me the way" (on the radio after a chapter, and in the Story Book) made a trail without saying the place was
+// on Earth. The trail then took it for a place on the Moon and led to the rocket pad in Star Harbor ("Build the rocket
+// first: talk to Commander Nova"), a town still behind a force field. That was the "next chapter leads into a locked
+// place" bug after chapters 1, 2 and 3. Now a trail without a realm gets it from where the place is, and if the way to a
+// place ever goes through a locked place (like that rocket pad), the trail shows the way to your chapter instead.
+const realmOfXZ=(x,z)=>inMoonBox(x,z)?'moon':'earth';
+{const _ns3=navSet;navSet=function(d){if(d&&!d.realm&&isFinite(d.x)&&isFinite(d.z))d={...d,realm:realmOfXZ(d.x,d.z)};return _ns3(d);};}
+{const _ng3=navGoal;navGoal=function(){const d=NAV.dest;if(d&&!d.realm&&isFinite(d.x)&&isFinite(d.z)){d.realm=realmOfXZ(d.x,d.z);if(G.dest)G.dest.realm=d.realm;}
+  const g=_ng3();try{const cur=storyDone();if(g&&g.via&&cur<8&&ME&&ME.realm!=='inside'&&destNeed({x:g.x,z:g.z})>cur){const sd=storyDest();
+      if(sd&&destNeed(sd)<=cur){NAV.dest=sd;G.dest={x:+sd.x.toFixed(1),z:+sd.z.toFixed(1),realm:sd.realm,label:sd.label,sub:'',col:sd.col,icon:sd.icon,go:null,pin:0,inside:null};saveSoon();return _ng3();}
+      NAV.dest=null;G.dest=null;saveSoon();return null;}}catch(e){noteErr('navg3',e);}return g;};}
 // ---------- words ----------
 MV('Boys lift cars and pull handles, girls charge power sockets. Tap ⇄ to swap between your boy and girl hero any time, online too.','الأولاد يرفعون السيارات ويسحبون المقابض، والبنات يشحنّ مقابس الطاقة. اضغط ⇄ للتبديل بين بطلك الولد وبطلتك البنت في أي وقت، وحتى في اللعب عبر الإنترنت.');
 MV('Swap heroes online too','بدّل أبطالك عبر الإنترنت أيضًا');MV('Tap ⇄ to switch between your boy and girl hero any time, even when you play online, so you always have the right power','اضغط ⇄ للتبديل بين بطلك الولد وبطلتك البنت في أي وقت، حتى عندما تلعب عبر الإنترنت، لتكون معك القوة المناسبة دائمًا');
 MV('A calm camera in the mountains','كاميرا هادئة في الجبال');MV('Next to hills and cliffs the camera tilts up and looks over them, instead of jumping right up to your hero','قرب التلال والمنحدرات تميل الكاميرا للأعلى وتنظر من فوقها، بدل أن تقفز حتى تلتصق ببطلك');
 MV('Trails only go where you can go','المسارات تذهب فقط إلى حيث تستطيع');MV('If a place is still behind a force field, the game tells you which chapter opens it and shows you the way to your chapter','إذا كان المكان ما زال خلف حقل قوة، تخبرك اللعبة أي فصل يفتحه وتريك الطريق إلى فصلك');
+MV('Show me the way, fixed','«أرني الطريق» صار يعمل');MV('After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field','بعد كل فصل، «أرني الطريق» يقودك الآن إلى الصديق الذي يعطيك الفصل التالي، ولا يقودك أبدًا إلى مكان خلف حقل قوة');
 // ================= v25.3: hero cards: real pictures of the heroes =================
 // The family made a picture card for every hero (cards/<hero>_face.jpg, head and shoulders, cut out of their pictures).
 // Wherever the game showed a drawn hero face (the first screen, the 🦸 roster, the hero details, "New hero unlocked!",

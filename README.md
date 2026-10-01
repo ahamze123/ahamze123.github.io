@@ -8,6 +8,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - The Glitch King stole Blocktopia's five Power Crystals and locked the roads with glitch force fields. A picture story explains it at the start, and **📖** (next to the menu button) opens the Story Book any time, with every chapter, its prize and a **Show me the way** button.
 - There are 8 chapters: The Bank Robbery (Brick City), Puppy Rescue (Mushroom Forest), Robot Factory (Canyon Desert), Frozen Peaks, Slime Farm (Happy Farm), Glitch Castle (Glitch Island), Rocket to the Moon and UFO Showdown. Each one breaks the next force field and opens a new place, until the whole world (the towns, the Moon and the Sky Kingdom) is open.
 - Each chapter gives a big prize, and the prizes grow: new heroes, a puppy and a bunny, the police car, hot rod, monster truck, hover bike and hero car, and coins. Then a friend calls on the hero radio to say where to go next.
+- **Show me the way** (on the hero radio after a chapter, and in the 📖 Story Book) draws a glowing trail straight to the friend who gives the next chapter.
 - The glowing trail always takes the way around a force field, never through it.
 - Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests, jobs and trails only send you to places that are already open: if you pick a locked place (on the map, a hidden hero coin, the Moon), the game says which chapter opens it.
 - Playing online, everyone follows the host's story, and each tablet gets its own prizes.
