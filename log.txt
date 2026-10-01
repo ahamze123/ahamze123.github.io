@@ -27,3 +27,4 @@
 2026-10-01 12:24:45 [kira] rigging SUCCEEDED 100%
 2026-10-01 12:24:45 [kira] rigged: {"model": {"bytes": 1641188, "triangles": 20648, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35540, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30900, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 12:24:47 run finished; credits used by new tasks (estimate): 70
+2026-10-01 12:25:02 run 2 heroes ['kira', 'leo'] max credits 80
