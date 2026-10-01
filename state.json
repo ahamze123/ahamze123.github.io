@@ -2,6 +2,8 @@
  "heroes": {
   "kenji": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f77d-3056-7141-8759-23bae2517b42",
     "made": "2026-10-01 12:42",
     "run": 4,
@@ -14,7 +16,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f77d-3056-7141-8759-23bae2517b42/output/preview.png?Expires=1791117909&Signature=aFDVhF~EX3p75ag11~F-9c8Rx-WxX7KCx9K4uo3TiSBt3EExITkDOsGfVBSZQSf1d2HmLXYNePzrFMtvUv5EH~MbDQe7nLoT8EUu5E~9JEQRpVqt-Tky7fd6Am31DZuPlBoBKBy3S-fV7uzFn8p6DzN1gQ4sBVc9W9ZdezJTM6qKyXOoKwFw55CwFHBL-32O6lRj7MHcVEivd05mGdivqZuWCK1vM39Jf~psl0rX-LgqHGqiXnhV1Mjb~jzfD0JamoqSZWhV5trc5lCQqAPHN1qip2koBhbdYZVKFpxbCScJ9wsY5u-q8qrFsHjLKBg5QJeDMiyp3~Z1583ULCSFJA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "kira": {
