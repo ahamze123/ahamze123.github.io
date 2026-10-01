@@ -134,6 +134,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "erik": {
+   "model": {
+    "id": "01a0f791-fbc4-7381-813d-a4eb622c905d",
+    "made": "2026-10-01 13:05",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "faris": {
    "model": {
     "id": "01a0f78e-f413-7451-a41c-ae65ac29a76f",
