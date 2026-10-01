@@ -2250,6 +2250,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f7a1-8ac1-76b6-a5eb-e2fe7b2246d8/output/preview.png?Expires=1791120259&Signature=WUiGLa~OgFUFh~rKWSBHr-QE0bQH~zs3XFzrDM9eoWzFBRurRiYeBd8vMswv0aZ8O4P-1LO~OpfwsVqFxyE7soMU9DleEWKYg17YvqabRMX1wbbFGQAowNOo-oFrjCjEMZEXm7qaR5sGgajCyQxO8YsBXMIsSufApcKBv8D4JrDTwLiP8Bm9OB9RVZRwJl4ArIBM4hrXahQSNqu6WzAqGfUiGzbMQz3NB7yn4JQNw24koK3k3QWToE1Gi4s4auNWs5hAORRWA3s4RfDzJtZCHItPUMGqHE7C2KAXuxkEzX2RRTSW73clbavU1kr56n0u~OYUuSLPKtpftDDfRnhHUw__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a0f7a3-4fa2-71bb-8007-23d99e099253",
+    "made": "2026-10-01 13:24",
+    "model": "01a0f7a1-8ac1-76b6-a5eb-e2fe7b2246d8",
+    "status": "PENDING"
    }
   },
   "wanda": {
