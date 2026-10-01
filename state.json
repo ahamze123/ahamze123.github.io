@@ -2239,6 +2239,7 @@
    }
   },
   "saif": {
+   "extra": {},
    "full": {
     "bytes": 2415904,
     "pictures": [
@@ -2359,6 +2360,12 @@
    }
   },
   "salma": {
+   "full": {
+    "bytes": 2894164,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
