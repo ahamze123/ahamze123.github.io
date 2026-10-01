@@ -1902,6 +1902,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "sama": {
+   "model": {
+    "id": "01a0f79e-f45e-75d1-b299-ca551fc92798",
+    "made": "2026-10-01 13:19",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "sami": {
    "model": {
     "credits": 30,
