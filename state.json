@@ -2422,6 +2422,7 @@
    }
   },
   "sam": {
+   "extra": {},
    "full": {
     "bytes": 2913348,
     "pictures": [
@@ -2542,6 +2543,12 @@
    }
   },
   "sami": {
+   "full": {
+    "bytes": 2722780,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
