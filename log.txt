@@ -289,3 +289,4 @@
 2026-10-01 13:01:21 [majid] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:01:21 [karim] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:01:23 [salem] image-to-3d SUCCEEDED 100%
+2026-10-01 13:01:29 [salem] rig task made 01a0f78e-2f31-77a7-a523-f8c4e9b663b3

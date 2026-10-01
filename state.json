@@ -1053,6 +1053,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f78b-0448-760e-9846-31fd36a96cf7/output/preview.png?Expires=1791118881&Signature=aAxsGkeJpI3HyQY3SOAUsGIfSbosy2bJOSVT7FGHz-NFtI9Ww-hDk~692Cggqrvnf16JSm6pcKhatQJnhcE2K-~8eDjKMICteGxv2KtDCDPrSJKOJoskASbSuhV6e06fsECGc2BY0BGDdNCWcDeloiaS3O8gkcroQq1OYgKInshPD7t1ulFkjIgmQjFjs8SUyJDu~ZlKdg8iZ4bEfIllpasLyMDXryCgzYIILcJiFiD9jIs3IfL~aCChgAURrnS6hjeRZAT22zG1RI1sgPnm4tZaVlseSbBTmUnlICDZURJHzcIbf~8mmT0a52VuKeGupzrWdwmwSD7cplH1qoU~JA__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a0f78e-2f31-77a7-a523-f8c4e9b663b3",
+    "made": "2026-10-01 13:01",
+    "model": "01a0f78b-0448-760e-9846-31fd36a96cf7",
+    "status": "PENDING"
    }
   },
   "sami": {
