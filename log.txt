@@ -608,3 +608,12 @@
 2026-10-01 13:24:27 [amira] rigging IN_PROGRESS 36%
 2026-10-01 13:24:28 [uma] image-to-3d SUCCEEDED 100%
 2026-10-01 13:24:34 [uma] rig task made 01a0f7a3-4fa2-71bb-8007-23d99e099253
+2026-10-01 13:24:35 [uma] rigging IN_PROGRESS 10%
+2026-10-01 13:24:37 [amira] rigging IN_PROGRESS 63%
+2026-10-01 13:24:46 [uma] rigging IN_PROGRESS 36%
+2026-10-01 13:24:47 [amira] rigging IN_PROGRESS 90%
+2026-10-01 13:24:53 [rina] image-to-3d IN_PROGRESS 30%
+2026-10-01 13:24:56 [uma] rigging IN_PROGRESS 63%
+2026-10-01 13:25:06 [uma] rigging IN_PROGRESS 90%
+2026-10-01 13:25:08 [amira] rigging SUCCEEDED 100%
+2026-10-01 13:25:08 [amira] rigged: {"model": {"bytes": 1838244, "triangles": 20671, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35572, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30932, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
