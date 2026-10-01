@@ -1995,6 +1995,7 @@
    }
   },
   "rina": {
+   "extra": {},
    "full": {
     "bytes": 2879968,
     "pictures": [
@@ -2115,6 +2116,12 @@
    }
   },
   "rocky": {
+   "full": {
+    "bytes": 2954644,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
