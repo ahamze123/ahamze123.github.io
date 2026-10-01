@@ -534,3 +534,6 @@
 2026-10-01 13:19:42 [bushra] rigging SUCCEEDED 100%
 2026-10-01 13:19:42 [bushra] rigged: {"model": {"bytes": 1519472, "triangles": 20796, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35612, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30972, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:19:45 [sama] model task made 01a0f79e-f45e-75d1-b299-ca551fc92798
+2026-10-01 13:19:46 [tala] rigging SUCCEEDED 100%
+2026-10-01 13:19:46 [sama] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:19:47 [tala] rigged: {"model": {"bytes": 1941872, "triangles": 20781, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35524, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30884, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
