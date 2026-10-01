@@ -18,6 +18,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f797-d7b6-75bd-8a9b-5333e7a30071/output/preview.png?Expires=1791119617&Signature=FHSWPAd2jIuFf9U0C0VQr5SDMaq1dZlQH-I1KyfifA~Ds5z08ONNmtNigfmNMYCosDqIWqdCeDPtKvkzcIFQs-1kZmkGpwlRM7628DZSrH-ZQ9K3IAJoY~VpNRR9wPVmhe6GMECDZF4s90gSlQTSAs-ttv~PggLuS1aUao4-DInrdEGqt8sSiM4XQfIfOoTadJ50U2Qxpk69ea6ZFpJY7cWinKaocFkRX-g~AtRzxxyhO85-AKnUysZEHLKxlszdYwCqRpBlghxOBtgPmXCDAkty1s72n2uKPRqzZFLP0liatPJLQHUyqxiyQ-h7bNewX04A2HrmU4XehHF9JbWwlg__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a0f799-7163-70ac-bf5d-4ecde851a030",
+    "made": "2026-10-01 13:13",
+    "model": "01a0f797-d7b6-75bd-8a9b-5333e7a30071",
+    "status": "PENDING"
    }
   },
   "bilal": {
@@ -454,6 +460,8 @@
   },
   "idris": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f796-0f32-7113-a390-6de0090f1e08",
     "made": "2026-10-01 13:10",
     "run": 4,
@@ -466,7 +474,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f796-0f32-7113-a390-6de0090f1e08/output/preview.png?Expires=1791119622&Signature=RwqppZZfcNnayY8S0Ip2GS4u28Q-6vH6~czXCfxtGpZ0BXUB2lpqjPzirPOGxQ5c6S~4543vm7b1GlmSYf3sZvOwGxXCdXyBn9sZXn6e4fXGy8uzy6TQYH8lZaMctFHttJf~EHchYa2SgZi7qQ8Otho4bmsD0gbk4jURpNDIMeRL6W1-s~msqO1C1T8-4psBr3bbp0onAGaKgCBWZ8tobUF5eIDLTup9B4X94U5HyXKyw~kj0ZQwYtGlcJ-5lbF9KVtgZNE8U5Yx5isO0-LnGk3ANjCLoaKZRJd9JG0AWPccsLU1APlDCCDYcp2D0QnkRrIDbyDnQ3g-Q0dpes6K-A__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "karim": {

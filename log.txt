@@ -429,3 +429,6 @@
 2026-10-01 13:13:36 [saif] rigging IN_PROGRESS 10%
 2026-10-01 13:13:37 [idris] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:13:41 [bella] image-to-3d SUCCEEDED 100%
+2026-10-01 13:13:46 [saif] rigging IN_PROGRESS 36%
+2026-10-01 13:13:47 [idris] image-to-3d SUCCEEDED 100%
+2026-10-01 13:13:47 [bella] rig task made 01a0f799-7163-70ac-bf5d-4ecde851a030
