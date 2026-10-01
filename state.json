@@ -1,5 +1,24 @@
 {
- "heroes": {},
+ "heroes": {
+  "kira": {
+   "model": {
+    "id": "01a0f768-426e-76b6-a54a-6be315a3940b",
+    "made": "2026-10-01 12:20",
+    "run": 2,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
+  "leo": {}
+ },
  "runs": [
   {
    "at": "2026-10-01 12:18",
