@@ -220,3 +220,14 @@
 2026-10-01 12:55:53 [nora] rig task made 01a0f789-0ae2-72fd-b630-c452e6060b67
 2026-10-01 12:55:54 [nora] rigging IN_PROGRESS 10%
 2026-10-01 12:55:54 [fay] rig task made 01a0f789-12ba-7577-8b7f-c8d556effbfe
+2026-10-01 12:55:56 [fay] rigging IN_PROGRESS 10%
+2026-10-01 12:56:03 [rocky] image-to-3d IN_PROGRESS 59%
+2026-10-01 12:56:04 [nora] rigging IN_PROGRESS 36%
+2026-10-01 12:56:06 [fay] rigging IN_PROGRESS 36%
+2026-10-01 12:56:14 [nora] rigging IN_PROGRESS 63%
+2026-10-01 12:56:16 [fay] rigging IN_PROGRESS 63%
+2026-10-01 12:56:17 [zak] image-to-3d IN_PROGRESS 84%
+2026-10-01 12:56:24 [nora] rigging IN_PROGRESS 90%
+2026-10-01 12:56:26 [fay] rigging IN_PROGRESS 90%
+2026-10-01 12:56:34 [nora] rigging SUCCEEDED 100%
+2026-10-01 12:56:35 [nora] rigged: {"model": {"bytes": 1821220, "triangles": 20672, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35600, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30956, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
