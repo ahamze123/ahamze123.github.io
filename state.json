@@ -138,6 +138,15 @@
    "limit": 80,
    "run": 2,
    "spent_estimate": 0
+  },
+  {
+   "at": "2026-10-01 12:40",
+   "heroes": [
+    "kira",
+    "leo"
+   ],
+   "limit": 60,
+   "run": 3
   }
  ]
 }

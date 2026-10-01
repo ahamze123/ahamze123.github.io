@@ -29,3 +29,4 @@
 2026-10-01 12:24:47 run finished; credits used by new tasks (estimate): 70
 2026-10-01 12:25:02 run 2 heroes ['kira', 'leo'] max credits 80
 2026-10-01 12:25:03 run finished; credits used by new tasks (estimate): 0
+2026-10-01 12:40:24 run 3 heroes ['kira', 'leo'] max credits 60
