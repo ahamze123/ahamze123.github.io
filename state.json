@@ -1873,6 +1873,7 @@
    }
   },
   "rayan": {
+   "extra": {},
    "full": {
     "bytes": 2580844,
     "pictures": [
@@ -1993,6 +1994,12 @@
    }
   },
   "rina": {
+   "full": {
+    "bytes": 2879968,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
