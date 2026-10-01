@@ -694,6 +694,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "rocky": {
+   "model": {
+    "id": "01a0f787-d9e1-730a-98ee-df09cef7ad33",
+    "made": "2026-10-01 12:54",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "ruby": {
    "model": {
     "credits": 30,
