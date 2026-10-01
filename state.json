@@ -179,6 +179,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "karim": {
+   "model": {
+    "id": "01a0f78b-c756-726d-8ae1-555b8749f842",
+    "made": "2026-10-01 12:58",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "kat": {
    "model": {
     "credits": 30,

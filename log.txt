@@ -259,3 +259,4 @@
 2026-10-01 12:58:35 [rocky] rigging IN_PROGRESS 63%
 2026-10-01 12:58:45 [rocky] rigging SUCCEEDED 100%
 2026-10-01 12:58:46 [rocky] rigged: {"model": {"bytes": 1868564, "triangles": 20772, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35524, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30896, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 12:58:48 [karim] model task made 01a0f78b-c756-726d-8ae1-555b8749f842
