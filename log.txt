@@ -542,3 +542,10 @@
 2026-10-01 13:19:51 [zara] rigging IN_PROGRESS 36%
 2026-10-01 13:19:52 [lina] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:19:55 [yasmin] rig task made 01a0f79f-0e39-7024-a466-804ab382d4ab
+2026-10-01 13:19:56 [yasmin] rigging IN_PROGRESS 10%
+2026-10-01 13:20:02 [zara] rigging IN_PROGRESS 68%
+2026-10-01 13:20:07 [yasmin] rigging IN_PROGRESS 36%
+2026-10-01 13:20:12 [zara] rigging IN_PROGRESS 90%
+2026-10-01 13:20:17 [yasmin] rigging IN_PROGRESS 63%
+2026-10-01 13:20:22 [zara] rigging SUCCEEDED 100%
+2026-10-01 13:20:23 [zara] rigged: {"model": {"bytes": 1828136, "triangles": 20809, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35504, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30860, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
