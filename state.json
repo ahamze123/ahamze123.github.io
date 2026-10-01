@@ -1,6 +1,22 @@
 {
  "heroes": {
-  "bilal": {},
+  "bilal": {
+   "model": {
+    "id": "01a0f78e-04f1-75db-9d57-5a2c6044b843",
+    "made": "2026-10-01 13:01",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "comet": {
    "model": {
     "credits": 30,
@@ -570,6 +586,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "majid": {},
   "mia": {
    "model": {
     "credits": 30,
