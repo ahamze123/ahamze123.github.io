@@ -929,6 +929,8 @@
   },
   "zak": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f786-8144-70bb-a87b-2d2eb9ada454",
     "made": "2026-10-01 12:53",
     "run": 4,
@@ -941,7 +943,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f786-8144-70bb-a87b-2d2eb9ada454/output/preview.png?Expires=1791118626&Signature=meH5FU-pCaH6uJ8ijMy3RZzyMCvv1C9w3mrwFHuFbHGBArLBpRMEDl2aNm~Y8kTpyhAn0MqLP9J7PBBeJV6yJtVToRVxf9umQASERFFqGVxSCvi4voummeakAHBTbVA6Oh12Qt3FK~Ot-yIhwbhJnft3dFpmscm3VXLxEHqQAKnWZ4LFBpZnH07OL5Fq1DABYuk87Wuu1j6637xl~3nY~xQsg-gUgZKRuzoLkLiKSVMf4sT9uw710CKx9ctXZkGGkW6I6MvyKvZfoCWuKimVyJnYyR0uO7ioY9t-yT~p3~XS7vOULEjglgdlEcgZQSoutQxGBgDn~Lw5YDjwbyAtHg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "zayd": {
