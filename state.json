@@ -671,6 +671,7 @@
    }
   },
   "fay": {
+   "extra": {},
    "full": {
     "bytes": 2995020,
     "pictures": [
@@ -791,6 +792,12 @@
    }
   },
   "idris": {
+   "full": {
+    "bytes": 2807448,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
