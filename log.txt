@@ -87,3 +87,4 @@
 2026-10-01 12:45:57 [zayd] rigging SUCCEEDED 100%
 2026-10-01 12:45:57 [omar] rigging IN_PROGRESS 63%
 2026-10-01 12:45:57 [zayd] rigged: {"model": {"bytes": 1571724, "triangles": 20731, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35480, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30848, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 12:46:00 [ruby] model task made 01a0f780-0dc2-7560-9399-dc4a7ca15355
