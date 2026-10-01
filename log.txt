@@ -654,3 +654,4 @@
 2026-10-01 13:34:47 [aya] rigging SUCCEEDED 100%
 2026-10-01 13:34:48 [aya] rigged: {"model": {"bytes": 1589360, "triangles": 20719, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35900, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30780, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:34:50 run finished; credits used by new tasks (estimate): 35
+2026-10-01 14:04:38 run 6 heroes ['kira'] max credits 40

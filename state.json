@@ -2870,6 +2870,14 @@
    "limit": 40,
    "run": 5,
    "spent_estimate": 35
+  },
+  {
+   "at": "2026-10-01 14:04",
+   "heroes": [
+    "kira"
+   ],
+   "limit": 40,
+   "run": 6
   }
  ]
 }
