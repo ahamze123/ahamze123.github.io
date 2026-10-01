@@ -1,5 +1,6 @@
 {
  "heroes": {
+  "kenji": {},
   "kira": {
    "anim": {
     "action_ids": [
@@ -172,6 +173,25 @@
     "made": "2026-10-01 12:23",
     "model": "01a0f768-426b-734f-9a17-da7d765e9cc4",
     "status": "SUCCEEDED"
+   }
+  },
+  "mia": {},
+  "omar": {},
+  "zayd": {
+   "model": {
+    "id": "01a0f77d-3057-7477-ad98-db251f55cb36",
+    "made": "2026-10-01 12:42",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
    }
   }
  },
