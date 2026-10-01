@@ -143,6 +143,8 @@
   },
   "layla": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f77f-e6ed-72fd-ab8a-7f19f7a074d5",
     "made": "2026-10-01 12:45",
     "run": 4,
@@ -155,7 +157,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f77f-e6ed-72fd-ab8a-7f19f7a074d5/output/preview.png?Expires=1791118095&Signature=XAELkew7YctkRPIZzn-JXzpUXm7GBKLAuRTPxjXek09xdgWtd~tMWccPGA~bkJPeaGWAH7D9PADOuAOvakf-V2qT4Bj9ypIhykoGK977wXH3oGQ-pLmkXDSpAikjf18GyiTOZHhXE7NZAlknvgqKueoBpWALUrZtob9LCQU7fr6-9llO2ZwOtn~nkLPGzZBCade1nojqJd94ulCbOnq049YSaXTdurKIAT0po5IJ4uegUfE2LOji9cWKBke48Q5PzwRwSM85GRr9PnqzG8adCsEiggRjXdyue6Ti41vKgyQ0Q5s~kv~w~tEXmtvLAt-1EUVTUsLKW7E6NKf1gf0grQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "leo": {
