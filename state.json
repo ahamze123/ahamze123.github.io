@@ -571,6 +571,8 @@
   },
   "nora": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f786-349d-748d-85ec-e62add1a0e79",
     "made": "2026-10-01 12:52",
     "run": 4,
@@ -583,7 +585,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f786-349d-748d-85ec-e62add1a0e79/output/preview.png?Expires=1791118538&Signature=el2ZIDXMSFPLrZ1H9AEe43QrnpNk6R-q85CnHOr2D3JwHcZrn25hPBSSxk-faDpfBSx3Hhux6NU09dOrwPJXRPiJ61tISL~Ynqbv8odhvQFWSW~rPnuvF3t~CakTbkIkVMtTz8yQV7rxAQ0rX3lDsQA5d6NkdHpcHBs4EqEZSPq9Xw8755d~R0HiY2IaZ~jwMZkL5F6aKQo64obiW96Hx6ONzyAeZaaEhT6gJn1zffew67G~mMu4zLTuIeimOAT9QQte6fJqLWiAOG018pNga2X-4XdpqA9tWOFxHYc2ZwykmAzRAzlwgr5ZsL3XxreISnh6gcOigmYFZ3gELq6vag__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "omar": {
