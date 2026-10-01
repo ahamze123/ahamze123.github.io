@@ -2868,7 +2868,8 @@
     "aya"
    ],
    "limit": 40,
-   "run": 5
+   "run": 5,
+   "spent_estimate": 35
   }
  ]
 }
