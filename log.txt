@@ -74,3 +74,10 @@
 2026-10-01 12:45:26 [kenji] rigging IN_PROGRESS 36%
 2026-10-01 12:45:29 [omar] image-to-3d SUCCEEDED 100%
 2026-10-01 12:45:35 [omar] rig task made 01a0f77f-9f99-7062-9363-a70ab97ab7b5
+2026-10-01 12:45:35 [zayd] rigging IN_PROGRESS 36%
+2026-10-01 12:45:36 [omar] rigging IN_PROGRESS 10%
+2026-10-01 12:45:37 [kenji] rigging IN_PROGRESS 63%
+2026-10-01 12:45:46 [zayd] rigging IN_PROGRESS 68%
+2026-10-01 12:45:47 [omar] rigging IN_PROGRESS 36%
+2026-10-01 12:45:47 [kenji] rigging SUCCEEDED 100%
+2026-10-01 12:45:47 [kenji] rigged: {"model": {"bytes": 1556872, "triangles": 20775, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35516, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30880, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
