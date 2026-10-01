@@ -65,3 +65,4 @@
 2026-10-01 12:44:49 [mia] image-to-3d IN_PROGRESS 33%
 2026-10-01 12:44:59 [omar] image-to-3d IN_PROGRESS 84%
 2026-10-01 12:45:09 [kenji] image-to-3d SUCCEEDED 100%
+2026-10-01 12:45:15 [kenji] rig task made 01a0f77f-5058-706d-a0cf-7928afceecab
