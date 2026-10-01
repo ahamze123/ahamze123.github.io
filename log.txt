@@ -183,3 +183,4 @@
 2026-10-01 12:52:29 [finn] rigging IN_PROGRESS 90%
 2026-10-01 12:52:32 [sami] rigging SUCCEEDED 100%
 2026-10-01 12:52:32 [sami] rigged: {"model": {"bytes": 1802220, "triangles": 20709, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35488, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30840, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 12:52:35 [fay] model task made 01a0f786-1440-717b-aec7-3c091769d5dd

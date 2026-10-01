@@ -26,6 +26,23 @@
     "status": "PENDING"
    }
   },
+  "fay": {
+   "model": {
+    "id": "01a0f786-1440-717b-aec7-3c091769d5dd",
+    "made": "2026-10-01 12:52",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "finn": {
    "model": {
     "credits": 30,
