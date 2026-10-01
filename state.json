@@ -999,6 +999,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "mira": {
+   "model": {
+    "id": "01a0f799-d63d-71bf-a5ba-b19edc498d4e",
+    "made": "2026-10-01 13:14",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "munir": {
    "model": {
     "credits": 30,
