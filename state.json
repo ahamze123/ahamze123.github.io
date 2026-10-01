@@ -2300,6 +2300,7 @@
    }
   },
   "salem": {
+   "extra": {},
    "full": {
     "bytes": 2521904,
     "pictures": [
@@ -2420,6 +2421,12 @@
    }
   },
   "sam": {
+   "full": {
+    "bytes": 2913348,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
