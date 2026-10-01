@@ -915,6 +915,7 @@
    }
   },
   "kat": {
+   "extra": {},
    "full": {
     "bytes": 2396968,
     "pictures": [
@@ -1167,6 +1168,12 @@
    }
   },
   "layla": {
+   "full": {
+    "bytes": 2420756,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
