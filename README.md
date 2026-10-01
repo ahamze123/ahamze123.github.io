@@ -8,6 +8,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - The Glitch King stole Blocktopia's five Power Crystals and locked the roads with glitch force fields. A picture story explains it at the start, and **📖** (next to the menu button) opens the Story Book any time, with every chapter, its prize and a **Show me the way** button.
 - There are 8 chapters: The Bank Robbery (Brick City), Puppy Rescue (Mushroom Forest), Robot Factory (Canyon Desert), Frozen Peaks, Slime Farm (Happy Farm), Glitch Castle (Glitch Island), Rocket to the Moon and UFO Showdown. Each one breaks the next force field and opens a new place, until the whole world (the towns, the Moon and the Sky Kingdom) is open.
 - Each chapter gives a big prize, and the prizes grow: new heroes, a puppy and a bunny, the police car, hot rod, monster truck, hover bike and hero car, and coins. Then a friend calls on the hero radio to say where to go next.
+- The glowing trail always takes the way around a force field, never through it.
 - Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests, jobs and trails only send you to places that are already open: if you pick a locked place (on the map, a hidden hero coin, the Moon), the game says which chapter opens it.
 - Playing online, everyone follows the host's story, and each tablet gets its own prizes.
 
@@ -43,6 +44,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - Some jobs need you to hold **✋ Use** (or **E** on a keyboard): helping the lost hikers, fixing things on quests, helping a knocked-out friend up and cooking. A ring fills up while you hold, so you can see it working. Tapping again and again works too, and if you let go the ring only drains slowly.
 
 ## Heroes
+- Every hero has a picture card, made by our family. The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
 - There are **50 heroes**: 25 boys and 25 girls. Each has their own look, a special skill and two attacks of their own.
 - Tap 🦸 in the game to see every hero. A locked hero shows how to get them:
@@ -115,6 +117,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - Sell ores at the crafting table for coins. Your digging is saved, and friends playing online see it.
 
 ## Music and sound
+- **Voices**: people read their lines aloud with the tablet's best voice. **Menu → Settings → Voices** shows which voice is speaking and turns them off. For a more natural voice, download one on the iPad (Settings › Accessibility › Spoken Content › Voices › English, a voice marked Enhanced or Premium); the game picks it by itself.
 - The music is our own songs: **Skyline Exploration** in the city, **Gliding Over Green Valleys** in the green and sunny places, **Quiet Horizons** in the snow, at Star Harbor and on the Moon, and **Subtle Quests and Flying Capes** in missions and boss fights. When a song ends the next one starts, and going back to a place picks its song up where it stopped.
 - The songs stream from the `music` folder. Without internet the game plays its own calm backup music instead.
 - Cars in traffic don't beep. Your own horn is a soft, low toot, and jumping makes a soft swish.

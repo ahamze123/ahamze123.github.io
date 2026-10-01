@@ -5288,7 +5288,7 @@ function navPlan(){const g=navGoal();NAV.goal=g;NAV.idx=0;NAV.replanT=1.2;NAV.rk
   NAV.pts=findPath(ME.x,ME.z,g.x,g.z,NAV.moon);}
 // A* over a coarse grid: roads are cheaper, water, walls and cliffs are blocked
 function findPath(sx,sz,tx,tz,moon){const S=moon?2:3,M=MOONBOX;const X0=moon?M.x0:0,Z0=moon?M.z0:0,X1=moon?M.x1:N,Z1=moon?M.z1:N;const W=Math.floor((X1-X0)/S),Hh=Math.floor((Z1-Z0)/S),n=W*Hh;
-  const cost=new Float32Array(n),top=new Float32Array(n);for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){const x=X0+i*S+S/2,z=Z0+j*S+S/2,k=j*W+i;const xi=x|0,zi=z|0;if(!inMap(xi,zi)||inMoonBox(x,z)!==moon){cost[k]=-1;continue;}
+  const LK=typeof navLockFn==='function'?navLockFn():null;const cost=new Float32Array(n),top=new Float32Array(n);for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){const x=X0+i*S+S/2,z=Z0+j*S+S/2,k=j*W+i;const xi=x|0,zi=z|0;if(!inMap(xi,zi)||inMoonBox(x,z)!==moon||(LK&&LK(x,z))){cost[k]=-1;continue;}
     const c=cid(xi,zi),h=H[c],ch=CH[c];if(!moon&&ch<WL-.15){cost[k]=-1;continue;}if(ch-h>1.7){cost[k]=-1;continue;}top[k]=ch;cost[k]=RD[c]?.55:TM[c]===T.ICE?1.15:1;}
   const cell=(x,z)=>clamp(Math.floor((z-Z0)/S),0,Hh-1)*W+clamp(Math.floor((x-X0)/S),0,W-1);
   const snap=k=>{if(cost[k]>0)return k;const ci=k%W,cj=(k/W)|0;for(let r=1;r<=7;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const i=ci+di,j=cj+dj;if(i<0||j<0||i>=W||j>=Hh)continue;const q=j*W+i;if(cost[q]>0)return q;}return -1;};
@@ -7663,8 +7663,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:33,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:34,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🃏',t:'Hero cards',s:'Every hero has their own picture card now, made by our family. Tap a hero\'s picture in 🦸 to see the whole card',act:()=>{if(typeof openRoster==='function')openRoster();}},
+  {ic:'🧭',t:'Trails go around force fields',s:'The glowing trail takes the way around places that are still locked, instead of leading you into a force field'},
+  {ic:'🗣️',t:'Nicer voices',s:'Everyone talks with the tablet\'s best voice now. Settings shows which voice it is and how to get an even more natural one'},
   {ic:'⇄',t:'Swap heroes online too',s:'Tap ⇄ to switch between your boy and girl hero any time, even when you play online, so you always have the right power'},
   {ic:'⛰️',t:'A calm camera in the mountains',s:'Next to hills and cliffs the camera tilts up and looks over them, instead of jumping right up to your hero'},
   {ic:'🧭',t:'Trails only go where you can go',s:'If a place is still behind a force field, the game tells you which chapter opens it and shows you the way to your chapter'},
@@ -10361,7 +10364,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.2';window.BB_VER=BB_VER;
+const BB_VER='25.3';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11391,11 +11394,67 @@ function storyDest(){const so=typeof storyObjective==='function'?storyObjective(
       else{NAV.dest=null;G.dest=null;}saveSoon();if(!NAV.dest)return null;}}catch(e){noteErr('navg2',e);}return _ng();};}
 {const _mo=MIS.objective.bind(MIS);MIS.objective=function(){const o=_mo();try{const cur=storyDone();if(o&&o.t&&isFinite(o.t.x)&&cur<8&&destNeed({x:o.t.x,z:o.t.z,y:o.t.y})>cur){const so=storyObjective();
       if(so&&so.t&&destNeed({x:so.t.x,z:so.t.z})<=cur)return so;}}catch(e){}return o;};}
+// v25.3: the glowing trail itself goes around places that are still locked (it used to take the shortest way, straight
+// through a force field, even when the place it led to was open)
+function navLockFn(){try{const cur=storyDone();if(cur>=8)return null;return (x,z)=>areaNeed(x,z)>cur;}catch(e){return null;}}
 // ---------- words ----------
 MV('Boys lift cars and pull handles, girls charge power sockets. Tap ⇄ to swap between your boy and girl hero any time, online too.','الأولاد يرفعون السيارات ويسحبون المقابض، والبنات يشحنّ مقابس الطاقة. اضغط ⇄ للتبديل بين بطلك الولد وبطلتك البنت في أي وقت، وحتى في اللعب عبر الإنترنت.');
 MV('Swap heroes online too','بدّل أبطالك عبر الإنترنت أيضًا');MV('Tap ⇄ to switch between your boy and girl hero any time, even when you play online, so you always have the right power','اضغط ⇄ للتبديل بين بطلك الولد وبطلتك البنت في أي وقت، حتى عندما تلعب عبر الإنترنت، لتكون معك القوة المناسبة دائمًا');
 MV('A calm camera in the mountains','كاميرا هادئة في الجبال');MV('Next to hills and cliffs the camera tilts up and looks over them, instead of jumping right up to your hero','قرب التلال والمنحدرات تميل الكاميرا للأعلى وتنظر من فوقها، بدل أن تقفز حتى تلتصق ببطلك');
 MV('Trails only go where you can go','المسارات تذهب فقط إلى حيث تستطيع');MV('If a place is still behind a force field, the game tells you which chapter opens it and shows you the way to your chapter','إذا كان المكان ما زال خلف حقل قوة، تخبرك اللعبة أي فصل يفتحه وتريك الطريق إلى فصلك');
+// ================= v25.3: hero cards: real pictures of the heroes =================
+// The family made a picture card for every hero (cards/<hero>_face.jpg, head and shoulders, cut out of their pictures).
+// Wherever the game showed a drawn hero face (the first screen, the 🦸 roster, the hero details, "New hero unlocked!",
+// "Play again") it now shows the hero's picture, and your own picture sits in the corner of the screen next to your name.
+// A locked hero keeps the dark mystery shape, and a hero without a picture yet keeps the drawing.
+const CARD_IDS=new Set('leo,omar,kenji,zayd,mia,layla,ruby,noor,rex,finn,dan,sami,aya,kat,fay,nora,zak,rocky,rayan,comet,salem,karim,bilal,majid,faris,robin,erik,drake,munir,zork,sam,idris,saif,bella,lulu,mira,wanda,salma,tala,zara,kira,bushra,yasmin,sama,lina,sara,amira,uma,aisha,rina,titan'.split(','));
+const CARDS={img:{},wait:{}};
+function cardImg(id){if(!CARD_IDS.has(id))return null;let im=CARDS.img[id];if(im)return im;im=new Image();im.decoding='async';
+  im.onload=()=>{const L=CARDS.wait[id]||[];CARDS.wait[id]=[];for(const [cv,C,sil] of L){try{if(cv.isConnected)drawPortrait(cv,C,sil);}catch(e){}}CARDS.hudKey='';};
+  im.onerror=()=>{CARD_IDS.delete(id);const L=CARDS.wait[id]||[];CARDS.wait[id]=[];for(const [cv,C,sil] of L){try{if(cv.isConnected)drawPortrait(cv,C,sil);}catch(e){}}};
+  im.src='cards/'+id+'_face.jpg';CARDS.img[id]=im;return im;}
+function cardReady(id){const im=cardImg(id);return !!(im&&im.complete&&im.naturalWidth);}
+{const _dp=drawPortrait;drawPortrait=function(cv,C,sil){try{if(C&&!sil&&CARD_IDS.has(C.id)){const im=cardImg(C.id);
+      if(im&&im.complete&&im.naturalWidth){const x=cv.getContext('2d'),W=cv.width,H=cv.height;x.clearRect(0,0,W,H);x.save();const r=Math.min(W,H)*.1;x.beginPath();
+        if(x.roundRect)x.roundRect(0,0,W,H,r);else x.rect(0,0,W,H);x.clip();const s=Math.max(W/im.naturalWidth,H/im.naturalHeight),dw=im.naturalWidth*s,dh=im.naturalHeight*s;
+        x.drawImage(im,(W-dw)/2,(H-dh)/2,dw,dh);x.restore();return;}
+      if(im)(CARDS.wait[C.id]=CARDS.wait[C.id]||[]).push([cv,C,sil]);}}catch(e){noteErr('card',e);}return _dp(cv,C,sil);};}
+// your hero's picture next to your name (instead of the first letter)
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const av=document.querySelector('#me .av');if(!av)return;const C=charOf(prof());const key=C&&cardReady(C.id)?C.id:'';
+    if(CARDS.hudKey===key&&av._ck===key)return;CARDS.hudKey=key;av._ck=key;
+    if(key){av.style.backgroundImage=`url(cards/${key}_face.jpg)`;av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.style.color='transparent';}
+    else{av.style.backgroundImage='';av.style.color='';}}catch(e){}};}
+// tap a hero's picture in the 🦸 details to see their whole card, big
+function cardView(id){let el=$('cardview');if(!el){el=document.createElement('div');el.id='cardview';el.className='modal';el.hidden=true;el.style.zIndex=40;el.style.cursor='pointer';
+    el.innerHTML='<img alt="" style="max-height:min(86vh,720px);max-width:min(92vw,360px);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 0 4px #fff">';document.body.appendChild(el);
+    el.addEventListener('click',()=>{el.hidden=true;});}
+  const im=el.querySelector('img');im.src='cards/'+id+'_card.jpg';im.alt=tr((CHARBY[id]||{}).n||'');el.hidden=false;try{SFX.click&&SFX.click();}catch(e){}}
+{const _rd=rosterDetail;rosterDetail=function(){_rd();try{const D=$('rdet');const cv=D&&D.querySelector('canvas');const C=CHARBY[ROS.sel]||charOf(prof());
+    if(cv&&C&&CARD_IDS.has(C.id)&&heroOK(C.id)){cv.style.cursor='zoom-in';cv.title=tr('See the whole card');cv.onclick=()=>cardView(C.id);}}catch(e){}};}
+MV('See the whole card','شاهد البطاقة كاملة');
+// ================= v25.3: friendlier voices =================
+// The voices come from the tablet itself. Every character used to get a different one of the tablet's voices, and the
+// lower ones on the list sound very robotic. Now everyone speaks with the tablet's best voice (a woman's best voice for
+// women and girls, a man's best for men), and the characters sound different from each other by pitch only, kept close to
+// natural. A voice the family downloads on the iPad ("Enhanced" or "Premium") is picked automatically, and Settings shows
+// which voice is speaking, with a tip on how to get a better one.
+{const _pick=VOICE.pick.bind(VOICE);VOICE.pick=function(lang,female,slot){const key='b'+lang+(female?'f':'m');if(this.cache&&this.cache[key]!==undefined)return this.cache[key];
+  const best=_pick(lang,female,0);let v=best;try{const L=this.vs.filter(q=>q.lang&&q.lang.toLowerCase().startsWith(lang)&&this.score(q)>-1e8).sort((a,b)=>this.score(b)-this.score(a));
+    const fem=/female|samantha|karen|moira|tessa|zira|susan|fiona|serena|allison|\bava\b|kate|laila|hoda|salma|zeina|mariam|amira|jenny|aria|libby|sonia|nicky|martha|catherine|joelle|noelle|zoe|emma|amy|olivia|joanna|salli|kimberly|ivy|google us english|google uk english female/i;
+    const mal=/\bmale|daniel|alex\b|david|mark|george|arthur|oliver|james|maged|majed|tarik|naayf|hamed|\bguy\b|ryan|thomas|aaron|rishi|gordon|\btom\b|evan|nathan|brian|matthew|justin|kevin|google uk english male/i;
+    const want=L.filter(q=>female?fem.test(q.name)&&!/\bmale\b/i.test(q.name.replace(/female/i,'')):(mal.test(q.name)&&!/female/i.test(q.name)));v=(want[0]||L[0]||best);}catch(e){}
+  this.cache=this.cache||{};this.cache[key]=v;return v;};}
+// pitch closer to natural (a raised pitch makes the tablet's simple voices sound more robotic); Zib the alien stays squeaky
+for(const k in VPROF){if(k==='Zib')continue;const P=VPROF[k];if(P&&typeof P.p==='number')P.p=1+(P.p-1)*.45;if(P&&typeof P.r==='number')P.r=Math.min(P.r,1.0);}
+function voiceInfo(){if(!VOICE.ok)return null;if(!VOICE.vs.length)VOICE.load();const lang=LANG==='ar'?'ar':'en';const v=VOICE.pick(lang,true,0)||VOICE.pick(lang,false,0);
+  return v?{name:String(v.name||'').replace(/\s*\(.*?\)\s*/g,' ').trim()||v.name,good:VOICE.score(v)>=200}:null;}
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{const b=$('ps_vo');if(b&&VOICE.ok&&VOICE.on){const vi=voiceInfo();if(vi){b.textContent=trf('Voices: {0}',tr('On'))+' · '+vi.name;
+      if(!vi.good&&!$('ps_votip')){const t=document.createElement('div');t.id='ps_votip';t.className='small';t.style.cssText='margin:-4px 4px 8px;opacity:.85';
+        t.textContent=tr('For a more natural voice, download one on the iPad: Settings › Accessibility › Spoken Content › Voices › English, then pick a voice marked Enhanced or Premium. Or turn voices off here.');b.after(t);}}}}catch(e){}return r;};}
+MV('For a more natural voice, download one on the iPad: Settings › Accessibility › Spoken Content › Voices › English, then pick a voice marked Enhanced or Premium. Or turn voices off here.','لصوت أكثر طبيعية، نزّل صوتًا على الآيباد: الإعدادات › تسهيلات الاستخدام › المحتوى المنطوق › الأصوات › الإنجليزية، ثم اختر صوتًا مكتوبًا بجانبه «محسّن» أو «مميز». أو أطفئ الأصوات من هنا.');
+MV('Hero cards','بطاقات الأبطال');MV("Every hero has their own picture card now, made by our family. Tap a hero's picture in 🦸 to see the whole card",'لكل بطل الآن بطاقة بصورته، صنعتها عائلتنا. اضغط على صورة البطل في 🦸 لترى البطاقة كاملة');
+MV('Trails go around force fields','المسارات تلتف حول حقول القوة');MV('The glowing trail takes the way around places that are still locked, instead of leading you into a force field','المسار المضيء يأخذ الطريق حول الأماكن التي ما زالت مغلقة، بدل أن يقودك إلى حقل قوة');
+MV('Nicer voices','أصوات ألطف');MV("Everyone talks with the tablet's best voice now. Settings shows which voice it is and how to get an even more natural one",'الجميع يتكلمون الآن بأفضل صوت في الجهاز. الإعدادات تُظهر أي صوت هو وكيف تحصل على صوت أكثر طبيعية');
 // ================= start =================
 boot();
 </script>
