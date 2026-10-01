@@ -341,3 +341,7 @@
 2026-10-01 13:06:13 [drake] model task made 01a0f792-9053-71e6-8556-076bdbf8045c
 2026-10-01 13:06:15 [drake] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:06:18 [faris] rig task made 01a0f792-96ba-725e-b494-71a2c812634a
+2026-10-01 13:06:27 [erik] image-to-3d IN_PROGRESS 36%
+2026-10-01 13:06:29 [robin] image-to-3d SUCCEEDED 100%
+2026-10-01 13:07:06 [drake] image-to-3d IN_PROGRESS 36%
+2026-10-01 13:08:18 [faris] rigging SUCCEEDED 100%
