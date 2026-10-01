@@ -3114,7 +3114,7 @@ function renderFrame(){const q=G.quality;resTune();const dpr=resPick(q);
     gl.bindFramebuffer(gl.FRAMEBUFFER,SHM.fb);gl.viewport(0,0,SHM.size,SHM.size);gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1.6,3);
     gl.useProgram(PR.dt.p);gl.uniformMatrix4fv(PR.dt.u.uLVP,false,RF.lvp);const cr=camRealm(),crm=camRoom();const near=CHUNKS.filter(ch=>ch.terr&&chunkShown(ch,cr,crm)&&Math.hypot(ch.x0+CS/2-c[0],ch.z0+CS/2-c[2])<ext*1.5+24);
     for(const ch of near){gl.bindVertexArray(ch.terr.vao);gl.drawElements(gl.TRIANGLES,ch.terr.n,ch.terr.type,0);}
-    gl.useProgram(PR.di.p);gl.uniformMatrix4fv(PR.di.u.uLVP,false,RF.lvp);gl.uniform3f(PR.di.u.uOff,0,0,0);for(const ch of near){drawSetD(ch.big);if(Math.hypot(ch.x0+CS/2-c[0],ch.z0+CS/2-c[2])<ext+20)drawSetD(ch.small);}drawSetD(DYN);drawSetD(MOB);drawSetD(CHR);if(BUILD.set)drawSetD(BUILD.set);
+    gl.useProgram(PR.di.p);gl.uniformMatrix4fv(PR.di.u.uLVP,false,RF.lvp);gl.uniform3f(PR.di.u.uOff,0,0,0);for(const ch of near){drawSetD(ch.big);if(Math.hypot(ch.x0+CS/2-c[0],ch.z0+CS/2-c[2])<ext+20)drawSetD(ch.small);}drawSetD(DYN);drawSetD(MOB);drawSetD(CHR);if(BUILD.set)drawSetD(BUILD.set);if(typeof g3dRender==='function')g3dRender('shadow');
     gl.disable(gl.POLYGON_OFFSET_FILL);}
   gl.bindFramebuffer(gl.FRAMEBUFFER,RT.msfb);gl.viewport(0,0,w,h);gl.clearColor(ENV.fog[0],ENV.fog[1],ENV.fog[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT|gl.STENCIL_BUFFER_BIT);
   gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.disable(gl.CULL_FACE);gl.useProgram(PR.sky.p);gl.uniformMatrix4fv(PR.sky.u.uInvVP,false,RF.ivp);gl.uniform3fv(PR.sky.u.uSun,DN.sun);gl.uniform3fv(PR.sky.u.uTop,ENV.top);gl.uniform3fv(PR.sky.u.uHor,ENV.hor);gl.uniform3fv(PR.sky.u.uFogC,ENV.fog);gl.uniform1f(PR.sky.u.uNight,DN.night);gl.uniform3fv(PR.sky.u.uMoon,DN.moon);gl.uniform1f(PR.sky.u.uBow,DN.bow);gl.uniform1f(PR.sky.u.uTime,G.t);gl.uniform1f(PR.sky.u.uSpace,camOnMoon()?1:camRealm()==='inside'?2:0);gl.uniform1f(PR.sky.u.uAur,FXU.aur);gl.uniform3fv(PR.sky.u.uEarth,SPACE.earth);fullDraw();
@@ -3134,7 +3134,7 @@ function renderFrame(){const q=G.quality;resTune();const dpr=resPick(q);
   drawSetK(MOB,P);
   // hero ghost when hidden
   gl.depthFunc(gl.GREATER);gl.depthMask(false);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform4f(P.u.uFlat,0,0,0,1.5+.42);drawSetK(CHR,P);gl.uniform4f(P.u.uFlat,0,0,0,0);gl.disable(gl.BLEND);gl.depthMask(true);gl.depthFunc(gl.LEQUAL);
-  drawSetK(CHR,P);
+  drawSetK(CHR,P);if(typeof g3dRender==='function'){g3dRender('main',shOn);gl.useProgram(P.p);}
   gl.uniform1f(P.u.uShOn,0);gl.uniform1f(P.u.uFogD,1/900);gl.uniform1f(P.u.uEmK,Math.max(.12,1-DN.night*.85-DN.rain*.35));gl.uniform3f(P.u.uOff,(G.t*1.6)%60-30,0,0);if(camRealm()==='earth')drawSetK(SKYB,P);gl.uniform3f(P.u.uOff,0,0,0);gl.uniform1f(P.u.uEmK,1);
   // water
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.disable(gl.CULL_FACE);const W=PR.water;if(camRealm()==='earth'){gl.useProgram(W.p);gl.uniformMatrix4fv(W.u.uVP,false,RF.vp);gl.uniform1f(W.u.uY,WL);gl.uniform1f(W.u.uTime,G.t);
@@ -7664,8 +7664,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:36,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:37,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🧸',t:'Real 3D heroes',s:'Every hero now looks just like their picture card: real 3D heroes made from our family\'s drawings. They stand, walk, run, jump, punch, wave, cheer, sit in cars and swim',act:()=>{if(typeof openRoster==='function')openRoster();}},
   {ic:'🤝',t:'One story online',s:'Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too'},
   {ic:'🧭',t:'Show me the way, fixed',s:'After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field'},
   {ic:'🃏',t:'Hero cards',s:'Every hero has their own picture card now, made by our family. Tap a hero\'s picture in 🦸 to see the whole card',act:()=>{if(typeof openRoster==='function')openRoster();}},
@@ -10367,7 +10368,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.8';window.BB_VER=BB_VER;
+const BB_VER='26.0';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11470,6 +11471,239 @@ MV('For a more natural voice, download one on the iPad: Settings › Accessibili
 MV('Hero cards','بطاقات الأبطال');MV("Every hero has their own picture card now, made by our family. Tap a hero's picture in 🦸 to see the whole card",'لكل بطل الآن بطاقة بصورته، صنعتها عائلتنا. اضغط على صورة البطل في 🦸 لترى البطاقة كاملة');
 MV('Trails go around force fields','المسارات تلتف حول حقول القوة');MV('The glowing trail takes the way around places that are still locked, instead of leading you into a force field','المسار المضيء يأخذ الطريق حول الأماكن التي ما زالت مغلقة، بدل أن يقودك إلى حقل قوة');
 MV('Nicer voices','أصوات ألطف');MV("Everyone talks with the tablet's best voice now. Settings shows which voice it is and how to get an even more natural one",'الجميع يتكلمون الآن بأفضل صوت في الجهاز. الإعدادات تُظهر أي صوت هو وكيف تحصل على صوت أكثر طبيعية');
+// ================= v26: real 3D heroes made from the family's cards (glTF .glb files) =================
+// A hero with a 3D model file (models/<hero>.glb, listed in models/list.json) is drawn with it: a textured model with a
+// skeleton that plays its own animations (idle, walk, run, jump, punch, wave, cheer...), lit and shadowed like the rest of
+// the world, with the same dark outline as the other characters. Heroes without a model, or wearing a shop costume or a
+// power suit, keep their block figure, and so does a hero whose model is still loading. The models were made with Meshy
+// from the family's pictures (tools/meshy: make_game_models.py builds models/<hero>.glb). Standing still, a hero holds the
+// pose from their picture (the model's own rest pose), with a little breathing.
+const G3D={on:true,fill:.3,olK:.45,restIdle:true,list:null,models:{},err:{},draw:[],P:null,PD:null,jt:null,jtW:4*192,jtH:16,buf:null,dirty:false,
+  syn:{idle:['idle','stand','breath'],walk:['walk'],run:['run','sprint','jog'],jump:['jump','fall','air','walkjump'],punch:['punch','jab','box','attack','strike','hit'],
+    wave:['wave','hello','greet'],cheer:['cheer','victory','celebrat','dance','thumbsup','yes'],ko:['ko','death','die','dead','knock','faint'],sit:['sit','drive'],swim:['swim'],fly:['fly','superman'],carry:['carry','lift']},
+  back:{walk:['run'],run:['walk']}};
+// ---------- shaders: skinning on the GPU, the joint matrices come from a float texture (one row per character) ----------
+const VS_SKIN=`#version 300 es
+layout(location=0) in vec3 aPos;layout(location=1) in vec3 aNor;layout(location=2) in vec2 aUV;layout(location=3) in vec4 aJ;layout(location=4) in vec4 aW;
+uniform mat4 uVP;uniform mat4 uLVP;uniform mat4 uModel;uniform highp sampler2D uJT;uniform int uRow;uniform float uOutline;
+out vec3 vW;out vec3 vN;out vec2 vUV;out vec4 vLs;
+mat4 jm(float j){int x=int(j+.5)*4;return mat4(texelFetch(uJT,ivec2(x,uRow),0),texelFetch(uJT,ivec2(x+1,uRow),0),texelFetch(uJT,ivec2(x+2,uRow),0),texelFetch(uJT,ivec2(x+3,uRow),0));}
+void main(){mat4 S=aW.x*jm(aJ.x)+aW.y*jm(aJ.y)+aW.z*jm(aJ.z)+aW.w*jm(aJ.w);mat4 MM=uModel*S;vec4 wp=MM*vec4(aPos,1.);vec3 wn=normalize(mat3(MM)*aNor);
+ if(uOutline>0.)wp.xyz+=wn*uOutline;vW=wp.xyz;vN=wn;vUV=aUV;vLs=uLVP*wp;gl_Position=uVP*wp;}`;
+const FS_SKIN=`#version 300 es
+precision highp float;precision highp sampler2DShadow;
+in vec3 vW;in vec3 vN;in vec2 vUV;
+uniform sampler2D uTex;uniform vec4 uBase;uniform vec4 uFlat;uniform float uHasTex;uniform float uFill;
+out vec4 o;
+${GLSL_COMMON}
+void main(){if(uFlat.a>1.5){o=vec4(mix(uBase.rgb,vec3(1.),.4),uFlat.a-1.5);return;}if(uFlat.a>0.){o=vec4(uFlat.rgb,1.);return;}
+ vec4 tc=uHasTex>.5?texture(uTex,vUV):vec4(1.);vec3 alb=tc.rgb*uBase.rgb;if(tc.a*uBase.a<.35)discard;
+ vec3 N=normalize(vN);if(!gl_FrontFacing)N=-N;float sh=shadowF(N);vec3 c=light(alb,N,vW,sh,.22,24.);
+ float fr=max(dot(N,normalize(uCam-vW)),0.);c+=alb*uFill*(.3+.7*fr);o=vec4(fogc(c,vW),1.);}`;
+const FS_SKIND=`#version 300 es
+precision mediump float;void main(){}`;
+{const _ip=initPrograms;initPrograms=function(){_ip();try{G3D.P=compileProg(VS_SKIN,FS_SKIN);G3D.PD=compileProg(VS_SKIN,FS_SKIND);
+    for(const P of [G3D.P,G3D.PD]){gl.useProgram(P.p);if(P.u.uJT)gl.uniform1i(P.u.uJT,6);if(P.u.uTex)gl.uniform1i(P.u.uTex,5);if(P.u.uSh)gl.uniform1i(P.u.uSh,0);}gl.useProgram(null);
+    G3D.jt=gl.createTexture();gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_2D,G3D.jt);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,G3D.jtW,G3D.jtH,0,gl.RGBA,gl.FLOAT,null);
+    for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.NEAREST],[gl.TEXTURE_MAG_FILTER,gl.NEAREST],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
+    gl.activeTexture(gl.TEXTURE0);G3D.buf=new Float32Array(G3D.jtW*4*G3D.jtH);}catch(e){G3D.on=false;noteErr('g3d0',e);}};}
+// ---------- reading a .glb file (also with KHR_mesh_quantization: positions, normals, weights and turns in fewer bytes) ----------
+const G3DCT={5120:[1,'getInt8'],5121:[1,'getUint8'],5122:[2,'getInt16'],5123:[2,'getUint16'],5125:[4,'getUint32'],5126:[4,'getFloat32']},G3DNC={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16};
+function g3dAcc(J,BIN,i){const a=J.accessors[i],bv=J.bufferViews[a.bufferView],[es,fn]=G3DCT[a.componentType],n=G3DNC[a.type],cnt=a.count;
+  const stride=bv.byteStride||n*es,dv=new DataView(BIN.buffer,BIN.byteOffset+(bv.byteOffset||0)+(a.byteOffset||0));const out=new Float32Array(cnt*n);
+  const norm=a.normalized?({5120:127,5121:255,5122:32767,5123:65535}[a.componentType]||1):1;
+  if(a.componentType===5126&&stride===n*4&&((BIN.byteOffset+(bv.byteOffset||0)+(a.byteOffset||0))%4===0))out.set(new Float32Array(BIN.buffer,BIN.byteOffset+(bv.byteOffset||0)+(a.byteOffset||0),cnt*n));
+  else for(let k=0;k<cnt;k++)for(let c=0;c<n;c++){let v=dv[fn](k*stride+c*es,true);if(norm!==1)v=Math.max(v/norm,-1);out[k*n+c]=v;}return {d:out,n,cnt,ct:a.componentType};}
+function g3dIdx(J,BIN,i){const a=J.accessors[i],bv=J.bufferViews[a.bufferView],o=BIN.byteOffset+(bv.byteOffset||0)+(a.byteOffset||0);
+  if(a.componentType===5125){const r=new Uint32Array(a.count);const dv=new DataView(BIN.buffer,o);for(let k=0;k<a.count;k++)r[k]=dv.getUint32(k*4,true);return r;}
+  if(a.componentType===5123){const r=new Uint16Array(a.count);const dv=new DataView(BIN.buffer,o);for(let k=0;k<a.count;k++)r[k]=dv.getUint16(k*2,true);return r;}
+  const r=new Uint16Array(a.count);const dv=new DataView(BIN.buffer,o);for(let k=0;k<a.count;k++)r[k]=dv.getUint8(k);return r;}
+async function g3dLoad(id){const r=await fetch(G3D.base+id+'.glb');if(!r.ok)throw new Error('model '+id+': '+r.status);return g3dParse(id,await r.arrayBuffer());}
+async function g3dParse(id,ab){const dv=new DataView(ab);if(dv.getUint32(0,true)!==0x46546C67)throw new Error('not a glb');let off=12,J=null,BIN=null;
+  while(off+8<=ab.byteLength){const len=dv.getUint32(off,true),type=dv.getUint32(off+4,true),s=off+8;if(type===0x4E4F534A)J=JSON.parse(new TextDecoder().decode(new Uint8Array(ab,s,len)));else if(type===0x004E4942)BIN=new Uint8Array(ab,s,len);off=s+len;}
+  if(!J)throw new Error('no json');const NOSUP=(J.extensionsRequired||[]).filter(e=>/draco|meshopt|basisu|ktx|webp/i.test(e));if(NOSUP.length)throw new Error('needs '+NOSUP.join(','));
+  // nodes and their rest pose
+  const NN=J.nodes.length,nodes=J.nodes.map((n,i)=>({i,name:n.name||'',T:Float32Array.from(n.translation||[0,0,0]),R:Float32Array.from(n.rotation||[0,0,0,1]),S:Float32Array.from(n.scale||[1,1,1]),mat:n.matrix?Float32Array.from(n.matrix):null,ch:n.children||[],parent:-1,mesh:n.mesh,skin:n.skin}));
+  for(const n of nodes)for(const c of n.ch)nodes[c].parent=n.i;const roots=(J.scenes&&J.scenes[J.scene||0]?J.scenes[J.scene||0].nodes:nodes.filter(n=>n.parent<0).map(n=>n.i));
+  const order=[];const visit=i=>{order.push(i);for(const c of nodes[i].ch)visit(c);};for(const r0 of roots)visit(r0);
+  // textures (pictures inside the file)
+  const tex=[];for(let i=0;i<(J.textures||[]).length;i++){const T=J.textures[i];const im=J.images[T.source];let t=null;
+    if(im&&im.bufferView!==undefined){const bv=J.bufferViews[im.bufferView];const bytes=new Uint8Array(BIN.buffer,BIN.byteOffset+(bv.byteOffset||0),bv.byteLength);
+      const bmp=await createImageBitmap(new Blob([bytes],{type:im.mimeType||'image/png'}),{premultiplyAlpha:'none',colorSpaceConversion:'none'});
+      t=gl.createTexture();gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,gl.RGBA,gl.UNSIGNED_BYTE,bmp);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      const smp=(J.samplers||[])[T.sampler]||{};gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,smp.wrapS||gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,smp.wrapT||gl.REPEAT);gl.activeTexture(gl.TEXTURE0);if(bmp.close)bmp.close();}
+    tex.push(t);}
+  // skins: every mesh is skinned; a mesh without a skin follows its own node (one joint, the node itself)
+  const skins=[];let jn=0;const skinOf=n=>{if(n.skin!==undefined){const k='s'+n.skin;let s=skins.find(q=>q.key===k);if(!s){const S0=J.skins[n.skin];const ibm=S0.inverseBindMatrices!==undefined?g3dAcc(J,BIN,S0.inverseBindMatrices).d:null;
+        s={key:k,joints:S0.joints,ibm:ibm||new Float32Array(16*S0.joints.length).map((v,q)=>q%5===0?1:0),off:jn};jn+=S0.joints.length;skins.push(s);}return s;}
+    const k='n'+n.i;let s=skins.find(q=>q.key===k);if(!s){s={key:k,joints:[n.i],ibm:M4.id(),off:jn};jn+=1;skins.push(s);}return s;};
+  const prims=[];
+  for(const n of nodes){if(n.mesh===undefined)continue;const ME0=J.meshes[n.mesh];const sk=skinOf(n);
+    for(const pr of ME0.primitives){if(pr.mode!==undefined&&pr.mode!==4)continue;const A=pr.attributes;if(A.POSITION===undefined)continue;
+      const P=g3dAcc(J,BIN,A.POSITION),cnt=P.cnt;const Nr=A.NORMAL!==undefined?g3dAcc(J,BIN,A.NORMAL).d:null;const UV=A.TEXCOORD_0!==undefined?g3dAcc(J,BIN,A.TEXCOORD_0).d:new Float32Array(cnt*2);
+      const JJ=new Float32Array(cnt*4),WW=new Float32Array(cnt*4);
+      if(n.skin!==undefined&&A.JOINTS_0!==undefined&&A.WEIGHTS_0!==undefined){const j0=g3dAcc(J,BIN,A.JOINTS_0).d,w0=g3dAcc(J,BIN,A.WEIGHTS_0).d;
+        for(let k=0;k<cnt;k++){let s=0;for(let c=0;c<4;c++)s+=w0[k*4+c];s=s||1;for(let c=0;c<4;c++){JJ[k*4+c]=j0[k*4+c]+sk.off;WW[k*4+c]=w0[k*4+c]/s;}}}
+      else for(let k=0;k<cnt;k++){JJ[k*4]=sk.off;WW[k*4]=1;}
+      let idx=pr.indices!==undefined?g3dIdx(J,BIN,pr.indices):null;if(!idx){idx=cnt>65535?new Uint32Array(cnt):new Uint16Array(cnt);for(let k=0;k<cnt;k++)idx[k]=k;}
+      const nor=Nr||g3dNormals(P.d,idx,cnt);
+      const vao=gl.createVertexArray();gl.bindVertexArray(vao);const bufs=[];
+      for(const [loc,data,size] of [[0,P.d,3],[1,nor,3],[2,UV,2],[3,JJ,4],[4,WW,4]]){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,0,0);bufs.push(b);}
+      const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,idx,gl.STATIC_DRAW);gl.bindVertexArray(null);bufs.push(ib);
+      const mt=(J.materials||[])[pr.material]||{};const pbr=mt.pbrMetallicRoughness||{};const bt=pbr.baseColorTexture;
+      prims.push({vao,bufs,count:idx.length,itype:idx instanceof Uint32Array?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,tex:bt?tex[bt.index]:null,base:pbr.baseColorFactor||[1,1,1,1],dbl:!!mt.doubleSided,
+        pos:P.d,jj:JJ,ww:WW});}}
+  if(!prims.length)throw new Error('no meshes');
+  // animations
+  const clips=(J.animations||[]).map(a=>{let dur=0;const ch=[];for(const c of a.channels){const smp=a.samplers[c.sampler];if(!c.target||c.target.node===undefined||c.target.path==='weights')continue;
+      const tm=g3dAcc(J,BIN,smp.input).d,vl=g3dAcc(J,BIN,smp.output);dur=Math.max(dur,tm[tm.length-1]||0);ch.push({node:c.target.node,path:c.target.path,t:tm,v:vl.d,n:vl.n,ip:smp.interpolation||'LINEAR'});}
+    return {name:a.name||'',dur:Math.max(dur,.05),ch};});
+  const M={id,nodes,order,skins,jn,prims,clips,tex,ready:true,LT:new Float32Array(NN*3),LR:new Float32Array(NN*4),LS:new Float32Array(NN*3),BT:new Float32Array(NN*3),BR:new Float32Array(NN*4),BS:new Float32Array(NN*3),W:new Float32Array(NN*16),L:new Float32Array(16)};
+  if(M.jn*4>G3D.jtW)throw new Error('too many joints: '+M.jn);
+  // the root of the skeleton keeps its place (animations that walk away are kept on the spot)
+  const sk0=skins.find(s=>s.key[0]==='s');M.root=sk0?sk0.joints[0]:-1;for(let i=0;i<NN;i++){const n=nodes[i];if(/hips|pelvis/i.test(n.name)){M.root=i;break;}}
+  // which clip plays for what
+  M.map={};for(const k in G3D.syn){const i=clips.findIndex(c=>G3D.syn[k].some(w=>c.name.toLowerCase().replace(/[\s_.:|-]/g,'').includes(w.replace(/-/g,''))));if(i>=0)M.map[k]=i;}
+  for(const k in G3D.back)if(M.map[k]===undefined)for(const b of G3D.back[k])if(M.map[b]!==undefined){M.map[k]=M.map[b];break;}
+  M.oneShot={ko:1};
+  // the arm, leg and head bones (by their names), so the hero can still move when a file has no animation for something
+  const nm=n=>n.name.toLowerCase().replace(/mixamorig\d*[:_]?/,'');const sideOf=s=>/left|(^|[_.\s])l($|[_.\s\d])|\.l$|_l$/.test(s)?'L':/right|(^|[_.\s])r($|[_.\s\d])|\.r$|_r$/.test(s)?'R':'';
+  const B={};for(const n of nodes){const s=nm(n),k=sideOf(s);if(!k&&!/head/.test(s))continue;
+    if(/forearm|lowerarm|elbow/.test(s))B['fa'+k]=B['fa'+k]??n.i;else if((/upperarm/.test(s)||/(^|[^e])arm/.test(s))&&!/fore|lower|hand|twist|roll|armor/.test(s))B['ua'+k]=B['ua'+k]??n.i;
+    else if(/upleg|thigh|upperleg/.test(s))B['th'+k]=B['th'+k]??n.i;else if((/(^|[^p])leg/.test(s)||/calf|shin|lowerleg|knee/.test(s))&&!/upleg|upper/.test(s))B['sh'+k]=B['sh'+k]??n.i;
+    else if(/head/.test(s)&&!/end|top|nub/.test(s))B.head=B.head??n.i;}
+  const kid=i=>{let best=-1,bl=-1;for(const c of nodes[i].ch){const T=nodes[c].T;const l=Math.hypot(T[0],T[1],T[2]);if(l>bl){bl=l;best=c;}}return best;};
+  M.bone=B;M.kid={};for(const k in B){const c=kid(B[k]);if(c>=0)M.kid[B[k]]=c;}M.aim={};for(const k of ['uaL','uaR','faL','faR','thL','thR','shL','shR'])if(B[k]!==undefined&&M.kid[B[k]]!==undefined)M.aim[B[k]]=k;
+  // size: the same height as the other heroes, feet on the ground, standing in the middle
+  g3dPose(M,null);const mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];const tmp=new Float32Array(16);
+  for(const pr of prims){for(let k=0;k<pr.pos.length/3;k+=Math.max(1,Math.floor(pr.pos.length/3/4000))){const x=pr.pos[k*3],y=pr.pos[k*3+1],z=pr.pos[k*3+2];let ox=0,oy=0,oz=0;
+      for(let c=0;c<4;c++){const w=pr.ww[k*4+c];if(!w)continue;const j=pr.jj[k*4+c]*16;const B=M.J;ox+=w*(B[j]*x+B[j+4]*y+B[j+8]*z+B[j+12]);oy+=w*(B[j+1]*x+B[j+5]*y+B[j+9]*z+B[j+13]);oz+=w*(B[j+2]*x+B[j+6]*y+B[j+10]*z+B[j+14]);}
+      mn[0]=Math.min(mn[0],ox);mn[1]=Math.min(mn[1],oy);mn[2]=Math.min(mn[2],oz);mx[0]=Math.max(mx[0],ox);mx[1]=Math.max(mx[1],oy);mx[2]=Math.max(mx[2],oz);}
+    delete pr.pos;delete pr.jj;delete pr.ww;}
+  // arms straight out in the rest pose (T-pose)? then standing still brings them down a little
+  {const a=B.uaL,c=a!==undefined?M.kid[a]:undefined;if(c!==undefined){const W0=M.W;const dx=W0[c*16+12]-W0[a*16+12],dy=W0[c*16+13]-W0[a*16+13],dz=W0[c*16+14]-W0[a*16+14];M.tpose=Math.atan2(-dy,Math.hypot(dx,dz))<.5;}}
+  // which way it faces: a hero's left arm or leg is on its left (+x when facing +z); turn it round if it is the other way
+  const W0=M.W;let side=0;for(const n of nodes){const nm=n.name.toLowerCase();const left=/left|\.l$|_l$|^l_|\bl\b/.test(nm),right=/right|\.r$|_r$|^r_|\br\b/.test(nm);
+    if(!(left||right)||!/arm|leg|thigh|shoulder|hand|foot|upleg|clavicle/.test(nm))continue;side+=(left?1:-1)*Math.sign(W0[n.i*16+12]-(mn[0]+mx[0])/2);}
+  const opt=G3D.opt[id]||{};M.turn=opt.turn!==undefined?opt.turn*Math.PI/180:(side<0?Math.PI:0);
+  const hgt=Math.max(.01,mx[1]-mn[1]),s=2.02*(opt.h||1)/hgt;M.norm=M4.id();M4.ry(M.norm,M.turn);M4.sc(M.norm,s,s,s);M4.tr(M.norm,-(mn[0]+mx[0])/2,-mn[1],-(mn[2]+mx[2])/2);M.size=[mx[0]-mn[0],hgt,mx[2]-mn[2]];M.side=side;
+  return M;}
+function g3dNormals(P,idx,cnt){const N=new Float32Array(cnt*3);for(let t=0;t<idx.length;t+=3){const a=idx[t]*3,b=idx[t+1]*3,c=idx[t+2]*3;const e1=[P[b]-P[a],P[b+1]-P[a+1],P[b+2]-P[a+2]],e2=[P[c]-P[a],P[c+1]-P[a+1],P[c+2]-P[a+2]];const n=cross3(e1,e2);
+    for(const q of [a,b,c]){N[q]+=n[0];N[q+1]+=n[1];N[q+2]+=n[2];}}for(let k=0;k<cnt;k++){const l=Math.hypot(N[k*3],N[k*3+1],N[k*3+2])||1;N[k*3]/=l;N[k*3+1]/=l;N[k*3+2]/=l;}return N;}
+// ---------- posing: sample the clips, blend, and work out every joint ----------
+function g3dSample(M,ci,t,T,R,S){const C=M.clips[ci];if(!C)return;for(const c of C.ch){const tm=c.t,n=c.n,L=tm.length;let i=0;if(t<=tm[0])i=0;else if(t>=tm[L-1])i=L-1;else{let lo=0,hi=L-1;while(hi-lo>1){const md=(lo+hi)>>1;if(tm[md]<=t)lo=md;else hi=md;}i=lo;}
+    const cub=c.ip==='CUBICSPLINE',st=cub?n*3:n,vo=cub?n:0;const j=Math.min(L-1,i+1);let f=0;if(j>i&&c.ip!=='STEP'){f=(t-tm[i])/Math.max(1e-6,tm[j]-tm[i]);f=Math.max(0,Math.min(1,f));}
+    const a=i*st+vo,b=j*st+vo,v=c.v;const node=c.node;
+    if(c.path==='rotation'){g3dSlerp(R,node*4,v,a,b,f);}
+    else{const O=c.path==='translation'?T:S;for(let k=0;k<3;k++)O[node*3+k]=v[a+k]+(v[b+k]-v[a+k])*f;}}}
+function g3dSlerp(R,o,v,a,b,f){let ax=v[a],ay=v[a+1],az=v[a+2],aw=v[a+3],bx=v[b],by=v[b+1],bz=v[b+2],bw=v[b+3];let d=ax*bx+ay*by+az*bz+aw*bw;if(d<0){bx=-bx;by=-by;bz=-bz;bw=-bw;d=-d;}
+  let k0=1-f,k1=f;if(d<.9995){const th=Math.acos(d),s=Math.sin(th);k0=Math.sin((1-f)*th)/s;k1=Math.sin(f*th)/s;}let x=ax*k0+bx*k1,y=ay*k0+by*k1,z=az*k0+bz*k1,w=aw*k0+bw*k1;const l=Math.hypot(x,y,z,w)||1;R[o]=x/l;R[o+1]=y/l;R[o+2]=z/l;R[o+3]=w/l;}
+function g3dRest(M,T,R,S){for(const n of M.nodes){T.set(n.T,n.i*3);R.set(n.R,n.i*4);S.set(n.S,n.i*3);}}
+function g3dPose(M,st){const {LT,LR,LS,BT,BR,BS}=M;g3dRest(M,LT,LR,LS);
+  if(st&&(st.cur>=0||st.prev>=0)){if(st.cur>=0)g3dSample(M,st.cur,st.t,LT,LR,LS);
+    if(st.prev>=0&&st.w<1){g3dRest(M,BT,BR,BS);g3dSample(M,st.prev,st.pt,BT,BR,BS);const w=st.w;
+      for(let i=0;i<M.nodes.length;i++){for(let k=0;k<3;k++){LT[i*3+k]=BT[i*3+k]+(LT[i*3+k]-BT[i*3+k])*w;LS[i*3+k]=BS[i*3+k]+(LS[i*3+k]-BS[i*3+k])*w;}const tmp=[LR[i*4],LR[i*4+1],LR[i*4+2],LR[i*4+3]];
+        const v=M.V8||(M.V8=new Float32Array(8));v.set(BR.subarray(i*4,i*4+4),0);v.set(tmp,4);g3dSlerp(LR,i*4,v,0,4,w);}}
+    // keep the hips over the feet (no walking away from the spot), but let them go up and down
+    if(M.root>=0){const r=M.nodes[M.root];LT[M.root*3]=r.T[0];LT[M.root*3+2]=r.T[2];if(st.lockY)LT[M.root*3+1]=r.T[1];}}
+  const W=M.W,Lm=M.L;
+  for(const i of M.order){const n=M.nodes[i];if(n.mat&&!(st&&st.cur>=0&&M.clips[st.cur].ch.some(c=>c.node===i)))Lm.set(n.mat);else g3dTRS(Lm,LT,LR,LS,i);
+    if(n.parent>=0){M4.mul(M.L2||(M.L2=new Float32Array(16)),W.subarray(n.parent*16,n.parent*16+16),Lm);W.set(M.L2,i*16);}else W.set(Lm,i*16);
+    if(st&&st.proc&&M.aim[i])g3dAim(M,i,M.aim[i],st.proc);}
+  const J=M.J||(M.J=new Float32Array(M.jn*16));const t16=M.T16||(M.T16=new Float32Array(16));
+  for(const s of M.skins)for(let k=0;k<s.joints.length;k++){M4.mul(t16,W.subarray(s.joints[k]*16,s.joints[k]*16+16),s.ibm.subarray(k*16,k*16+16));J.set(t16,(s.off+k)*16);}
+  return J;}
+// point a bone (from its joint toward its child) in a new direction, turning it around its own joint
+function g3dAim(M,i,role,P){const W=M.W,o=i*16,c=M.kid[i];if(c===undefined)return;const T=M.nodes[c].T;
+  let dx=W[o]*T[0]+W[o+4]*T[1]+W[o+8]*T[2],dy=W[o+1]*T[0]+W[o+5]*T[1]+W[o+9]*T[2],dz=W[o+2]*T[0]+W[o+6]*T[1]+W[o+10]*T[2];const dl=Math.hypot(dx,dy,dz);if(dl<1e-6)return;dx/=dl;dy/=dl;dz/=dl;
+  const t=g3dTarget(M,role,P);if(!t)return;let [tx,ty,tz,wt]=t;const tl=Math.hypot(tx,ty,tz)||1;tx/=tl;ty/=tl;tz/=tl;
+  // the turn from the bone's direction to the wanted one (weighted)
+  let ax=dy*tz-dz*ty,ay=dz*tx-dx*tz,az=dx*ty-dy*tx;const sn=Math.hypot(ax,ay,az),cs=dx*tx+dy*ty+dz*tz;if(sn<1e-6)return;ax/=sn;ay/=sn;az/=sn;const ang=Math.atan2(sn,cs)*wt;
+  const C=Math.cos(ang),S=Math.sin(ang),Q=1-C;const R=[C+ax*ax*Q,ay*ax*Q+az*S,az*ax*Q-ay*S,ax*ay*Q-az*S,C+ay*ay*Q,az*ay*Q+ax*S,ax*az*Q+ay*S,ay*az*Q-ax*S,C+az*az*Q];
+  for(let col=0;col<3;col++){const x=W[o+col*4],y=W[o+col*4+1],z=W[o+col*4+2];W[o+col*4]=R[0]*x+R[3]*y+R[6]*z;W[o+col*4+1]=R[1]*x+R[4]*y+R[7]*z;W[o+col*4+2]=R[2]*x+R[5]*y+R[8]*z;}}
+// where each bone should point for what the hero is doing (in the model's own space: up is +y, F is forward, side is its left)
+function g3dTarget(M,role,P){const F=M.turn?-1:1,Lx=M.turn?-1:1;const side=role[2]==='L'?1:-1;const part=role.slice(0,2);const w=P.want,amp=Math.min(1,P.amp||0),ph=P.ph||0;
+  const dir=(down,fwd,out)=>[out*side*Lx,-down,fwd*F];const sw=Math.sin(ph+(side>0?0:Math.PI));
+  // a model made with its arms straight out (T-pose) stands with them down a little, like the others in their pictures
+  if(w==='apose')return part==='ua'||part==='fa'?[...dir(.77,.06,.64),1]:null;
+  if(part==='ua'){if(w==='cheer'||w==='carry'||w==='slam')return [...dir(-1,.1,.35),1];if(w==='charge')return [...dir(.05,1,.12),1];if(w==='wave'&&side<0)return [...dir(-.9,.2,.6+Math.sin(P.t*12)*.25),1];if(w==='punch'&&side<0)return [...dir(.05,1,0),1];
+    if(w==='fly')return side<0?[...dir(-1,.4,.1),1]:[...dir(.6,.6,.25),1];if(w==='sit')return [...dir(.8,.6,.15),1];if(w==='jump')return [...dir(.3,.15,.75),1];
+    if(w==='walk'||w==='run'||w==='swim')return [...dir(1,-sw*amp*.75,.18),1];return [...dir(1,.05,.2+Math.sin(P.t*2)*.02),1];}
+  if(part==='fa'){if(w==='cheer'||w==='carry'||w==='slam')return [...dir(-1,.2,.15),1];if(w==='charge')return [...dir(.05,1,0),1];if(w==='wave'&&side<0)return [...dir(-1,0,.3),1];if(w==='punch'&&side<0)return [...dir(.05,1,0),1];
+    if(w==='walk'||w==='run')return [...dir(.6,.5+(-sw*amp*.5),.1),1];if(w==='fly')return side<0?[...dir(-1,.4,0),1]:[...dir(.5,.8,.1),1];return [...dir(1,.25,.1),1];}
+  if(part==='th'){if(w==='sit')return [...dir(.05,1,.1),1];if(w==='jump'||w==='fly')return [...dir(1,side>0?.25:-.1,.05),1];if(w==='walk'||w==='run'||w==='swim')return [...dir(1,sw*amp*(w==='run'?.9:.6),.04),1];return [...dir(1,0,.06),1];}
+  if(part==='sh'){if(w==='sit')return [...dir(1,.15,.05),1];if(w==='jump')return [...dir(1,-.5,0),1];if(w==='walk'||w==='run')return [...dir(1,Math.min(0,sw)*amp*.9+sw*amp*.35,0),1];return [...dir(1,0,.03),1];}
+  return null;}
+function g3dTRS(o,T,R,S,i){const x=R[i*4],y=R[i*4+1],z=R[i*4+2],w=R[i*4+3],sx=S[i*3],sy=S[i*3+1],sz=S[i*3+2];
+  o[0]=(1-2*(y*y+z*z))*sx;o[1]=2*(x*y+w*z)*sx;o[2]=2*(x*z-w*y)*sx;o[3]=0;o[4]=2*(x*y-w*z)*sy;o[5]=(1-2*(x*x+z*z))*sy;o[6]=2*(y*z+w*x)*sy;o[7]=0;
+  o[8]=2*(x*z+w*y)*sz;o[9]=2*(y*z-w*x)*sz;o[10]=(1-2*(x*x+y*y))*sz;o[11]=0;o[12]=T[i*3];o[13]=T[i*3+1];o[14]=T[i*3+2];o[15]=1;}
+// ---------- which animation: from what the hero is doing ----------
+function g3dWant(p,A){if(p.ko>0)return 'ko';if(p.drive)return 'sit';if(p.swim)return 'swim';if(A.fly>.1||p.glide||p.chute)return 'fly';if(p.carry||p.carryF)return 'carry';
+  if(A.charge>0)return 'charge';if(A.slam>0)return 'slam';if((p.airT||0)>.12&&!p.ground)return 'jump';if(A.amp>.45)return 'run';if(A.amp>.06)return 'walk';return 'idle';}
+// moves that play once over walking and standing (from, to: the part of the clip that is used; speed)
+const G3DACT={punch:{from:.35,to:.95,speed:1.7},cheer:{from:0,to:3.4,speed:1},wave:{from:.2,to:2.8,speed:1.15}};
+const G3DJUMP={from:.25,hold:.5,speed:1.2};
+function g3dQueue(M,p,t){const A=p.anim;const st=A.g3d&&A.g3d.m===M?A.g3d:(A.g3d={m:M,cur:-1,t:0,prev:-1,pt:0,w:1,last:G.t,want:'',act:null,lp:0,lc:0,lw:0});
+  const dt=Math.max(0,Math.min(.1,G.t-st.last));st.last=G.t;let want=g3dWant(p,A);const loco=want==='idle'||want==='walk'||want==='run';
+  // a new punch, cheer or wave starts its move
+  const pu=A.punch||0,ch=A.cheer||0,wv=A.wave||0;
+  if(pu>st.lp+.2&&M.map.punch!==undefined)st.act={n:'punch',t:G3DACT.punch.from};if(ch>0&&st.lc<=0&&M.map.cheer!==undefined)st.act={n:'cheer',t:G3DACT.cheer.from};if(wv>0&&st.lw<=0&&M.map.wave!==undefined)st.act={n:'wave',t:G3DACT.wave.from};
+  st.lp=pu;st.lc=ch;st.lw=wv;
+  if(st.act&&!loco&&want!=='jump')st.act=null;
+  if(st.act){const D=G3DACT[st.act.n];st.act.t+=dt*D.speed;if(st.act.t>=D.to)st.act=null;}
+  if(G3D.force){want=G3D.force.clip;st.act=null;}
+  const name=st.act?st.act.n:want;let ci=M.map[name]!==undefined&&!(name==='idle'&&G3D.restIdle)?M.map[name]:-1;if(G3D.force&&G3D.force.raw)ci=M.clips.findIndex(c=>c.name===G3D.force.clip);
+  if(ci!==st.cur){st.prev=st.cur;st.pt=st.t;st.cur=ci;st.t=st.act?st.act.t:name==='jump'?G3DJUMP.from:0;st.w=st.prev>=0?0:1;}
+  const C=M.clips[st.cur];
+  if(G3D.force)st.t=G3D.force.t;
+  else if(st.act)st.t=st.act.t;
+  else if(name==='jump'){st.t=Math.min(G3DJUMP.hold,st.t+dt*G3DJUMP.speed);}
+  else{const k=name==='walk'||name==='run'?Math.max(.6,Math.min(1.7,A.amp/(name==='run'?.8:.35))):1;st.t+=dt*k;if(C){if(name==='ko')st.t=Math.min(st.t,C.dur-.001);else st.t%=C.dur;}}
+  st.pt+=dt;st.w=G3D.force?1:Math.min(1,st.w+dt/.16);const PC=M.clips[st.prev];if(PC)st.pt%=PC.dur;
+  st.lockY=name==='jump';
+  // no clip for this (flying, carrying...): the arms and legs are moved by the game
+  st.proc=ci<0&&!(name==='idle'&&G3D.restIdle)?{want:name,amp:A.amp||0,ph:A.walk||0,t}:ci<0&&name==='idle'&&M.tpose?{want:'apose',amp:0,ph:0,t}:null;
+  if(G3D.draw.length>=G3D.jtH)return;const row=G3D.draw.length;const J=g3dPose(M,st);G3D.buf.set(J,row*G3D.jtW*4);G3D.dirty=true;
+  // where the hero stands, turned and tipped the same way as the toy figure
+  const m=MS.cur;MS.reset();const XS=p.xs||null;M4.tr(m,p.x,p.y+(p.yv||0)+(p.drive?.12:0),p.z);M4.ry(m,p.face);if(XS&&XS.spinY)M4.ry(m,XS.spinY);if(p.scale)M4.sc(m,p.scale,p.scale,p.scale);
+  if(p.ko>0&&M.map.ko===undefined){M4.rx(m,-1.45);M4.tr(m,0,.35,0);}if(A.fly>.01)M4.rx(m,A.fly*1.15);if(A.spin){M4.tr(m,0,.9,0);M4.rx(m,A.spin);M4.tr(m,0,-.9,0);}
+  if(!st.act&&loco){M4.rx(m,A.lean.p*.5);M4.rz(m,A.tilt.p*.5);}const sq=A.sq.p;M4.sc(m,1/Math.sqrt(sq),sq,1/Math.sqrt(sq));if(ci<0&&name==='idle'){const br=1+Math.sin(t*2.3+(p.x||0))*.008;M4.sc(m,1,br,1);}
+  const U=new Float32Array(16);M4.mul(U,m,M.norm);G3D.draw.push({M,U,row,p,blink:p.invT>0&&p.ko<=0&&Math.floor(t*16)%2===0});}
+{const _bd=buildDyn;buildDyn=function(){G3D.draw.length=0;return _bd.apply(this,arguments);};}
+// ---------- drawing (called by the renderer: in the shadow pass and with the other characters) ----------
+function g3dUpload(){if(!G3D.dirty||!G3D.jt)return;G3D.dirty=false;gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_2D,G3D.jt);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,G3D.jtW,Math.max(1,G3D.draw.length),gl.RGBA,gl.FLOAT,G3D.buf.subarray(0,G3D.jtW*4*Math.max(1,G3D.draw.length)));gl.activeTexture(gl.TEXTURE0);}
+function g3dDrawAll(P,mode){for(const d of G3D.draw){if(d.blink&&mode!=='shadow')continue;gl.uniformMatrix4fv(P.u.uModel,false,d.U);gl.uniform1i(P.u.uRow,d.row);
+    for(const pr of d.M.prims){if(mode==='main'){if(pr.dbl)gl.disable(gl.CULL_FACE);else gl.enable(gl.CULL_FACE);}
+      if(P.u.uBase)gl.uniform4fv(P.u.uBase,pr.base);if(P.u.uHasTex){gl.uniform1f(P.u.uHasTex,pr.tex?1:0);if(pr.tex){gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,pr.tex);gl.activeTexture(gl.TEXTURE0);}}
+      gl.bindVertexArray(pr.vao);gl.drawElements(gl.TRIANGLES,pr.count,pr.itype,0);}}gl.bindVertexArray(null);}
+function g3dRender(pass,shOn){if(!G3D.draw.length||!G3D.P)return;g3dUpload();gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_2D,G3D.jt);gl.activeTexture(gl.TEXTURE0);
+  if(pass==='shadow'){const P=G3D.PD;gl.useProgram(P.p);gl.uniformMatrix4fv(P.u.uVP,false,RF.lvp);if(P.u.uLVP)gl.uniformMatrix4fv(P.u.uLVP,false,RF.lvp);gl.uniform1f(P.u.uOutline,0);g3dDrawAll(P,'shadow');return;}
+  const P=G3D.P;gl.useProgram(P.p);setCommon(P,shOn);if(P.u.uFill)gl.uniform1f(P.u.uFill,G3D.fill*(1-.75*(DN.night||0)));
+  // the ghost when hidden behind something (left out on Fast graphics, it is a whole extra drawing of every hero)
+  if(G.quality!=='low'){gl.depthFunc(gl.GREATER);gl.depthMask(false);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1f(P.u.uOutline,0);gl.uniform4f(P.u.uFlat,0,0,0,1.5+.42);g3dDrawAll(P,'ghost');
+    gl.disable(gl.BLEND);gl.depthMask(true);gl.depthFunc(gl.LEQUAL);}
+  // the dark outline (the back faces, pushed out a little)
+  gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT);gl.uniform1f(P.u.uOutline,LOOK.ol*G3D.olK);gl.uniform4f(P.u.uFlat,LOOK.olc[0],LOOK.olc[1],LOOK.olc[2],1);g3dDrawAll(P,'outline');gl.cullFace(gl.BACK);
+  gl.uniform1f(P.u.uOutline,0);gl.uniform4f(P.u.uFlat,0,0,0,0);g3dDrawAll(P,'main');gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);}
+// ---------- which heroes have a model ----------
+G3D.base='models/';
+G3D.opt={};
+// models/list.json: ["leo", {"id":"ruby","turn":180,"h":1.05}, ...]  (turn: degrees, h: height compared to the other heroes)
+function g3dList(){if(G3D.list)return;G3D.list=new Set();fetch(G3D.base+'list.json',{cache:'no-cache'}).then(r=>r.ok?r.json():[]).then(a=>{if(Array.isArray(a))for(const q of a){const id=typeof q==='string'?q:q&&q.id;if(!id)continue;G3D.list.add(String(id));if(typeof q==='object')G3D.opt[id]=q;}}).catch(()=>{});}
+function g3dModel(id){if(!G3D.on||!G3D.P)return null;g3dList();const m=G3D.models[id];if(m)return m.ready?m:null;if(G3D.err[id]||!G3D.list.has(id))return null;
+  G3D.models[id]={ready:false};g3dLoad(id).then(M=>{G3D.models[id]=M;}).catch(e=>{G3D.err[id]=String(e&&e.message||e);delete G3D.models[id];noteErr('glb',e);});return null;}
+{const _dh=drawHero;drawHero=function(p,t){try{if(G3D.on&&p&&p.looks&&OUT===CHR){const L=p.looks;const CC=charOfLooks(L,p.hero);
+      const own=(!L.psuit||L.psuit==='none')&&(!L.costume||L.costume==='none');if(own){const M=g3dModel(CC.id);if(M){g3dQueue(M,p,t);return;}}}}catch(e){noteErr('g3d',e);}return _dh(p,t);};}
+MV('Real 3D heroes','أبطال حقيقيون ثلاثيو الأبعاد');
+MV('Every hero now looks just like their picture card: real 3D heroes made from our family\'s drawings. They stand, walk, run, jump, punch, wave, cheer, sit in cars and swim','كل بطل يشبه الآن بطاقته تمامًا: أبطال حقيقيون ثلاثيو الأبعاد صُنعوا من رسومات عائلتنا. يقفون ويمشون ويركضون ويقفزون ويلكمون ويلوّحون ويهتفون ويجلسون في السيارات ويسبحون');
+// Settings: the 3D heroes can be switched off on this tablet (then everyone is drawn as their block figure again)
+try{if(localStorage.getItem('bb_3d')==='0')G3D.on=false;}catch(e){}
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='set'||$('ps_3d'))return r;const after=$('ps_q');if(!after)return r;
+  const b=document.createElement('button');b.className='mb';b.id='ps_3d';b.textContent='🧸 '+trf('3D heroes: {0}',tr(G3D.on?'On':'Off'));after.after(b);
+  b.onclick=()=>{G3D.on=!G3D.on;try{localStorage.setItem('bb_3d',G3D.on?'1':'0');}catch(e){}renderPause();};}catch(e){}return r;};}
+MV('3D heroes: {0}','الأبطال ثلاثيو الأبعاد: {0}');
 // ================= v25.5: one story online, and it counts on every tablet =================
 // Online, everybody plays one story together. It used to be the story of the tablet that started the game, and nothing
 // done there counted at home: a friend who was further along had to play the first chapters again, chapters finished

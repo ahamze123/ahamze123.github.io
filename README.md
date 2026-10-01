@@ -45,6 +45,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - Some jobs need you to hold **✋ Use** (or **E** on a keyboard): helping the lost hikers, fixing things on quests, helping a knocked-out friend up and cooking. A ring fills up while you hold, so you can see it working. Tapping again and again works too, and if you let go the ring only drains slowly.
 
 ## Heroes
+- **Real 3D heroes.** Every hero is a real 3D figure made from their picture, so they look just like their card. They stand, walk, run, jump, punch, wave, cheer, sit in cars, swim and get knocked down with their own moves, and friends playing online see them too. A hero wearing a shop costume or a power suit shows as their block figure, and so does a hero for the moment their 3D file is still loading.
 - Every hero has a picture card, made by our family. The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
 - There are **50 heroes**: 25 boys and 25 girls. Each has their own look, a special skill and two attacks of their own.
@@ -139,5 +140,6 @@ Tap **🌐 العربية** on the first screen (or Menu → Settings → Langua
 Progress is saved on each device.
 
 ## Credits
+- The 3D heroes were made with [Meshy](https://www.meshy.ai) from the family's standing pictures (image to 3D, a skeleton, and moves from Meshy's animation library); `tools/meshy` has the scripts that make them and turn them into the game's files.
 - Songs: "Skyline Exploration", "Gliding Over Green Valleys", "Quiet Horizons" and "Subtle Quests and Flying Capes" were made for Block Buddies by its owner.
 - The backup music uses instrument recordings from the FluidR3_GM sound font by Frank Wen, as packaged in [midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts) by Benjamin Gleitzman, under the [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/) licence (converted to small MP3 files, one note every four semitones).
