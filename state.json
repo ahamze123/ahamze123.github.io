@@ -2,6 +2,8 @@
  "heroes": {
   "aisha": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f7a2-6550-772c-8cfe-8a0811e2be61",
     "made": "2026-10-01 13:23",
     "run": 4,
@@ -14,7 +16,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f7a2-6550-772c-8cfe-8a0811e2be61/output/preview.png?Expires=1791120336&Signature=HsAaavbGiLeOn0OwcW~WRCVf-hqzzL8RIEnfpzocj3Gzk7IgxmPJAJ2cNhh3CmuKwollTRcJq7mXfX9JlK0PUsr1eh7-zNPyb~B-RAJoWehS-YmaJavuuW3v4t3m1pnYYQz2LTsJYu4TLL6F8v-OXl-FSx1IIUcXgob1kl2vnqj72puuqKqlAXMJdgLqgGrHcqeepw-gn-u~ZObwTNL0M13-WNgbvPBEKs7wwcM~GHr8pJkPMfSTqBvg9a6FQyAHu5t-owk4Of0fmac5lTrMfR7xfQjZA3n-bPzUFXtx7dslUkdMaoOiIvcAYtYghF2LXXRc6HI~Un5O3OmMftwAgA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "amira": {
