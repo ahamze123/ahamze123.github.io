@@ -854,6 +854,7 @@
    }
   },
   "karim": {
+   "extra": {},
    "full": {
     "bytes": 2218832,
     "pictures": [
@@ -974,6 +975,12 @@
    }
   },
   "kenji": {
+   "full": {
+    "bytes": 2197880,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
