@@ -434,3 +434,9 @@
 2026-10-01 13:13:47 [bella] rig task made 01a0f799-7163-70ac-bf5d-4ecde851a030
 2026-10-01 13:13:48 [bella] rigging IN_PROGRESS 10%
 2026-10-01 13:13:54 [idris] rig task made 01a0f799-8be8-7625-bb2b-b800572afed9
+2026-10-01 13:13:55 [idris] rigging IN_PROGRESS 10%
+2026-10-01 13:13:56 [saif] rigging IN_PROGRESS 63%
+2026-10-01 13:14:00 [bella] rigging IN_PROGRESS 42%
+2026-10-01 13:14:06 [idris] rigging IN_PROGRESS 36%
+2026-10-01 13:14:06 [saif] rigging SUCCEEDED 100%
+2026-10-01 13:14:07 [saif] rigged: {"model": {"bytes": 1600748, "triangles": 20730, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35556, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30920, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
