@@ -95,3 +95,11 @@
 2026-10-01 12:46:12 [noor] image-to-3d IN_PROGRESS 1%
 2026-10-01 12:46:20 [mia] image-to-3d SUCCEEDED 100%
 2026-10-01 12:46:26 [mia] rig task made 01a0f780-6676-71af-8f1d-5ea783633b4f
+2026-10-01 12:46:27 [mia] rigging IN_PROGRESS 10%
+2026-10-01 12:46:38 [mia] rigging IN_PROGRESS 36%
+2026-10-01 12:46:42 [layla] image-to-3d IN_PROGRESS 36%
+2026-10-01 12:46:48 [mia] rigging IN_PROGRESS 63%
+2026-10-01 12:46:52 [ruby] image-to-3d IN_PROGRESS 30%
+2026-10-01 12:46:58 [mia] rigging IN_PROGRESS 90%
+2026-10-01 12:47:08 [mia] rigging SUCCEEDED 100%
+2026-10-01 12:47:09 [mia] rigged: {"model": {"bytes": 1652308, "triangles": 20656, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35436, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30792, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
