@@ -42,3 +42,5 @@
 2026-10-01 12:40:59 [kira] animations IN_PROGRESS 80%
 2026-10-01 12:41:09 [kira] animations SUCCEEDED 100%
 2026-10-01 12:41:09 [kira] animations: ['Idle', 'Regular_Jump', 'Right_Jab_from_Guard', 'Victory_Cheer', 'Big_Wave_Hello', 'Knock_Down', 'Chair_Sit_Idle_M', 'Swim_Forward']
+2026-10-01 12:41:19 [leo] animations SUCCEEDED 100%
+2026-10-01 12:41:20 [leo] animations: ['Idle', 'Regular_Jump', 'Right_Jab_from_Guard', 'Victory_Cheer', 'Big_Wave_Hello', 'Knock_Down', 'Chair_Sit_Idle_M', 'Swim_Forward']

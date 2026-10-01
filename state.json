@@ -99,10 +99,27 @@
      33,
      569
     ],
+    "credits": 24,
+    "error": null,
+    "file": {
+     "bytes": 623428,
+     "clips": [
+      "Idle",
+      "Regular_Jump",
+      "Right_Jab_from_Guard",
+      "Victory_Cheer",
+      "Big_Wave_Hello",
+      "Knock_Down",
+      "Chair_Sit_Idle_M",
+      "Swim_Forward"
+     ],
+     "joints": 0,
+     "triangles": 0
+    },
     "id": "01a0f77a-f5c1-73d1-8fff-40b9141ce9e7",
     "made": "2026-10-01 12:40",
     "rig": "01a0f76b-9a2e-77fe-8e6b-14c593aa1266",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    },
    "model": {
     "credits": 30,
