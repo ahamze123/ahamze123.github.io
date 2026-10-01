@@ -199,3 +199,4 @@
 2026-10-01 12:53:25 [nora] image-to-3d IN_PROGRESS 27%
 2026-10-01 12:53:27 [fay] image-to-3d IN_PROGRESS 39%
 2026-10-01 12:53:40 [kat] image-to-3d SUCCEEDED 100%
+2026-10-01 12:53:45 [kat] rig task made 01a0f787-1be9-730f-af82-754a938cd21e
