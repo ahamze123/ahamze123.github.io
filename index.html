@@ -10367,7 +10367,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.6';window.BB_VER=BB_VER;
+const BB_VER='25.7';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11543,6 +11543,19 @@ const SAFELOG={seen:{}};
 {const _se=showErr;showErr=function(err,canReload){_se(err,canReload);if(!canReload)return;try{const e=$('err');const d=document.createElement('div');
   d.style.cssText='font:12px/1.35 monospace;opacity:.8;margin-top:14px;max-width:92vw;word-break:break-all;user-select:text;-webkit-user-select:text';
   d.textContent='v'+BB_VER+' · '+String(err&&err.message||err)+' · '+String(err&&err.stack||'').split('\n').slice(0,4).join(' | ');e.appendChild(d);}catch(x){}};}
+// ---------- v25.7: Settings shows the problems the game skipped, and copies a report (with the saved game) to send ----------
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='set'||$('ps_errs'))return r;let L=[];try{L=JSON.parse(localStorage.getItem('bb_errs')||'[]');}catch(e){}if(!L.length)return r;
+    const B=$('pbox');const back=$('pm_back');const d=document.createElement('div');d.id='ps_errs';d.style.cssText='margin:10px 2px 4px';
+    d.innerHTML=`<div class="small">🛠 ${esc(trf('The game skipped {0} problems so it would not get stuck.',L.length))}</div><button class="mb" id="ps_errcopy">📋 ${esc(tr('Copy a problem report'))}</button>`+
+      `<div style="font:11px/1.3 ui-monospace,monospace;opacity:.8;word-break:break-all;-webkit-user-select:text;user-select:text;max-height:6.5em;overflow:auto;margin-top:4px">${L.slice(-4).reverse().map(e=>esc('v'+e.v+' '+e.k+': '+e.m)).join('<br>')}</div>`;
+    if(back&&back.parentNode===B)B.insertBefore(d,back);else B.appendChild(d);
+    $('ps_errcopy').onclick=async()=>{let save='';try{if(G.mode==='play'||G.mode==='menu')saveGame();save=localStorage.getItem(SAVE_KEY)||'';}catch(e){}
+      const txt='BBREPORT '+JSON.stringify({v:BB_VER,ua:navigator.userAgent,at:new Date().toISOString(),errs:L,where:{x:ME?Math.round(ME.x):0,z:ME?Math.round(ME.z):0,realm:ME&&ME.realm,story:typeof storyDone==='function'?storyDone():0,q:QS.act+'#'+QS.step,m:WS.act+'#'+WS.step,veh:ME&&ME.veh?ME.veh.type:''},save});
+      let ok=false;try{await navigator.clipboard.writeText(txt);ok=true;}catch(e){}
+      if(!ok){try{const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,txt.length);ok=document.execCommand('copy');ta.remove();}catch(e){}}
+      toast(ok?tr('Copied! Paste it in your message.'):tr('Could not copy. Take a screenshot of this screen instead.'));};}catch(e){}return r;};}
+MV('The game skipped {0} problems so it would not get stuck.','تخطّت اللعبة {0} من المشكلات حتى لا تعلق.');MV('Copy a problem report','انسخ تقرير المشكلة');
+MV('Copied! Paste it in your message.','تم النسخ! الصقه في رسالتك.');MV('Could not copy. Take a screenshot of this screen instead.','تعذّر النسخ. التقط صورة لهذه الشاشة بدلاً من ذلك.');
 // ================= start =================
 boot();
 </script>
