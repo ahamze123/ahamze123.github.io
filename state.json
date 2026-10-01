@@ -1934,6 +1934,7 @@
    }
   },
   "rex": {
+   "extra": {},
    "full": {
     "bytes": 2956308,
     "pictures": [
@@ -2054,6 +2055,12 @@
    }
   },
   "robin": {
+   "full": {
+    "bytes": 2325864,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
