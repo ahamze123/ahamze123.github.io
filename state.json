@@ -2115,6 +2115,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "uma": {
+   "model": {
+    "id": "01a0f7a1-8ac1-76b6-a5eb-e2fe7b2246d8",
+    "made": "2026-10-01 13:22",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "wanda": {
    "model": {
     "credits": 30,
