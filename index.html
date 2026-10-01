@@ -7630,8 +7630,10 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:29,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:30,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'📖',t:'Story Mode',s:'A real story in 8 chapters: win back the Power Crystals from the Glitch King. Each chapter opens a new place and gives a big prize. Tap 📖 to see your Story Book',act:()=>{if(typeof openStoryBook==='function')openStoryBook();}},
+  {ic:'🧩',t:'Missions that make you think',s:'Fixing, rescuing, building and opening things are puzzles now: memory, patterns, counting, sums and wires. Make them easier or harder in Settings'},
   {ic:'🎵',t:'Our own songs',s:'New music everywhere: Skyline Exploration in the city, Gliding Over Green Valleys in the green places, Quiet Horizons in the snow, space and on the Moon, and Subtle Quests and Flying Capes in missions and boss fights'},
   {ic:'🔇',t:'Quieter streets',s:'Cars do not beep at you any more, and jumping makes a soft swish instead of a boing'},
   {ic:'📷',t:'A steadier camera',s:'The camera is higher up and further back, and it no longer jumps around near trees, mushrooms and houses. Pinch with two fingers to zoom, or change it in Settings'},
@@ -10319,7 +10321,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='23.9';window.BB_VER=BB_VER;
+const BB_VER='24.0';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -10689,6 +10691,404 @@ for(const k in CALM){const o=CALM[k];SONGS[k]=Object.assign({orch:1,name:k,leadO
 // the Moon keeps its quiet space music, now with the soft drums too
 if(SONGS.moon){SONGS.moon.orch=1;SONGS.moon.vol=.3;SONGS.moon.bassType='pbass';}
 MV('Calm new music','موسيقى هادئة جديدة');MV('Soft piano, harp and bells in every place, and gentle plucked strings in boss fights','بيانو ناعم وقيثارة وأجراس في كل مكان، وأوتار خفيفة في معارك الزعماء');
+// ================= v24: thinking puzzles =================
+// Missions are not just "go there and press a button" any more: fixing, rescuing, opening a crystal cage or starting a
+// job asks you to think. Seven kinds of puzzle, each made fresh every time at three levels:
+//   1 Easy (about 6-7 years old), 2 Medium (about 9-10), 3 Hard. The girl's profile starts on Easy and the boy's on Medium;
+//   Menu → Settings → Puzzles changes it for the hero you are playing.
+// A wrong answer never fails you: try again, and after two tries you get a hint.
+const PZ={on:false,cb:null,tries:0,solved:false,el:null,prev:null,last:'',solve:null};
+function pzLevel(){const p=typeof prof==='function'?prof():null;return clamp((p&&p.pzl)||(G.hero==='boy'?2:1),1,3);}
+const pzPick=a=>a[Math.floor(Math.random()*a.length)];
+const pzInt=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function pzShuf(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pzChoices(ans,n,spread,min){const s=new Set([ans]);let g=0;while(s.size<n&&g++<80){const v=ans+pzInt(1,spread)*(Math.random()<.5?-1:1);if(v>=(min??0))s.add(v);}let k=1;while(s.size<n)s.add(ans+spread+k++);return pzShuf([...s]);}
+(function(){const st=document.createElement('style');st.textContent=`
+#pzbox{z-index:34}#pzbox .pzm{width:min(600px,100%);align-items:stretch;gap:12px}
+#pzbox h2{font-size:28px;line-height:1.1}.pzt{margin:0;text-align:center;opacity:.95;font-weight:800}
+.pzx{position:absolute;right:12px;top:10px;width:40px;height:40px;border-radius:50%;border:0;background:var(--panel2);color:#fff;font:900 20px var(--ui);z-index:2}
+body.ar .pzx{right:auto;left:12px}
+.pzq{font-family:var(--display);font-size:24px;text-align:center;line-height:1.2}.pzq.big2{font-size:40px;letter-spacing:.03em}
+.pzrow{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.pzc{min-width:76px;min-height:76px;padding:6px 12px;border:0;border-radius:18px;font:400 32px var(--display);background:#fff;color:var(--ink);box-shadow:0 5px 0 #b9b4d9;transition:transform .08s,background .15s}
+.pzc:active{transform:translateY(3px);box-shadow:0 2px 0 #b9b4d9}.pzc.wide{min-width:96px}
+.pzc.good{background:var(--mint)}.pzc.bad{background:var(--red);color:#fff}.pzc.hint{animation:pzglow 1s ease-in-out infinite}.pzc:disabled{opacity:1}
+@keyframes pzglow{0%,100%{box-shadow:0 5px 0 #b9b4d9,0 0 0 0 rgba(255,207,58,.0)}50%{box-shadow:0 5px 0 #b9b4d9,0 0 0 8px rgba(255,207,58,.85)}}
+.pzpads{gap:18px}.pzpad{width:min(22vw,104px);height:min(22vw,104px);border-radius:50%;border:5px solid rgba(255,255,255,.35);opacity:.45;transition:opacity .12s,transform .12s,box-shadow .12s}
+.pzpad.lit{opacity:1;transform:scale(1.1);box-shadow:0 0 34px 6px currentColor;border-color:#fff}
+.pzpic{text-align:center;font-size:30px;line-height:1.3;word-break:break-all}
+.pzgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;font-size:32px;text-align:center;background:rgba(255,255,255,.1);border-radius:16px;padding:8px}
+.pzmsg{min-height:1.5em;text-align:center;font:400 22px var(--display);color:var(--gold)}
+.pzwires{position:relative;display:flex;justify-content:space-between;gap:70px;padding:4px 10px}
+.pzsvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.pzcol{display:flex;flex-direction:column;gap:12px;z-index:1}
+.pzw{min-width:84px;min-height:58px;border:0;border-radius:14px;background:#fff;color:var(--ink);font:400 26px var(--display);box-shadow:0 4px 0 #b9b4d9;display:grid;place-items:center}
+.pzw.sel{outline:5px solid var(--gold)}.pzw.good{background:var(--mint)}.pzw.bad{background:var(--red)}.pzw.hint{animation:pzglow 1s ease-in-out infinite}
+.pzdot{display:inline-block;width:34px;height:34px;border-radius:50%;border:3px solid rgba(0,0,0,.15)}
+.pzlab{display:inline-block;padding:0 8px;border-bottom:6px solid transparent}
+.pzm.pzshake{animation:pzsh .38s}@keyframes pzsh{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.pzm.pzwin{animation:pzpop .5s}@keyframes pzpop{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+@media (max-height:520px){#pzbox h2{font-size:22px}.pzc{min-width:60px;min-height:60px;font-size:26px}.pzpad{width:78px;height:78px}.pzgrid{font-size:24px}.pzq.big2{font-size:30px}}`;document.head.appendChild(st);})();
+// ---------- the puzzle kinds: each fills the box and calls api.ok() when solved, api.bad() on a wrong try ----------
+const PZK={};
+const pzAnswerRow=(b,ch,ans,api,cls)=>{PZ.solve=()=>{const h=[...b.querySelectorAll('.pzc')].find(y=>String(y.dataset.v)===String(ans));if(h)h.click();};b.querySelectorAll('.pzc').forEach(x=>x.onclick=()=>{if(PZ.solved||x.disabled)return;if(String(x.dataset.v)===String(ans)){x.classList.add('good');api.ok();}
+  else{x.classList.add('bad');x.disabled=true;if(api.bad()){const h=[...b.querySelectorAll('.pzc')].find(y=>String(y.dataset.v)===String(ans));if(h)h.classList.add('hint');}}});};
+// 1. memory: watch the lights, then repeat them
+PZK.memory=(b,L,api,o)=>{const cols=[['#ff4f6d',262],['#ffcf3a',330],['#46e6b0',392],['#4f9dff',494]];let len=[3,4,5][L-1];let seq=[],pos=0,busy=true;
+  b.innerHTML=`<div class="pzq">${esc(tr(o.memoText||'Watch the lights, then tap them in the same order!'))}</div><div class="pzrow pzpads">${cols.map((c,i)=>`<button class="pzpad" data-i="${i}" style="background:${c[0]};color:${c[0]}"></button>`).join('')}</div>`;
+  const pads=[...b.querySelectorAll('.pzpad')];const flash=(i,ms)=>{pads[i].classList.add('lit');try{AU.tone(cols[i][1],Math.min(.45,ms/1000),'sine',.07);}catch(e){}setTimeout(()=>pads[i].classList.remove('lit'),ms);};
+  const play=()=>{busy=true;pos=0;let k=0;api.msg(tr('Watch…'));const step=()=>{if(!PZ.on||PZ.solved)return;if(k>=seq.length){busy=false;api.msg(tr('Your turn!'));return;}flash(seq[k],560);k++;setTimeout(step,820);};setTimeout(step,650);};
+  const make=()=>{seq=[];for(let i=0;i<len;i++){let v;do{v=Math.floor(Math.random()*4);}while(i>0&&v===seq[i-1]&&Math.random()<.7);seq.push(v);}play();};
+  pads.forEach(p=>p.onclick=()=>{if(busy||PZ.solved)return;const i=+p.dataset.i;flash(i,280);if(i===seq[pos]){pos++;if(pos>=seq.length){busy=true;api.ok();}}else{busy=true;if(api.bad()&&len>2)len--;setTimeout(make,1000);}});
+  PZ.solve=()=>{pos=0;seq.forEach(i=>{busy=false;pads[i].onclick();});return true;};
+  make();};
+// 2. math: work out the code
+PZK.math=(b,L,api)=>{let q,ans,pic='';const E=pzPick(['🍎','⭐','🐟','🧱','🍪','💎','🌸']);
+  if(L===1){const a=pzInt(1,5),c=pzInt(1,5);ans=a+c;q=`${a} + ${c} = ?`;pic=`<div class="pzpic" dir="ltr">${E.repeat(a)} <b>+</b> ${E.repeat(c)}</div>`;}
+  else if(L===2){if(Math.random()<.55){const a=pzInt(4,12),c=pzInt(2,9);ans=a+c;q=`${a} + ${c} = ?`;}else{const a=pzInt(9,19),c=pzInt(2,a-3);ans=a-c;q=`${a} − ${c} = ?`;}}
+  else{if(Math.random()<.6){const a=pzInt(2,9),c=pzInt(2,6);ans=a*c;q=`${a} × ${c} = ?`;}else{const a=pzInt(10,30),c=pzInt(2,9),d=pzInt(1,9);ans=a+c-d;q=`${a} + ${c} − ${d} = ?`;}}
+  const ch=pzChoices(ans,L===1?3:4,L===3?6:3,0);
+  b.innerHTML=`<div class="pzq">${esc(tr('Work out the code!'))}</div>${pic}<div class="pzq big2" dir="ltr">${q}</div><div class="pzrow">${ch.map(v=>`<button class="pzc" data-v="${v}">${v}</button>`).join('')}</div>`;pzAnswerRow(b,ch,ans,api);};
+// 3. pattern: what comes next?
+PZK.pattern=(b,L,api)=>{let shown,ans,opts;
+  if(L<3){const pool=pzShuf(['🔴','🔵','🟢','🟡','⭐','🌙','🍀','🔺','🟣','🍓']);const [A,B,Cc]=pool;const unit=L===1?[A,B]:pzPick([[A,B,Cc],[A,A,B],[A,B,B]]);const n=L===1?5:pzPick([6,7]);
+    const full=[];for(let i=0;i<=n;i++)full.push(unit[i%unit.length]);shown=full.slice(0,n);ans=full[n];opts=pzShuf([...new Set([ans,...unit,pool[3]])]).slice(0,L===1?3:4);if(!opts.includes(ans))opts[0]=ans;opts=pzShuf(opts);}
+  else{const kind=pzPick(['add','add','dbl']);let s,d;if(kind==='dbl'){s=pzInt(1,3);shown=[s,s*2,s*4,s*8];ans=s*16;}else{s=pzInt(1,9);d=pzPick([2,3,4,5,10]);shown=[s,s+d,s+2*d,s+3*d];ans=s+4*d;}opts=pzChoices(ans,4,4,0);}
+  b.innerHTML=`<div class="pzq">${esc(tr('What comes next?'))}</div><div class="pzq big2" dir="ltr">${shown.join(L<3?' ':', ')} ${L<3?'❓':', ?'}</div><div class="pzrow">${opts.map(v=>`<button class="pzc" data-v="${v}">${v}</button>`).join('')}</div>`;pzAnswerRow(b,opts,ans,api);};
+// 4. count: how many can you see?
+PZK.count=(b,L,api)=>{const kinds=pzShuf(['🐞','🦋','🌸','⭐','🍄','🐟','🍎','🐤']).slice(0,L+1);const tgt=kinds[0];const n=[pzInt(3,6),pzInt(5,10),pzInt(6,12)][L-1];const total=[10,15,21][L-1];
+  const items=[];for(let i=0;i<n;i++)items.push(tgt);while(items.length<total)items.push(pzPick(kinds.slice(1)));const grid=pzShuf(items);let q=trf('How many {0} can you see?',tgt),ans=n;
+  if(L===3&&Math.random()<.5){const o=kinds[1];const m=grid.filter(x=>x===o).length;ans=n+m;q=trf('How many {0} and {1} together?',tgt,o);}
+  const ch=pzChoices(ans,L===1?3:4,3,1);b.innerHTML=`<div class="pzq">${esc(q)}</div><div class="pzgrid">${grid.map(x=>`<span>${x}</span>`).join('')}</div><div class="pzrow">${ch.map(v=>`<button class="pzc" data-v="${v}">${v}</button>`).join('')}</div>`;pzAnswerRow(b,ch,ans,api);};
+// 5. order: smallest to biggest
+PZK.order=(b,L,api)=>{const n=[3,4,5][L-1],max=[9,50,99][L-1];const set=new Set();while(set.size<n)set.add(pzInt(1,max));const vals=[...set];const sums=L===3&&Math.random()<.5;
+  const lab=v=>{if(!sums||v<2)return String(v);const a=pzInt(1,v-1);return `${a}+${v-a}`;};const cards=pzShuf(vals.map(v=>({v,l:lab(v)})));const sorted=vals.slice().sort((a,c)=>a-c);let pos=0;
+  b.innerHTML=`<div class="pzq">${esc(tr('Tap them from smallest to biggest!'))}</div><div class="pzrow" dir="ltr">${cards.map(o=>`<button class="pzc wide" data-v="${o.v}">${o.l}</button>`).join('')}</div>`;
+  PZ.solve=()=>{for(const v of sorted.slice(pos)){const h=[...b.querySelectorAll('.pzc')].find(y=>+y.dataset.v===v);if(h)h.click();}};
+  b.querySelectorAll('.pzc').forEach(x=>x.onclick=()=>{if(PZ.solved||x.disabled)return;if(+x.dataset.v===sorted[pos]){x.classList.add('good');x.classList.remove('hint');x.disabled=true;pos++;if(pos>=n)api.ok();}
+    else{x.classList.add('bad');setTimeout(()=>x.classList.remove('bad'),450);if(api.bad()){const h=[...b.querySelectorAll('.pzc')].find(y=>+y.dataset.v===sorted[pos]);if(h)h.classList.add('hint');}}});};
+// 6. odd one out
+const PZCAT={animals:['🐶','🐱','🐰','🐸','🐼','🦊','🐷','🐵'],food:['🍎','🍌','🍇','🍓','🍕','🍪','🥕'],vehicles:['🚗','🚌','🚀','🚲','🚁','🚂','⛵'],weather:['☀️','🌧️','⛄','🌈','⚡','🌙'],sports:['⚽','🏀','🎾','🏈','⚾']};
+PZK.odd=(b,L,api)=>{let items,ans,q=tr('Which one does not belong?');
+  if(L===1){const cats=pzShuf(Object.keys(PZCAT));const A=pzPick(PZCAT[cats[0]]);ans=pzPick(PZCAT[cats[1]]);items=[A,A,A,ans];}
+  else if(L===2){const cats=pzShuf(Object.keys(PZCAT));items=pzShuf(PZCAT[cats[0]]).slice(0,4);ans=pzPick(PZCAT[cats[1]]);items.push(ans);}
+  else{const rule=pzPick(['even','odd','five']);const fit=v=>rule==='even'?v%2===0:rule==='odd'?v%2===1:v%5===0;const got=new Set();while(got.size<4){const v=pzInt(2,60);if(fit(v))got.add(v);}do{ans=pzInt(2,60);}while(fit(ans)||got.has(ans));items=[...got,ans];
+    q=tr('Which number does not belong?');}
+  items=pzShuf(items);b.innerHTML=`<div class="pzq">${esc(q)}</div><div class="pzrow" dir="ltr">${items.map(v=>`<button class="pzc" data-v="${v}">${v}</button>`).join('')}</div>`;pzAnswerRow(b,items,ans,api);};
+// 7. wires: connect the matching ends (colours, or sums and answers)
+PZK.wires=(b,L,api)=>{const n=L===1?3:4;const cols=pzShuf([['#ff4f6d'],['#ffcf3a'],['#46e6b0'],['#4f9dff'],['#b28dff']]).slice(0,n).map(c=>c[0]);let left,right;
+  if(L<3){left=cols.map((c,i)=>({k:i,h:`<span class="pzdot" style="background:${c}"></span>`}));right=pzShuf(left.map(o=>({...o})));}
+  else{const pairs=[],used=new Set();while(pairs.length<n){const a=pzInt(1,9),c=pzInt(1,9);if(used.has(a+c))continue;used.add(a+c);pairs.push([`${a}+${c}`,a+c]);}
+    left=pairs.map((p,i)=>({k:i,h:`<span class="pzlab" style="border-color:${cols[i]}">${p[0]}</span>`}));right=pzShuf(pairs.map((p,i)=>({k:i,h:`<span class="pzlab">${p[1]}</span>`})));}
+  b.innerHTML=`<div class="pzq">${esc(tr(L<3?'Connect each wire to the same colour!':'Connect each sum to its answer!'))}</div><div class="pzwires" dir="ltr"><svg class="pzsvg"></svg><div class="pzcol">${left.map(o=>`<button class="pzw L" data-k="${o.k}">${o.h}</button>`).join('')}</div><div class="pzcol">${right.map(o=>`<button class="pzw R" data-k="${o.k}">${o.h}</button>`).join('')}</div></div>`;
+  let sel=null,done=0;const W=b.querySelector('.pzwires'),svg=b.querySelector('.pzsvg');
+  PZ.solve=()=>{for(const l of [...b.querySelectorAll('.pzw.L')]){if(l.disabled)continue;l.click();const r=[...b.querySelectorAll('.pzw.R')].find(y=>y.dataset.k===l.dataset.k);if(r)r.click();}};
+  const line=(a,c,col)=>{const R=W.getBoundingClientRect(),ra=a.getBoundingClientRect(),rc=c.getBoundingClientRect();const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',ra.right-R.left);l.setAttribute('y1',ra.top+ra.height/2-R.top);l.setAttribute('x2',rc.left-R.left);l.setAttribute('y2',rc.top+rc.height/2-R.top);l.setAttribute('stroke',col);l.setAttribute('stroke-width','8');l.setAttribute('stroke-linecap','round');svg.appendChild(l);};
+  b.querySelectorAll('.pzw.L').forEach(x=>x.onclick=()=>{if(x.disabled||PZ.solved)return;b.querySelectorAll('.pzw.L').forEach(y=>y.classList.remove('sel'));sel=x;x.classList.add('sel');api.msg(tr('Now tap where it goes!'));});
+  b.querySelectorAll('.pzw.R').forEach(x=>x.onclick=()=>{if(x.disabled||PZ.solved)return;if(!sel){api.msg(tr('Tap a wire on the left first!'));return;}
+    if(sel.dataset.k===x.dataset.k){line(sel,x,cols[+sel.dataset.k]);sel.disabled=x.disabled=true;sel.classList.remove('sel');sel.classList.add('good');x.classList.add('good');x.classList.remove('hint');sel=null;done++;try{AU.tone(520+done*80,.12,'sine',.06);}catch(e){}if(done>=n)api.ok();else api.msg('');}
+    else{x.classList.add('bad');setTimeout(()=>x.classList.remove('bad'),450);if(api.bad()){const h=[...b.querySelectorAll('.pzw.R')].find(y=>y.dataset.k===sel.dataset.k);if(h)h.classList.add('hint');}}});};
+// ---------- opening and closing ----------
+// pzOpen({title, text, icon, kinds:[...], kind, level, coins, done(ok)})
+function pzOpen(o){if(PZ.on)return false;o=o||{};const kinds=(o.kinds||Object.keys(PZK)).filter(k=>PZK[k]);let kind=o.kind&&PZK[o.kind]?o.kind:pzPick(kinds);
+  if(!o.kind&&kinds.length>1&&kind===PZ.last)kind=pzPick(kinds.filter(k=>k!==PZ.last));PZ.last=kind;const L=clamp(o.level||pzLevel(),1,3);
+  PZ.on=true;PZ.cb=o.done||null;PZ.tries=0;PZ.solved=false;let el=$('pzbox');if(!el){el=document.createElement('div');el.id='pzbox';el.className='modal';document.body.appendChild(el);}
+  el.innerHTML=`<div class="mbox pzm"><button class="pzx" type="button" aria-label="${esc(tr('Close'))}">✕</button><h2>${esc(o.icon||'🧩')} ${esc(o.title||tr('Puzzle time!'))}</h2>${o.text?`<p class="pzt">${esc(o.text)}</p>`:''}<div class="pzbody"></div><div class="pzmsg"></div></div>`;
+  el.hidden=false;PZ.el=el;PZ.prev=G.mode;if(G.mode==='play')G.mode='menu';try{SFX.click();}catch(e){}
+  const body=el.querySelector('.pzbody'),msg=el.querySelector('.pzmsg'),box=el.querySelector('.pzm');
+  const api={msg:t=>{msg.textContent=t||'';},
+    ok:()=>{if(PZ.solved)return;PZ.solved=true;msg.textContent='✅ '+tr(pzPick(['Great thinking!','You did it!','Super smart!','Brilliant!']));box.classList.add('pzwin');try{SFX.coin&&SFX.coin(100);}catch(e){}
+      try{stInc('puzzle');addCoins(o.coins??60);}catch(e){}setTimeout(()=>pzClose(true),1150);},
+    bad:()=>{PZ.tries++;msg.textContent=PZ.tries>=2?tr('Here is a little hint!'):tr('Not quite, try again!');try{SFX.nope&&SFX.nope();}catch(e){}box.classList.remove('pzshake');void box.offsetWidth;box.classList.add('pzshake');return PZ.tries>=2;}};
+  el.querySelector('.pzx').onclick=()=>pzClose(false);
+  try{PZK[kind](body,L,api,o);}catch(e){noteErr('pz',e);PZ.solved=true;setTimeout(()=>pzClose(true),10);}// a broken puzzle never blocks the game
+  return true;}
+function pzClose(ok){if(!PZ.on)return;PZ.on=false;if(PZ.el)PZ.el.hidden=true;if(G.mode==='menu'&&(PZ.prev==='play'||PZ.prev==='menu'))G.mode=PZ.prev==='menu'?'menu':'play';const cb=PZ.cb;PZ.cb=null;if(cb)try{cb(!!ok);}catch(e){noteErr('pzcb',e);}}
+// nothing hurts you while you think (online, the world keeps going)
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);if(PZ.on&&ME)ME.invT=Math.max(ME.invT||0,.4);};}
+// ---------- Settings: puzzle level for the hero you are playing ----------
+{const _rp=renderPause;renderPause=function(){_rp();try{if(PTAB!=='set'||$('ps_pz'))return;const after=$('ps_camf')||$('ps_cam');if(!after)return;const b=document.createElement('button');b.className='mb';b.id='ps_pz';
+  b.textContent='🧩 '+trf('Puzzles for {0}: {1}',prof().name,tr(['Easy','Medium','Hard'][pzLevel()-1]));b.onclick=()=>{prof().pzl=pzLevel()%3+1;saveSoon();try{SFX.click();}catch(e){}renderPause();};after.after(b);}catch(e){}};}
+// ---------- stickers for thinking ----------
+if(typeof STICKERS!=='undefined')STICKERS.push({id:'z_pz10',ic:'🧩',n:'Clever Clogs',d:'Solve 10 puzzles',f:()=>sv('puzzle'),t:10},{id:'z_pz50',ic:'🧠',n:'Brainy Hero',d:'Solve 50 puzzles',f:()=>sv('puzzle'),t:50},{id:'z_pz150',ic:'🎓',n:'Puzzle Master',d:'Solve 150 puzzles',f:()=>sv('puzzle'),t:150});
+MV('Puzzle time!','وقت اللغز!');MV('Watch the lights, then tap them in the same order!','راقب الأضواء، ثم اضغطها بالترتيب نفسه!');MV('Watch…','راقب…');MV('Your turn!','دورك!');
+MV('Work out the code!','احسب الرمز!');MV('What comes next?','ما التالي؟');MV('How many {0} can you see?','كم {0} ترى؟');MV('How many {0} and {1} together?','كم {0} و{1} معًا؟');
+MV('Tap them from smallest to biggest!','اضغطها من الأصغر إلى الأكبر!');MV('Which one does not belong?','أيّها لا ينتمي للبقية؟');MV('Which number does not belong?','أيّ رقم لا ينتمي للبقية؟');
+MV('Connect each wire to the same colour!','صِل كل سلك باللون نفسه!');MV('Connect each sum to its answer!','صِل كل عملية بجوابها!');MV('Now tap where it goes!','الآن اضغط مكانه!');MV('Tap a wire on the left first!','اضغط سلكًا من اليسار أولًا!');
+MV('Great thinking!','تفكير رائع!');MV('You did it!','لقد نجحت!');MV('Super smart!','ذكي جدًا!');MV('Brilliant!','مذهل!');MV('Here is a little hint!','إليك تلميحًا صغيرًا!');MV('Not quite, try again!','ليس تمامًا، حاول مرة أخرى!');
+MV('Puzzles for {0}: {1}','ألغاز {0}: {1}');MV('Easy','سهل');MV('Medium','متوسط');MV('Hard','صعب');
+MV('Clever Clogs','الذكي الصغير');MV('Solve 10 puzzles','حلّ 10 ألغاز');MV('Brainy Hero','البطل العبقري');MV('Solve 50 puzzles','حلّ 50 لغزًا');MV('Puzzle Master','سيّد الألغاز');MV('Solve 150 puzzles','حلّ 150 لغزًا');
+// ================= v24: missions that make you think =================
+// - Fixing and helping (dishes, panels, lamps, hikers, corals...) is a puzzle now, not "hold the button".
+// - Rescuing an animal (penguins, kittens, baby aliens) is a memory game: repeat its call to calm it down.
+// - A quest that is only collecting, racing or fighting starts with a puzzle from the friend who gives it.
+// - A story Power Crystal sits in a glitch cage: solve a puzzle to open it.
+const BRAIN={skip:false,cryBusy:false,cryCool:0};
+// what each kind of job looks like as a puzzle
+const PZTHEME={
+  _:{ic:'🔧',x:'Solve the puzzle to fix it!',k:['wires','math','pattern','order']},
+  hiker:{ic:'🧭',t:'Help the lost hiker',x:'The hiker is lost. Solve the puzzle to show them the way!',k:['order','count','pattern']},
+  fire:{ic:'🔥',t:'Put out the fire',x:'Work out the puzzle to aim the water!',k:['math','order','wires']},
+  coral:{ic:'🪸',t:'Help the baby coral',x:'Sing the coral a happy song: repeat the lights!',k:['memory','pattern']},
+  paint:{ic:'🎨',t:'Fill the paint pot',x:'Mix the right colours!',k:['pattern','count','wires']},
+  fishhole:{ic:'🎣',t:'Catch a fish',x:'Count carefully to catch the fish!',k:['count','memory']},
+  alienpal:{ic:'👽',t:'Say hello in alien',x:'Aliens talk with lights. Repeat what they say!',k:['memory','pattern']},
+  scarecrow:{ic:'🌾',t:'Fix the scarecrow',x:'Put the scarecrow back together!',k:['order','odd','wires']},
+  vines:{ic:'🌿',t:'Cut the vines',x:'Find the right vines to cut!',k:['odd','count','pattern']},
+  junk:{ic:'🧲',t:'Pull the junk',x:'Work out how to pull it free!',k:['math','order']},
+  lamp2:{ic:'💡',t:'Light the lamp',x:'Connect the lamp to the power!',k:['wires','pattern']},
+  lamp:{ic:'🍄',t:'Light the mushroom lamp',x:'Wake up the magic lamp: repeat the lights!',k:['memory','pattern']},
+  iceblock:{ic:'🧊',t:'Melt the ice',x:'Work out the puzzle to melt the ice!',k:['math','order']},
+  cactus:{ic:'🌵',t:'Water the cactus',x:'Count the drops for the thirsty cactus!',k:['count','math']},
+  pot:{ic:'🍝',t:'Stir the secret sauce',x:'Follow the secret recipe!',k:['order','memory','count']},
+  candle:{ic:'🕯️',t:'Light the candle',x:'Light the candles in the right order!',k:['order','memory','pattern']},
+  plant:{ic:'🪴',t:'Water the space plant',x:'Give the plant just the right amount of water!',k:['math','count']}};
+// the Use prompt: "Hold to help" becomes "Help", and so on
+const PZVERB={'Hold to help':'Help','Hold to fix':'Fix it','Hold to stir the sauce':'Stir the sauce','Hold to check it':'Check it','Hold to light it':'Light it','Hold to water':'Water it',
+  'Hold to fill the paint pot':'Fill the paint pot','Hold to fix the scarecrow':'Fix the scarecrow','Hold to put out the fire':'Put out the fire','Hold to cut the vines':'Cut the vines','Hold to pull the junk':'Pull the junk',
+  'Hold to light the lamp':'Light the lamp','Hold to fish':'Fish','Hold to melt the ice':'Melt the ice','Hold to water the cactus':'Water the cactus','Hold to say hello':'Say hello','Hold to help the coral':'Help the coral'};
+function brainFix(i){const st=qStepDef();if(!st||st.k!=='fix'||(QS.bits&(1<<i)))return;const T0=PZTHEME[st.look]||PZTHEME._;
+  pzOpen({title:T0.t?tr(T0.t):tr(st.text||'Fix it'),text:tr(T0.x),icon:T0.ic,kinds:T0.k,done:ok=>{if(!ok)return;if(qStepDef()!==st||(QS.bits&(1<<i)))return;qAction('fix',i);}});}
+const PZRESCUE={penguin:['🐧','Calm the penguin','The penguin is scared. Repeat its song to calm it down!'],kitten:['🐱','Calm the kitten','The kitten is hiding. Repeat its meows to make friends!'],
+  alien:['👽','Calm the baby alien','The baby alien talks with lights. Repeat them!']};
+function brainRescue(i){const st=qStepDef();if(!st||st.k!=='rescue'||(QS.bits&(1<<i)))return;const R0=PZRESCUE[st.kind]||PZRESCUE.kitten;
+  pzOpen({title:tr(R0[1]),text:tr(R0[2]),icon:R0[0],kinds:['memory','memory','count'],done:ok=>{if(!ok)return;if(qStepDef()!==st||(QS.bits&(1<<i)))return;qAction('rescue',i);if(ME)ME.anim.cheer=1;}});}
+// fix and rescue spots ask for a puzzle instead of a hold or a tap
+{const _qi=questInteract;questInteract=function(cand,p){_qi((o,k,label,range,prio,extra)=>{extra=extra||{};
+    if(k==='qfix'){const st=qStepDef();const i=extra.i;return cand(o,'qpz',PZVERB[st&&st.verb]||(st&&st.verb&&!/^Hold/.test(st.verb)?st.verb:'Fix it'),range,prio,{i,fn:()=>brainFix(i)});}
+    if(k==='qrescue'){const i=extra.i;return cand(o,'qpz',label,range,prio,{i,fn:()=>brainRescue(i)});}
+    return cand(o,k,label,range,prio,extra);},p);};}
+// quests that are only running around start with a puzzle from the friend who gives them
+const PZTHINKY=['fix','rescue','serve','sort'];
+function questNeedsStartPuzzle(Q){return !!Q&&!(Q.steps||[]).some(s=>PZTHINKY.includes(s.k));}
+{const _qs=qStart;qStart=function(id){const Q=qDef(id);if(BRAIN.skip||!Q||QS.act===id||!questNeedsStartPuzzle(Q)||PZ.on)return _qs(id);
+  pzOpen({title:tr(Q.title),text:tr('Before we start, can you solve this?'),icon:'❓',kinds:['odd','count','pattern','math','order'],done:ok=>{if(ok)_qs(id);else toast(tr('Come back when you are ready!'));}});return true;};}
+// a quest started by a friend online must not pop a puzzle on the host's screen
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='qstart'||type==='cry'){BRAIN.skip=true;try{return _ae(type,a,rp);}finally{BRAIN.skip=false;}}return _ae(type,a,rp);};}
+// the story crystals sit in a glitch cage
+{const _pc=MIS.pickCrystal.bind(MIS);MIS.pickCrystal=function(){if(BRAIN.skip)return _pc();if(!WS.cry||PZ.on||BRAIN.cryBusy)return;if(performance.now()<BRAIN.cryCool)return;BRAIN.cryBusy=true;const m=WS.cry.m;
+  pzOpen({title:tr('The crystal is locked!'),text:tr('The Glitch King put the Power Crystal in a glitch cage. Solve the puzzle to open it!'),icon:'💎',kinds:['math','pattern','order','memory','wires'],coins:150,
+    done:ok=>{BRAIN.cryBusy=false;if(ok){if(WS.cry&&WS.cry.m===m)_pc();}else BRAIN.cryCool=performance.now()+4000;}});};}
+// King Brickley's quests could never start: the castle's welcome lines always answered first
+{const _te=talkExtra;talkExtra=function(n,say){if(n&&n.id==='king'&&typeof talkQuest==='function'){const Q=QUESTS.filter(q=>q.giver==='king');if(Q.some(q=>!qDone(q.id))&&talkQuest(n,say))return true;}return _te(n,say);};}
+MV('Solve the puzzle to fix it!','حلّ اللغز لتصلحه!');MV('Help the lost hiker','ساعد المتنزّه التائه');MV('The hiker is lost. Solve the puzzle to show them the way!','المتنزّه تائه. حلّ اللغز لتدلّه على الطريق!');
+MV('Put out the fire','أطفئ النار');MV('Work out the puzzle to aim the water!','حلّ اللغز لتوجّه الماء!');MV('Help the baby coral','ساعد المرجان الصغير');MV('Sing the coral a happy song: repeat the lights!','غنِّ للمرجان أغنية سعيدة: كرّر الأضواء!');
+MV('Fill the paint pot','املأ وعاء الألوان');MV('Mix the right colours!','امزج الألوان الصحيحة!');MV('Catch a fish','اصطد سمكة');MV('Count carefully to catch the fish!','عُدّ بعناية لتصطاد السمكة!');
+MV('Say hello in alien','قل مرحبًا بلغة الفضائيين');MV('Aliens talk with lights. Repeat what they say!','الفضائيون يتكلمون بالأضواء. كرّر ما يقولونه!');MV('Fix the scarecrow','أصلح الفزّاعة');MV('Put the scarecrow back together!','أعد تركيب الفزّاعة!');
+MV('Cut the vines','اقطع الكروم');MV('Find the right vines to cut!','اعثر على الكروم الصحيحة لتقطعها!');MV('Pull the junk','اسحب الخردة');MV('Work out how to pull it free!','فكّر كيف تسحبها!');
+MV('Light the lamp','أضئ المصباح');MV('Connect the lamp to the power!','صِل المصباح بالكهرباء!');MV('Light the mushroom lamp','أضئ مصباح الفطر');MV('Wake up the magic lamp: repeat the lights!','أيقظ المصباح السحري: كرّر الأضواء!');
+MV('Melt the ice','أذب الجليد');MV('Work out the puzzle to melt the ice!','حلّ اللغز لتذيب الجليد!');MV('Water the cactus','اسقِ الصبّار');MV('Count the drops for the thirsty cactus!','عُدّ القطرات للصبّار العطشان!');
+MV('Stir the secret sauce','حرّك الصلصة السرية');MV('Follow the secret recipe!','اتبع الوصفة السرية!');MV('Light the candle','أضئ الشمعة');MV('Light the candles in the right order!','أضئ الشموع بالترتيب الصحيح!');
+MV('Water the space plant','اسقِ النبتة الفضائية');MV('Give the plant just the right amount of water!','أعطِ النبتة الكمية المناسبة من الماء!');
+MV('Help','ساعد');MV('Fix it','أصلحه');MV('Stir the sauce','حرّك الصلصة');MV('Check it','افحصه');MV('Light it','أضئه');MV('Water it','اسقِه');MV('Fish','اصطد');MV('Say hello','قل مرحبًا');MV('Help the coral','ساعد المرجان');
+MV('Calm the penguin','هدّئ البطريق');MV('The penguin is scared. Repeat its song to calm it down!','البطريق خائف. كرّر أغنيته لتهدّئه!');MV('Calm the kitten','هدّئ القطة');MV('The kitten is hiding. Repeat its meows to make friends!','القطة مختبئة. كرّر مواءها لتصادقها!');
+MV('Calm the baby alien','هدّئ الفضائي الصغير');MV('The baby alien talks with lights. Repeat them!','الفضائي الصغير يتكلم بالأضواء. كرّرها!');
+MV('Before we start, can you solve this?','قبل أن نبدأ، هل تستطيع حلّ هذا؟');MV('Come back when you are ready!','عُد عندما تكون مستعدًا!');
+MV('The crystal is locked!','البلورة مقفلة!');MV('The Glitch King put the Power Crystal in a glitch cage. Solve the puzzle to open it!','وضع ملك الخلل بلورة القوة في قفص عطِل. حلّ اللغز لتفتحه!');
+// the factory's energy sockets and big handle, and every build spot (trampolines, statues, the Crystal Bridge...) are puzzles
+// now too, instead of holding the button down
+const PZTASK={socket:{ic:'⚡',t:'Charge the socket',x:'Connect the wires to send the energy into the socket!',k:['wires'],v:'Charge it'},
+  handle:{ic:'💪',t:'Pull the big handle',x:'The handle is locked. Solve the puzzle, then pull!',k:['math','order'],v:'Pull it'},
+  build:{ic:'🧱',t:'Build it',x:'Put the pieces together in the right order!',k:['order','count','pattern'],v:'Build it'}};
+function brainTask(ia){const T0=PZTASK[ia.k];if(!T0||PZ.on)return;if(ia.need&&ia.need!==ME.hero){SFX.nope&&SFX.nope();toast(ia.label);return;}
+  const title=ia.k==='build'&&typeof BUILD_NAMES!=='undefined'&&ia.o&&BUILD_NAMES[ia.o.type]?BUILD_NAMES[ia.o.type]:T0.t;
+  pzOpen({title:tr(title),text:tr(T0.x),icon:T0.ic,kinds:T0.k,done:ok=>{if(!ok)return;
+    if(ia.k==='socket'){if(!MIS.socketOn(ia.i))MIS.socketContrib(ia.i,2.4);}
+    else if(ia.k==='handle'){if(!MIS.handleOn())MIS.handleContrib(2.4);}
+    else if(ia.k==='build'){const b=ia.o;if(b&&!MIS.buildDone(b.id))MIS.buildContrib(b,(b.final?7:3)*1.05);}
+    try{ME.anim.cheer=1;}catch(e){}}});}
+{const _fi=findInteract;findInteract=function(p){const ia=_fi(p);if(ia&&ia.hold&&PZTASK[ia.k]&&p===ME){const T0=PZTASK[ia.k];const wrong=ia.need&&ia.need!==p.hero;
+    return Object.assign({},ia,{hold:false,label:wrong?ia.label:tr(T0.v),fn:()=>brainTask(ia)});}return ia;};}
+MV('Charge the socket','اشحن المقبس');MV('Connect the wires to send the energy into the socket!','صِل الأسلاك لترسل الطاقة إلى المقبس!');MV('Charge it','اشحنه');
+MV('Pull the big handle','اسحب المقبض الكبير');MV('The handle is locked. Solve the puzzle, then pull!','المقبض مقفل. حلّ اللغز ثم اسحب!');MV('Pull it','اسحبه');
+MV('Build it','ابنِه');MV('Put the pieces together in the right order!','ركّب القطع بالترتيب الصحيح!');
+// ================= v24: Story Mode =================
+// The Glitch King stole Blocktopia's five Power Crystals and locked the roads with glitch force fields. The story has
+// eight chapters, one place at a time. Finishing a chapter breaks the next force field, gives a prize (heroes, pets and
+// cars that get bigger as you go) and a friend calls on the hero radio to say where to go next.
+// A picture story explains it all at the start, and 📖 shows the Story Book any time.
+// Progress lives in WS.done (the mission bits, plus 64 for the rocket and 128 for the UFO), so it is saved with the game,
+// and online everyone plays in the host's story.
+const STORY=[
+  {id:'bank',n:'The Bank Robbery',place:'Brick City',ic:'🏦',col:'#ff4f6d',who:'brick',opens:'Mushroom Forest',
+    call:'Glitch Bots are robbing the Brick City Bank! Officer Brick needs you right away!',prize:[{t:'car',id:'police'},{t:'hero',id:'salem'}]},
+  {id:'pups',n:'Puppy Rescue',place:'Mushroom Forest',ic:'🐶',col:'#56e07a',who:'rosa',opens:'Canyon Desert',
+    call:'The force field around the Mushroom Forest is gone! Ranger Rosa lost her puppies in there. Please help her!',prize:[{t:'pet',id:'puppy'},{t:'coins',n:5000}]},
+  {id:'factory',n:'Robot Factory',place:'Canyon Desert',ic:'🤖',col:'#ff9a3c',who:'gear',opens:'Frosty Peaks',
+    call:'The Canyon Desert is open! The Glitch King took over Professor Gear\'s robot factory. Go and take it back!',prize:[{t:'hero',id:'karim'},{t:'car',id:'hotrod'}]},
+  {id:'peaks',n:'Frozen Peaks',place:'Frosty Peaks',ic:'❄️',col:'#6fd0ff',who:'sven',opens:'Happy Farm',
+    call:'Brrr! The mountain beacons went dark and the Yeti King is stomping around. Sven is waiting at the lodge!',prize:[{t:'hero',id:'bilal'},{t:'car',id:'monster'}]},
+  {id:'slime',n:'Slime Farm',place:'Happy Farm',ic:'🟣',col:'#c38dff',who:'fern',opens:'Glitch Island',
+    call:'Help! Slimes are eating all of Farmer Fern\'s veggies. Hurry to Happy Farm!',prize:[{t:'hero',id:'sara'},{t:'pet',id:'bunny'}]},
+  {id:'final',n:'Glitch Castle',place:'Glitch Island',ic:'🏰',col:'#ff4fd8',who:'mayor',opens:'All five towns',
+    call:'You found all five Power Crystals! Come back to Mayor Pip at Hero HQ. It is time to stop the Glitch King!',prize:[{t:'hero',id:'majid'},{t:'coins',n:10000}]},
+  {id:'rocket',n:'Rocket to the Moon',place:'Star Harbor',ic:'🚀',col:'#46e6ff',who:'nova',opens:'The Moon',
+    call:'The Glitch King escaped to the Moon in his UFO! Commander Nova at Star Harbor is building a rocket. Find the rocket parts in all five towns!',prize:[{t:'hero',id:'uma'},{t:'car',id:'hover'}]},
+  {id:'ufo',n:'UFO Showdown',place:'The Moon',ic:'🛸',col:'#b28dff',who:'luna',opens:'The Sky Kingdom and the whole world',
+    call:'Captain Luna needs help at the Moon Base. Then it is time to face the Glitch King\'s UFO!',prize:[{t:'hero',id:'aisha'},{t:'car',id:'herocar'},{t:'coins',n:20000}]}];
+const STORYBIT={bank:1,pups:2,factory:4,peaks:8,slime:16,final:32,rocket:64,ufo:128};
+function storyDone(){let n=0;for(const C of STORY){if(WS.done&STORYBIT[C.id])n++;else break;}return n;}
+// ---------- where the force fields are: the number of chapters you need to have finished ----------
+function areaNeed(x,z,y){if(inMoonBox(x,z))return 7;if(typeof inInBox==='function'&&inInBox(x,z))return 0;
+  if(y!==undefined&&y>30&&typeof SKY!=='undefined'&&SKY.ok&&d2(x,z,SKY.x,SKY.z)<80)return 8;
+  const xi=clamp(Math.floor(x),0,N-1),zi=clamp(Math.floor(z),0,N-1),i=cid(xi,zi),r=RID[i];if(r>=1&&r<=4)return 6;if(xi>=ON||zi>=ON)return 6;
+  const b=BIO[i];return b===B.FOREST?1:b===B.DESERT?2:b===B.SNOW?3:b===B.FARM?4:b===B.ISLE?5:0;}
+const AREANAME=['Brick City','Mushroom Forest','Canyon Desert','Frosty Peaks','Happy Farm','Glitch Island','the towns','the Moon','the Sky Kingdom'];
+// the rocket and the UFO count as chapters too (the host keeps the score; friends online get it with the world)
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(isAuth()){if(G.spaceOK&&!(WS.done&64))WS.done|=64;if(typeof qDone==='function'&&qDone('m_ufo')&&!(WS.done&128))WS.done|=128;}storyTick(dt);}catch(e){noteErr('story',e);}};}
+// ---------- the force fields push you back ----------
+const STL={safe:null,msgT:0,hitT:0};
+function storyExempt(){return G.mode!=='play'||!!G.cine||(ME&&(ME.inRocket||ME.carried))||(WS.act==='bank'&&WS.step>=2)||(typeof GG!=='undefined'&&GG.cine)||(typeof BAL!=='undefined'&&BAL.on);}
+function storyLock(dt){const p=ME;if(!p||p.realm==='inside'||p.realm==='moon'&&storyDone()>=7)return;STL.msgT-=dt;const cur=storyDone();if(cur>=8){STL.safe=null;return;}
+  const v=p.veh,x=v?v.x:p.x,z=v?v.z:p.z;const need=areaNeed(x,z,p.y);
+  if(need<=cur){STL.safe={x,z};return;}if(storyExempt())return;
+  if(need===8){p.y=Math.min(p.y,28);p.vy=Math.min(p.vy||0,-6);if(v&&v.y>28){v.y=28;v.vy=Math.min(v.vy||0,-4);}}
+  else{const s=STL.safe;if(s&&Math.hypot(s.x-x,s.z-z)<40){if(v){v.x=s.x;v.z=s.z;v.spd=-(v.spd||0)*.3;if(v.vx!==undefined){v.vx*=-.3;v.vz*=-.3;}p.x=v.x;p.z=v.z;}else{p.x=s.x;p.z=s.z;p.vx*=-.4;p.vz*=-.4;}}
+    else{if(v)exitVeh(p);const H0=LOC.hq;teleport(H0.x,H0.z+4);}}
+  STL.hitT=G.t;STL.hitX=x;STL.hitZ=z;if(STL.msgT<=0){STL.msgT=4.5;try{SFX.nope();}catch(e){}const C=STORY[need-1];toast('⚡ '+trf('A glitch force field! Finish chapter {0}, {1}, to open {2}',need,tr(C.n),tr(AREANAME[need])));}}
+{const _um=updateMe;updateMe=function(dt,inp){_um(dt,inp);try{storyLock(dt);}catch(e){noteErr('slock',e);}};}
+// the train, the balloon and the rocket only go to open places
+{const _tt=travelTo;travelTo=function(s){if(s&&areaNeed(s.x,s.z)>storyDone()){closeTravel();SFX.nope&&SFX.nope();const n=areaNeed(s.x,s.z);toast('⚡ '+trf('The Glitch King\'s force field blocks the tracks to {0}. Finish chapter {1} first!',tr(s.name),n));return;}return _tt(s);};}
+{const _bg=balloonGo;balloonGo=function(dir){if(dir==='up'&&storyDone()<8){SFX.nope&&SFX.nope();toast('🎈 '+tr('The Sky Kingdom opens at the end of the story. Keep going, hero!'));return;}return _bg(dir);};}
+{const _sl=startLaunch;startLaunch=function(toMoon){if(toMoon&&storyDone()<6){SFX.nope&&SFX.nope();toast('🚀 '+tr('The rocket is not ready yet. Keep following the story!'));return;}return _sl(toMoon);};}
+// ---------- the force fields you can see: glowing laser fences along the edge of each locked place ----------
+const SW={cur:-1,grid:new Map()};
+function storyWallsBuild(){const cur=storyDone();if(SW.cur===cur)return;SW.cur=cur;SW.grid.clear();if(cur>=8||typeof RID==='undefined')return;const S=2;const need=(x,z)=>areaNeed(x+1,z+1);
+  const row=new Int8Array(Math.ceil(N/S)+1);for(let z=0;z<N;z+=S){let prev=need(0,z);for(let x=0;x<N;x+=S){const a=x?need(x,z):prev;const below=z+S<N?need(x,z+S):a;
+      if(x+S<N){const b=need(x+S,z);if((a>cur)!==(b>cur)&&Math.max(H[cid(x,z)],H[cid(Math.min(N-1,x+S),z)])>WL-3)add(x+S,z+1,0,Math.max(a,b));}
+      if((a>cur)!==(below>cur)&&Math.max(H[cid(x,z)],H[cid(x,Math.min(N-1,z+S))])>WL-3)add(x+1,z+S,1,Math.max(a,below));prev=a;}}
+  function add(x,z,ax,n){const k=((x>>5)<<8)|(z>>5);let L=SW.grid.get(k);if(!L)SW.grid.set(k,L=[]);L.push({x,z,ax,n});}}
+function drawStoryWalls(t){if(storyDone()>=8||!ME||camRealm()!=='earth')return;storyWallsBuild();const ex=CAM.tx,ez=CAM.tz,cx=ex>>5,cz=ez>>5;const m=MS.cur;const prev=OUT;OUT=DYN;
+  const fl=.75+.25*Math.sin(t*9)*Math.sin(t*3.1);const col='#ff4fd8';
+  for(let gx=cx-2;gx<=cx+2;gx++)for(let gz=cz-2;gz<=cz+2;gz++){const L=SW.grid.get((gx<<8)|gz);if(!L)continue;for(const p of L){const d=Math.abs(p.x-ex)+Math.abs(p.z-ez);if(d>70)continue;
+      const y=Math.max(chAt(p.x,p.z),WL);MS.reset();M4.tr(m,p.x,y,p.z);if(p.ax)M4.ry(m,Math.PI/2);
+      // a post every other step, and three laser lines
+      if(((p.x+p.z)>>1)%2===0)bx(m,0,1.8,-1,.14,3.6,.14,'#3a1450',1,.2);for(let k=0;k<3;k++)bx(m,0,.8+k*1.1+Math.sin(t*4+p.x*.3+k)*.04,0,.05,.05,2.05,col,1,fl);}}
+  OUT=prev;}
+{const _dam=drawAmbient;drawAmbient=function(t){_dam(t);try{drawStoryWalls(t);}catch(e){noteErr('swall',e);}};}
+{const _pl=placeLabels;placeLabels=function(){_pl();try{if(storyDone()>=8||!ME||ME.realm!=='earth'||G.t-STL.hitT>6)return;label('swall',STL.hitX,Math.max(chAt(STL.hitX,STL.hitZ),WL)+4.4,STL.hitZ,'⚡ '+esc(tr('Glitch force field')),'sign');}catch(e){}};}
+// the big map shows the locked places
+{const _dbm=drawBigMap;drawBigMap=function(){_dbm();try{const cur=storyDone();if(cur>=8||MAPV.realm==='moon')return;const cv=$('bmap');if(!cv)return;const x=cv.getContext('2d');x.save();x.setTransform(1,0,0,1,0,0);
+  x.fillStyle='rgba(60,10,80,.5)';const S=8;for(let z=0;z<N;z+=S)for(let xx=0;xx<N;xx+=S){if(areaNeed(xx+4,z+4)<=cur)continue;const [a,b]=mapToS(xx,z),[c,d]=mapToS(xx+S,z+S);x.fillRect(Math.min(a,c),Math.min(b,d),Math.abs(c-a)+1,Math.abs(d-b)+1);}
+  x.restore();}catch(e){}};}
+// ---------- what to do next: the story comes first (a quest you already started still shows) ----------
+function storyGiver(C){if(!C)return null;return NPCS.find(n=>n.id===C.who)||null;}
+function storyObjective(){const cur=storyDone();if(cur>=8)return null;const C=STORY[cur];
+  if(C.id==='rocket'&&G.spaceQ)return null;// the rocket parts show by themselves
+  if(C.id==='ufo'){if(ME&&ME.realm!=='moon'){const pad=WORLD.rocketPad;return pad?{text:trf('📖 Chapter {0}: fly the rocket to the Moon',cur+1),t:{x:pad.x,z:pad.z},col:C.col,story:1}:null;}return null;}
+  const g=storyGiver(C);if(!g)return null;return {text:trf('📖 Chapter {0}: talk to {1}',cur+1,tr(g.name)),t:g,col:C.col,story:1};}
+{const _ob=MIS.objective.bind(MIS);MIS.objective=function(){const o=_ob();try{if(!WS.intro||WS.act||QS.act||JOB.id)return o;const so=storyObjective();if(so)return so;}catch(e){}return o;};}
+// ---------- the picture story at the start ----------
+const INTRO=[
+  {art:'🌍🧱💎',t:'Welcome to Blocktopia!',s:'A happy world made of bricks. Five magic Power Crystals keep everything running.'},
+  {art:'👾💎⚡',t:'Oh no! The Glitch King!',s:'He stole all five Power Crystals, and his Glitch Bots locked the roads with glitchy force fields.'},
+  {art:'🦸🦸‍♀️✨',t:'Blocktopia needs heroes. That\'s you!',s:'Win the crystals back one chapter at a time. Every chapter breaks a force field and opens a new place.'},
+  {art:'🧩🎁🏆',t:'Think like a hero!',s:'Solve puzzles, help friends and beat bosses. Every chapter has a big prize: new heroes, pets and cars!'},
+  {art:'🏛️👉🧭',t:'Start at Hero HQ',s:'Follow the golden arrow to Mayor Pip. Tap 📖 any time to see your Story Book.'}];
+(function(){const st=document.createElement('style');st.textContent=`
+#storybox,#introbox,#radiobox{z-index:33}.stbx{width:min(620px,100%)}
+.intro-art{font-size:min(20vw,96px);text-align:center;line-height:1.1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+.intro-t{font-family:var(--display);font-size:30px;text-align:center;margin:0}.intro-s{text-align:center;font-weight:800;font-size:18px;margin:0;line-height:1.35}
+.intro-dots{display:flex;gap:8px;justify-content:center}.intro-dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3)}.intro-dots i.on{background:var(--gold)}
+.intro-row{display:flex;gap:10px;justify-content:center}
+.stch{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:16px;background:var(--panel2);border:3px solid transparent}
+.stch .ic{font-size:34px;width:48px;text-align:center}.stch b{font-family:var(--display);font-weight:400;font-size:20px;display:block}.stch small{display:block;font-weight:800;opacity:.9}
+.stch.cur{border-color:var(--c,#ffcf3a);background:rgba(255,255,255,.16)}.stch.done{opacity:.8}.stch.lock{opacity:.55}
+.stch .st{margin-inline-start:auto;font-size:24px}.stpz{font-size:13px;opacity:.95}
+.stbar{height:12px;border-radius:8px;background:rgba(255,255,255,.15);overflow:hidden}.stbar i{display:block;height:100%;background:linear-gradient(90deg,#ffcf3a,#ff4fd8)}
+.radio-who{display:flex;gap:14px;align-items:center}.radio-who .ic{font-size:64px}.radio-who b{font-family:var(--display);font-weight:400;font-size:26px}
+.radio-msg{font-weight:800;font-size:18px;line-height:1.35;background:rgba(255,255,255,.1);border-radius:14px;padding:12px}
+#bstory{font-size:22px}`;document.head.appendChild(st);})();
+function mkModal(id){let el=$(id);if(!el){el=document.createElement('div');el.id=id;el.className='modal';el.hidden=true;document.body.appendChild(el);}return el;}
+const STY={introI:0,prevMode:null,radioQ:[],shownN:-1};
+function storyPause(on){if(on){if(G.mode==='play'){STY.prevMode='play';G.mode='menu';}}else if(G.mode==='menu'&&STY.prevMode==='play'){G.mode='play';STY.prevMode=null;}}
+function openIntro(){const el=mkModal('introbox');STY.introI=0;storyPause(true);const show=()=>{const P=INTRO[STY.introI],last=STY.introI===INTRO.length-1;
+    el.innerHTML=`<div class="mbox stbx"><div class="intro-art">${P.art}</div><h2 class="intro-t">${esc(tr(P.t))}</h2><p class="intro-s">${esc(tr(P.s))}</p><div class="intro-dots">${INTRO.map((_,i)=>`<i class="${i===STY.introI?'on':''}"></i>`).join('')}</div>
+      <div class="intro-row">${last?'':`<button class="big alt sm" id="inskip">${esc(tr('Skip'))}</button>`}<button class="big" id="innext">${esc(tr(last?'Let\'s go!':'Next'))}</button></div></div>`;
+    try{if(VOICE.on)VOICE.say(tr(P.t)+' '+tr(P.s),'Mayor Pip');}catch(e){}
+    $('innext').onclick=()=>{try{SFX.click();}catch(e){}if(last)closeIntro();else{STY.introI++;show();}};if($('inskip'))$('inskip').onclick=closeIntro;};el.hidden=false;show();}
+function closeIntro(){const el=$('introbox');if(el)el.hidden=true;try{VOICE.stop();}catch(e){}G.storyIntro=1;saveSoon();storyPause(false);}
+// ---------- the Story Book ----------
+function prizeText(r){if(r.t==='hero'){const C=CHARBY[r.id];return '🦸 '+(C?tr(C.n):'');}if(r.t==='car'){const S=VSPEC[r.id];return '🚗 '+(S?tr(S.n):'');}if(r.t==='pet'){const q=PETS.find(p=>p.id===r.id);return (q?q.i+' '+tr(q.n):'🐾');}
+  if(r.t==='coins')return '🪙 '+fmt(r.n);return '🎁';}
+function openStoryBook(){const el=mkModal('storybox');const cur=storyDone();storyPause(true);
+  const rows=STORY.map((C,i)=>{const st=i<cur?'done':i===cur?'cur':'lock';const g=storyGiver(C);
+    const sub=st==='done'?tr('Done!'):st==='cur'?(g?trf('Next: talk to {0}',tr(g.name)):tr(C.place)):trf('Opens after chapter {0}',i);
+    return `<div class="stch ${st}" style="--c:${C.col}"><div class="ic">${st==='lock'?'🔒':C.ic}</div><div><b>${esc(trf('Chapter {0}: {1}',i+1,tr(C.n)))}</b><small>📍 ${esc(tr(C.place))} · ${esc(sub)}</small>
+      <small class="stpz">🎁 ${esc(C.prize.map(prizeText).join(' · '))}</small></div><div class="st">${st==='done'?'✅':st==='cur'?'⭐':''}</div></div>`;}).join('');
+  el.innerHTML=`<div class="mbox stbx"><button class="pzx" type="button" id="stx">✕</button><h2>📖 ${esc(tr('The Story of Blocktopia'))}</h2>
+    <div class="stbar"><i style="width:${Math.round(cur/STORY.length*100)}%"></i></div><p class="small" style="margin:0;text-align:center;font-weight:900">${esc(cur>=STORY.length?tr('You finished the whole story! The whole world is open.'):trf('Chapter {0} of {1}',cur+1,STORY.length))}</p>
+    ${rows}<div class="intro-row">${cur<STORY.length?`<button class="big" id="stgo">🧭 ${esc(tr('Show me the way'))}</button>`:''}<button class="big alt sm" id="stintro">🎬 ${esc(tr('Watch the story again'))}</button></div></div>`;
+  el.hidden=false;$('stx').onclick=closeStoryBook;el.onclick=e=>{if(e.target===el)closeStoryBook();};$('stintro').onclick=()=>{closeStoryBook();openIntro();};
+  if($('stgo'))$('stgo').onclick=()=>{closeStoryBook();storyGuide();};}
+function closeStoryBook(){const el=$('storybox');if(el)el.hidden=true;storyPause(false);}
+function storyGuide(){const o=storyObjective()||MIS.objective();if(!o||!o.t)return;try{navSet({x:o.t.x,z:o.t.z,label:String(o.text||'').replace(/^📖\s*/,''),icon:'📖',col:o.col||'#ffcf3a'});}catch(e){}}
+// a 📖 button next to the menu button
+(function(){const pb=$('pbtns'),bp=$('bpause');if(!pb||!bp||$('bstory'))return;const b=document.createElement('button');b.className='ib';b.id='bstory';b.title=tr('Story Book');b.setAttribute('aria-label',tr('Story Book'));b.textContent='📖';
+  b.onclick=()=>{if(G.mode==='play'){try{SFX.click();}catch(e){}openStoryBook();}};pb.insertBefore(b,bp);})();
+// ---------- chapter done: prizes, then the next friend calls on the hero radio ----------
+function storyPrizes(i){G.storyPrz=G.storyPrz||[];if(G.storyPrz.includes(i))return [];G.storyPrz.push(i);const C=STORY[i];const cards=[];for(const r of C.prize){try{const c=giveReward(r);if(c)cards.push(c);}catch(e){noteErr('sprize',e);}}saveSoon();return cards;}
+function storyTick(dt){if(G.mode==='title'||!ME)return;const cur=storyDone();
+  if(STY.shownN<0){// the first time a save meets Story Mode: the chapters it already finished give their prizes now
+    if(G.storyN===undefined){G.storyN=cur;let got=0;for(let i=0;i<cur;i++)got+=storyPrizes(i).length;if(got)setTimeout(()=>toast('🎁 '+tr('Prizes for the story chapters you already finished!')),7000);}
+    STY.shownN=Math.min(G.storyN,cur);}
+  if(cur>STY.shownN){for(let i=STY.shownN;i<cur;i++){const cards=storyPrizes(i);STY.radioQ.push({i,cards});}STY.shownN=cur;G.storyN=cur;saveSoon();}
+  if(STY.radioQ.length&&G.mode==='play'&&!DLG&&!PZ.on&&!(typeof RQ!=='undefined'&&RQ.length)&&!($('victory')&&!$('victory').hidden)){STY.radioT=(STY.radioT||0)+dt;if(STY.radioT>3.5){STY.radioT=0;const q=STY.radioQ.shift();radioCall(q);}}
+  else if(!STY.radioQ.length)STY.radioT=0;
+  // the picture story, once, as soon as you are playing
+  if(!G.storyIntro&&G.mode==='play'&&!DLG&&!PZ.on&&!($('newsbox')&&!$('newsbox').hidden)){G.storyIntro=1;openIntro();}}
+// on a slow first start the Mayor could begin his welcome before the picture story: the story comes first, then you go to him
+{const _tt=talkTo;talkTo=function(n){if(n&&n.id==='mayor'&&!WS.intro&&!G.storyIntro&&G.mode==='play'){G.storyIntro=1;openIntro();return;}return _tt(n);};}
+const CALLER={mayor:['🎩','Mayor Pip'],brick:['👮','Officer Brick'],rosa:['🧢','Ranger Rosa'],gear:['🔧','Professor Gear'],sven:['🧣','Sven'],fern:['👒','Farmer Fern'],nova:['👩‍🚀','Commander Nova'],luna:['🧑‍🚀','Captain Luna']};
+function radioCall(q){const cur=storyDone();const el=mkModal('radiobox');storyPause(true);const done=STORY[q.i];const next=STORY[cur];
+  const who=next?(CALLER[next.who]||['📻','Hero HQ']):['🎩','Mayor Pip'];
+  const msg=next?tr(next.call):tr('You did it! You beat the Glitch King and saved Blocktopia! The Sky Kingdom and the whole world are open now. Go and explore!');
+  const got=q.cards.map(c=>`${c.ic||'🎁'} ${esc(tr(c.n||c.k||''))}`).join(' · ')||done.prize.map(prizeText).join(' · ');
+  el.innerHTML=`<div class="mbox stbx"><h2>📻 ${esc(tr('Incoming call!'))}</h2><p class="intro-s">✅ ${esc(trf('Chapter {0} done: {1}',q.i+1,tr(done.n)))} · 🔓 ${esc(tr(done.opens))}</p>
+    <p class="radio-msg" style="text-align:center">🎁 ${got}</p><div class="radio-who"><div class="ic">${who[0]}</div><div><b>${esc(tr(who[1]))}</b></div></div><p class="radio-msg">${esc(msg)}</p>
+    <div class="intro-row">${next?`<button class="big" id="rdgo">🧭 ${esc(tr('Show me the way'))}</button>`:''}<button class="big alt sm" id="rdok">${esc(tr('OK'))}</button></div></div>`;
+  el.hidden=false;try{SFX.mission&&SFX.mission();if(VOICE.on)VOICE.say(msg,who[1]);}catch(e){}
+  const close=()=>{el.hidden=true;try{VOICE.stop();}catch(e){}storyPause(false);};$('rdok').onclick=close;if($('rdgo'))$('rdgo').onclick=()=>{close();storyGuide();};}
+// ---------- quests and jobs only send you to places that are open in the story ----------
+function questNeed(q){if(q._sn!==undefined)return q._sn;let n=0;const add=(x,z,y)=>{if(isFinite(x)&&isFinite(z))n=Math.max(n,areaNeed(x,z,y));};
+  const at=id=>{const m=NPCS.find(k=>k.id===id);if(!m)return;const v=typeof viaDoor==='function'?viaDoor({x:m.x,z:m.z}):m;add(v.x,v.z,m.y);};
+  at(q.giver);for(const s of q.steps||[]){if(s.x!==undefined)add(s.x,s.z,s.y);if(s.pts)for(const p of s.pts)add(p[0],p[1],p[2]);if(s.from)add(s.from[0],s.from[1]);if(s.to)add(s.to[0],s.to[1]);if(s.npc)at(s.npc);}
+  q._sn=n;return n;}
+{const _qa=qAvailable;qAvailable=function(q){return _qa(q)&&questNeed(q)<=storyDone();};}
+{const _pd=pickDoor;pickDoor=function(fx,fz,dmin,dmax,exclude,city){const cur=storyDone();const all=WORLD.doors;if(cur>=8||!all)return _pd(fx,fz,dmin,dmax,exclude,city);
+  const open=all.filter(d=>areaNeed(d.x,d.z)<=cur);if(!open.length)return _pd(fx,fz,dmin,dmax,exclude,city);WORLD.doors=open;try{return _pd(fx,fz,dmin,dmax,exclude,city);}finally{WORLD.doors=all;}};}
+// ---------- saving ----------
+{const _es=extraSave;extraSave=function(){const o=_es();o.sti=G.storyIntro?1:0;o.stn=G.storyN|0;o.stp=G.storyPrz||[];return o;};}
+{const _el=extraLoad;extraLoad=function(x){_el(x);G.storyIntro=x&&x.sti?1:0;G.storyN=x&&Number.isInteger(x.stn)?x.stn:undefined;G.storyPrz=x&&Array.isArray(x.stp)?x.stp.filter(Number.isInteger):[];STY.shownN=-1;};}
+// ---------- words ----------
+MV('A glitch force field! Finish chapter {0}, {1}, to open {2}','حقل قوة عطِل! أنهِ الفصل {0}، {1}، لتفتح {2}');MV('Glitch force field','حقل قوة عطِل');
+MV("The Glitch King's force field blocks the tracks to {0}. Finish chapter {1} first!",'حقل قوة ملك الخلل يسد السكة إلى {0}. أنهِ الفصل {1} أولًا!');
+MV('The Sky Kingdom opens at the end of the story. Keep going, hero!','مملكة السماء تُفتح في نهاية القصة. استمر أيها البطل!');MV('The rocket is not ready yet. Keep following the story!','الصاروخ ليس جاهزًا بعد. تابع القصة!');
+MV('📖 Chapter {0}: talk to {1}','📖 الفصل {0}: تحدّث إلى {1}');MV('📖 Chapter {0}: fly the rocket to the Moon','📖 الفصل {0}: طِر بالصاروخ إلى القمر');
+MV('The Bank Robbery','سرقة البنك');MV('Puppy Rescue','إنقاذ الجراء');MV('Robot Factory','مصنع الروبوتات');MV('Frozen Peaks','القمم المتجمدة');MV('Slime Farm','مزرعة الهلام');MV('Glitch Castle','قلعة الخلل');MV('Rocket to the Moon','صاروخ إلى القمر');MV('UFO Showdown','المواجهة مع الصحن الطائر');
+MV('Mushroom Forest','غابة الفطر');MV('Canyon Desert','صحراء الوادي');MV('Frosty Peaks','القمم الثلجية');MV('Happy Farm','المزرعة السعيدة');MV('Glitch Island','جزيرة الخلل');MV('All five towns','كل المدن الخمس');MV('the towns','المدن');MV('the Moon','القمر');MV('the Sky Kingdom','مملكة السماء');
+MV('The Sky Kingdom and the whole world','مملكة السماء والعالم كله');MV('Star Harbor','ميناء النجوم');MV('The Moon','القمر');
+MV('Glitch Bots are robbing the Brick City Bank! Officer Brick needs you right away!','روبوتات الخلل تسرق بنك مدينة الطوب! الضابط بريك يحتاجك الآن!');
+MV('The force field around the Mushroom Forest is gone! Ranger Rosa lost her puppies in there. Please help her!','اختفى حقل القوة حول غابة الفطر! الحارسة روزا أضاعت جراءها هناك. ساعدها من فضلك!');
+MV("The Canyon Desert is open! The Glitch King took over Professor Gear's robot factory. Go and take it back!",'صحراء الوادي مفتوحة! سيطر ملك الخلل على مصنع روبوتات البروفيسور جير. اذهب واستعِده!');
+MV('Brrr! The mountain beacons went dark and the Yeti King is stomping around. Sven is waiting at the lodge!','بررر! انطفأت منارات الجبل وملك اليتي يدوس في كل مكان. سفين ينتظرك في الكوخ!');
+MV("Help! Slimes are eating all of Farmer Fern's veggies. Hurry to Happy Farm!",'النجدة! الهلام يأكل خضار المزارعة فيرن. أسرع إلى المزرعة السعيدة!');
+MV('You found all five Power Crystals! Come back to Mayor Pip at Hero HQ. It is time to stop the Glitch King!','وجدت بلورات القوة الخمس! عُد إلى العمدة بيب في مقر الأبطال. حان وقت إيقاف ملك الخلل!');
+MV('The Glitch King escaped to the Moon in his UFO! Commander Nova at Star Harbor is building a rocket. Find the rocket parts in all five towns!','هرب ملك الخلل إلى القمر في صحنه الطائر! القائدة نوفا في ميناء النجوم تبني صاروخًا. اعثر على قطع الصاروخ في المدن الخمس!');
+MV("Captain Luna needs help at the Moon Base. Then it is time to face the Glitch King's UFO!",'القبطانة لونا تحتاج المساعدة في قاعدة القمر. ثم حان وقت مواجهة صحن ملك الخلل الطائر!');
+MV('You did it! You beat the Glitch King and saved Blocktopia! The Sky Kingdom and the whole world are open now. Go and explore!','لقد نجحت! هزمت ملك الخلل وأنقذت بلوكتوبيا! مملكة السماء والعالم كله مفتوحان الآن. انطلق واستكشف!');
+MV('Welcome to Blocktopia!','أهلًا بك في بلوكتوبيا!');MV('A happy world made of bricks. Five magic Power Crystals keep everything running.','عالم سعيد مصنوع من الطوب. خمس بلورات قوة سحرية تُبقي كل شيء يعمل.');
+MV('Oh no! The Glitch King!','يا للهول! ملك الخلل!');MV('He stole all five Power Crystals, and his Glitch Bots locked the roads with glitchy force fields.','سرق بلورات القوة الخمس، وأغلقت روبوتاته الطرق بحقول قوة عطِلة.');
+MV("Blocktopia needs heroes. That's you!",'بلوكتوبيا تحتاج أبطالًا. وهذا أنت!');MV('Win the crystals back one chapter at a time. Every chapter breaks a force field and opens a new place.','استعِد البلورات فصلًا بعد فصل. كل فصل يكسر حقل قوة ويفتح مكانًا جديدًا.');
+MV('Think like a hero!','فكّر كالأبطال!');MV('Solve puzzles, help friends and beat bosses. Every chapter has a big prize: new heroes, pets and cars!','حلّ الألغاز وساعد الأصدقاء واهزم الزعماء. لكل فصل جائزة كبيرة: أبطال وحيوانات وسيارات جديدة!');
+MV('Start at Hero HQ','ابدأ من مقر الأبطال');MV('Follow the golden arrow to Mayor Pip. Tap 📖 any time to see your Story Book.','اتبع السهم الذهبي إلى العمدة بيب. اضغط 📖 في أي وقت لترى كتاب قصتك.');
+MV('Prizes for the story chapters you already finished!','جوائز فصول القصة التي أنهيتها!');MV('Skip','تخطَّ');MV("Let's go!",'هيا بنا!');MV('Next','التالي');MV('Done!','تمّ!');MV('Next: talk to {0}','التالي: تحدّث إلى {0}');MV('Opens after chapter {0}','يُفتح بعد الفصل {0}');MV('Chapter {0}: {1}','الفصل {0}: {1}');
+MV('The Story of Blocktopia','قصة بلوكتوبيا');MV('You finished the whole story! The whole world is open.','أنهيت القصة كلها! العالم كله مفتوح.');MV('Chapter {0} of {1}','الفصل {0} من {1}');MV('Show me the way','أرني الطريق');
+MV('Watch the story again','شاهد القصة مرة أخرى');MV('Story Book','كتاب القصة');MV('Incoming call!','مكالمة واردة!');MV('Chapter {0} done: {1}','انتهى الفصل {0}: {1}');MV('OK','حسنًا');
+MV('Officer Brick','الضابط بريك');MV('Ranger Rosa','الحارسة روزا');MV('Professor Gear','البروفيسور جير');MV('Sven','سفين');MV('Farmer Fern','المزارعة فيرن');MV('Commander Nova','القائدة نوفا');MV('Captain Luna','القبطانة لونا');MV('Hero HQ','مقر الأبطال');
+MV('Story Mode','وضع القصة');MV('A real story in 8 chapters: win back the Power Crystals from the Glitch King. Each chapter opens a new place and gives a big prize. Tap 📖 to see your Story Book','قصة حقيقية من 8 فصول: استعد بلورات القوة من ملك الخلل. كل فصل يفتح مكانًا جديدًا ويعطيك جائزة كبيرة. اضغط 📖 لترى كتاب القصة');
+MV('Missions that make you think','مهمات تجعلك تفكر');MV('Fixing, rescuing, building and opening things are puzzles now: memory, patterns, counting, sums and wires. Make them easier or harder in Settings','الإصلاح والإنقاذ والبناء وفتح الأشياء أصبحت ألغازًا: الذاكرة والأنماط والعدّ والجمع والأسلاك. اجعلها أسهل أو أصعب من الإعدادات');
 // ================= real instrument sounds for the music =================
 // Recorded instruments from the FluidR3_GM sound font (by Frank Wen), taken from midi-js-soundfonts (Benjamin Gleitzman),
 // Creative Commons Attribution 3.0. One recording every four notes; the notes in between are tuned from the nearest one.

@@ -1,8 +1,20 @@
 # Block Buddies
 
-A brick hero adventure for kids. It has 50 heroes to collect, five connected islands, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
+A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to collect, five connected islands, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
 
 **Play:** https://ahamze123.github.io
+
+## Story Mode
+- The Glitch King stole Blocktopia's five Power Crystals and locked the roads with glitch force fields. A picture story explains it at the start, and **📖** (next to the menu button) opens the Story Book any time, with every chapter, its prize and a **Show me the way** button.
+- There are 8 chapters: The Bank Robbery (Brick City), Puppy Rescue (Mushroom Forest), Robot Factory (Canyon Desert), Frozen Peaks, Slime Farm (Happy Farm), Glitch Castle (Glitch Island), Rocket to the Moon and UFO Showdown. Each one breaks the next force field and opens a new place, until the whole world (the towns, the Moon and the Sky Kingdom) is open.
+- Each chapter gives a big prize, and the prizes grow: new heroes, a puppy and a bunny, the police car, hot rod, monster truck, hover bike and hero car, and coins. Then a friend calls on the hero radio to say where to go next.
+- Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests and jobs only send you to places that are already open.
+- Playing online, everyone follows the host's story, and each tablet gets its own prizes.
+
+## Missions that make you think
+- Fixing things, rescuing animals, charging the factory sockets, pulling the big handle and building (trampolines, statues, the Crystal Bridge) are puzzles now instead of holding the button: memory, what comes next, counting, sums, putting things in order, finding the odd one out and connecting wires.
+- Every Power Crystal sits in a glitch cage that opens with a puzzle, and quests that are only running around start with a puzzle from the friend who gives them.
+- **Menu → Settings → Puzzles** sets how hard they are for each hero (Easy, Medium or Hard). It starts at Medium for the boy and Easy for the girl. After two wrong answers a hint lights up.
 
 ## On an iPad
 1. Open the link in Safari.
