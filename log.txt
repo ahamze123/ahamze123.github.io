@@ -648,3 +648,8 @@
 2026-10-01 13:33:09 [aya] image-to-3d IN_PROGRESS 99%
 2026-10-01 13:34:10 [aya] image-to-3d SUCCEEDED 100%
 2026-10-01 13:34:16 [aya] rig task made 01a0f7ac-2f40-733c-8d60-85f4ba3c35c6
+2026-10-01 13:34:17 [aya] rigging IN_PROGRESS 10%
+2026-10-01 13:34:27 [aya] rigging IN_PROGRESS 36%
+2026-10-01 13:34:37 [aya] rigging IN_PROGRESS 63%
+2026-10-01 13:34:47 [aya] rigging SUCCEEDED 100%
+2026-10-01 13:34:48 [aya] rigged: {"model": {"bytes": 1589360, "triangles": 20719, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35900, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30780, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
