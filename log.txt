@@ -23,3 +23,6 @@
 2026-10-01 12:24:24 [kira] rigging IN_PROGRESS 36%
 2026-10-01 12:24:25 [leo] rigging SUCCEEDED 100%
 2026-10-01 12:24:26 [leo] rigged: {"model": {"bytes": 1502064, "triangles": 20788, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35376, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30748, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 12:24:35 [kira] rigging IN_PROGRESS 63%
+2026-10-01 12:24:45 [kira] rigging SUCCEEDED 100%
+2026-10-01 12:24:45 [kira] rigged: {"model": {"bytes": 1641188, "triangles": 20648, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35540, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30900, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
