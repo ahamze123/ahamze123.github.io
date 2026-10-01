@@ -109,6 +109,12 @@
    }
   },
   "aya": {
+   "full": {
+    "bytes": 2427256,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -991,6 +997,12 @@
      "status": "SUCCEEDED"
     }
    },
+   "full": {
+    "bytes": 2497020,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -1131,6 +1143,12 @@
     "made": "2026-10-01 12:40",
     "rig": "01a0f76b-9a2e-77fe-8e6b-14c593aa1266",
     "status": "SUCCEEDED"
+   },
+   "full": {
+    "bytes": 2164592,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
    },
    "model": {
     "credits": 30,

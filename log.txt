@@ -664,3 +664,5 @@
 2026-10-01 14:05:54 [kira] animations try1 ['Idle_02', 'Idle_03', 'Idle_3', 'Idle_4', 'Idle_5', 'Idle_6', 'Idle_15', 'Happy_Sway_Standing', 'Jump_with_Arms_Open', 'Happy_jump_f']
 2026-10-01 14:05:56 run finished; credits used by new tasks (estimate): 30
 2026-10-01 15:47:52 run 7 heroes ['aya', 'kira', 'leo'] max credits 0
+2026-10-01 15:47:54 [kira] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2497020}
+2026-10-01 15:47:54 [aya] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2427256}
