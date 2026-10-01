@@ -647,3 +647,4 @@
 2026-10-01 13:32:49 [aya] image-to-3d IN_PROGRESS 59%
 2026-10-01 13:33:09 [aya] image-to-3d IN_PROGRESS 99%
 2026-10-01 13:34:10 [aya] image-to-3d SUCCEEDED 100%
+2026-10-01 13:34:16 [aya] rig task made 01a0f7ac-2f40-733c-8d60-85f4ba3c35c6
