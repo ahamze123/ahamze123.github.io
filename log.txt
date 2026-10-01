@@ -118,3 +118,5 @@
 2026-10-01 12:48:29 [ruby] rig task made 01a0f782-465c-727f-abed-9021bcaa8dd9
 2026-10-01 12:48:30 [ruby] rigging IN_PROGRESS 10%
 2026-10-01 12:48:31 [layla] rig task made 01a0f782-4cbc-75a1-9d6a-9b349dc4ce09
+2026-10-01 12:48:32 [layla] rigging IN_PROGRESS 10%
+2026-10-01 12:48:34 [noor] image-to-3d SUCCEEDED 100%
