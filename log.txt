@@ -365,3 +365,11 @@
 2026-10-01 13:09:12 [zork] model task made 01a0f795-4a0f-7760-b60e-291ae3ddb1e9
 2026-10-01 13:09:14 [zork] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:09:16 [drake] rig task made 01a0f795-5019-76f7-938b-ccbc4ab18186
+2026-10-01 13:09:17 [munir] image-to-3d IN_PROGRESS 33%
+2026-10-01 13:09:17 [erik] rigging IN_PROGRESS 68%
+2026-10-01 13:09:18 [drake] rigging IN_PROGRESS 10%
+2026-10-01 13:09:28 [erik] rigging IN_PROGRESS 90%
+2026-10-01 13:09:28 [drake] rigging IN_PROGRESS 36%
+2026-10-01 13:09:38 [erik] rigging SUCCEEDED 100%
+2026-10-01 13:09:38 [drake] rigging IN_PROGRESS 63%
+2026-10-01 13:09:39 [erik] rigged: {"model": {"bytes": 1939496, "triangles": 20726, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35440, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30792, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
