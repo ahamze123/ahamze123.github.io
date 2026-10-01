@@ -1640,6 +1640,8 @@
   },
   "zork": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f795-4a0f-7760-b60e-291ae3ddb1e9",
     "made": "2026-10-01 13:09",
     "run": 4,
@@ -1652,7 +1654,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f795-4a0f-7760-b60e-291ae3ddb1e9/output/preview.png?Expires=1791119471&Signature=dIMn8Z~R~JZd5gdS934tEqgf27lqE3A74iv0mfmBkgU8RS7K0E5cVez1CFN1mkoPn1Gx-uBgO2C7al16LljJpfSDk-CFbmmlPBFWVgAQsThwOLJUjwpTG112MxUolxyAlbo7954rAHCbMM4Q2V1lX~FCdeZNZ4TD7AKy9SLdvdqx2WPpDbd7Jnv3dAYq5qYY52gBOWbWTHRrsOsq1lJABBTi1rpFLsw2TXoaGJKMb1o-PQtOjuUEM17Bcs42CU0se3cHvAzBZlR8GAO7cE6gKHMC2i50XrJOkbAs0MvYDmJWyC19zNL4G78aRsA18jmRKNla0yjwHFkx5JySZr8AIA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   }
  },
