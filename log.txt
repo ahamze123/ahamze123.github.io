@@ -218,3 +218,5 @@
 2026-10-01 12:55:46 [nora] image-to-3d SUCCEEDED 100%
 2026-10-01 12:55:49 [fay] image-to-3d SUCCEEDED 100%
 2026-10-01 12:55:53 [nora] rig task made 01a0f789-0ae2-72fd-b630-c452e6060b67
+2026-10-01 12:55:54 [nora] rigging IN_PROGRESS 10%
+2026-10-01 12:55:54 [fay] rig task made 01a0f789-12ba-7577-8b7f-c8d556effbfe
