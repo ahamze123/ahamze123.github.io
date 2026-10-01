@@ -121,3 +121,16 @@
 2026-10-01 12:48:32 [layla] rigging IN_PROGRESS 10%
 2026-10-01 12:48:34 [noor] image-to-3d SUCCEEDED 100%
 2026-10-01 12:48:39 [noor] rig task made 01a0f782-702b-7795-a548-60f85c1e1e4f
+2026-10-01 12:48:40 [ruby] rigging IN_PROGRESS 36%
+2026-10-01 12:48:41 [noor] rigging IN_PROGRESS 10%
+2026-10-01 12:48:42 [layla] rigging IN_PROGRESS 36%
+2026-10-01 12:48:44 [rex] image-to-3d IN_PROGRESS 59%
+2026-10-01 12:48:51 [ruby] rigging IN_PROGRESS 63%
+2026-10-01 12:48:51 [noor] rigging IN_PROGRESS 36%
+2026-10-01 12:48:52 [layla] rigging IN_PROGRESS 63%
+2026-10-01 12:49:01 [ruby] rigging IN_PROGRESS 90%
+2026-10-01 12:49:01 [noor] rigging IN_PROGRESS 63%
+2026-10-01 12:49:02 [layla] rigging IN_PROGRESS 90%
+2026-10-01 12:49:11 [ruby] rigging SUCCEEDED 100%
+2026-10-01 12:49:11 [noor] rigging SUCCEEDED 100%
+2026-10-01 12:49:11 [ruby] rigged: {"model": {"bytes": 1601376, "triangles": 20783, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35692, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 31056, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
