@@ -563,3 +563,4 @@
 2026-10-01 13:21:33 [lina] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:21:38 [sama] image-to-3d IN_PROGRESS 50%
 2026-10-01 13:21:43 [lina] image-to-3d SUCCEEDED 100%
+2026-10-01 13:21:49 [lina] rig task made 01a0f7a0-cd17-75d5-b82f-69c5d9669420
