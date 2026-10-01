@@ -404,3 +404,6 @@
 2026-10-01 13:11:45 [zork] rigging IN_PROGRESS 68%
 2026-10-01 13:11:47 [sam] image-to-3d SUCCEEDED 100%
 2026-10-01 13:11:53 [sam] rig task made 01a0f797-b1d8-75ae-8ed7-2081f79b0c91
+2026-10-01 13:11:55 [zork] rigging SUCCEEDED 100%
+2026-10-01 13:11:55 [sam] rigging IN_PROGRESS 10%
+2026-10-01 13:11:55 [zork] rigged: {"model": {"bytes": 1555068, "triangles": 20768, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35480, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30832, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
