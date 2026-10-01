@@ -45,3 +45,4 @@
 2026-10-01 12:41:19 [leo] animations SUCCEEDED 100%
 2026-10-01 12:41:20 [leo] animations: ['Idle', 'Regular_Jump', 'Right_Jab_from_Guard', 'Victory_Cheer', 'Big_Wave_Hello', 'Knock_Down', 'Chair_Sit_Idle_M', 'Swim_Forward']
 2026-10-01 12:41:21 run finished; credits used by new tasks (estimate): 48
+2026-10-01 12:42:50 run 4 heroes ['omar', 'kenji', 'zayd', 'mia', 'layla', 'ruby', 'noor', 'rex', 'finn', 'dan', 'sami', 'kat', 'fay', 'nora', 'zak', 'rocky', 'rayan', 'comet', 'salem', 'karim', 'bilal', 'majid', 'faris', 'robin', 'erik', 'drake', 'munir', 'zork', 'sam', 'idris', 'saif', 'bella', 'lulu', 'mira', 'wanda', 'salma', 'tala', 'zara', 'bushra', 'yasmin', 'sama', 'lina', 'sara', 'amira', 'uma', 'aisha', 'rina'] max credits 1750
