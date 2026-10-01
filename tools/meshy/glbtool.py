@@ -458,6 +458,158 @@ def retarget_world(model, src, rename=None, fps=30, only=None):
     return added
 
 
+# ---------- smaller files for the game: clips sampled again, vertices and turns stored in fewer bytes ----------
+_NORM = {5120: 127., 5121: 255., 5122: 32767., 5123: 65535.}
+
+
+def _values(doc, ai):
+    import numpy as np
+    a = doc.J['accessors'][ai]; v = np.array(doc.accessor_values(ai), float)
+    if a.get('normalized') and a['componentType'] in _NORM:
+        v = np.maximum(v / _NORM[a['componentType']], -1)
+    return v
+
+
+def _rest(node, path):
+    import numpy as np
+    if 'matrix' in node:
+        t, q, s = _mat_to_trs(node['matrix'])
+        return {'translation': t, 'rotation': q, 'scale': s}[path]
+    return np.array(node.get(path, {'translation': [0, 0, 0], 'rotation': [0, 0, 0, 1], 'scale': [1, 1, 1]}[path]), float)
+
+
+def resample_clip(doc, name, t0=None, t1=None, fps=30, drop_rest=True, new_name=None):
+    """sample clip `name` again at `fps` from t0 to t1 (seconds; None = the whole clip), with its times starting at 0
+    and one time track for the whole clip. Channels that never leave the rest pose are left out."""
+    import numpy as np
+    J = doc.J
+    an = next((a for a in J.get('animations', []) if a.get('name') == name), None)
+    if an is None: return False
+    chans, dur = [], 0.0
+    for ch in an.get('channels', []):
+        t = ch.get('target', {}); smp = an['samplers'][ch['sampler']]
+        if t.get('node') is None or t.get('path') not in ('rotation', 'translation', 'scale'): continue
+        ip = smp.get('interpolation', 'LINEAR')
+        if ip == 'CUBICSPLINE': continue
+        tm = _values(doc, smp['input'])[:, 0]; vals = _values(doc, smp['output'])
+        chans.append((t['node'], t['path'], tm, vals, ip)); dur = max(dur, float(tm[-1]) if len(tm) else 0.0)
+    a0 = 0.0 if t0 is None else max(0.0, t0); a1 = dur if t1 is None else min(dur, t1)
+    F = max(2, int(round((a1 - a0) * fps)) + 1); times = np.linspace(a0, a1, F)
+    out = {'name': new_name or name, 'channels': [], 'samplers': []}
+    tin = doc.add_float_accessor([(float(x - a0),) for x in times], 'SCALAR', minmax=True)
+    for node, path, tm, vals, ip in chans:
+        if ip == 'STEP':
+            v = vals[np.clip(np.searchsorted(tm, times, side='right') - 1, 0, len(tm) - 1)]
+        else:
+            v = _sample(tm, vals, times, path == 'rotation')
+        if path == 'rotation':
+            v = v / np.linalg.norm(v, axis=-1, keepdims=True)
+            for f in range(1, F):
+                if np.dot(v[f], v[f - 1]) < 0: v[f] = -v[f]
+        if drop_rest:
+            r = _rest(J['nodes'][node], path)
+            if path == 'rotation':
+                if np.all(np.abs(v @ r) > 0.9999995): continue
+            elif np.all(np.abs(v - r[None]) < 1e-5): continue
+        out['samplers'].append({'input': tin, 'output': doc.add_float_accessor([tuple(map(float, x)) for x in v], 'VEC4' if path == 'rotation' else 'VEC3'),
+                                'interpolation': 'LINEAR'})
+        out['channels'].append({'sampler': len(out['samplers']) - 1, 'target': {'node': node, 'path': path}})
+    J['animations'] = [out if a is an else a for a in J['animations']]
+    return True
+
+
+def quantize_rotations(doc):
+    """the turns of all clips as 16-bit numbers (allowed by plain glTF 2.0 for rotations)"""
+    import numpy as np
+    J = doc.J; acc = J.get('accessors', [])
+    other = set()
+    for an in J.get('animations', []):
+        for ch in an['channels']:
+            smp = an['samplers'][ch['sampler']]
+            if ch['target'].get('path') != 'rotation' or smp.get('interpolation') == 'CUBICSPLINE': other.add(smp['output'])
+    done = {}
+    for an in J.get('animations', []):
+        for ch in an['channels']:
+            smp = an['samplers'][ch['sampler']]; o = smp['output']
+            if ch['target'].get('path') != 'rotation' or o in other or acc[o]['componentType'] != 5126: continue
+            if o not in done:
+                v = np.array(doc.accessor_values(o), float); v /= np.maximum(np.linalg.norm(v, axis=-1, keepdims=True), 1e-12)
+                q = np.round(v * 32767).astype('<i2')
+                acc.append({'bufferView': doc.add_view(q.tobytes()), 'componentType': 5122, 'normalized': True, 'count': int(len(q)), 'type': 'VEC4'})
+                done[o] = len(acc) - 1
+            smp['output'] = done[o]
+    return len(done)
+
+
+def quantize_mesh(doc, uv=True, weights=True, pos_nor=True):
+    """vertices in fewer bytes: weights as 8-bit and texture places as 16-bit (plain glTF 2.0), and for skinned meshes the
+    positions as 16-bit and the normals as 8-bit (KHR_mesh_quantization; the scale back is put into the skin's inverse bind matrices)"""
+    import numpy as np
+    J = doc.J; acc = J['accessors']; nodes = J.get('nodes', [])
+    def add(arr, ct, typ, norm, stride=None, mm=False):
+        dt = {5120: '<i1', 5121: '<u1', 5122: '<i2', 5123: '<u2'}[ct]; a2 = arr.astype(dt)
+        n, es = NCOMP[typ], CT_SIZE[ct]
+        if stride and stride != n * es:
+            a2 = np.concatenate([a2, np.zeros((a2.shape[0], stride // es - n), dt)], 1)
+        bv = doc.add_view(np.ascontiguousarray(a2).tobytes(), 34962)
+        if stride and stride != n * es: J['bufferViews'][bv]['byteStride'] = stride
+        A = {'bufferView': bv, 'componentType': ct, 'count': int(arr.shape[0]), 'type': typ}
+        if norm: A['normalized'] = True
+        if mm: A['min'] = [int(x) for x in arr.min(0)]; A['max'] = [int(x) for x in arr.max(0)]
+        acc.append(A); return len(acc) - 1
+    skins_of = {}
+    for n in nodes:
+        if 'mesh' in n: skins_of.setdefault(n['mesh'], set()).add(n.get('skin'))
+    # positions: one box per skin (all of its meshes), only when every mesh is drawn with exactly one skin
+    can_pos = pos_nor and skins_of and all(len(s) == 1 and None not in s for s in skins_of.values())
+    box = {}
+    if can_pos:
+        for mi, sks in skins_of.items():
+            sk = next(iter(sks))
+            for p in J['meshes'][mi]['primitives']:
+                if 'POSITION' not in p.get('attributes', {}): continue
+                v = _values(doc, p['attributes']['POSITION']); lo, hi = v.min(0), v.max(0)
+                b = box.get(sk); box[sk] = (lo, hi) if b is None else (np.minimum(b[0], lo), np.maximum(b[1], hi))
+        for sk, (lo, hi) in list(box.items()):
+            c = (lo + hi) / 2; h = max(float(np.max(hi - lo)) / 2, 1e-6)
+            D = np.eye(4); D[:3, :3] *= h; D[:3, 3] = c
+            S = J['skins'][sk]; nj = len(S['joints'])
+            ibm = np.array(doc.accessor_values(S['inverseBindMatrices']), float).reshape(nj, 4, 4).transpose(0, 2, 1) if 'inverseBindMatrices' in S else np.tile(np.eye(4), (nj, 1, 1))
+            new = (ibm @ D).transpose(0, 2, 1).reshape(nj, 16)
+            S['inverseBindMatrices'] = doc.add_float_accessor([tuple(map(float, r)) for r in new], 'MAT4')
+            box[sk] = (c, h)
+    done = {}
+    for mi, m in enumerate(J.get('meshes', [])):
+        sk = next(iter(skins_of.get(mi, {None})))
+        for p in m['primitives']:
+            A = p.get('attributes', {})
+            for k in list(A):
+                ai = A[k]; a = acc[ai]; key = (k, ai)
+                if key in done: A[k] = done[key]; continue
+                if k == 'POSITION' and can_pos and sk in box and a['componentType'] == 5126:
+                    c, h = box[sk]; q = np.clip(np.round((_values(doc, ai) - c) / h * 32767), -32767, 32767)
+                    done[key] = add(q, 5122, 'VEC3', True, stride=8, mm=True)
+                elif k == 'NORMAL' and can_pos and a['componentType'] == 5126:
+                    v = _values(doc, ai); v /= np.maximum(np.linalg.norm(v, axis=-1, keepdims=True), 1e-12)
+                    done[key] = add(np.round(v * 127), 5120, 'VEC3', True, stride=4)
+                elif k.startswith('TEXCOORD') and uv and a['componentType'] == 5126:
+                    v = _values(doc, ai)
+                    if v.min() < 0 or v.max() > 1: continue
+                    done[key] = add(np.round(v * 65535), 5123, 'VEC2', True)
+                elif k.startswith('WEIGHTS') and weights and a['componentType'] == 5126:
+                    v = np.maximum(_values(doc, ai), 0); s = v.sum(1, keepdims=True); v = np.where(s > 0, v / np.maximum(s, 1e-12), 0)
+                    q = np.round(v * 255).astype(int); big = q.argmax(1); rows = np.arange(len(q))
+                    q[rows, big] += np.where(q.sum(1) > 0, 255 - q.sum(1), 0)
+                    done[key] = add(q, 5121, 'VEC4', True)
+                else:
+                    continue
+                A[k] = done[key]
+    if can_pos and box:
+        for k in ('extensionsUsed', 'extensionsRequired'):
+            J[k] = sorted(set(J.get(k, [])) | {'KHR_mesh_quantization'})
+    return bool(done)
+
+
 def info(path):
     d = Doc.load(path); J = d.J
     print(path, '| JSON nodes', len(J.get('nodes', [])), '| BIN', round(len(d.BIN) / 1e6, 2), 'MB')

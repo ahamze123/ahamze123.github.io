@@ -9,11 +9,13 @@ tools/meshy/queue.json changes on main, and saves everything to the 'meshy-out' 
   <hero>/model.glb  the model with its skeleton (pictures inside made smaller)
   <hero>/walk.glb, run.glb   the walk and run that come with the skeleton (skeleton + clip only)
   <hero>/anims.glb  the extra animations, when bought for this hero (skeleton + clips only)
+  <hero>/x_<set>.glb more moves to try (skeleton + clips only)
 
 For every hero in queue.json 'heroes':
   1. image to 3D from tools/meshy/pics/<hero>.jpg (A-pose, textured, remeshed)   ~30 credits
   2. rigging (a skeleton, with a free walk and run)                               5 credits
   3. animations from the library, if the hero is in queue.json 'anims.heroes'      3 credits each
+  4. more moves to try, queue.json 'extra': {"hero": {"set": [action ids]}}  ->  <hero>/x_<set>.glb   3 credits each
 A step that already worked is never made again, unless the hero is listed in 'redo'.
 No more than 'max_credits' are spent in one run.
 """
@@ -161,6 +163,31 @@ def keep_glb(url, path, armature=False, shrink=1024):
     return glb_info(path)
 
 
+def anim_task(h, slot, key, g, ids, path):
+    """one animation task (up to 10 moves from the library) for a rigged hero, saved as a skeleton + clips file"""
+    who = '[%s]' % h
+    a = slot.get(key)
+    if a and (a.get('rig') != g['id'] or a.get('action_ids') != ids):
+        a = None
+    if not a or a.get('status') in ('FAILED', 'CANCELED', 'EXPIRED'):
+        if not budget(COST['anim'] * len(ids)):
+            log(who, 'animations skipped: this run may not spend more credits'); return False
+        r = api('POST', '/openapi/v1/animations', {'rig_task_id': g['id'], 'action_ids': ids})
+        a = slot[key] = {'id': r['result'], 'status': 'PENDING', 'rig': g['id'], 'action_ids': ids, 'made': time.strftime('%Y-%m-%d %H:%M')}
+        log(who, 'animation task made', key, a['id'], ids)
+        save(True, '%s: animation task %s' % (h, key))
+    if a['status'] != 'SUCCEEDED' or not os.path.exists(path):
+        t = wait('animations', a['id'], who)
+        a.update(status=t.get('status'), credits=t.get('consumed_credits'), error=(t.get('task_error') or {}).get('message') or None)
+        if t.get('status') != 'SUCCEEDED':
+            log(who, 'animations FAILED:', key, a.get('error')); save(True, '%s: animations failed' % h); return False
+        res = t.get('result') or {}
+        a['file'] = keep_glb(res['animation_glb_url'], path, armature=True)
+        log(who, 'animations', key, a['file'].get('clips'))
+        save(True, '%s: animations %s' % (h, key))
+    return True
+
+
 def do_hero(h, cfg):
     who = '[%s]' % h
     S = state['heroes'].setdefault(h, {})
@@ -237,27 +264,15 @@ def do_hero(h, cfg):
         # ---------- 3. animations ----------
         A = cfg.get('anims') or {}
         ids = [int(x) for x in (A.get('action_ids') or [])][:10]
-        if h not in (A.get('heroes') or []) or not ids:
-            return
-        a = S.get('anim')
-        if a and (a.get('rig') != g['id'] or a.get('action_ids') != ids):
-            a = None
-        if not a or a.get('status') in ('FAILED', 'CANCELED', 'EXPIRED'):
-            if not budget(COST['anim'] * len(ids)):
-                log(who, 'animations skipped: this run may not spend more credits'); return
-            r = api('POST', '/openapi/v1/animations', {'rig_task_id': g['id'], 'action_ids': ids})
-            a = S['anim'] = {'id': r['result'], 'status': 'PENDING', 'rig': g['id'], 'action_ids': ids, 'made': time.strftime('%Y-%m-%d %H:%M')}
-            log(who, 'animation task made', a['id'])
-            save(True, '%s: animation task' % h)
-        if a['status'] != 'SUCCEEDED' or not os.path.exists(os.path.join(folder, 'anims.glb')):
-            t = wait('animations', a['id'], who)
-            a.update(status=t.get('status'), credits=t.get('consumed_credits'), error=(t.get('task_error') or {}).get('message') or None)
-            if t.get('status') != 'SUCCEEDED':
-                log(who, 'animations FAILED:', a.get('error')); save(True, '%s: animations failed' % h); return
-            res = t.get('result') or {}
-            a['file'] = keep_glb(res['animation_glb_url'], os.path.join(folder, 'anims.glb'), armature=True)
-            log(who, 'animations:', a['file'].get('clips'))
-            save(True, '%s: animations' % h)
+        if h in (A.get('heroes') or []) and ids:
+            if not anim_task(h, S, 'anim', g, ids, os.path.join(folder, 'anims.glb')):
+                return
+        # ---------- 4. more moves to try: one file per set, x_<set>.glb ----------
+        sets = S.setdefault('extra', {})
+        for name, xids in ((cfg.get('extra') or {}).get(h) or {}).items():
+            xids = [int(x) for x in xids][:10]
+            if xids:
+                anim_task(h, sets, name, g, xids, os.path.join(folder, 'x_%s.glb' % name))
     except Exception as e:
         log(who, 'ERROR', e)
         traceback.print_exc()
