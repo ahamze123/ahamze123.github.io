@@ -1066,6 +1066,8 @@
   },
   "mira": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f799-d63d-71bf-a5ba-b19edc498d4e",
     "made": "2026-10-01 13:14",
     "run": 4,
@@ -1078,7 +1080,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f799-d63d-71bf-a5ba-b19edc498d4e/output/preview.png?Expires=1791119754&Signature=VgEiEzVI3Xh8RbCPHBRzCO7EiOR7Lh8igE3YuRWV-Bn002b0ZwSXdACBC9zBkpoAD-UiXjXWGj~NJUukM8MQ8KeXvOi348DhGekLdVmmImj9rEaAE2yNDanFoAdwQEWMyZBYFvqzZ9p6MnV2j3ZxyBO-LzQ4AMtqlOtFaY9KEYfrexQ~h9MOSRsomw7eNY7iRXXXFp1a71QdfpvJykygNlcjBBs3roPXSd9b57BP3Z5lyLdYUea8QRAuxWlUO96Efw3iHbXZp7CJIVgifsl43VnZU2Pj0lVHTkLR9M4fWPZOKb8gSiSvv9c3RWIIt34vEXjDpOwYAoa99Bte6CljAA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "munir": {
