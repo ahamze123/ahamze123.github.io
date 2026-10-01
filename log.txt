@@ -642,3 +642,8 @@
 2026-10-01 13:30:39 run finished; credits used by new tasks (estimate): 1645
 2026-10-01 13:31:04 run 5 heroes ['aya'] max credits 40
 2026-10-01 13:31:06 [aya] model task made 01a0f7a9-5ac2-7285-87e3-f364e9bd9944
+2026-10-01 13:31:08 [aya] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:32:09 [aya] image-to-3d IN_PROGRESS 33%
+2026-10-01 13:32:49 [aya] image-to-3d IN_PROGRESS 59%
+2026-10-01 13:33:09 [aya] image-to-3d IN_PROGRESS 99%
+2026-10-01 13:34:10 [aya] image-to-3d SUCCEEDED 100%
