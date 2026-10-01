@@ -17,7 +17,23 @@
     "status": "PENDING"
    }
   },
-  "leo": {}
+  "leo": {
+   "model": {
+    "id": "01a0f768-426b-734f-9a17-da7d765e9cc4",
+    "made": "2026-10-01 12:20",
+    "run": 2,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  }
  },
  "runs": [
   {
