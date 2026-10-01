@@ -188,3 +188,4 @@
 2026-10-01 12:52:39 [dan] rigging IN_PROGRESS 63%
 2026-10-01 12:52:39 [finn] rigging SUCCEEDED 100%
 2026-10-01 12:52:40 [finn] rigged: {"model": {"bytes": 1905404, "triangles": 20808, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35516, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30880, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 12:52:43 [nora] model task made 01a0f786-349d-748d-85ec-e62add1a0e79
