@@ -493,3 +493,4 @@
 2026-10-01 13:16:58 [zara] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:17:05 [wanda] rigging SUCCEEDED 100%
 2026-10-01 13:17:05 [salma] image-to-3d SUCCEEDED 100%
+2026-10-01 13:17:06 [wanda] rigged: {"model": {"bytes": 1869488, "triangles": 20747, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35636, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30992, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}

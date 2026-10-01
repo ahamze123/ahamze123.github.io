@@ -1907,7 +1907,32 @@
    "rig": {
     "credits": 5,
     "error": null,
-    "files": {},
+    "files": {
+     "model": {
+      "bytes": 1869488,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20747
+     },
+     "running": {
+      "bytes": 30992,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 35636,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a0f79b-d297-73cd-9d38-01808345cdf0",
     "made": "2026-10-01 13:16",
     "model": "01a0f79a-0fd2-7004-a303-e4a8a39b7f09",
