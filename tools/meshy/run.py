@@ -261,6 +261,26 @@ def do_hero(h, cfg):
                     files[clip] = keep_glb(url, os.path.join(folder, ('walk' if clip == 'walking' else 'run') + '.glb'), armature=True)
             log(who, 'rigged:', json.dumps(files))
             save(True, '%s: rigged' % h)
+        # ---------- the model again with bigger pictures (free: the finished rigging task is only read again) ----------
+        if h in (cfg.get('refetch') or []) and not os.path.exists(os.path.join(folder, 'model_full.glb')):
+            t = api('GET', '/openapi/v1/rigging/%s' % g['id'])
+            url = (t.get('result') or {}).get('rigged_character_glb_url')
+            if url:
+                tmp = os.path.join(folder, 'model_full.glb.download'); download(url, tmp)
+                d0 = glbtool.Doc.load(tmp)
+                sizes = []
+                for im in d0.J.get('images', []):
+                    try:
+                        from PIL import Image
+                        import io as _io
+                        pic = Image.open(_io.BytesIO(d0.view_bytes(im['bufferView']))); sizes.append('%dx%d %s' % (pic.size[0], pic.size[1], im.get('mimeType', '')))
+                    except Exception as e:
+                        sizes.append(str(e)[:60])
+                d0.shrink_textures(int(cfg.get('refetch_max', 2048)), int(cfg.get('refetch_quality', 92)))
+                d0.save(os.path.join(folder, 'model_full.glb')); os.remove(tmp)
+                S['full'] = {'pictures': sizes, 'bytes': os.path.getsize(os.path.join(folder, 'model_full.glb'))}
+                log(who, 'model with bigger pictures:', json.dumps(S['full']))
+                save(True, '%s: bigger pictures' % h)
         # ---------- 3. animations ----------
         A = cfg.get('anims') or {}
         ids = [int(x) for x in (A.get('action_ids') or [])][:10]
