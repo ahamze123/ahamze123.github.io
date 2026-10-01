@@ -355,3 +355,4 @@
 2026-10-01 13:08:37 [robin] rigging IN_PROGRESS 36%
 2026-10-01 13:08:47 [robin] rigging IN_PROGRESS 63%
 2026-10-01 13:08:48 [erik] image-to-3d SUCCEEDED 100%
+2026-10-01 13:08:55 [erik] rig task made 01a0f794-fa27-74f7-8f33-840eeae5013f
