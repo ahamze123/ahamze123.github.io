@@ -94,3 +94,4 @@
 2026-10-01 12:46:10 [noor] model task made 01a0f780-35f5-71bf-a0bb-e5a557ee4553
 2026-10-01 12:46:12 [noor] image-to-3d IN_PROGRESS 1%
 2026-10-01 12:46:20 [mia] image-to-3d SUCCEEDED 100%
+2026-10-01 12:46:26 [mia] rig task made 01a0f780-6676-71af-8f1d-5ea783633b4f
