@@ -1385,6 +1385,7 @@
    }
   },
   "lulu": {
+   "extra": {},
    "full": {
     "bytes": 3078056,
     "pictures": [
@@ -1505,6 +1506,12 @@
    }
   },
   "mia": {
+   "full": {
+    "bytes": 2404416,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
