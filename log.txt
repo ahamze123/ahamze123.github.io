@@ -165,3 +165,4 @@
 2026-10-01 12:51:38 [kat] image-to-3d IN_PROGRESS 36%
 2026-10-01 12:51:41 [dan] image-to-3d IN_PROGRESS 84%
 2026-10-01 12:51:44 [sami] image-to-3d SUCCEEDED 100%
+2026-10-01 12:51:50 [sami] rig task made 01a0f785-569b-77e4-ad7c-df0723dd6d72
