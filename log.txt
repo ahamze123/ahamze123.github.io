@@ -639,3 +639,4 @@
 2026-10-01 13:28:24 [aisha] rigged: {"model": {"bytes": 1882268, "triangles": 20588, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35664, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 31016, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:30:36 [rina] rigging SUCCEEDED 100%
 2026-10-01 13:30:37 [rina] rigged: {"model": {"bytes": 1869536, "triangles": 20685, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35760, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 31136, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 13:30:39 run finished; credits used by new tasks (estimate): 1645
