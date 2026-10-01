@@ -403,3 +403,4 @@
 2026-10-01 13:11:37 [sam] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:11:45 [zork] rigging IN_PROGRESS 68%
 2026-10-01 13:11:47 [sam] image-to-3d SUCCEEDED 100%
+2026-10-01 13:11:53 [sam] rig task made 01a0f797-b1d8-75ae-8ed7-2081f79b0c91
