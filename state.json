@@ -2916,7 +2916,8 @@
     "kira"
    ],
    "limit": 40,
-   "run": 6
+   "run": 6,
+   "spent_estimate": 30
   }
  ]
 }
