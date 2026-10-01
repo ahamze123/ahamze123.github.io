@@ -266,6 +266,7 @@ def do_hero(h, cfg):
 
 
 def main():
+    os.makedirs(OUT, exist_ok=True)
     p = os.path.join(OUT, 'state.json')
     if os.path.exists(p):
         state.update(json.load(open(p)))
@@ -282,12 +283,27 @@ def main():
         except Exception as e:
             log('could not read', path, e)
     if cfg.get('library') or not os.path.exists(os.path.join(OUT, 'library.json')):
+        # the animation library is free to read: every page, and a few searches for the moves the game needs
+        lib = {'pages': [], 'search': {}}
         try:
-            lib = api('GET', '/openapi/v1/animations/library')
-            with open(os.path.join(OUT, 'library.json'), 'w') as f: json.dump(lib, f, indent=1)
-            log('animation library saved')
+            lib['first'] = api('GET', '/openapi/v1/animations/library')
         except Exception as e:
             log('could not read the animation library', e)
+        for n in range(1, 15):
+            try:
+                pg = api('GET', '/openapi/v1/animations/library?page_size=50&page_num=%d' % n)
+            except Exception as e:
+                log('library page', n, e); break
+            lib['pages'].append(pg)
+            items = pg if isinstance(pg, list) else next((v for v in (pg or {}).values() if isinstance(v, list)), [])
+            if len(items) < 50: break
+        for term in ('idle', 'jump', 'jab', 'punch', 'cheer', 'victory', 'wave', 'dead', 'fall', 'knock', 'sit', 'happy', 'run', 'walk', 'fly', 'swim'):
+            try:
+                lib['search'][term] = api('GET', '/openapi/v1/animations/library?search=' + term)
+            except Exception as e:
+                lib['search'][term] = str(e)[:200]
+        with open(os.path.join(OUT, 'library.json'), 'w') as f: json.dump(lib, f, indent=1)
+        log('animation library saved')
     save(True, 'run %s started' % cfg.get('run'))
     heroes = [h for h in (cfg.get('heroes') or []) if h]
     with ThreadPoolExecutor(max_workers=int(cfg.get('parallel', 3))) as ex:

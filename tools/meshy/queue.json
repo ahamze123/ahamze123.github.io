@@ -1,11 +1,23 @@
 {
-  "run": 1,
-  "heroes": ["kira", "leo"],
+  "run": 2,
+  "heroes": [
+    "kira",
+    "leo"
+  ],
   "max_credits": 80,
   "parallel": 2,
-  "model": {"ai_model": "latest", "target_polycount": 20000, "pose_mode": "a-pose"},
-  "rig": {"height_meters": 1.4},
-  "anims": {"heroes": [], "action_ids": []},
+  "model": {
+    "ai_model": "latest",
+    "target_polycount": 20000,
+    "pose_mode": "a-pose"
+  },
+  "rig": {
+    "height_meters": 1.4
+  },
+  "anims": {
+    "heroes": [],
+    "action_ids": []
+  },
   "per": {},
   "redo": []
 }
