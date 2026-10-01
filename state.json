@@ -610,6 +610,7 @@
    }
   },
   "faris": {
+   "extra": {},
    "full": {
     "bytes": 2657384,
     "pictures": [
@@ -730,6 +731,12 @@
    }
   },
   "finn": {
+   "full": {
+    "bytes": 2856452,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
