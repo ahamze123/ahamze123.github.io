@@ -2910,6 +2910,7 @@
    }
   },
   "zak": {
+   "extra": {},
    "full": {
     "bytes": 3096220,
     "pictures": [
@@ -3030,6 +3031,12 @@
    }
   },
   "zayd": {
+   "full": {
+    "bytes": 2313400,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
