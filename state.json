@@ -793,6 +793,7 @@
    }
   },
   "idris": {
+   "extra": {},
    "full": {
     "bytes": 2807448,
     "pictures": [
@@ -913,6 +914,12 @@
    }
   },
   "kat": {
+   "full": {
+    "bytes": 2396968,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
