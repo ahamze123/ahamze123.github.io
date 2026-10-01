@@ -932,6 +932,8 @@
   },
   "lulu": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f798-771b-74be-9683-73c1174d3f86",
     "made": "2026-10-01 13:12",
     "run": 4,
@@ -944,7 +946,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f798-771b-74be-9683-73c1174d3f86/output/preview.png?Expires=1791119746&Signature=hm0nNAmBRk9PXQKAsIUuUuvYNmkMjhydinVFg3cIrPTZO5jw-XahGLREaOum9i7OLl-dwQ4m6L4pZLxLWsJ9zVfMGPq~7KNsz-4u0VntzKHgouSxDdUDZYTgRc18bX6kpWe3mHCmm0yZjaIBcHouxstODvSyPIVUBnYfob3HdTf6CMAGAcovRZBWPWD7mH2uftu~7cRTStUcRjFToXBoXmhDzQQF2kQbnRljDttazPQ1J7WDCLMuGBNtSdrPqONUal5OJ73XsnLxTZ2EbjBhuIgR0xp7dM1oSMllNJz2RGlK5HFhDN4QoGoh7sj11hgLGG4SliSYaAT8Gt0M5VPtSw__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "majid": {
