@@ -1,7 +1,39 @@
 {
  "heroes": {
-  "dan": {},
-  "finn": {},
+  "dan": {
+   "model": {
+    "id": "01a0f783-0a36-73f2-9ac0-3ec6694523ce",
+    "made": "2026-10-01 12:49",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
+  "finn": {
+   "model": {
+    "id": "01a0f783-0a56-71a8-a82f-59f9fa4c819d",
+    "made": "2026-10-01 12:49",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "kenji": {
    "model": {
     "credits": 30,
@@ -517,6 +549,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "sami": {},
   "zayd": {
    "model": {
     "credits": 30,
