@@ -576,3 +576,4 @@
 2026-10-01 13:22:35 [uma] model task made 01a0f7a1-8ac1-76b6-a5eb-e2fe7b2246d8
 2026-10-01 13:22:36 [uma] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:22:39 [sama] image-to-3d SUCCEEDED 100%
+2026-10-01 13:22:45 [sama] rig task made 01a0f7a1-a423-768e-ba8f-7951c10d9d34
