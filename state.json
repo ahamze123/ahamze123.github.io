@@ -1629,6 +1629,7 @@
    }
   },
   "munir": {
+   "extra": {},
    "full": {
     "bytes": 2806168,
     "pictures": [
@@ -1749,6 +1750,12 @@
    }
   },
   "nora": {
+   "full": {
+    "bytes": 2784460,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
