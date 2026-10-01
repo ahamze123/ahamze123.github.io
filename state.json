@@ -432,6 +432,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "idris": {
+   "model": {
+    "id": "01a0f796-0f32-7113-a390-6de0090f1e08",
+    "made": "2026-10-01 13:10",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "karim": {
    "model": {
     "credits": 30,
