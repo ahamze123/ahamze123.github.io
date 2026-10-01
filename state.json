@@ -1,5 +1,6 @@
 {
  "heroes": {
+  "finn": {},
   "kenji": {
    "model": {
     "credits": 30,
@@ -338,6 +339,14 @@
       ],
       "joints": 24,
       "triangles": 20860
+     },
+     "running": {
+      "bytes": 30884,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
      },
      "walking": {
       "bytes": 35532,
