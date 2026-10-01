@@ -385,3 +385,4 @@
 2026-10-01 13:10:19 [munir] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:10:35 [zork] image-to-3d IN_PROGRESS 59%
 2026-10-01 13:10:39 [munir] image-to-3d SUCCEEDED 100%
+2026-10-01 13:10:49 [munir] rig task made 01a0f796-ad50-754f-9b9c-cd56136f33d3
