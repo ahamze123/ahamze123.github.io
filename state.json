@@ -2727,6 +2727,7 @@
    }
   },
   "uma": {
+   "extra": {},
    "full": {
     "bytes": 2638224,
     "pictures": [
@@ -2847,6 +2848,12 @@
    }
   },
   "yasmin": {
+   "full": {
+    "bytes": 2691480,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
