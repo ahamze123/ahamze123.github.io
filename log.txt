@@ -667,3 +667,4 @@
 2026-10-01 15:47:54 [kira] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2497020}
 2026-10-01 15:47:54 [aya] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2427256}
 2026-10-01 15:47:54 [leo] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2164592}
+2026-10-01 15:47:59 run finished; credits used by new tasks (estimate): 0
