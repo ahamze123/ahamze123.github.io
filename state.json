@@ -976,6 +976,7 @@
    }
   },
   "kenji": {
+   "extra": {},
    "full": {
     "bytes": 2197880,
     "pictures": [
@@ -1322,6 +1323,12 @@
    }
   },
   "lina": {
+   "full": {
+    "bytes": 2492572,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
