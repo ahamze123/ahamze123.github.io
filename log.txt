@@ -174,3 +174,4 @@
 2026-10-01 12:52:09 [finn] rigging IN_PROGRESS 36%
 2026-10-01 12:52:11 [sami] rigging IN_PROGRESS 63%
 2026-10-01 12:52:12 [dan] image-to-3d SUCCEEDED 100%
+2026-10-01 12:52:18 [dan] rig task made 01a0f785-c408-766b-97d2-d7bfbd8bda45
