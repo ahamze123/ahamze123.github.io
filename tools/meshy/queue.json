@@ -1,10 +1,10 @@
 {
-  "run": 2,
+  "run": 3,
   "heroes": [
     "kira",
     "leo"
   ],
-  "max_credits": 80,
+  "max_credits": 60,
   "parallel": 2,
   "model": {
     "ai_model": "latest",
@@ -15,8 +15,20 @@
     "height_meters": 1.4
   },
   "anims": {
-    "heroes": [],
-    "action_ids": []
+    "heroes": [
+      "kira",
+      "leo"
+    ],
+    "action_ids": [
+      0,
+      466,
+      192,
+      59,
+      28,
+      187,
+      33,
+      569
+    ]
   },
   "per": {},
   "redo": []
