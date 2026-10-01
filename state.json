@@ -978,6 +978,14 @@
       "joints": 24,
       "triangles": 20657
      },
+     "running": {
+      "bytes": 30796,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "walking": {
       "bytes": 35436,
       "clips": [
