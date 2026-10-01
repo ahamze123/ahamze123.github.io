@@ -495,3 +495,5 @@
 2026-10-01 13:17:05 [salma] image-to-3d SUCCEEDED 100%
 2026-10-01 13:17:06 [wanda] rigged: {"model": {"bytes": 1869488, "triangles": 20747, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35636, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30992, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:17:10 [bushra] model task made 01a0f79c-94fb-70d2-b67c-4599b5855cf1
+2026-10-01 13:17:11 [bushra] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:17:11 [salma] rig task made 01a0f79c-8dcb-7001-ab58-578ff468d2a0
