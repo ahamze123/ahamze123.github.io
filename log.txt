@@ -550,3 +550,7 @@
 2026-10-01 13:20:22 [zara] rigging SUCCEEDED 100%
 2026-10-01 13:20:23 [zara] rigged: {"model": {"bytes": 1828136, "triangles": 20809, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35504, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30860, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:20:26 [sara] model task made 01a0f79f-93bd-7266-9811-33cb2016206a
+2026-10-01 13:20:27 [yasmin] rigging IN_PROGRESS 90%
+2026-10-01 13:20:28 [sara] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:20:38 [yasmin] rigging SUCCEEDED 100%
+2026-10-01 13:20:38 [yasmin] rigged: {"model": {"bytes": 1880652, "triangles": 20801, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35500, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30860, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
