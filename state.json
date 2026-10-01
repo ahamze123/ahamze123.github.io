@@ -1990,6 +1990,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "sara": {
+   "model": {
+    "id": "01a0f79f-93bd-7266-9811-33cb2016206a",
+    "made": "2026-10-01 13:20",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "tala": {
    "model": {
     "credits": 30,
