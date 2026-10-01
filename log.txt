@@ -239,3 +239,4 @@
 2026-10-01 12:56:43 [comet] image-to-3d IN_PROGRESS 1%
 2026-10-01 12:56:54 [rocky] image-to-3d IN_PROGRESS 84%
 2026-10-01 12:57:07 [zak] image-to-3d SUCCEEDED 100%
+2026-10-01 12:57:13 [zak] rig task made 01a0f78a-463b-7333-92dc-b509eae65e10
