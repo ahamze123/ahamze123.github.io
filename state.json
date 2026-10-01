@@ -1612,6 +1612,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "rina": {
+   "model": {
+    "id": "01a0f7a2-8d80-705c-954f-9b362e886d62",
+    "made": "2026-10-01 13:23",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "robin": {
    "model": {
     "credits": 30,
