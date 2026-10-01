@@ -488,6 +488,7 @@
    }
   },
   "drake": {
+   "extra": {},
    "full": {
     "bytes": 2553580,
     "pictures": [
@@ -608,6 +609,12 @@
    }
   },
   "faris": {
+   "full": {
+    "bytes": 2657384,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
