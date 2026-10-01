@@ -574,3 +574,5 @@
 2026-10-01 13:22:31 [lina] rigging SUCCEEDED 100%
 2026-10-01 13:22:32 [lina] rigged: {"model": {"bytes": 1759896, "triangles": 20801, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35596, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30944, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:22:35 [uma] model task made 01a0f7a1-8ac1-76b6-a5eb-e2fe7b2246d8
+2026-10-01 13:22:36 [uma] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:22:39 [sama] image-to-3d SUCCEEDED 100%
