@@ -10367,7 +10367,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.5';window.BB_VER=BB_VER;
+const BB_VER='25.6';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11514,6 +11514,35 @@ MV('{0} is further in the story: you go on from chapter {1} together!','{0} وص
 MV("You play {0}'s story together. The chapters count in your game too!",'تلعبان قصة {0} معًا. الفصول تُحسب في لعبتك أيضًا!');
 MV('Your friend','صديقك');MV('Chapters {0} to {1} done!','انتهت الفصول من {0} إلى {1}!');
 MV('One story online','قصة واحدة عبر الإنترنت');MV('Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too','عند اللعب عبر الإنترنت تكملون من عند من وصل أبعد في القصة، وكل فصل تنهونه معًا يُحسب على كل جهاز. وقطع الصاروخ مشتركة أيضًا');
+// ================= v25.6: one broken thing never stops the whole game =================
+// The moving things of the world (heroes, pets, cars, enemies, quest markers, the glowing trail...) were drawn in one big
+// step. If one of them could not be drawn, the whole picture stopped, and after a few seconds the game said "Oops! The game
+// got stuck", again after every restart when that thing was part of the saved game. Now every part is drawn in its own
+// safety box: a part that fails is left out for that moment, and the game goes on. When the game does get stuck, the
+// screen shows what went wrong (so it can be fixed), and the last problems are kept in the saved game's settings.
+const SAFEDRAW=['drawHero','drawPets','drawPerson','drawAnimal','drawEnemy','drawStuck','drawVehicle','drawBrk','drawChest','drawCoin','drawHeart','drawGBlock',
+  'drawCrystal','drawBeacon','drawGate','drawGates','drawSocket','drawHandle','drawCore','drawTerminal','drawStationKiosks','drawPile','drawBarrier','drawMarkerRing',
+  'drawSpaceProps','drawRParts','drawCine','drawQuest','drawTownDyn','drawInside','drawJob','drawSuitFx','drawBall','drawHSZone','drawBeam','drawTrail',
+  'drawTrailMini','drawShot','drawShotFx','drawWeather','drawHome','drawBuildGhost','drawAmbient','glowBuild','drawGlow'];
+for(const n of SAFEDRAW){const f=window[n];if(typeof f!=='function')continue;
+  window[n]=function(){const keep=OUT;try{return f.apply(this,arguments);}catch(e){noteErr('d.'+n,e);OUT=keep;try{MS.reset();}catch(x){}}};}
+// what the hero should do next: a broken quest or job step shows no beam instead of stopping everything
+{const _o=MIS.objective;MIS.objective=function(){try{return _o.apply(this,arguments);}catch(e){noteErr('obj',e);return null;}};}
+if(typeof jobObjective==='function'){const _j=jobObjective;jobObjective=function(){try{return _j.apply(this,arguments);}catch(e){noteErr('jobobj',e);return null;}};}
+// the whole step: if something still fails, the rest of the world is still drawn
+{const _bd=buildDyn;buildDyn=function(){try{_bd.apply(this,arguments);}catch(e){noteErr('dyn',e);try{OUT=DYN;MS.reset();setUpload(DYN);setUpload(CHR);setUpload(MOB);setUpload(TRN);}catch(x){}}};}
+// the buttons and keys, and the list of enemies, can never stop the game either
+{const _ri=readInput;readInput=function(dt){try{return _ri(dt);}catch(e){noteErr('input',e);return NOINP;}};}
+{const _ss=simStep;simStep=function(dt,inp){for(let i=EN.length-1;i>=0;i--)if(!EN[i]||typeof EN[i]!=='object')EN.splice(i,1);
+  for(let i=VEH.length-1;i>=0;i--)if(!VEH[i]||typeof VEH[i]!=='object')VEH.splice(i,1);for(let i=PARTS.length-1;i>=0;i--)if(!PARTS[i])PARTS.splice(i,1);return _ss(dt,inp);};}
+// keep the last problems (in this tablet's storage) and show them on the "stuck" screen
+const SAFELOG={seen:{}};
+{const _ne=noteErr;noteErr=function(k,err){_ne(k,err);try{if(!SAFELOG.seen[k]){SAFELOG.seen[k]=1;const L=JSON.parse(localStorage.getItem('bb_errs')||'[]');
+  L.push({k,v:BB_VER,m:String(err&&err.message||err).slice(0,160),s:String(err&&err.stack||'').split('\n').slice(0,3).join(' | ').slice(0,400),t:Date.now()});
+  localStorage.setItem('bb_errs',JSON.stringify(L.slice(-12)));}}catch(x){}};}
+{const _se=showErr;showErr=function(err,canReload){_se(err,canReload);if(!canReload)return;try{const e=$('err');const d=document.createElement('div');
+  d.style.cssText='font:12px/1.35 monospace;opacity:.8;margin-top:14px;max-width:92vw;word-break:break-all;user-select:text;-webkit-user-select:text';
+  d.textContent='v'+BB_VER+' · '+String(err&&err.message||err)+' · '+String(err&&err.stack||'').split('\n').slice(0,4).join(' | ');e.appendChild(d);}catch(x){}};}
 // ================= start =================
 boot();
 </script>
