@@ -591,3 +591,4 @@
 2026-10-01 13:23:27 [sama] rigging SUCCEEDED 100%
 2026-10-01 13:23:27 [sara] rigging IN_PROGRESS 90%
 2026-10-01 13:23:28 [sama] rigged: {"model": {"bytes": 1724128, "triangles": 20720, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35448, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30796, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 13:23:31 [aisha] model task made 01a0f7a2-6550-772c-8cfe-8a0811e2be61
