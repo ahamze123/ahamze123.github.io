@@ -103,3 +103,4 @@
 2026-10-01 12:46:58 [mia] rigging IN_PROGRESS 90%
 2026-10-01 12:47:08 [mia] rigging SUCCEEDED 100%
 2026-10-01 12:47:09 [mia] rigged: {"model": {"bytes": 1652308, "triangles": 20656, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35436, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30792, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 12:47:11 [rex] model task made 01a0f781-257c-755f-8260-dd610b7551e1

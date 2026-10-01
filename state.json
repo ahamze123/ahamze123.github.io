@@ -370,6 +370,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "rex": {
+   "model": {
+    "id": "01a0f781-257c-755f-8260-dd610b7551e1",
+    "made": "2026-10-01 12:47",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "ruby": {
    "model": {
     "id": "01a0f780-0dc2-7560-9399-dc4a7ca15355",
