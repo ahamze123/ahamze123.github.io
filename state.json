@@ -732,6 +732,7 @@
    }
   },
   "finn": {
+   "extra": {},
    "full": {
     "bytes": 2856452,
     "pictures": [
@@ -852,6 +853,12 @@
    }
   },
   "karim": {
+   "full": {
+    "bytes": 2218832,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
