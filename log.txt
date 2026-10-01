@@ -200,3 +200,11 @@
 2026-10-01 12:53:27 [fay] image-to-3d IN_PROGRESS 39%
 2026-10-01 12:53:40 [kat] image-to-3d SUCCEEDED 100%
 2026-10-01 12:53:45 [kat] rig task made 01a0f787-1be9-730f-af82-754a938cd21e
+2026-10-01 12:53:47 [kat] rigging IN_PROGRESS 10%
+2026-10-01 12:53:57 [kat] rigging IN_PROGRESS 36%
+2026-10-01 12:54:05 [nora] image-to-3d IN_PROGRESS 59%
+2026-10-01 12:54:07 [kat] rigging IN_PROGRESS 63%
+2026-10-01 12:54:07 [fay] image-to-3d IN_PROGRESS 59%
+2026-10-01 12:54:17 [kat] rigging IN_PROGRESS 95%
+2026-10-01 12:54:27 [kat] rigging SUCCEEDED 100%
+2026-10-01 12:54:28 [kat] rigged: {"model": {"bytes": 1689116, "triangles": 20752, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35564, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30932, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
