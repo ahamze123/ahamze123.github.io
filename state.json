@@ -2056,6 +2056,7 @@
    }
   },
   "robin": {
+   "extra": {},
    "full": {
     "bytes": 2325864,
     "pictures": [
@@ -2176,6 +2177,12 @@
    }
   },
   "ruby": {
+   "full": {
+    "bytes": 2249900,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
