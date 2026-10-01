@@ -949,6 +949,8 @@
   },
   "munir": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f794-8b9a-7242-a1b9-f72e25cf790e",
     "made": "2026-10-01 13:08",
     "run": 4,
@@ -961,7 +963,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f794-8b9a-7242-a1b9-f72e25cf790e/output/preview.png?Expires=1791119437&Signature=YP9IOesGsnKBfRppn0KFQDSnyMvqJrn2ceb12X-Dkm2Kx--SNHP9j29IptVTTLSfz0CXK9ziiGjMoLU1FaD1wBhAwooyIKLjZScj90IszU8R1mDkF8H3RPvkdf9OEJoezG8T6CEcPWsjLGC2zeD6wwbPiA4Xq5ylvlOCNtwPmsw8C5KkMesVixNGFhhabCoMTojNjxtSx~k1PPbTIb8YvSw6npNEJgLVkynVS5-Hr0t-X9l-Eb2jWKYrGTEbISznhquEYuJKC7Wk7H5GyfDmHEM51V7Av~IHIwX2Hck9ViGwS9BYCwiuRrz6El4m3qJ1~IWvAJftWeu9Bc6b1Nzzcg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "noor": {

@@ -380,3 +380,8 @@
 2026-10-01 13:09:58 [drake] rigging SUCCEEDED 100%
 2026-10-01 13:09:59 [drake] rigged: {"model": {"bytes": 1707948, "triangles": 20763, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35576, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30928, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:10:02 [idris] model task made 01a0f796-0f32-7113-a390-6de0090f1e08
+2026-10-01 13:10:04 [idris] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:10:15 [zork] image-to-3d IN_PROGRESS 36%
+2026-10-01 13:10:19 [munir] image-to-3d IN_PROGRESS 84%
+2026-10-01 13:10:35 [zork] image-to-3d IN_PROGRESS 59%
+2026-10-01 13:10:39 [munir] image-to-3d SUCCEEDED 100%
