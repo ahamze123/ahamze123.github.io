@@ -427,6 +427,7 @@
    }
   },
   "dan": {
+   "extra": {},
    "full": {
     "bytes": 3055652,
     "pictures": [
@@ -547,6 +548,12 @@
    }
   },
   "erik": {
+   "full": {
+    "bytes": 2887100,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
