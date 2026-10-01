@@ -481,3 +481,6 @@
 2026-10-01 13:16:41 [lulu] rigging SUCCEEDED 100%
 2026-10-01 13:16:42 [mira] rigging IN_PROGRESS 90%
 2026-10-01 13:16:42 [lulu] rigged: {"model": {"bytes": 2030316, "triangles": 20839, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35424, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30788, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 13:16:42 [salma] image-to-3d IN_PROGRESS 74%
+2026-10-01 13:16:45 [wanda] rigging IN_PROGRESS 63%
+2026-10-01 13:16:45 [tala] model task made 01a0f79c-349d-7095-83a0-d9d8ae0bd281

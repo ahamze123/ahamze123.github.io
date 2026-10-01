@@ -1837,6 +1837,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "tala": {
+   "model": {
+    "id": "01a0f79c-349d-7095-83a0-d9d8ae0bd281",
+    "made": "2026-10-01 13:16",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "wanda": {
    "model": {
     "credits": 30,
