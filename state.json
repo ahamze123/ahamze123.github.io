@@ -2544,6 +2544,7 @@
    }
   },
   "sami": {
+   "extra": {},
    "full": {
     "bytes": 2722780,
     "pictures": [
@@ -2664,6 +2665,12 @@
    }
   },
   "tala": {
+   "full": {
+    "bytes": 2930880,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
