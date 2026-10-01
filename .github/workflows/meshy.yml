@@ -1,0 +1,52 @@
+# Makes the heroes' 3D models with Meshy (tools/meshy/run.py). Runs when tools/meshy/queue.json changes on main,
+# or from the Actions tab ("Run workflow"). Needs the repository secret MESHY_API_KEY.
+# Everything it makes goes to the branch 'meshy-out' (not to the game itself).
+name: Make 3D heroes (Meshy)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/meshy/queue.json']
+permissions:
+  contents: write
+concurrency:
+  group: meshy
+  cancel-in-progress: false
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open the results branch
+        run: |
+          git config --global user.name "meshy-bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin meshy-out >/dev/null 2>&1; then
+            git fetch --depth=1 origin meshy-out
+            git worktree add -b meshy-out out FETCH_HEAD
+          else
+            git worktree add --detach out
+            cd out
+            git checkout --orphan meshy-out
+            git rm -rfq . || true
+            git clean -fdxq
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow
+        run: pip install pillow
+      - name: Make the models
+        env:
+          MESHY_API_KEY: ${{ secrets.MESHY_API_KEY }}
+          MESHY_OUT: ${{ github.workspace }}/out
+          MESHY_PUSH: '1'
+        run: python3 tools/meshy/run.py
+      - name: Save the results
+        if: always()
+        run: |
+          cd out
+          git add -A
+          git commit -qm "Meshy run ${{ github.run_number }}" || echo "nothing new to save"
+          git push -q origin HEAD:meshy-out
