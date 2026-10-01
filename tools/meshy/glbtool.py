@@ -610,6 +610,94 @@ def quantize_mesh(doc, uv=True, weights=True, pos_nor=True):
     return bool(done)
 
 
+# ---------- capes, long hair and wings that the automatic skeleton tied to the arms ----------
+def _seg_dist(P, a, b):
+    import numpy as np
+    ab = b - a; t = np.clip(((P - a) @ ab) / max(float(ab @ ab), 1e-12), 0, 1)
+    return np.linalg.norm(P - (a + t[:, None] * ab), axis=1)
+
+
+def _rest_skinned(doc, prim):
+    """vertex positions of one primitive in the rest pose (world space of the skeleton)"""
+    import numpy as np
+    J = doc.J; sk = _Skel(doc)
+    WR, WP, WS = sk.world(sk.T[None], sk.R[None], sk.S[None])
+    S = J['skins'][0]; nj = len(S['joints'])
+    ibm = np.array(doc.accessor_values(S['inverseBindMatrices']), float).reshape(nj, 4, 4).transpose(0, 2, 1)
+    def mat(i):
+        x, y, z, w = WR[0, i]; s = WS[0, i]
+        R = np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)], [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+                      [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]]) * s
+        M = np.eye(4); M[:3, :3] = R; M[:3, 3] = WP[0, i]; return M
+    JM = np.stack([mat(j) @ ibm[k] for k, j in enumerate(S['joints'])])
+    A = prim['attributes']
+    P = _values(doc, A['POSITION']); Jt = _values(doc, A['JOINTS_0']).astype(int); W = _values(doc, A['WEIGHTS_0'])
+    W = W / np.maximum(W.sum(1, keepdims=True), 1e-12)
+    Ph = np.concatenate([P, np.ones((len(P), 1))], 1); out = np.zeros((len(P), 3))
+    for c in range(4):
+        out += W[:, c:c + 1] * np.einsum('nij,nj->ni', JM[Jt[:, c]], Ph)[:, :3]
+    return out, Jt, W, WP[0], sk
+
+
+def fix_arm_weights(doc, min_dist=0.1):
+    """Meshy's automatic skeleton ties parts of a cape, long hair, wings or a skirt that hang next to the arms (A-pose) to
+    the arm bones, so they fly up with the arms. A vertex that moves with an arm, but is far from the arm and nearer to the
+    body, gets the weights of the nearest vertex that does not move with an arm. Returns how many vertices changed."""
+    import numpy as np
+    J = doc.J
+    if not J.get('skins') or not J.get('meshes'): return 0
+    changed = 0
+    for m in J['meshes']:
+        for prim in m['primitives']:
+            A = prim.get('attributes', {})
+            if not all(k in A for k in ('POSITION', 'JOINTS_0', 'WEIGHTS_0')): continue
+            pos, Jt, W, WP, sk = _rest_skinned(doc, prim)
+            nm = [n.split('|')[-1].split(':')[-1] for n in sk.names]; ix = {n: i for i, n in enumerate(nm)}
+            if not all(s + b in ix for s in ('Left', 'Right') for b in ('Arm', 'ForeArm', 'Hand')): continue
+            joints = J['skins'][0]['joints']; slot = {j: k for k, j in enumerate(joints)}
+            arm_slots = [slot[ix[s + b]] for s in ('Left', 'Right') for b in ('Arm', 'ForeArm', 'Hand') if ix[s + b] in slot]
+            is_arm = np.isin(Jt, arm_slots); wa = (W * is_arm).sum(1)
+            darm = np.full(len(pos), 9.0)
+            for s in ('Left', 'Right'):
+                a, f, h = WP[ix[s + 'Arm']], WP[ix[s + 'ForeArm']], WP[ix[s + 'Hand']]
+                darm = np.minimum(darm, np.minimum(np.minimum(_seg_dist(pos, a, f), _seg_dist(pos, f, h)), _seg_dist(pos, h, h + (h - f) * .7)))
+            dbody = np.full(len(pos), 9.0)
+            for a, b in (('Hips', 'Spine'), ('Spine', 'Spine01'), ('Spine01', 'Spine02'), ('Spine02', 'neck'), ('neck', 'Head'), ('Head', 'head_end'),
+                         ('Hips', 'LeftUpLeg'), ('Hips', 'RightUpLeg'), ('LeftUpLeg', 'LeftLeg'), ('LeftLeg', 'LeftFoot'), ('RightUpLeg', 'RightLeg'), ('RightLeg', 'RightFoot')):
+                if a in ix and b in ix: dbody = np.minimum(dbody, _seg_dist(pos, WP[ix[a]], WP[ix[b]]))
+            strong = wa > 0.9
+            r_arm = float(np.percentile(darm[strong], 75)) if strong.any() else 0.08
+            height = float(np.ptp(pos[:, 1])) or 1.4
+            thr = max(min_dist * height / 1.4, 1.5 * min(r_arm, 0.09 * height / 1.4))
+            # how far behind the back each vertex is (the hero faces +z): capes, wings and long hair hang there, arms do not
+            hp, sp2 = WP[ix['Hips']], WP[ix['Spine02']] if 'Spine02' in ix else WP[ix['Hips']] + np.array([0, .3, 0])
+            zrel = pos[:, 2] - np.interp(pos[:, 1], [hp[1], sp2[1]], [hp[2], sp2[2]])
+            k = height / 1.4
+            bad = (wa > 0.02) & (((darm > thr) & (dbody < darm)) | ((zrel < -0.09 * k) & (darm > 0.09 * k)))
+            good = wa < 1e-3
+            bi, gi = np.where(bad)[0], np.where(good)[0]
+            if not len(bi) or not len(gi): continue
+            near = np.empty(len(bi), int); G = pos[gi]
+            for s0 in range(0, len(bi), 256):
+                d = ((pos[bi[s0:s0 + 256]][:, None, :] - G[None, :, :]) ** 2).sum(-1); near[s0:s0 + 256] = gi[d.argmin(1)]
+            nj = len(joints); newJ = Jt.copy(); newW = W.copy()
+            for k, v in enumerate(bi):
+                acc = np.zeros(nj)
+                for c in range(4):
+                    if not is_arm[v, c]: acc[Jt[v, c]] += W[v, c]
+                dn = near[k]
+                for c in range(4): acc[Jt[dn, c]] += wa[v] * W[dn, c]
+                top = np.argsort(-acc)[:4]; w = acc[top]; s1 = w.sum()
+                newJ[v] = top; newW[v] = w / s1 if s1 > 0 else W[v]
+            ct = 5121 if nj <= 255 else 5123
+            J['accessors'].append({'bufferView': doc.add_view(newJ.astype('<u1' if ct == 5121 else '<u2').tobytes(), 34962), 'componentType': ct, 'count': int(len(newJ)), 'type': 'VEC4'})
+            A['JOINTS_0'] = len(J['accessors']) - 1
+            J['accessors'].append({'bufferView': doc.add_view(newW.astype('<f4').tobytes(), 34962), 'componentType': 5126, 'count': int(len(newW)), 'type': 'VEC4'})
+            A['WEIGHTS_0'] = len(J['accessors']) - 1
+            changed += len(bi)
+    return changed
+
+
 def info(path):
     d = Doc.load(path); J = d.J
     print(path, '| JSON nodes', len(J.get('nodes', [])), '| BIN', round(len(d.BIN) / 1e6, 2), 'MB')
