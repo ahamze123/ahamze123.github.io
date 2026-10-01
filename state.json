@@ -2361,6 +2361,7 @@
    }
   },
   "salma": {
+   "extra": {},
    "full": {
     "bytes": 2894164,
     "pictures": [
@@ -2481,6 +2482,12 @@
    }
   },
   "sama": {
+   "full": {
+    "bytes": 2548360,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
