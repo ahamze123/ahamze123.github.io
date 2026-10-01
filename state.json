@@ -2971,6 +2971,7 @@
    }
   },
   "zara": {
+   "extra": {},
    "full": {
     "bytes": 2848488,
     "pictures": [
@@ -3091,6 +3092,12 @@
    }
   },
   "zork": {
+   "full": {
+    "bytes": 2456508,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
