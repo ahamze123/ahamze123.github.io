@@ -2,6 +2,8 @@
  "heroes": {
   "kira": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f768-426e-76b6-a54a-6be315a3940b",
     "made": "2026-10-01 12:20",
     "run": 2,
@@ -14,7 +16,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f768-426e-76b6-a54a-6be315a3940b/output/preview.png?Expires=1791116644&Signature=KI1-nk5LrdVAFDr4ffQ5Gu~yx~26s-C3pcRAONoI436QbeP5e7R2ZIimdlRmNazI5-yoAI3NP2pfzJUF~gjawxlUuCzdlwUOT0SRzZnkLZq1Gp~b5BViwM6d5rENkxbTMJrMGhESQniumYGSrwbXJ0LQ3pntQDZncp07szxxCtPpaS64xLS441RaSEhjEt4tKvYfUu7IP5nibIp~p6WXkhppdb0LmnWjFUGRkcDM6UP4ZfWNnkfRtp0JBJHjghaY5Ghq8e1LwETpdHDK11BWMwarQslkOw9OKS0gX9VSnizL6Tyoj3oa8pUei-~Fx4Hs2qCrsV0Izy3COA5XkDbfSw__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "leo": {
