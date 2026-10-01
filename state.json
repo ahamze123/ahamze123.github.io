@@ -1433,6 +1433,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "saif": {
+   "model": {
+    "id": "01a0f797-541c-75b9-bc28-e7bf022baeb5",
+    "made": "2026-10-01 13:11",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "salem": {
    "model": {
     "credits": 30,
