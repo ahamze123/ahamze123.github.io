@@ -1,5 +1,6 @@
 {
  "heroes": {
+  "dan": {},
   "finn": {},
   "kenji": {
    "model": {
@@ -162,10 +163,38 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f77f-e6ed-72fd-ab8a-7f19f7a074d5/output/preview.png?Expires=1791118095&Signature=XAELkew7YctkRPIZzn-JXzpUXm7GBKLAuRTPxjXek09xdgWtd~tMWccPGA~bkJPeaGWAH7D9PADOuAOvakf-V2qT4Bj9ypIhykoGK977wXH3oGQ-pLmkXDSpAikjf18GyiTOZHhXE7NZAlknvgqKueoBpWALUrZtob9LCQU7fr6-9llO2ZwOtn~nkLPGzZBCade1nojqJd94ulCbOnq049YSaXTdurKIAT0po5IJ4uegUfE2LOji9cWKBke48Q5PzwRwSM85GRr9PnqzG8adCsEiggRjXdyue6Ti41vKgyQ0Q5s~kv~w~tEXmtvLAt-1EUVTUsLKW7E6NKf1gf0grQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 1671480,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20744
+     },
+     "running": {
+      "bytes": 30780,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 35428,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a0f782-4cbc-75a1-9d6a-9b349dc4ce09",
     "made": "2026-10-01 12:48",
     "model": "01a0f77f-e6ed-72fd-ab8a-7f19f7a074d5",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "leo": {
