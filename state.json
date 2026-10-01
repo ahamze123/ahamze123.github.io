@@ -549,6 +549,7 @@
    }
   },
   "erik": {
+   "extra": {},
    "full": {
     "bytes": 2887100,
     "pictures": [
@@ -669,6 +670,12 @@
    }
   },
   "fay": {
+   "full": {
+    "bytes": 2995020,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
