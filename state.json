@@ -2605,6 +2605,7 @@
    }
   },
   "sara": {
+   "extra": {},
    "full": {
     "bytes": 2358008,
     "pictures": [
@@ -2725,6 +2726,12 @@
    }
   },
   "uma": {
+   "full": {
+    "bytes": 2638224,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
