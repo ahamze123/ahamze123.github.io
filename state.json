@@ -1742,6 +1742,8 @@
   },
   "salma": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f79a-4a50-7122-8721-fe88fa29a219",
     "made": "2026-10-01 13:14",
     "run": 4,
@@ -1754,7 +1756,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f79a-4a50-7122-8721-fe88fa29a219/output/preview.png?Expires=1791119814&Signature=QnW0RozaCtL9LItTUiTyDQ7Q6aDT-03Lkq6FuYwPq-j2a7iyiZAejwtgKgJqYEEhwuj-PCUVME8lPGzfE36pompwgcxKlTDKMQMPDMKft9rOkpUS6SA2wn24~6iWZHZI8in-kaFazvdGorX-j1vOmr5jYNOzHl8lV1tBS2gMqqwvqoPoFWFirKRSVEARxe2PGdbo9-sqQEidh8jVcqpr2af3PB7KE6eanTVwrWY0OuN09qqHHpLKd6Ndg01Fp~fhVQ9av6zz8iyiq5cYKXQqoIBE60vX1t~Wa9CdV7bpQbXLX5bY4xy3Y1l8u74k8-7hNkgIdvTrM899TxsS9F3RRA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "sam": {
@@ -1902,10 +1905,13 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f79a-0fd2-7004-a303-e4a8a39b7f09/output/preview.png?Expires=1791119769&Signature=NjW7WeSQ6q98d2HRMkoLAWVBlh5VGzXZ75EFptQYFPwnKETEMu8qUEAkPG2QsPik5UsceIm4Jqe1K0K2XsAWKkv7wHdpgMVu9Kwp3B2XdGmkPgBzlKzxsF0l~ZUvKbF6P8OlPt8zIAwGmnG7zefAmHGa7DICLAiwjGGJhZ8nrLdEQQk1v~byJ2hSC7qjcuJNmFcV~JqZcoaX~qfv0A-we~cRqfdcUXk6sPrPod7uUi7u~~jyAQlrXK5PUfeAuzaBpjtQC~oJ92lhsy~sqADma-1HjV3G-LXd2l3eu~aM00mMjYz1g8tWeh7926avroXaNCXwSxQ0OcoYwGzGXPI85A__&Key-Pair-Id=K1VGYTHIYLM9UM"
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {},
     "id": "01a0f79b-d297-73cd-9d38-01808345cdf0",
     "made": "2026-10-01 13:16",
     "model": "01a0f79a-0fd2-7004-a303-e4a8a39b7f09",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "zak": {

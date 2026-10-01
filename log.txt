@@ -490,3 +490,6 @@
 2026-10-01 13:16:54 [salma] image-to-3d IN_PROGRESS 99%
 2026-10-01 13:16:55 [wanda] rigging IN_PROGRESS 90%
 2026-10-01 13:16:56 [zara] model task made 01a0f79c-605a-7171-9f95-fbb91ba7f9cb
+2026-10-01 13:16:58 [zara] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:17:05 [wanda] rigging SUCCEEDED 100%
+2026-10-01 13:17:05 [salma] image-to-3d SUCCEEDED 100%
