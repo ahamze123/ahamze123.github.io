@@ -11,7 +11,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - **Show me the way** (on the hero radio after a chapter, and in the 📖 Story Book) draws a glowing trail straight to the friend who gives the next chapter.
 - The glowing trail always takes the way around a force field, never through it.
 - Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests, jobs and trails only send you to places that are already open: if you pick a locked place (on the map, a hidden hero coin, the Moon), the game says which chapter opens it.
-- Playing online, everyone follows the host's story, and each tablet gets its own prizes.
+- Playing online, you all play one story: it goes on from whoever is furthest along, and every chapter you finish together counts on every tablet, also when you play alone again. Commander Nova's rocket parts and the Moon quests are shared too. Each tablet gets its own prizes.
 
 ## Missions that make you think
 - Fixing things, rescuing animals, charging the factory sockets, pulling the big handle and building (trampolines, statues, the Crystal Bridge) are puzzles now instead of holding the button: memory, what comes next, counting, sums, putting things in order, finding the odd one out and connecting wires.
@@ -131,6 +131,7 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - One player taps **Host a game**; the others tap **Join** next to the host's name.
 - The host sees a card saying how many heroes are playing and how friends join. If the lobby says it is connecting, wait a few seconds: the host's name appears with a **Join** button.
 - You can also host or join from the in-game menu under **Online**.
+- You play one story together. A friend who is further along brings their chapters with them, so nobody plays the first chapters again, and every chapter, rocket part and quest you finish together is saved on every tablet.
 
 ## Language
 Tap **🌐 العربية** on the first screen (or Menu → Settings → Language) to play in Arabic.

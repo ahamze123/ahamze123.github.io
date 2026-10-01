@@ -2977,10 +2977,11 @@ function netSend(dt){if(!NET.game||NET.role==='solo')return;NET.sendT-=dt;if(NET
   const o={v:3,id:NET.pid,sl:NET.slot,r:NET.role==='host'?'h':'g',n:String(pr.name).slice(0,14),h:G.hero,lk:lookArr(pr.looks),gd:(pr.gad.wings?1:0)|(pr.gad.boots?2:0)|(pr.gad.gloves?4:0),lv:pr.level,hp:p.hp,mh:maxHp(pr),t:Date.now()%1e8,
     p:[f2(p.x),f2(p.y),f2(p.z),f2(p.face),HERO_BITS(p),v?VTYPES.indexOf(v.type):-1,v?f2(v.head):0,f2(v?v.vx:p.vx),f2(v?v.vy:p.vy),f2(v?v.vz:p.vz),p.carry?(p.carry.kind==='veh'?'v:'+p.carry.obj.type:'b:'+p.carry.obj.t):0,v?(v.col||0):0],
     ev:NET.ev,em:p.emote&&p.emoteT>0?p.emote:0,rg:G.race&&G.race.vs?G.race.i:-1,pt:pr.pet?PETS.findIndex(q=>q.id===pr.pet)+1:0};
+  if(NET.role==='guest'&&typeof coopMine==='function')o.my=coopMine();
   if(NET.role==='host'){const fs=netFriends();
     if(WORLD.pitch&&SOC.b&&(SOC.near||friendsNear(WORLD.pitch.x,WORLD.pitch.z,70))){const b=SOC.b;o.bl=[f2(b.x),f2(b.y),f2(b.z)];o.sc=SOC.score;}
     o.pl=netSlots();
-    o.q=[QS.act,QS.step,QS.cnt,QS.bits,+QS.t.toFixed(1),QS.idx|0,QS.carry?1:0,QS.spawned?1:0];o.w={i:WS.intro,a:WS.act,s:WS.step,c:WS.cnt,d:WS.done,pu:WS.pups,be:WS.beac,co:WS.cores,bl:WS.bld,bp:Object.entries(WS.bp).map(([k,v2])=>[+k,f2(v2)]),so:[f2(WS.sock[0]),f2(WS.sock[1])],ha:f2(WS.hand),cr:WS.cry?[f2(WS.cry.x),f2(WS.cry.y),f2(WS.cry.z),MORDER.indexOf(WS.cry.m)]:0,g:WS.gate,wn:WS.won,dn:Math.round(DN.t*1000)/1000,wx:DN.wx,hm:WS.home,gg:G.ggo?[...G.ggo]:[]};
+    o.q=[QS.act,QS.step,QS.cnt,QS.bits,+QS.t.toFixed(1),QS.idx|0,QS.carry?1:0,QS.spawned?1:0];o.w={i:WS.intro,a:WS.act,s:WS.step,c:WS.cnt,d:WS.done,pu:WS.pups,be:WS.beac,co:WS.cores,bl:WS.bld,bp:Object.entries(WS.bp).map(([k,v2])=>[+k,f2(v2)]),so:[f2(WS.sock[0]),f2(WS.sock[1])],ha:f2(WS.hand),cr:WS.cry?[f2(WS.cry.x),f2(WS.cry.y),f2(WS.cry.z),MORDER.indexOf(WS.cry.m)]:0,g:WS.gate,wn:WS.won,dn:Math.round(DN.t*1000)/1000,wx:DN.wx,hm:WS.home,gg:G.ggo?[...G.ggo]:[],rk:typeof coopRocket==='function'?coopRocket():0};
     // the baddies closest to any guest (bosses and the getaway van always)
     const dmin=e=>{let m=1e9;for(const r of fs)m=Math.min(m,d2(e.x,e.z,r.x,r.z));return m;};
     const list=EN.filter(e=>!e.dead).map(e=>({e,d:e.boss||e.type==='van'?0:dmin(e)})).sort((a,b)=>a.d-b.d).slice(0,26);
@@ -3001,7 +3002,7 @@ function onRemotePresence(peer){const o=peer.presence;if(!o||o.v!==3)return;cons
     rp=NET.peers[id]={id,peer:peer.peer,ok:false,samples:[],anim:newAnim(),x:0,y:0,z:0,face:0,looks:null,gad:{},name:'Friend',hero:'girl',offs:null,isHost:o.r==='h',slot:o.r==='h'?0:1,hs:0};
     toast(trf('{0} joined the game!',String(o.n||tr('Friend')).slice(0,14)));SFX.join();teamTipsStart();
     if(rp.isHost){NET.host=rp;NET.connecting=false;}if(host)setTimeout(()=>lobbyPresence('host'),50);}
-  rp.peer=peer.peer;if(o===rp.lastO)return;rp.lastO=o;
+  rp.peer=peer.peer;if(o===rp.lastO)return;rp.lastO=o;if(host&&Array.isArray(o.my)&&typeof coopMerge==='function'){try{coopMerge(o.my,rp,String(o.n||'').slice(0,14));}catch(e){noteErr('coop',e);}}
   rp.name=String(o.n||'Friend').slice(0,14);rp.hero=o.h==='boy'?'boy':'girl';const lk=Array.isArray(o.lk)?o.lk:[];
   rp.looks={suit:(SUITS[num(lk[0])]||SUITS[0]).id,hair:(HAIRS[num(lk[1])]||HAIRS[0]).id,hat:(HATS[num(lk[2])]||HATS[0]).id,cape:(CAPES[num(lk[3])]||CAPES[0]).id,mask:(MASKS[num(lk[4])]||MASKS[0]).id,costume:(COSTUMES[num(lk[5])]||COSTUMES[0]).id,psuit:(PSUITS[num(lk[6])]||PSUITS[0]).id,ch:lk[7]!==undefined&&CHARS[num(lk[7])]?CHARS[num(lk[7])].id:(o.h==='boy'?'leo':'mia')};
   const gd=num(o.gd);rp.gad={wings:!!(gd&1),boots:!!(gd&2),gloves:!!(gd&4)};rp.lv=num(o.lv,1);rp.hp=num(o.hp,8);rp.mh=num(o.mh,8);rp.pet=(PETS[num(o.pt)-1]||{}).id||'';rp.emote=typeof o.em==='string'?o.em.slice(0,4):0;rp.rg=num(o.rg,-1);
@@ -3029,7 +3030,7 @@ function applyEvent(type,a,rp){const host=NET.role==='host';const fromHost=!!(rp
   else if(type==='emo'){}
   else if(type==='grab'){beGrabbed(rp);}else if(type==='free'){if(ME.carryF&&NET.lockId===(rp&&rp.id))ME.carryF=false;}else if(type==='toss'){beTossed(num(a[0]),num(a[1]),num(a[2]),rp);}else if(type==='pw'){friendPower(rp);}else if(type==='rev'){revivedBy(rp);}
   else if(type==='vrace'){vsRaceJoin(num(a[0],-1),rp,num(a[1],1));}else if(type==='vfin'){vsFriendFinished(num(a[0]),rp);}else if(type==='hs'){hsJoin(num(a[0]),num(a[1]),rp);}else if(type==='hsf'){hsFoundMe(rp);}else if(type==='hsq'){if(HS.on&&(HS.seeker===(rp&&rp.id)||HS.role==='seek'))hsQuitBy(rp);}else if(type==='socw'){if(fromHost){const w=num(a[0]);setTimeout(()=>socWin(w),1300);}}
-  else if(type==='qdone'){if(!host&&fromHost){addCoins(num(a[1]));addXP(num(a[2]));const Q=qDef(a[0]);banner(tr('Quest complete!'),Q?tr(Q.title):'',Q?Q.col:'#ffcf3a');SFX.win&&SFX.win();if(Q)giveRewards(Q);}}
+  else if(type==='qdone'){if(!host&&fromHost){if(typeof a[0]==='string'&&qDef(a[0])){G.qdone=G.qdone||new Set();G.qdone.add(a[0]);}addCoins(num(a[1]));addXP(num(a[2]));const Q=qDef(a[0]);banner(tr('Quest complete!'),Q?tr(Q.title):'',Q?Q.col:'#ffcf3a');SFX.win&&SFX.win();if(Q)giveRewards(Q);}}
   else if(host&&type==='qstart'){if(typeof a[0]==='string'&&qDef(a[0])&&!QS.act&&!WS.act)qStart(a[0]);}
   else if(host&&type==='qact'){if(typeof a[0]==='string')questHostEvent(a[0],num(a[1],-1));}
   else if(host){const W=WORLD;if(type==='hit'){const e=EN.find(q=>q.id===num(a[0]));if(e)damageEnemy(e,clamp(num(a[1]),0,999),num(a[2]),num(a[3]),false);}
@@ -7663,8 +7664,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:35,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:36,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🤝',t:'One story online',s:'Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too'},
   {ic:'🧭',t:'Show me the way, fixed',s:'After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field'},
   {ic:'🃏',t:'Hero cards',s:'Every hero has their own picture card now, made by our family. Tap a hero\'s picture in 🦸 to see the whole card',act:()=>{if(typeof openRoster==='function')openRoster();}},
   {ic:'🧭',t:'Trails go around force fields',s:'The glowing trail takes the way around places that are still locked, instead of leading you into a force field'},
@@ -10365,7 +10367,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='25.4';window.BB_VER=BB_VER;
+const BB_VER='25.5';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11468,6 +11470,50 @@ MV('For a more natural voice, download one on the iPad: Settings › Accessibili
 MV('Hero cards','بطاقات الأبطال');MV("Every hero has their own picture card now, made by our family. Tap a hero's picture in 🦸 to see the whole card",'لكل بطل الآن بطاقة بصورته، صنعتها عائلتنا. اضغط على صورة البطل في 🦸 لترى البطاقة كاملة');
 MV('Trails go around force fields','المسارات تلتف حول حقول القوة');MV('The glowing trail takes the way around places that are still locked, instead of leading you into a force field','المسار المضيء يأخذ الطريق حول الأماكن التي ما زالت مغلقة، بدل أن يقودك إلى حقل قوة');
 MV('Nicer voices','أصوات ألطف');MV("Everyone talks with the tablet's best voice now. Settings shows which voice it is and how to get an even more natural one",'الجميع يتكلمون الآن بأفضل صوت في الجهاز. الإعدادات تُظهر أي صوت هو وكيف تحصل على صوت أكثر طبيعية');
+// ================= v25.5: one story online, and it counts on every tablet =================
+// Online, everybody plays one story together. It used to be the story of the tablet that started the game, and nothing
+// done there counted at home: a friend who was further along had to play the first chapters again, chapters finished
+// together were gone when the friend played alone again, and the rocket chapter (Commander Nova's parts) was not shared
+// at all, so everyone did it alone. Now:
+//  - the story goes on from whoever is furthest: a friend who is further along brings their chapters (and buildings);
+//  - every chapter finished together counts on every tablet, also when you play alone again;
+//  - talking to Commander Nova, the rocket parts and the finished rocket count for everybody;
+//  - the Moon quests on the way to the UFO and every quest finished together count on every tablet.
+const MOONQ=['m_power','m_crystals','m_slimes','m_aliens','m_ufo'];
+const moonBits=()=>MOONQ.reduce((b,id,i)=>b|(typeof qDone==='function'&&qDone(id)?1<<i:0),0);
+function addMoonBits(b){b=b|0;if(!b)return;G.qdone=G.qdone||new Set();MOONQ.forEach((id,i)=>{if(b&(1<<i))G.qdone.add(id);});}
+// what this tablet brings along: its own story (a visitor's own game waits in G.myWS while it plays online)
+function coopMine(){const w=NET.role==='guest'?(G.myWS||{}):WS;return [w.done|0,w.bld|0,w.intro|0,w.won|0,G.spaceQ?1:0,G.rparts|0,G.spaceOK?1:0,moonBits()];}
+// the host shares the rocket chapter and the Moon quests with the world
+function coopRocket(){return [G.spaceQ?1:0,G.rparts|0,G.spaceOK?1:0,moonBits()];}
+// host: a friend's own progress joins the shared story
+function coopMerge(my,rp,name){const before=storyDone();const d=num(my[0])&255,add=d&~WS.done;
+  if(add){WS.done|=add;if(num(my[3]))WS.won=1;
+    // a mission that is now done (the friend finished it at home) stops
+    if(WS.act&&MBIT[WS.act]&&(WS.done&MBIT[WS.act])){for(const e of EN)if(e.tag==='m'||e.tag==='mb'||e.boss)e.dead=true;WS.act='';WS.step=0;WS.cnt=0;WS.cry=null;}}
+  WS.bld|=num(my[1]);if(num(my[2]))WS.intro=1;
+  if(num(my[4]))G.spaceQ=G.spaceQ||1;G.rparts=(G.rparts|0)|(num(my[5])&31);if(num(my[6]))G.spaceOK=true;addMoonBits(num(my[7]));
+  // a rocket a friend finished counts right away (also while this tablet looks at a menu)
+  if(G.spaceOK&&storyDone()>=6&&!(WS.done&64))WS.done|=64;
+  const after=storyDone();if(after>before){try{toast('🤝 '+trf('{0} is further in the story: you go on from chapter {1} together!',name||tr('Your friend'),Math.min(8,after+1)));}catch(e){}saveSoon();}}
+// visitor: the shared story (and the rocket) count in this tablet's own game too
+function coopFromHost(w){if(Array.isArray(w.rk)){if(num(w.rk[0]))G.spaceQ=G.spaceQ||1;G.rparts=(G.rparts|0)|(num(w.rk[1])&31);if(num(w.rk[2]))G.spaceOK=true;addMoonBits(num(w.rk[3]));}
+  const my=G.myWS;if(!my)return;const old=my.done|0;my.done=(my.done|0)|WS.done;my.bld=(my.bld|0)|WS.bld;my.intro=Math.max(my.intro|0,WS.intro|0);my.won=(my.won|0)|(WS.won|0);
+  if(my.done!==old){saveSoon();if(!COOP.told&&NET.host){COOP.told=1;try{toast('🤝 '+trf("You play {0}'s story together. The chapters count in your game too!",NET.host.name));}catch(e){}}}}
+const COOP={told:0};
+{const _aw=applyWorld;applyWorld=function(w){_aw(w);try{coopFromHost(w);}catch(e){noteErr('coop2',e);}};}
+{const _eg=enterGuestWorld;enterGuestWorld=function(){COOP.told=0;return _eg.apply(this,arguments);};}
+// a story that has finished the rocket chapter has a rocket (also when a friend built it)
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if((WS.done&64)&&!G.spaceOK&&G.mode!=='title')G.spaceOK=true;}catch(e){}};}
+// several chapters at once (a friend brought them): one radio call with all the prizes, instead of one call per chapter
+{const _st=storyTick;storyTick=function(dt){const before=new Set(STY.radioQ);_st(dt);const fresh=STY.radioQ.filter(q=>!before.has(q));
+  if(fresh.length>1){STY.radioQ=STY.radioQ.filter(q=>before.has(q));STY.radioQ.push({i:fresh[fresh.length-1].i,cards:[].concat(...fresh.map(q=>q.cards||[])),from:fresh[0].i});}};}
+{const _rc=radioCall;radioCall=function(q){_rc(q);try{if(q&&q.from!==undefined&&q.from<q.i){const el=$('radiobox');const s=el&&el.querySelector('.intro-s');const C=STORY[q.i];
+      if(s)s.textContent='✅ '+trf('Chapters {0} to {1} done!',q.from+1,q.i+1)+' · 🔓 '+tr(C.opens);}}catch(e){}};}
+MV('{0} is further in the story: you go on from chapter {1} together!','{0} وصل أبعد في القصة: ستكملان معًا من الفصل {1}!');
+MV("You play {0}'s story together. The chapters count in your game too!",'تلعبان قصة {0} معًا. الفصول تُحسب في لعبتك أيضًا!');
+MV('Your friend','صديقك');MV('Chapters {0} to {1} done!','انتهت الفصول من {0} إلى {1}!');
+MV('One story online','قصة واحدة عبر الإنترنت');MV('Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too','عند اللعب عبر الإنترنت تكملون من عند من وصل أبعد في القصة، وكل فصل تنهونه معًا يُحسب على كل جهاز. وقطع الصاروخ مشتركة أيضًا');
 // ================= start =================
 boot();
 </script>
