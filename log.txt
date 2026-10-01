@@ -471,3 +471,6 @@
 2026-10-01 13:16:11 [lulu] rigging IN_PROGRESS 36%
 2026-10-01 13:16:11 [mira] rigging IN_PROGRESS 10%
 2026-10-01 13:16:17 [wanda] image-to-3d SUCCEEDED 100%
+2026-10-01 13:16:21 [lulu] rigging IN_PROGRESS 63%
+2026-10-01 13:16:21 [mira] rigging IN_PROGRESS 36%
+2026-10-01 13:16:23 [wanda] rig task made 01a0f79b-d297-73cd-9d38-01808345cdf0
