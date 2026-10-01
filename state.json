@@ -1746,6 +1746,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "wanda": {
+   "model": {
+    "id": "01a0f79a-0fd2-7004-a303-e4a8a39b7f09",
+    "made": "2026-10-01 13:14",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "zak": {
    "model": {
     "credits": 30,
