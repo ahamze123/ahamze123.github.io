@@ -656,3 +656,9 @@
 2026-10-01 13:34:50 run finished; credits used by new tasks (estimate): 35
 2026-10-01 14:04:38 run 6 heroes ['kira'] max credits 40
 2026-10-01 14:04:41 [kira] animation task made try1 01a0f7c8-173d-7175-925d-73b18cd8ea0d [11, 12, 243, 244, 245, 246, 599, 415, 460, 44]
+2026-10-01 14:04:42 [kira] animations IN_PROGRESS 1%
+2026-10-01 14:05:13 [kira] animations IN_PROGRESS 45%
+2026-10-01 14:05:23 [kira] animations IN_PROGRESS 66%
+2026-10-01 14:05:43 [kira] animations IN_PROGRESS 82%
+2026-10-01 14:05:54 [kira] animations SUCCEEDED 100%
+2026-10-01 14:05:54 [kira] animations try1 ['Idle_02', 'Idle_03', 'Idle_3', 'Idle_4', 'Idle_5', 'Idle_6', 'Idle_15', 'Happy_Sway_Standing', 'Jump_with_Arms_Open', 'Happy_jump_f']

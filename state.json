@@ -966,10 +966,29 @@
       460,
       44
      ],
+     "credits": 30,
+     "error": null,
+     "file": {
+      "bytes": 1003520,
+      "clips": [
+       "Idle_02",
+       "Idle_03",
+       "Idle_3",
+       "Idle_4",
+       "Idle_5",
+       "Idle_6",
+       "Idle_15",
+       "Happy_Sway_Standing",
+       "Jump_with_Arms_Open",
+       "Happy_jump_f"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "id": "01a0f7c8-173d-7175-925d-73b18cd8ea0d",
      "made": "2026-10-01 14:04",
      "rig": "01a0f76c-1070-769b-ad9b-7b767a542aab",
-     "status": "PENDING"
+     "status": "SUCCEEDED"
     }
    },
    "model": {
