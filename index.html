@@ -7676,8 +7676,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:40,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:41,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'💾',t:'Keep your game safe',s:'Menu, Settings, 💾 My game: Save a copy keeps your whole game in a file (in Files, or send it to Mum or Dad). Open a copy brings it back on any tablet'},
   {ic:'🦋',t:'Butterfly Basma',s:'Butterfly Basma flutters in! Purple suit, blue hair and big colourful butterfly wings. She can fly. Pick her on the first screen or in 🦸'},
   {ic:'🧜‍♀️',t:'Luna the mermaid',s:'Luna the mermaid joins the heroes! She swims super fast and dives deep. Pick her on the first screen or in 🦸'},
   {ic:'🌪️',t:'Tornado Spin',s:'Tap 🌪️ Spin and your hero whirls into a tornado in their own colours, knocking baddies away. Every hero can do it (keyboard: R)'},
@@ -10385,7 +10386,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.4';window.BB_VER=BB_VER;
+const BB_VER='26.5';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -10543,19 +10544,33 @@ async function mvRead(code){code=String(code||'').replace(/\s+/g,'');if(code.len
   try{if(code.startsWith('BBG1:')){const ds=new Blob([mvUnB64(code.slice(5))]).stream().pipeThrough(new DecompressionStream('gzip'));json=await new Response(ds).text();}
     else if(code.startsWith('BBJ1:'))json=new TextDecoder().decode(mvUnB64(code.slice(5)));else return null;
     const o=JSON.parse(json);if(!o||typeof o.save!=='string'||!o.save)return null;const s=JSON.parse(o.save);if(!s||typeof s!=='object'||!s.prof)return null;return {o,s};}catch(e){return null;}}
+// a copy of the game as a file: in the Claude app its downloads helper, on a tablet the share sheet ("Save to Files",
+// WhatsApp, AirDrop...), on a computer a normal download
+async function mvSaveFile(code){const d=new Date(),pad=v=>String(v).padStart(2,'0');const fn=`block-buddies-game-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.txt`;const blob=new Blob([code],{type:'text/plain'});
+  if(window.claude&&typeof window.claude.use==='function'){try{const dl=await window.claude.use('downloads');if(dl){try{await dl.save({filename:fn,data:blob});return true;}catch(e){const c=e&&e.code;if(c==='declined')return false;}}}catch(e){}}
+  try{const file=new File([blob],fn,{type:'text/plain'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Block Buddies'});return true;}}catch(e){if(e&&e.name==='AbortError')return false;}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);return true;}catch(e){return false;}}
+function mvMark(){try{localStorage.setItem('bb_lastcopy',String(Date.now()));}catch(e){}}
+function mvLastDays(){let t=0;try{t=+localStorage.getItem('bb_lastcopy')||0;}catch(e){}return t?Math.floor((Date.now()-t)/864e5):-1;}
+function mvLastText(){const d=mvLastDays();return d<0?'⚠️ '+tr('No copy saved yet'):d===0?'✅ '+tr('Last copy: today'):d===1?'✅ '+tr('Last copy: yesterday'):(d>7?'⚠️ ':'✅ ')+trf('Last copy: {0} days ago',d);}
 function openMove(){let el=$('movebox');if(!el){el=document.createElement('div');el.id='movebox';el.className='modal';el.hidden=true;el.style.zIndex=35;document.body.appendChild(el);el.addEventListener('click',e=>{if(e.target===el)closeMove();});}
-  const ta='width:100%;box-sizing:border-box;height:64px;border-radius:12px;border:0;padding:8px;font:600 11px/1.3 ui-monospace,monospace;word-break:break-all;-webkit-user-select:text;user-select:text;background:rgba(255,255,255,.92);color:#1c1846;resize:none';
-  el.innerHTML=`<div class="mbox" style="max-width:min(520px,94vw)"><h2>📦 ${esc(tr('Move my game'))}</h2>
-    <p class="small" style="margin:2px 0">${esc(tr('Safari, the Home Screen app and the Claude page each keep their own save. Move your game with a game code:'))}</p>
+  const ta='width:100%;box-sizing:border-box;height:64px;min-height:64px;flex-shrink:0;border-radius:12px;border:0;padding:8px;font:600 11px/1.3 ui-monospace,monospace;word-break:break-all;-webkit-user-select:text;user-select:text;background:rgba(255,255,255,.92);color:#1c1846;resize:none';
+  el.innerHTML=`<div class="mbox" style="max-width:min(520px,94vw);max-height:92vh;overflow:auto"><h2>💾 ${esc(tr('My game'))}</h2>
+    <b>💾 ${esc(tr('Keep a copy safe'))}</b><p class="small" style="margin:2px 0">${esc(tr('Your game is only saved on this tablet. Save a copy now and then: keep the file in Files, or send it to Mum or Dad.'))}</p>
+    <div class="small" id="mvlast" style="font-weight:900"></div><button class="big gold" id="mvsave">💾 ${esc(tr('Save a copy'))}</button><div class="small" id="mvsmsg" style="min-height:1.2em;color:var(--gold);font-weight:900"></div>
+    <p class="small" style="margin:6px 0 2px">${esc(tr('Safari, the Home Screen app and the Claude page each keep their own save. Move your game with a game code:'))}</p>
     <b>📤 ${esc(tr('Take my game with me'))}</b><textarea id="mvout" readonly style="${ta}" placeholder="…"></textarea><button class="big mint" id="mvcopy">📋 ${esc(tr('Copy my game'))}</button><div class="small" id="mvcmsg" style="min-height:1.2em;color:var(--gold);font-weight:900"></div>
     <b>📥 ${esc(tr('Bring a game here'))}</b><textarea id="mvin" style="${ta}" placeholder="${esc(tr('Paste a game code here'))}"></textarea>
-    <div class="row2"><button class="mb" id="mvpaste">📋 ${esc(tr('Paste'))}</button><button class="mb" id="mvload">📥 ${esc(tr('Load this game'))}</button></div><div class="small" id="mvlmsg" style="min-height:1.2em;color:var(--gold);font-weight:900"></div>
+    <div class="row2"><button class="mb" id="mvpaste">📋 ${esc(tr('Paste'))}</button><button class="mb" id="mvfile">📂 ${esc(tr('Open a copy'))}</button></div><input type="file" id="mvfin" accept=".txt,.bbsave,text/plain" hidden><button class="mb" id="mvload">📥 ${esc(tr('Load this game'))}</button><div class="small" id="mvlmsg" style="min-height:1.2em;color:var(--gold);font-weight:900"></div>
     <button class="big alt sm" id="mvclose">${esc(tr('Close'))}</button></div>`;
   el.hidden=false;MVG.help=G.mode==='play';if(MVG.help)G.mode='menu';MVG.armed=false;MVG.code='';
-  const out=$('mvout'),cm=$('mvcmsg'),lm=$('mvlmsg');out.value='…';
+  const out=$('mvout'),cm=$('mvcmsg'),lm=$('mvlmsg'),sm=$('mvsmsg');out.value='…';const updLast=()=>{const el2=$('mvlast');if(el2)el2.textContent=mvLastText();};updLast();
+  $('mvsave').onclick=async()=>{const c=MVG.code||await mvMake();if(!c){sm.textContent=tr('There is no saved game here yet.');return;}const r=await mvSaveFile(c);if(r){mvMark();updLast();sm.textContent='✅ '+tr('Saved! Keep the file safe. To bring the game back, tap Open a copy.');}};
+  $('mvfile').onclick=()=>{const f=$('mvfin');f.value='';f.click();};
+  $('mvfin').onchange=async()=>{const f=$('mvfin').files&&$('mvfin').files[0];if(!f)return;let t='';try{t=await f.text();}catch(e){}$('mvin').value=String(t||'').trim();MVG.armed=false;$('mvload').click();};
   mvMake().then(c=>{MVG.code=c;out.value=c||tr('There is no saved game here yet.');});
   $('mvcopy').onclick=()=>{const c=MVG.code;if(!c){cm.textContent=tr('There is no saved game here yet.');return;}
-    const done=()=>{cm.textContent='✅ '+tr('Copied! Now open the game where you want it, tap Move my game there, and paste it.');};
+    const done=()=>{mvMark();cm.textContent='✅ '+tr('Copied! Now open the game where you want it, tap Move my game there, and paste it.');};
     const fallback=()=>{try{out.focus();out.select();out.setSelectionRange(0,c.length);const ok=document.execCommand('copy');if(ok)done();else cm.textContent=tr('Press and hold the code, then choose Copy.');}catch(e){cm.textContent=tr('Press and hold the code, then choose Copy.');}};
     try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,fallback);else fallback();}catch(e){fallback();}};
   $('mvpaste').onclick=()=>{try{navigator.clipboard.readText().then(t=>{$('mvin').value=t||'';lm.textContent='';},()=>{lm.textContent=tr('Press and hold in the box, then choose Paste.');$('mvin').focus();});}catch(e){lm.textContent=tr('Press and hold in the box, then choose Paste.');$('mvin').focus();}};
@@ -10567,9 +10582,9 @@ function openMove(){let el=$('movebox');if(!el){el=document.createElement('div')
   $('mvclose').onclick=closeMove;}
 function closeMove(){const el=$('movebox');if(el)el.hidden=true;if(MVG.help&&G.mode==='menu')G.mode='play';MVG.help=false;}
 // in Settings, and on the title screen
-{const _rp=renderPause;renderPause=function(){_rp();try{if(PTAB!=='set'||$('ps_move'))return;const B=$('pbox');const last=B.querySelector('#ps_fs')||B.querySelector('#ps_dn');const b=document.createElement('button');b.className='mb';b.id='ps_move';b.textContent='📦 '+tr('Move my game');b.onclick=()=>openMove();if(last)last.after(b);else B.appendChild(b);}catch(e){}};}
+{const _rp=renderPause;renderPause=function(){_rp();try{if(PTAB!=='set'||$('ps_move'))return;const B=$('pbox');const last=B.querySelector('#ps_fs')||B.querySelector('#ps_dn');const b=document.createElement('button');b.className='mb';b.id='ps_move';b.textContent='💾 '+tr('My game: save a copy or move it');b.onclick=()=>openMove();if(last)last.after(b);else B.appendChild(b);}catch(e){}};}
 {const tm=$('tmain');const sh=$('savehint');if(tm&&sh&&!$('tmove')){const b=document.createElement('button');b.id='tmove';b.type='button';b.className='big alt sm';b.style.cssText='margin-top:6px';b.onclick=()=>{try{SFX.click();}catch(e){}openMove();};sh.parentNode.insertBefore(b,sh.nextSibling);}
-  const upd=()=>{const b=$('tmove');if(!b)return;const app=typeof fsApp==='function'&&fsApp();b.textContent='📦 '+tr(app&&!G.hasSave?'Bring my game from Safari':'Move my game');};upd();{const _al=applyLang;applyLang=function(){_al();try{upd();}catch(e){}};}
+  const upd=()=>{const b=$('tmove');if(!b)return;const app=typeof fsApp==='function'&&fsApp();b.textContent=(app&&!G.hasSave?'📦 ':'💾 ')+tr(app&&!G.hasSave?'Bring my game from Safari':'My game: save a copy or move it');};upd();{const _al=applyLang;applyLang=function(){_al();try{upd();}catch(e){}};}
   {const _rt=refreshTitle;refreshTitle=function(){_rt();try{upd();}catch(e){}};}}
 MV('Move my game','انقل لعبتي');MV('Safari, the Home Screen app and the Claude page each keep their own save. Move your game with a game code:','سفاري وتطبيق الشاشة الرئيسية وصفحة Claude يحفظ كلٌّ منها لعبته وحده. انقل لعبتك برمز اللعبة:');
 MV('Take my game with me','خذ لعبتي معي');MV('Copy my game','انسخ لعبتي');MV('Bring a game here','أحضر لعبة إلى هنا');MV('Paste a game code here','الصق رمز اللعبة هنا');MV('Paste','لصق');MV('Load this game','حمّل هذه اللعبة');MV('Close','إغلاق');
@@ -10577,6 +10592,16 @@ MV('There is no saved game here yet.','لا توجد لعبة محفوظة هن�
 MV('Press and hold the code, then choose Copy.','اضغط مطولًا على الرمز، ثم اختر نسخ.');MV('Press and hold in the box, then choose Paste.','اضغط مطولًا داخل المربع، ثم اختر لصق.');MV('That is not a Block Buddies game code.','هذا ليس رمز لعبة بلوك بديز.');
 MV('{0} Lv {1} · {2} Lv {3} · {4} golden bricks','{0} مستوى {1} · {2} مستوى {3} · {4} طوبة ذهبية');MV('This replaces the game on this device. Tap Load again to do it.','سيحل هذا محل اللعبة على هذا الجهاز. اضغط «حمّل» مرة أخرى لتأكيد ذلك.');
 MV('Could not save here.','تعذّر الحفظ هنا.');MV('Game loaded! Starting again…','تم تحميل اللعبة! نبدأ من جديد…');MV('Bring my game from Safari','أحضر لعبتي من سفاري');
+// ask the tablet to keep the game's save for good (no question is shown on tablets)
+try{if(navigator.storage&&navigator.storage.persist&&matchMedia('(pointer:coarse)').matches)navigator.storage.persisted().then(p=>{if(!p)navigator.storage.persist().catch(()=>{});}).catch(()=>{});}catch(e){}
+// once in a while (no copy for a week, and there is something worth keeping): a reminder after a few minutes of play
+{let asked=false;const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{if(asked||G.mode!=='play'||DLG)return;MVG.playT=(MVG.playT||0)+dt;if(MVG.playT<150)return;asked=true;
+  const pr=prof();const worth=(pr.level||1)>=3||(G.gb&&G.gb.size>=3)||(WS.done|0)>0;const d=mvLastDays();if(worth&&(d<0||d>7))toast('💾 '+tr('Keep your game safe: Menu, Settings, My game, Save a copy'));}catch(e){}};}
+MV('My game','لعبتي');MV('Keep a copy safe','احتفظ بنسخة آمنة');MV('Your game is only saved on this tablet. Save a copy now and then: keep the file in Files, or send it to Mum or Dad.','لعبتك محفوظة على هذا الجهاز فقط. احفظ نسخة من وقت لآخر: احتفظ بالملف في «الملفات» أو أرسله لماما أو بابا.');
+MV('Save a copy','احفظ نسخة');MV('Open a copy','افتح نسخة');MV('Saved! Keep the file safe. To bring the game back, tap Open a copy.','تم الحفظ! احتفظ بالملف. لإرجاع اللعبة اضغط «افتح نسخة».');
+MV('No copy saved yet','لم تُحفظ أي نسخة بعد');MV('Last copy: today','آخر نسخة: اليوم');MV('Last copy: yesterday','آخر نسخة: أمس');MV('Last copy: {0} days ago','آخر نسخة: قبل {0} أيام');
+MV('My game: save a copy or move it','لعبتي: احفظ نسخة أو انقلها');MV('Keep your game safe: Menu, Settings, My game, Save a copy','احفظ لعبتك: القائمة، الإعدادات، لعبتي، احفظ نسخة');
+MV('Keep your game safe','احفظ لعبتك بأمان');MV('Menu, Settings, 💾 My game: Save a copy keeps your whole game in a file (in Files, or send it to Mum or Dad). Open a copy brings it back on any tablet','القائمة، الإعدادات، 💾 لعبتي: «احفظ نسخة» يحفظ لعبتك كلها في ملف (في «الملفات» أو أرسله لماما أو بابا). و«افتح نسخة» يعيدها على أي جهاز');
 // ================= clearer guidance to where you are going =================
 // When you pick a mission or a place, three things now lead the way instead of the little arrow at the edge of the screen:
 // - a big golden arrow on the ground in front of your hero, pointing along the glowing trail (it turns as the trail turns)
