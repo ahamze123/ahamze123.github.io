@@ -331,3 +331,9 @@
 2026-10-01 13:05:31 [majid] rigging SUCCEEDED 100%
 2026-10-01 13:05:32 [majid] rigged: {"model": {"bytes": 1646052, "triangles": 20544, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35360, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30716, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:05:35 [erik] model task made 01a0f791-fbc4-7381-813d-a4eb622c905d
+2026-10-01 13:05:37 [erik] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:05:39 [bilal] rigging IN_PROGRESS 36%
+2026-10-01 13:05:49 [bilal] rigging IN_PROGRESS 63%
+2026-10-01 13:05:59 [bilal] rigging IN_PROGRESS 90%
+2026-10-01 13:06:09 [bilal] rigging SUCCEEDED 100%
+2026-10-01 13:06:10 [bilal] rigged: {"model": {"bytes": 1769532, "triangles": 20660, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35656, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 31024, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
