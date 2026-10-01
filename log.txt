@@ -286,3 +286,6 @@
 2026-10-01 13:01:15 [bilal] model task made 01a0f78e-04f1-75db-9d57-5a2c6044b843
 2026-10-01 13:01:19 [bilal] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:01:19 [majid] model task made 01a0f78e-15b4-72de-9e8b-f1493238dfe2
+2026-10-01 13:01:21 [majid] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:01:21 [karim] image-to-3d IN_PROGRESS 84%
+2026-10-01 13:01:23 [salem] image-to-3d SUCCEEDED 100%
