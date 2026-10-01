@@ -617,3 +617,6 @@
 2026-10-01 13:25:06 [uma] rigging IN_PROGRESS 90%
 2026-10-01 13:25:08 [amira] rigging SUCCEEDED 100%
 2026-10-01 13:25:08 [amira] rigged: {"model": {"bytes": 1838244, "triangles": 20671, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35572, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30932, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 13:25:13 [aisha] image-to-3d IN_PROGRESS 74%
+2026-10-01 13:25:16 [uma] rigging SUCCEEDED 100%
+2026-10-01 13:25:16 [uma] rigged: {"model": {"bytes": 1797944, "triangles": 20749, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35704, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 31060, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
