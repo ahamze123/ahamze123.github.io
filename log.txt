@@ -505,3 +505,12 @@
 2026-10-01 13:17:53 [salma] rigging SUCCEEDED 100%
 2026-10-01 13:17:54 [salma] rigged: {"model": {"bytes": 1876852, "triangles": 20785, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35476, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30824, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:17:56 [yasmin] model task made 01a0f79d-4bd2-75ee-aae8-f1a13fa415f1
+2026-10-01 13:17:58 [yasmin] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:18:12 [bushra] image-to-3d IN_PROGRESS 33%
+2026-10-01 13:18:18 [zara] image-to-3d IN_PROGRESS 36%
+2026-10-01 13:18:38 [tala] image-to-3d IN_PROGRESS 67%
+2026-10-01 13:18:42 [bushra] image-to-3d IN_PROGRESS 67%
+2026-10-01 13:18:48 [tala] image-to-3d IN_PROGRESS 84%
+2026-10-01 13:18:48 [yasmin] image-to-3d IN_PROGRESS 30%
+2026-10-01 13:18:52 [bushra] image-to-3d IN_PROGRESS 84%
+2026-10-01 13:18:58 [tala] image-to-3d SUCCEEDED 100%
