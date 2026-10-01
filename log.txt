@@ -248,3 +248,7 @@
 2026-10-01 12:57:55 [zak] rigging SUCCEEDED 100%
 2026-10-01 12:57:56 [zak] rigged: {"model": {"bytes": 1963584, "triangles": 20789, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35432, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30804, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 12:57:58 [salem] model task made 01a0f78b-0448-760e-9846-31fd36a96cf7
+2026-10-01 12:58:00 [salem] image-to-3d IN_PROGRESS 1%
+2026-10-01 12:58:02 [rayan] image-to-3d IN_PROGRESS 36%
+2026-10-01 12:58:04 [comet] image-to-3d IN_PROGRESS 50%
+2026-10-01 12:58:05 [rocky] image-to-3d SUCCEEDED 100%
