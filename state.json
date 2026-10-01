@@ -2178,6 +2178,7 @@
    }
   },
   "ruby": {
+   "extra": {},
    "full": {
     "bytes": 2249900,
     "pictures": [
@@ -2298,6 +2299,12 @@
    }
   },
   "salem": {
+   "full": {
+    "bytes": 2521904,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
