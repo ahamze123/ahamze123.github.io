@@ -447,3 +447,8 @@
 2026-10-01 13:14:21 [bella] rigging SUCCEEDED 100%
 2026-10-01 13:14:22 [bella] rigged: {"model": {"bytes": 1760008, "triangles": 20783, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35392, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30748, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-01 13:14:24 [wanda] model task made 01a0f79a-0fd2-7004-a303-e4a8a39b7f09
+2026-10-01 13:14:26 [idris] rigging IN_PROGRESS 90%
+2026-10-01 13:14:26 [wanda] image-to-3d IN_PROGRESS 1%
+2026-10-01 13:14:32 [lulu] image-to-3d IN_PROGRESS 27%
+2026-10-01 13:14:36 [idris] rigging SUCCEEDED 100%
+2026-10-01 13:14:37 [idris] rigged: {"model": {"bytes": 1865496, "triangles": 20724, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35548, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30920, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
