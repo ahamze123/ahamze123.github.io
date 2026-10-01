@@ -1446,6 +1446,7 @@
    }
   },
   "majid": {
+   "extra": {},
    "full": {
     "bytes": 2345420,
     "pictures": [
@@ -1566,6 +1567,12 @@
    }
   },
   "mira": {
+   "full": {
+    "bytes": 2867464,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
