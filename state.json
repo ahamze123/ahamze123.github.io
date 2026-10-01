@@ -127,6 +127,8 @@
   },
   "kat": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0f784-1d45-7580-a559-0ec06d0bfe09",
     "made": "2026-10-01 12:50",
     "run": 4,
@@ -139,7 +141,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f784-1d45-7580-a559-0ec06d0bfe09/output/preview.png?Expires=1791118413&Signature=g6RY30AP5G~f8vrhWSwd2euK9gAVo734kuo3WZ4ql3e7L9Eu7GC8vu4D4UBfzHGR87iEL3ZNR4gvJeZ46La-U5xrDcRAgZq0-M8C6O-937QHXAEQJRsG4YgDBckfpAB0RTX73HX~5bkjrenQQsX3tMQoSijRGF0uPtQsIgcDgjYf6RIYQZjpTun86PdTy5CIm2XgpnFs9y0EpjsE3VYAjaLs9kj37gNudJvwPnJdiBwunc6DGUCDnDe4f2JfbN83WQAMBJcAsI2srA6lXNs3iaK~Q~YfxWEVtiiKGJeg1fvTxi4Uvtp~ChZhJPd-cXQMhiNdvlu2ikStsDAfer2CIg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "kenji": {
