@@ -183,6 +183,12 @@
    }
   },
   "bella": {
+   "full": {
+    "bytes": 2670164,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -237,6 +243,7 @@
    }
   },
   "bilal": {
+   "extra": {},
    "full": {
     "bytes": 2610892,
     "pictures": [
@@ -297,6 +304,12 @@
    }
   },
   "bushra": {
+   "full": {
+    "bytes": 2235960,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
