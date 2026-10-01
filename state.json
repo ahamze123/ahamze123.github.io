@@ -184,6 +184,7 @@
    }
   },
   "bella": {
+   "extra": {},
    "full": {
     "bytes": 2670164,
     "pictures": [
@@ -3333,7 +3334,8 @@
     "zork"
    ],
    "limit": 0,
-   "run": 8
+   "run": 8,
+   "spent_estimate": 0
   }
  ]
 }
