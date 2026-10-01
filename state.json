@@ -1,6 +1,12 @@
 {
  "heroes": {
   "aisha": {
+   "full": {
+    "bytes": 2540436,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -55,6 +61,13 @@
    }
   },
   "amira": {
+   "extra": {},
+   "full": {
+    "bytes": 2714088,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -224,6 +237,12 @@
    }
   },
   "bilal": {
+   "full": {
+    "bytes": 2610892,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,

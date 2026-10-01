@@ -669,3 +669,5 @@
 2026-10-01 15:47:54 [leo] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2164592}
 2026-10-01 15:47:59 run finished; credits used by new tasks (estimate): 0
 2026-10-01 15:54:51 run 8 heroes ['aisha', 'amira', 'aya', 'bella', 'bilal', 'bushra', 'comet', 'dan', 'drake', 'erik', 'faris', 'fay', 'finn', 'idris', 'karim', 'kat', 'kenji', 'kira', 'layla', 'leo', 'lina', 'lulu', 'majid', 'mia', 'mira', 'munir', 'noor', 'nora', 'omar', 'rayan', 'rex', 'rina', 'robin', 'rocky', 'ruby', 'saif', 'salem', 'salma', 'sam', 'sama', 'sami', 'sara', 'tala', 'uma', 'wanda', 'yasmin', 'zak', 'zara', 'zayd', 'zork'] max credits 0
+2026-10-01 15:54:53 [amira] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2714088}
+2026-10-01 15:54:53 [bilal] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2610892}
