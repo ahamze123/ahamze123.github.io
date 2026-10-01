@@ -2117,6 +2117,7 @@
    }
   },
   "rocky": {
+   "extra": {},
    "full": {
     "bytes": 2954644,
     "pictures": [
@@ -2237,6 +2238,12 @@
    }
   },
   "saif": {
+   "full": {
+    "bytes": 2415904,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
