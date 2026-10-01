@@ -519,3 +519,11 @@
 2026-10-01 13:19:04 [tala] rig task made 01a0f79e-47c8-726c-bfbd-847616b15404
 2026-10-01 13:19:06 [tala] rigging IN_PROGRESS 10%
 2026-10-01 13:19:10 [bushra] rig task made 01a0f79e-5e79-7575-b6a7-84048448ddc8
+2026-10-01 13:19:10 [zara] image-to-3d IN_PROGRESS 84%
+2026-10-01 13:19:11 [bushra] rigging IN_PROGRESS 10%
+2026-10-01 13:19:16 [tala] rigging IN_PROGRESS 36%
+2026-10-01 13:19:21 [bushra] rigging IN_PROGRESS 36%
+2026-10-01 13:19:26 [tala] rigging IN_PROGRESS 63%
+2026-10-01 13:19:29 [yasmin] image-to-3d IN_PROGRESS 67%
+2026-10-01 13:19:31 [zara] image-to-3d SUCCEEDED 100%
+2026-10-01 13:19:31 [bushra] rigging IN_PROGRESS 63%
