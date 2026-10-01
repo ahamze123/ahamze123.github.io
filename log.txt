@@ -666,3 +666,4 @@
 2026-10-01 15:47:52 run 7 heroes ['aya', 'kira', 'leo'] max credits 0
 2026-10-01 15:47:54 [kira] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2497020}
 2026-10-01 15:47:54 [aya] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2427256}
+2026-10-01 15:47:54 [leo] model with bigger pictures: {"pictures": ["2048x2048 image/png"], "bytes": 2164592}
