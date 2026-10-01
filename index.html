@@ -2054,16 +2054,21 @@ function spring(s,target,k,d,dt){s.v+=(target-s.p)*k*dt;s.v*=Math.exp(-d*dt);s.p
 function newAnim(){return {walk:0,amp:0,bob:0,lean:{p:0,v:0},tilt:{p:0,v:0},sq:{p:1,v:0},hx:{p:0,v:0},hz:{p:0,v:0},pony:{p:0,v:0},cape:{p:.2,v:0},punch:0,pside:1,cheer:0,fly:0,slam:0,charge:0,wave:0,throwT:0};}
 
 // ---------- hero ----------
+const NOK={};
 function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.invT>0&&p.ko<=0&&Math.floor(t*16)%2===0)return;
   const PS=L.psuit&&L.psuit!=='none'&&PSCOL[L.psuit]?L.psuit:null;const CC=charOfLooks(L,p.hero),skinC=hex(CC.skin);
   // "own": the hero wears their own outfit (no shop costume or power suit on top), so their costume, hat and extras show
   const own=!PS&&(!L.costume||L.costume==='none');const cos=PS?'none':own?(CC.cos||'none'):L.costume;const XS=p.xs||null;
+  // "card": the hero wears the outfit from their picture card (their own suit, not one picked in the shop), so the boots,
+  // gloves, legs and trims come from the card too (the K fields are listed in 86_cardlook.js)
+  const K=own&&(CC.cs||L.suit===CC.suit)?CC:NOK;
   let suit=hex(SUITS[idxOf(SUITS,L.suit)].c),acc=hex(SUITS[idxOf(SUITS,L.suit)].a);const hair=hex(HAIRS[idxOf(HAIRS,L.hair)].c);
   if(cos==='ninja'){suit=hex('#23232f');acc=hex('#e8344a');}else if(cos==='astro'){suit=hex('#eef1f6');acc=hex('#ff7a1a');}else if(cos==='knight'){suit=hex('#b8c0cc');acc=hex('#3b5bdb');}else if(cos==='robot'){suit=hex('#8f98a8');acc=hex('#46e6ff');}
   else if(cos==='dino'){suit=hex('#3fbf5a');acc=hex('#ffe36e');}else if(cos==='pirate'){suit=hex('#f2f2f2');acc=hex('#d8343f');}else if(cos==='gold'){suit=hex('#f3b61f');acc=hex('#fff6c8');}
   if(typeof COSX!=='undefined'&&COSX[cos]){const c=COSX[cos](t,p);suit=c.s;acc=c.a;}
   if(own&&CC.cs){suit=hex(CC.cs);acc=hex(CC.ca||CC.cs);}
-  if(PS){suit=hex(PSCOL[PS].s);acc=hex(PSCOL[PS].a);}const pants=PS?hex(PSCOL[PS].pants):mixc(suit,[.08,.08,.16],.5),smat=cos==='knight'||cos==='robot'||cos==='gold'||(typeof COSM!=='undefined'&&COSM[cos])?3:1,boot=p.gad&&p.gad.boots?hex('#ff7a2e'):cos==='knight'?hex('#8f98a8'):hex('#f4f4f4');
+  if(K.kc)suit=hex(K.kc);if(K.ka)acc=hex(K.ka);
+  if(PS){suit=hex(PSCOL[PS].s);acc=hex(PSCOL[PS].a);}const pants=PS?hex(PSCOL[PS].pants):K.pt?hex(K.pt):mixc(suit,[.08,.08,.16],.5),smat=cos==='knight'||cos==='robot'||cos==='gold'||(typeof COSM!=='undefined'&&COSM[cos])?3:1,boot=p.gad&&p.gad.boots?hex('#ff7a2e'):K.bt?hex(K.bt):cos==='knight'?hex('#8f98a8'):hex('#f4f4f4');
   M4.tr(m,p.x,p.y+(p.yv||0)+A.bob,p.z);M4.ry(m,p.face);if(XS&&XS.spinY)M4.ry(m,XS.spinY);if(p.scale)M4.sc(m,p.scale,p.scale,p.scale);
   if(XS&&XS.chg>0)M4.rx(m,.32);
   if(p.ko>0){M4.rx(m,-1.45);M4.tr(m,0,.35,0);}
@@ -2072,28 +2077,29 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
   M4.rx(m,A.lean.p);M4.rz(m,A.tilt.p);const sq=A.sq.p;M4.sc(m,1/Math.sqrt(sq),sq,1/Math.sqrt(sq));
   const sw=Math.sin(A.walk)*A.amp,drive=p.drive;
   for(const s of [-1,1]){MS.push();M4.tr(m,s*.15,.64,0);let lx=sw*s*.95;if(A.fly>.01)lx=.15+s*Math.sin(t*5)*.12;if(p.swim)lx=Math.sin(t*9+s*1.6)*.55;if(p.chute)lx=.22+s*Math.sin(t*2.3)*.07;if(drive)lx=-1.5;if(p.ko>0)lx=.1*s;if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,1,p);if(r!==null&&r!==undefined)lx=r;}M4.rx(m,lx);
-    cy(m,0,-.27,0,.23,.52,.23,cos==='pirate'?hex('#3a3a55'):pants,6);rb(m,0,-.56,.05,.28,.19,.37,boot,1,p.gad&&p.gad.boots?.25:0);
+    cy(m,0,-.27,0,.23,.52,.23,cos==='pirate'&&!K.pt?hex('#3a3a55'):pants,6);if(K.ls)for(const y of [-.1,-.22])cy(m,0,y,0,.24,.05,.24,K.ls,6);
+    if(K.bt){rb(m,0,-.4,0,.27,.22,.28,boot,1,0);if(K.bc)rb(m,0,-.3,0,.29,.06,.3,K.bc,1);}rb(m,0,-.56,.05,.28,.19,.37,boot,1,p.gad&&p.gad.boots?.25:0);
     if(p.gad&&p.gad.boots&&(p.airT>.05||A.fly>.1))sp(m,0,-.74,-.02,.16,.18+R()*.22,.16,'#ffb347',1,1);MS.pop();}
   rb(m,0,.7,0,.5,.2,.33,pants,6);
   if(cos==='pirate'){for(let k=0;k<4;k++)rb(m,0,.8+k*.13,0,.63,.07,.39,k%2?hex('#d8343f'):WHITE,1);}
-  rb(m,0,1.0,0,.62,.56,.38,suit,smat);rb(m,0,.77,0,.64,.08,.4,acc,1,.1);
+  rb(m,0,1.0,0,.62,.56,.38,suit,smat);rb(m,0,.77,0,.64,.08,.4,K.bl||acc,1,.1);if(K!==NOK&&typeof drawCardBody==='function')drawCardBody(m,K,A,t,p,suit,acc);
   // emblem
-  MS.push();M4.tr(m,0,1.04,.2);if(PS)suitEmblem(m,PS,acc);else drawEmblem(m,CC,acc);MS.pop();if(!PS&&cos==='none')drawBodyAcc(m,CC,A,t);
+  MS.push();M4.tr(m,0,1.04,.2);if(PS)suitEmblem(m,PS,acc);else drawEmblem(m,CC,K.ec?hex(K.ec):acc);MS.pop();if(!PS&&cos==='none')drawBodyAcc(m,CC,A,t);
   if(p.gad&&p.gad.wings){const fl=A.fly>.1;for(const s of [-1,1]){MS.push();M4.tr(m,s*.12,1.12,-.22);M4.ry(m,s*(fl?.15:.75));M4.rz(m,s*(fl?-.1:-.55)+s*Math.sin(G.t*(fl?9:2))*.08);rb(m,s*.45,0,0,.85,.07,.3,hex('#eef2f8'),3);rb(m,s*.42,-.12,0,.7,.06,.22,hex('#cfd8e6'),3);rb(m,s*.9,-.03,0,.2,.09,.32,hex('#46e6ff'),1,.9);MS.pop();}
     if(A.fly>.1)sp(m,0,.85,-.35,.22,.22,.5+R()*.3,'#7ef9ff',1,1);}
   // arms
-  for(const s of [-1,1]){MS.push();M4.tr(m,s*.38,1.2,0);sp(m,0,0,0,.22,.22,.22,suit,smat);let ax=-sw*s*.9,az=s*.12;
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.38,1.2,0);sp(m,0,0,0,.22,.22,.22,K.sh||suit,smat);let ax=-sw*s*.9,az=s*.12;
     if(A.punch>0&&s===A.pside){ax=-1.55*Math.sin(Math.min(1,A.punch)*Math.PI);az=s*.05;}
     if(p.carry||p.carryF){ax=-2.9;az=s*.25;}if(A.cheer>0){ax=-2.9;az=s*(.35+Math.sin(t*14)*.15);}if(A.wave>0&&s===1){ax=-2.6;az=.6+Math.sin(t*12)*.4;}
     if(A.fly>.1){ax=s===1?-2.7:-.2;az=s*.15;}if(A.slam>0){ax=-2.9+(1-A.slam)*2.6;az=s*.3;}if(A.charge>0){ax=-1.45;az=-s*.25;}if(drive){ax=-1.2;az=-s*.25;}if(p.ko>0){ax=-2.8;az=s*.6;}
     if(p.swim){ax=-2.5+Math.sin(t*6+(s>0?0:Math.PI))*1.3;az=s*.25;}if(p.glide){ax=-1.6;az=s*1.1;}if(p.chute){ax=-2.85;az=s*.42;}if(XS&&XS.chg>0&&s===-1){ax=-1.5;az=.25;}if(XS&&XS.spin>0){ax=-1.55;az=s*1.35;}
-    if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,0,p);if(r){ax=r[0];az=r[1];}}M4.rx(m,ax);M4.rz(m,az);cy(m,0,-.26,0,.18,.44,.18,cos==='astro'?suit:suit,smat);
-    const glove=p.gad&&p.gad.gloves;sp(m,0,-.55,0,glove?.32:.21,glove?.3:.21,glove?.32:.21,glove?hex('#7fdcff'):(cos==='knight'||cos==='robot'?suit:skinC),glove?1:6,glove?.2:0);
+    if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,0,p);if(r){ax=r[0];az=r[1];}}M4.rx(m,ax);M4.rz(m,az);cy(m,0,-.26,0,.18,.44,.18,K.ar||suit,smat);if(K.as)cy(m,0,-.2,0,.186,.06,.186,K.as,1);
+    const glove=p.gad&&p.gad.gloves;sp(m,0,-.55,0,glove?.32:.21,glove?.3:.21,glove?.32:.21,glove?hex('#7fdcff'):K.gl?hex(K.gl):(cos==='knight'||cos==='robot'?suit:skinC),glove||K.gl?1:6,glove?.2:0);if(!glove&&(K.gc||K.gl))cy(m,0,-.45,0,.205,.11,.205,K.gc||K.gl,1);
     if(own&&CC.hx&&s===1&&!(p.dig&&BUILD.on))drawHandX(m,CC,t,A);if(own&&s===1&&typeof drawPickHand==='function')drawPickHand(m,t,A,p);
     if(A.charge>0)sp(m,0,-.62,.05,.25+A.charge*.3,.25+A.charge*.3,.25+A.charge*.3,'#7ef9ff',1,1);
     if(A.punch>.05&&s===A.pside&&!p.carry&&!(p.dig&&BUILD.on)){cy(m,0,-.78,0,.05,.34,.05,'#ff5fa8',1,.3);MS.push();M4.tr(m,0,-.98,0);M4.rx(m,Math.PI/2);for(let k=0;k<8;k++){const a=k/8*TAU;sp(m,Math.cos(a)*.13,0,Math.sin(a)*.13,.06,.06,.06,'#9be7ff',1,.8);}MS.pop();}MS.pop();}
   // cape
-  if(L.cape&&L.cape!=='none'){const cc=hex(CAPES[idxOf(CAPES,L.cape)].c);MS.push();M4.tr(m,0,1.24,-.2);M4.rx(m,A.cape.p);const w=.56;
+  const capeOn=L.cape&&L.cape!=='none';if(capeOn||K.cp){const cc=capeOn?hex(CAPES[idxOf(CAPES,L.cape)].c):hex(K.cp);MS.push();M4.tr(m,0,1.24,-.2);M4.rx(m,A.cape.p);const w=.56;
     rb(m,0,-.3,-.03,w,.62,.05,cc,6);M4.tr(m,0,-.6,0);M4.rx(m,A.cape.p*.45);rb(m,0,-.22,-.03,w+.04,.5,.05,L.cape==='rainbow'?hex('#7ef9ff'):shd(cc,.9),6);
     if(L.cape==='rainbow'){M4.tr(m,0,-.44,0);M4.rx(m,A.cape.p*.3);rb(m,0,-.12,-.03,w+.06,.26,.05,hex('#ffd23f'),6);}MS.pop();}
   if(PS)suitExtras(m,PS,t,p);
@@ -2105,7 +2111,9 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
   MS.push();M4.tr(m,0,1.32,0);M4.rx(m,A.hx.p);M4.rz(m,A.hz.p);
   const skin=cos==='robot'?hex('#aeb6c4'):skinC;rb(m,0,.29,0,.62,.58,.56,skin,cos==='robot'?3:6);
   const blink=(t+(p.hero==='girl'?1.7:0))%3.4<.12?.15:1,happy=A.cheer>0;
-  if(cos==='robot'){bx(m,0,.32,.285,.5,.14,.02,'#46e6ff',1,1);co(m,0,.72,0,.06,.24,.06,'#8f98a8',3);sp(m,0,.86,0,.1,.1,.1,'#ff4f6d',1,1);}
+  if(cos==='robot'){bx(m,0,.32,.285,.52,.22,.02,'#1d2033',8,.15);for(const s of [-1,1])bx(m,s*.12,.33,.297,.12,.06,.01,'#46e6ff',1,1);bx(m,0,.16,.29,.14,.03,.01,'#46e6ff',1,.8);
+    if(K.rh==='buns'){for(const s of [-1,1]){sp(m,s*.22,.64,-.02,.3,.3,.3,K.rc||'#ff5fa8',1,.1);MS.push();M4.tr(m,s*.33,.3,0);M4.rz(m,Math.PI/2);cy(m,0,0,0,.26,.08,.26,'#46e6ff',1,.6);MS.pop();}}
+    else{co(m,0,.72,0,.06,.24,.06,'#8f98a8',3);sp(m,0,.86,0,.1,.1,.1,'#ff4f6d',1,1);if(K.rh==='ears')for(const s of [-1,1]){MS.push();M4.tr(m,s*.33,.32,0);M4.rz(m,Math.PI/2);cy(m,0,0,0,.24,.1,.24,K.rc||'#e8343f',1,.1);MS.pop();}}}
   else{for(const s of [-1,1]){sp(m,s*.13,.31,.27,.1,.15*blink,.06,DARK,1);sp(m,s*.13+.025,.35,.295,.035,.04*blink,.02,WHITE,1,1);sp(m,s*.2,.17,.265,.1,.05,.03,'#ff9fa6',6);
       bx(m,s*.14,.43,.275,.13,.03,.02,hair,6);}
     if(p.ko>0){sp(m,0,.13,.28,.08,.08,.03,'#b8475a',1);}else if(happy){bx(m,0,.14,.28,.16,.05,.02,'#b8475a',1);bx(m,0,.12,.285,.1,.03,.01,WHITE,1);}else{bx(m,0,.14,.28,.14,.035,.02,'#b8475a',1);bx(m,-.08,.155,.28,.04,.035,.02,'#b8475a',1);bx(m,.08,.155,.28,.04,.035,.02,'#b8475a',1);}}
@@ -2134,6 +2142,7 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
   if(cos==='dino'){rb(m,0,.52,-.02,.72,.34,.66,suit,1);for(let k=0;k<4;k++)co(m,0,.72-k*.05,.1-k*.17,.14,.2,.14,acc,1);for(const s of [-1,1])sp(m,s*.2,.6,.28,.1,.1,.06,WHITE,1);
     if(own&&CC.cs)for(let k=-2;k<=2;k++){MS.push();M4.tr(m,k*.12,.38,.33);M4.rx(m,Math.PI);co(m,0,0,0,.07,.1,.05,WHITE,1);MS.pop();}}
   if(own)drawHeroXH(m,CC,A,t,p,hair,acc);
+  if(K.lk)for(const s of [-1,1]){MS.push();M4.tr(m,s*.33,.08,.12);M4.rz(m,s*.08);rb(m,0,-.1,0,.13,.56,.16,K.lk,6);MS.pop();}
   MS.pop();}
 
 // ---------- citizens & npcs ----------
@@ -5394,7 +5403,8 @@ function drawHair(m,st,hair,acc,A,t){const cap=()=>{rb(m,0,.56,-.02,.66,.2,.6,ha
   else if(st==='swoop'){cap();rb(m,0,.36,-.26,.62,.32,.1,hair,6);for(const s of [-1,1])rb(m,s*.3,.4,0,.06,.22,.46,hair,6);
     MS.push();M4.tr(m,.06,.55,.27);M4.rz(m,-.38);rb(m,0,0,0,.56,.15,.1,hair,6);MS.pop();rb(m,.2,.43,.29,.2,.2,.05,hair,6);}
   else if(st==='mohawk'){for(const [z,h] of [[.22,.2],[.1,.28],[-.03,.32],[-.16,.28],[-.27,.2]]){co(m,0,.58+h*.5,z,.14,h,.16,hair,6);}rb(m,0,.59,-.02,.16,.06,.58,hair,6);}
-  else if(st==='long'){cap();MS.push();M4.tr(m,0,.5,-.27);M4.rx(m,A.pony.p*.25);rb(m,0,-.42,0,.62,.96,.12,hair,6);MS.pop();for(const s of [-1,1])rb(m,s*.3,.2,.03,.07,.66,.44,hair,6);}
+  else if(st==='long'){cap();MS.push();M4.tr(m,0,.5,-.28);M4.rx(m,A.pony.p*.25);rb(m,0,-.44,0,.72,1.0,.14,hair,6);MS.pop();
+    for(const s of [-1,1]){rb(m,s*.34,.24,-.02,.1,.66,.5,hair,6);MS.push();M4.tr(m,s*.31,.06,.17);M4.rz(m,s*.06);rb(m,0,-.12,0,.13,.5,.12,hair,6);MS.pop();}}
   else if(st==='pigtails'){cap();rb(m,0,.32,-.26,.62,.4,.1,hair,6);for(const s of [-1,1]){rb(m,s*.3,.36,.03,.06,.3,.44,hair,6);MS.push();M4.tr(m,s*.36,.44,-.08);M4.rz(m,s*(.45+A.pony.p*.35));
       sp(m,0,0,0,.17,.17,.17,acc,1,.2);cy(m,0,-.2,0,.2,.3,.2,hair,6);sp(m,0,-.38,0,.22,.22,.22,hair,6);MS.pop();}}
   else if(st==='buns'){cap();rb(m,0,.34,-.26,.62,.36,.1,hair,6);for(const s of [-1,1]){rb(m,s*.3,.38,.03,.06,.26,.44,hair,6);sp(m,s*.2,.74,-.04,.3,.3,.3,hair,6);cy(m,s*.2,.62,-.04,.2,.05,.2,acc,1,.2);}}
@@ -5404,6 +5414,7 @@ function drawHeadAcc(m,C,t){const a=C.acc;
   else if(a==='goggles'){rb(m,0,.52,0,.66,.05,.6,'#2b2d42',1);for(const s of [-1,1]){MS.push();M4.tr(m,s*.13,.52,.3);M4.rx(m,Math.PI/2);cy(m,0,0,0,.2,.07,.2,'#ffcf3a',3);cy(m,0,.02,0,.14,.05,.14,'#46e6ff',8,.35);MS.pop();}}
   else if(a==='snowclip'){MS.push();M4.tr(m,.24,.5,.22);for(const r of [0,1.047,2.094]){MS.push();M4.rz(m,r);bx(m,0,0,0,.03,.16,.03,'#dff4ff',1,.6);MS.pop();}sp(m,0,0,.01,.05,.05,.05,'#46e6ff',1,.8);MS.pop();}
   else if(a==='heartclip'){MS.push();M4.tr(m,.26,.52,.14);for(const s of [-1,1])sp(m,s*.035,.02,0,.08,.08,.05,'#ff4f8a',1,.3);MS.push();M4.rz(m,Math.PI/4);bx(m,0,-.03,0,.07,.07,.04,'#ff4f8a',1,.3);MS.pop();MS.pop();}
+  else if(a==='phones'){const pc='#ff5fa8';rb(m,0,.7,-.02,.56,.06,.12,pc,1,.1);for(const s of [-1,1]){rb(m,s*.33,.52,-.02,.06,.36,.1,pc,1,.1);MS.push();M4.tr(m,s*.36,.3,-.01);M4.rz(m,Math.PI/2);cy(m,0,0,0,.3,.12,.3,pc,1,.15);cy(m,0,-s*.02,0,.19,.12,.19,'#ffffff',1,.25);MS.pop();}}
   else if(a==='flower'){MS.push();M4.tr(m,.2,.9,-.02);for(let k=0;k<5;k++){const q=k/5*TAU;sp(m,Math.cos(q)*.07,0,Math.sin(q)*.07,.08,.04,.08,'#ff9ec0',1,.2);}sp(m,0,.01,0,.06,.05,.06,'#ffd23f',1,.4);MS.pop();}
   if(C.id==='ruby'){for(const s of [-1,1])for(const [dx,dy] of [[0,0],[.04,.03],[.05,-.02]])sp(m,s*(.17+dx),.21+dy,.285,.025,.025,.01,'#c9774a',6);}}
 function drawBodyAcc(m,C,A,t){if(C.acc==='scarf'){rb(m,0,1.28,0,.5,.1,.4,'#e8343f',6);MS.push();M4.tr(m,.12,1.26,-.2);M4.rx(m,A.cape.p*.8+.25);rb(m,0,-.2,-.02,.14,.42,.04,'#e8343f',6);MS.pop();}}
@@ -5464,6 +5475,7 @@ function drawPortrait(cv,C,sil){const x=cv.getContext('2d'),S=cv.width;x.clearRe
   if(C.acc==='heartclip'){O(70,30,3.4,'#ff4f8a');O(74,30,3.4,'#ff4f8a');}if(C.acc==='snowclip'){O(70,30,4,'#dff4ff');O(70,30,2,'#46e6ff');}
   if(C.acc==='flower'){for(let k=0;k<5;k++){const q=k/5*TAU;O(67+Math.cos(q)*4,12+Math.sin(q)*4,3,'#ff9ec0');}O(67,12,2.4,'#ffd23f');}
   if(C.acc==='scarf')R(30,66,40,7,3,'#e8343f');
+  if(C.acc==='phones'){R(27,12,46,5,2,'#ff5fa8');R(22,14,6,26,3,'#ff5fa8');R(72,14,6,26,3,'#ff5fa8');O(25,44,8,'#ff5fa8');O(75,44,8,'#ff5fa8');O(25,44,4,'#ffffff');O(75,44,4,'#ffffff');}
   if(C.id==='ruby')for(const [a,b] of [[34,49],[37,51],[63,49],[66,51]])O(a,b,1,'#c9774a');
   if(sil){x.globalCompositeOperation='source-atop';x.fillStyle='#0b0a1c';x.fillRect(0,0,S,S);x.globalCompositeOperation='source-over';
     x.fillStyle='rgba(255,255,255,.6)';x.font=`900 ${32*u}px Nunito,system-ui,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText('?',50*u,48*u);}}
@@ -6167,7 +6179,7 @@ const NEWCHARS=[
   {id:'finn',u:1,bg:'#3b6fd0',g:'boy',n:'Captain Finn',skin:'#e0a67a',hs:'curly',hair:'red',suit:'blue',cape:'none',acc:'',em:'anchor',perk:'swim',a:'cannon',b:'anchor',cos:'pirate',cs:'#2b4a9a',ca:'#ffcf3a',x:'parrot'},
   {id:'dan',u:1,bg:'#ff9a3c',g:'boy',n:'Dino Dan',skin:'#f2c29b',hs:'spiky',hair:'brown',suit:'orange',cape:'none',acc:'',em:'claw',perk:'strong',a:'tail',b:'roar',cos:'dino',cs:'#ff8a1f',ca:'#2f6bff'},
   {id:'sami',u:1,bg:'#6a4fd0',g:'boy',n:'Wizard Sami',skin:'#c68a5a',hs:'swoop',hair:'black',suit:'nova',cape:'purple',acc:'',em:'star',perk:'lucky',a:'missile',b:'frog',hat:'wizard',robe:1,hx:'wand'},
-  {id:'aya',u:1,bg:'#ff8ad0',g:'girl',n:'Astro Aya',skin:'#e0a67a',hs:'buns',hair:'black',suit:'white',cape:'none',acc:'',em:'planet',perk:'jumpy',a:'ring',b:'gravity',cos:'astro',cs:'#f4f6fa',ca:'#ff5fa8'},
+  {id:'aya',u:1,bg:'#ff8ad0',g:'girl',n:'Astro Aya',skin:'#e0a67a',hs:'buns',hair:'black',suit:'white',cape:'none',acc:'phones',em:'planet',perk:'jumpy',a:'ring',b:'gravity',cs:'#f4f6fa',ca:'#ff5fa8'},
   {id:'kat',u:1,bg:'#ff9ec0',g:'girl',n:'Kitty Kat',skin:'#f7d6bf',hs:'long',hair:'black',suit:'black',cape:'none',acc:'',em:'paw',perk:'quick',a:'claw',b:'pounce',hat:'cat',x:'tail',hx:'claws'},
   {id:'fay',u:1,bg:'#7ee8b0',g:'girl',n:'Fairy Fay',skin:'#f2c29b',hs:'long',hair:'blond',suit:'green',cape:'none',acc:'',em:'heart',perk:'glide',a:'sleepy',b:'petals',hat:'flower',x:'fwings',hx:'wand'},
   {id:'nora',u:1,bg:'#b28dff',g:'girl',n:'Knight Nora',skin:'#8d5a3b',hs:'pony',hair:'dark',suit:'white',cape:'purple',acc:'',em:'shield',perk:'tough',a:'shield',b:'charge',cos:'knight',cs:'#dfe4ee',ca:'#8a4ff0'}];
@@ -7664,8 +7676,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:37,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:38,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'👢',t:'Heroes dressed like their cards',s:'Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders'},
   {ic:'🧸',t:'Real 3D heroes',s:'Every hero also has a real 3D figure made from their picture card. To play with them, turn on Menu, Settings, 3D heroes'},
   {ic:'🤝',t:'One story online',s:'Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too'},
   {ic:'🧭',t:'Show me the way, fixed',s:'After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field'},
@@ -8346,7 +8359,8 @@ for(const c of HEROES3)if(c.hs==='bald'&&!HAIRS.some(h=>h.id==='sk_'+c.id))HAIRS
 // ---------- hats (head space: the head spans y 0..0.58, the face is at z +0.28) ----------
 for(const h of ['racer','hardhat','feather','viking','cowboy','beeband','shell','earmuffs','bunny','beret','tiara','unicorn'])REWARD_HATS.add(h);
 {const _dhx=drawHatX;drawHatX=function(m,hat,acc,hair,t){
-  if(hat==='racer'){sp(m,0,.34,0,.8,.76,.76,'#ff7a1a',1,.1);bx(m,0,.3,.31,.54,.16,.04,'#23232f',8,.3);bx(m,0,.62,0,.12,.1,.74,'#ffffff',1);bx(m,0,.34,.3,.1,.1,.02,'#ffffff',1,.4);}
+  if(hat==='racer'){const o='#ff7a1a';rb(m,0,.62,-.03,.76,.24,.72,o,1,.1);for(const s of [-1,1]){rb(m,s*.35,.3,-.05,.08,.58,.62,o,1,.1);cy(m,s*.395,.3,.02,.04,.16,.16,'#ffffff',1);}rb(m,0,.3,-.35,.76,.58,.08,o,1,.1);
+    rb(m,0,.53,.33,.64,.09,.07,'#23232f',8,.3);bx(m,0,.75,-.02,.12,.03,.74,'#ffffff',1);for(const s of [-1,1])bx(m,s*.2,.74,-.02,.05,.03,.74,'#ffffff',1);}
   else if(hat==='hardhat'){sp(m,0,.6,0,.72,.36,.68,'#ffcf3a',1,.1);cy(m,0,.56,.04,.84,.05,.82,'#ffcf3a',1);bx(m,0,.76,0,.08,.08,.6,'#ffe36e',1);}
   else if(hat==='feather'){MS.push();M4.tr(m,0,.6,-.04);M4.rx(m,-.35);co(m,0,.22,0,.7,.56,.64,'#1f8a4c',6);MS.pop();cy(m,0,.56,0,.72,.06,.66,'#16703c',6);MS.push();M4.tr(m,.3,.72,-.08);M4.rz(m,-.55);bx(m,0,.22,0,.05,.5,.13,'#e8343f',1);MS.pop();}
   else if(hat==='viking'){sp(m,0,.52,0,.74,.48,.7,'#c8ccd4',3,.1);cy(m,0,.46,0,.76,.08,.72,'#8a5a3a',6);bx(m,0,.3,.33,.06,.26,.04,'#c8ccd4',3);for(const s of [-1,1]){MS.push();M4.tr(m,s*.34,.6,0);M4.rz(m,-s*.95);co(m,0,.16,0,.14,.42,.14,'#fff2d0',1);MS.pop();}}
@@ -8355,7 +8369,7 @@ for(const h of ['racer','hardhat','feather','viking','cowboy','beeband','shell',
   else if(hat==='shell'){cy(m,0,.6,0,.64,.06,.58,'#ff9ec0',1,.2);MS.push();M4.tr(m,0,.66,.22);for(let k=-2;k<=2;k++){MS.push();M4.rz(m,k*.28);bx(m,0,.08,0,.05,.2,.04,'#ffd6e8',1,.3);MS.pop();}sp(m,0,.02,0,.2,.12,.08,'#ffd6e8',1,.3);MS.pop();for(const s of [-1,1])sp(m,s*.2,.62,.18,.07,.07,.07,'#ffffff',3,.4);}
   else if(hat==='earmuffs'){cy(m,0,.62,0,.72,.06,.14,'#ff9ec0',1);for(const s of [-1,1])sp(m,s*.34,.3,0,.18,.22,.22,'#ffffff',6);}
   else if(hat==='bunny'){for(const s of [-1,1]){MS.push();M4.tr(m,s*.14,.6,-.02);M4.rz(m,-s*(.16+Math.sin(t*2+s)*.05));sp(m,0,.34,0,.16,.52,.1,'#ffffff',6);sp(m,0,.34,.04,.08,.38,.05,'#ff9ec0',6);MS.pop();}}
-  else if(hat==='beret'){sp(m,.06,.64,-.02,.74,.2,.7,'#e8343f',6);cy(m,.06,.75,-.02,.04,.08,.04,'#e8343f',1);}
+  else if(hat==='beret'){sp(m,.06,.64,-.02,.74,.2,.7,'#2f5fd8',6);cy(m,.06,.75,-.02,.04,.08,.04,'#2f5fd8',1);}
   else if(hat==='tiara'){cy(m,0,.6,.02,.52,.06,.48,'#ffd23f',3,.3);co(m,0,.72,.22,.14,.22,.06,'#ffd23f',3,.3);for(const s of [-1,1])co(m,s*.14,.68,.2,.08,.14,.05,'#ffd23f',3,.3);sp(m,0,.7,.26,.07,.07,.04,'#ff4f8a',8,.8);}
   else if(hat==='unicorn'){MS.push();M4.tr(m,0,.6,.2);M4.rx(m,.4);co(m,0,.24,0,.13,.5,.13,'#ffd23f',3,.4);MS.pop();for(const s of [-1,1]){MS.push();M4.tr(m,s*.22,.62,-.02);M4.rz(m,-s*.3);co(m,0,.08,0,.12,.2,.08,'#ffffff',6);MS.pop();}}
   else return _dhx(m,hat,acc,hair,t);};}
@@ -8442,7 +8456,7 @@ function hood(m,col,rim){rb(m,0,.62,-.02,.74,.2,.7,col,6);rb(m,0,.28,-.32,.74,.7
   else if(h==='shell'){R(32,18,36,4,2,'#ff9ec0');for(let k=-2;k<=2;k++){x.save();x.translate(50*u,19*u);x.rotate(k*.3);R(-1.2,-10,2.4,10,1,'#ffd6e8');x.restore();}O(38,19,2,'#ffffff');O(62,19,2,'#ffffff');}
   else if(h==='earmuffs'){R(26,14,48,4,2,'#ff9ec0');O(27,44,8,'#ffffff');O(73,44,8,'#ffffff');}
   else if(h==='bunny'){E(38,6,5.5,16,-.15,'#ffffff');E(62,6,5.5,16,.15,'#ffffff');E(38,7,2.6,11,-.15,'#ff9ec0');E(62,7,2.6,11,.15,'#ff9ec0');}
-  else if(h==='beret'){E(54,19,27,9,-.12,'#e8343f');O(58,10,2.5,'#e8343f');}
+  else if(h==='beret'){E(54,19,27,9,-.12,'#2f5fd8');O(58,10,2.5,'#2f5fd8');}
   else if(h==='tiara'){P([[34,24],[38,13],[44,21],[50,8],[56,21],[62,13],[66,24]],'#ffd23f');O(50,17,2.6,'#ff4f8a');}
   else if(h==='unicorn'){P([[45,22],[50,-4],[55,22]],'#ffd23f');L(47,16,53,13,1.2,'#fff6c8');L(47,8,52,5,1.2,'#fff6c8');P([[30,20],[33,10],[40,20]],'#ffffff');P([[70,20],[67,10],[60,20]],'#ffffff');}
   else if(h==='chef'){R(28,20,44,7,2,'#f4f4f4');O(38,11,10,'#ffffff');O(50,6,11,'#ffffff');O(62,11,10,'#ffffff');}
@@ -10368,7 +10382,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.1';window.BB_VER=BB_VER;
+const BB_VER='26.2';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11471,6 +11485,78 @@ MV('For a more natural voice, download one on the iPad: Settings › Accessibili
 MV('Hero cards','بطاقات الأبطال');MV("Every hero has their own picture card now, made by our family. Tap a hero's picture in 🦸 to see the whole card",'لكل بطل الآن بطاقة بصورته، صنعتها عائلتنا. اضغط على صورة البطل في 🦸 لترى البطاقة كاملة');
 MV('Trails go around force fields','المسارات تلتف حول حقول القوة');MV('The glowing trail takes the way around places that are still locked, instead of leading you into a force field','المسار المضيء يأخذ الطريق حول الأماكن التي ما زالت مغلقة، بدل أن يقودك إلى حقل قوة');
 MV('Nicer voices','أصوات ألطف');MV("Everyone talks with the tablet's best voice now. Settings shows which voice it is and how to get an even more natural one",'الجميع يتكلمون الآن بأفضل صوت في الجهاز. الإعدادات تُظهر أي صوت هو وكيف تحصل على صوت أكثر طبيعية');
+// ================= v26.2: block heroes dressed like their picture cards =================
+// Each hero's boots, gloves, legs and trims now come from their card. They are used while the hero wears their own outfit
+// (no shop costume, power suit or shop suit colour on top), see "K" in drawHero (04_models.js).
+//   pt legs · ls stripes on the legs · bt boots (tall) · bc boot top · gl gloves · gc glove cuff · sh shoulders · ar sleeves
+//   as a stripe on the sleeves · ec chest emblem · bl belt · kc / ka suit and trim colour (heroes without their own suit colour)
+//   cp a cape from the card · bel a belly panel · vest a vest · bow a bow tie · sk a skirt (leaf, tutu) · dots paint splashes
+//   rh / rc a robot head (buns, ears) and its colour · lk hair locks peeking out of a hood
+const CARDLOOK={
+  // ---- girls ----
+  aya:{pt:'#f4f6fa',bt:'#ffffff',bc:'#ff5fa8',gl:'#ffffff',gc:'#ff5fa8',sh:'#ff5fa8'},
+  bella:{pt:'#23232f',ls:'#ffcf3a',bt:'#23232f',bc:'#ffcf3a',gl:'#23232f'},
+  bushra:{pt:'#ffffff',bt:'#ffffff',bc:'#ff7ab0',gl:'#ffffff',gc:'#ff9ec0',sh:'#ff9ec0'},
+  fay:{pt:'#3f9e4a',bt:'#3fae4a',bc:'#ff9ec0',gc:'#3fae4a',ec:'#ff7ab0',sk:'leaf'},
+  kat:{pt:'#23232f',bt:'#23232f',bc:'#ff5fa8',gl:'#23232f',gc:'#ff5fa8'},
+  kira:{pt:'#ffffff',bt:'#ffffff',bc:'#e8343f',gl:'#ffffff',gc:'#e8343f',sh:'#e8343f',ec:'#e8343f'},
+  layla:{pt:'#eef3ff',bt:'#2f7bff',bc:'#46b0ff',gl:'#2f7bff'},
+  lina:{pt:'#e8343f',bt:'#e8343f',bc:'#ffcf3a',gl:'#e8343f',gc:'#ffcf3a',sh:'#ffb020'},
+  lulu:{pt:'#12b0b0',bt:'#3fd0d0',bc:'#ffffff',gc:'#3fd0d0',ec:'#dff4ff'},
+  mia:{pt:'#7a3fe0',bt:'#46c8ff',bc:'#2f9be0',gl:'#46c8ff'},
+  mira:{pt:'#d8ccff',bt:'#4b3bd1',bc:'#dff4ff',gl:'#ffffff',cp:'#7a5af0'},
+  noor:{kc:'#1fa055',ka:'#ffd23f',pt:'#1a8f4a',bt:'#1fa055',bc:'#ffd23f',gl:'#1fa055',gc:'#ffd23f'},
+  nora:{pt:'#9aa2b2',bt:'#c8ccd4',bc:'#8a4ff0',gl:'#4a4f5f'},
+  rina:{kc:'#ff4f9e',pt:'#ff4f9e',bt:'#ff4f9e',bc:'#46e6ff',gl:'#c8ccd4',sh:'#c8ccd4',rh:'buns',rc:'#ff4f9e'},
+  ruby:{pt:'#ff5fa8',bt:'#ff5fa8',bc:'#ffffff',gl:'#ffffff'},
+  salma:{pt:'#f4f6fa',bt:'#ffffff',bc:'#bfe9ff',gl:'#ffffff',gc:'#46b0ff'},
+  sama:{pt:'#46a0f0',bt:'#ffffff',bc:'#2f8fe0',gl:'#2f8fe0'},
+  sara:{pt:'#ffffff',bt:'#2f5fd8',bc:'#ffd23f',gl:'#2f5fd8',bl:'#ffd23f',ec:'#ffd23f',cp:'#2f5fd8',dots:['#ff5fa8','#ffd23f','#56c05a','#46b0ff','#ff8a1f']},
+  tala:{pt:'#ff8a1f',ls:'#23232f',bt:'#ff8a1f',bc:'#23232f',gl:'#ff8a1f',lk:'#5a3a22'},
+  uma:{pt:'#ffffff',bt:'#b28dff',bc:'#ffffff',gl:'#b28dff',ec:'#ff5fa8',bl:'#ffd23f'},
+  wanda:{pt:'#5a3aa0',bt:'#6a3fb0',bc:'#ffd23f',gl:'#6a3fb0',ec:'#ffd23f'},
+  yasmin:{pt:'#3fae4a',bt:'#3fae4a',bc:'#ff9ec0',gl:'#3fae4a'},
+  zara:{pt:'#ff5fa8',bt:'#e83f9a',bc:'#ffd23f',gl:'#ff5fa8',sk:'tutu'},
+  aisha:{pt:'#23232f',bt:'#23232f',bc:'#46e6ff',gl:'#23232f',gc:'#46e6ff'},
+  amira:{pt:'#ff7ab0',bt:'#ff7ab0',bc:'#ffd23f',gl:'#ff7ab0',gc:'#ffd23f',sh:'#ffd23f'},
+  // ---- boys ----
+  leo:{pt:'#e8343f',bt:'#ffcf3a',gl:'#ffcf3a'},
+  omar:{pt:'#ff7a1a',bt:'#2b2d42',gl:'#2b2d42',ec:'#e8343f'},
+  kenji:{pt:'#2b2d42',bt:'#23232f',bc:'#e8343f',gl:'#23232f',ec:'#e8343f'},
+  zayd:{pt:'#2f6bff',bt:'#ffcf3a',gl:'#ffcf3a'},
+  rex:{pt:'#e8343f',bt:'#e8343f',bc:'#c8ccd4',gl:'#e8343f',sh:'#c8ccd4',ec:'#ffcf3a',rh:'ears',rc:'#e8343f'},
+  finn:{pt:'#2b3a6a',bt:'#23232f',bc:'#ffcf3a',gl:'#23232f'},
+  dan:{pt:'#ff8a1f',bt:'#ff8a1f',bc:'#2b3a6a',gl:'#2b3a6a',bel:'#ffe0a8'},
+  sami:{pt:'#6a3fd0',bt:'#5a3ab8',bc:'#46e6ff',gl:'#7a4fe0'},
+  zak:{pt:'#9be22d',ls:'#23232f',bt:'#23232f',bc:'#9be22d',gl:'#23232f'},
+  rocky:{ka:'#ff3fd0',pt:'#2b2d42',bt:'#23232f',bc:'#ff3fd0',gl:'#23232f'},
+  rayan:{pt:'#ff7a1a',ls:'#ffffff',bt:'#ff7a1a',bc:'#ffffff',gl:'#23232f',bl:'#23232f'},
+  comet:{pt:'#2f6bff',bt:'#ffcf3a',gl:'#ffcf3a'},
+  salem:{pt:'#2f6bff',ls:'#ffffff',bt:'#2f6bff',bc:'#ffffff',gl:'#2f6bff',as:'#ffffff'},
+  karim:{pt:'#ffffff',bt:'#e8343f',gl:'#e8343f',as:'#e8343f',bow:'#e8343f'},
+  bilal:{pt:'#ffb020',bt:'#ffcf3a',bc:'#23232f',gl:'#ffcf3a',bl:'#8a5a3a'},
+  majid:{pt:'#23232f',bt:'#23232f',bc:'#e8343f',gl:'#23232f',ec:'#ffd23f'},
+  faris:{pt:'#e8343f',ls:'#ffe36e',bt:'#23232f',bc:'#ffe36e',gl:'#23232f',bl:'#23232f',ec:'#46b0ff'},
+  robin:{pt:'#2a6b3a',bt:'#8a5a3a',bc:'#6b4226',gl:'#8a5a3a',bl:'#8a5a3a',ec:'#ffcf3a',cp:'#1f8a4c'},
+  erik:{pt:'#6b4226',bt:'#6b4226',bc:'#e8dcc0',gl:'#8a5a3a',sh:'#e8dcc0'},
+  drake:{pt:'#2fbf5a',bt:'#2fbf5a',bc:'#ffcf3a',gl:'#2fbf5a',bel:'#ffe36e',ec:'#ff7a1a'},
+  munir:{pt:'#e8dfc8',ls:'#c9b48a',bt:'#e8dfc8',gl:'#efe6d2'},
+  zork:{pt:'#7a3fe0',bt:'#7a3fe0',bc:'#46e6ff',bl:'#c8ccd4'},
+  sam:{pt:'#2f5a9f',bt:'#8a5a2e',bc:'#6b4226',gl:'#8a5a2e',vest:'#8a5a2e',bl:'#6b4226',ec:'#ffd23f'},
+  idris:{pt:'#c9a36a',bt:'#8a5a3a',gl:'#8a5a3a'},
+  saif:{pt:'#6a8aa8',bt:'#ffffff',bc:'#6a8aa8',gl:'#6a8aa8',bel:'#ffffff',ec:'#2f8fe0'}};
+for(const id in CARDLOOK)if(CHARBY[id])Object.assign(CHARBY[id],CARDLOOK[id]);
+// paint splashes on the chest (Painter Sara)
+const CARDDOT=[[-.18,1.13,.07],[.17,.9,.06],[-.12,.86,.05],[.2,1.17,.05],[.07,1.21,.04]];
+// things on the body from the card (body space: the chest spans y .72..1.28, its front is at z +.19)
+function drawCardBody(m,K,A,t,p,suit,acc){
+  if(K.bel)rb(m,0,1.0,.19,.38,.34,.02,K.bel,6);
+  if(K.vest){for(const s of [-1,1])rb(m,s*.2,1.05,.19,.2,.44,.03,K.vest,6);rb(m,0,1.05,-.19,.6,.44,.03,K.vest,6);}
+  if(K.bow){for(const s of [-1,1]){MS.push();M4.tr(m,s*.07,1.25,.21);M4.rz(m,s*Math.PI/2);co(m,0,0,0,.12,.12,.06,K.bow,1);MS.pop();}sp(m,0,1.25,.22,.05,.05,.04,K.bow,1);}
+  if(K.dots)K.dots.forEach((c,i)=>{const q=CARDDOT[i%CARDDOT.length];bx(m,q[0],q[1],.2,q[2],q[2],.02,c,1);});
+  if(K.sk==='leaf'){co(m,0,.62,0,.86,.4,.6,suit,6);for(let k=0;k<8;k++){const a=k/8*TAU;MS.push();M4.tr(m,Math.sin(a)*.4,.44,Math.cos(a)*.28);M4.ry(m,a);M4.rx(m,Math.PI);co(m,0,0,0,.16,.16,.06,k%2?'#7ed957':'#3fae4a',6);MS.pop();}}
+  else if(K.sk==='tutu'){co(m,0,.64,0,.94,.36,.68,suit,6);co(m,0,.6,0,.98,.22,.72,shd(suit,.9),6);}}
+MV('Heroes dressed like their cards','أبطال بملابس بطاقاتهم');MV('Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders','كل بطل من المكعبات صار عنده الحذاء والقفازات والألوان من بطاقته. آية الفضائية عندها سماعاتها الوردية، والشعر الطويل ينزل على الكتفين');
 // ================= v26: real 3D heroes made from the family's cards (glTF .glb files) =================
 // A hero with a 3D model file (models/<hero>.glb, listed in models/list.json) is drawn with it: a textured model with a
 // skeleton that plays its own animations (idle, walk, run, jump, punch, wave, cheer...), lit and shadowed like the rest of
