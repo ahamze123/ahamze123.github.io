@@ -345,3 +345,4 @@
 2026-10-01 13:06:29 [robin] image-to-3d SUCCEEDED 100%
 2026-10-01 13:07:06 [drake] image-to-3d IN_PROGRESS 36%
 2026-10-01 13:08:18 [faris] rigging SUCCEEDED 100%
+2026-10-01 13:08:19 [faris] rigged: {"model": {"bytes": 1732540, "triangles": 20601, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35240, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30600, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
