@@ -602,3 +602,8 @@
 2026-10-01 13:24:05 [amira] image-to-3d SUCCEEDED 100%
 2026-10-01 13:24:07 [uma] image-to-3d IN_PROGRESS 67%
 2026-10-01 13:24:16 [amira] rig task made 01a0f7a2-f8f8-76dc-b478-28d777b5f018
+2026-10-01 13:24:17 [amira] rigging IN_PROGRESS 10%
+2026-10-01 13:24:18 [uma] image-to-3d IN_PROGRESS 99%
+2026-10-01 13:24:23 [aisha] image-to-3d IN_PROGRESS 39%
+2026-10-01 13:24:27 [amira] rigging IN_PROGRESS 36%
+2026-10-01 13:24:28 [uma] image-to-3d SUCCEEDED 100%
