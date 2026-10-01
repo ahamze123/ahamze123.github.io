@@ -516,3 +516,4 @@
 2026-10-01 13:18:58 [tala] image-to-3d SUCCEEDED 100%
 2026-10-01 13:18:59 [zara] image-to-3d IN_PROGRESS 59%
 2026-10-01 13:19:03 [bushra] image-to-3d SUCCEEDED 100%
+2026-10-01 13:19:04 [tala] rig task made 01a0f79e-47c8-726c-bfbd-847616b15404
