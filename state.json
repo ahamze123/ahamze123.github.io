@@ -212,7 +212,8 @@
     "leo"
    ],
    "limit": 60,
-   "run": 3
+   "run": 3,
+   "spent_estimate": 48
   }
  ]
 }

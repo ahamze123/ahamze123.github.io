@@ -44,3 +44,4 @@
 2026-10-01 12:41:09 [kira] animations: ['Idle', 'Regular_Jump', 'Right_Jab_from_Guard', 'Victory_Cheer', 'Big_Wave_Hello', 'Knock_Down', 'Chair_Sit_Idle_M', 'Swim_Forward']
 2026-10-01 12:41:19 [leo] animations SUCCEEDED 100%
 2026-10-01 12:41:20 [leo] animations: ['Idle', 'Regular_Jump', 'Right_Jab_from_Guard', 'Victory_Cheer', 'Big_Wave_Hello', 'Knock_Down', 'Chair_Sit_Idle_M', 'Swim_Forward']
+2026-10-01 12:41:21 run finished; credits used by new tasks (estimate): 48
