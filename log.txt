@@ -272,3 +272,4 @@
 2026-10-01 13:00:31 [salem] image-to-3d IN_PROGRESS 84%
 2026-10-01 13:00:33 [comet] rigging IN_PROGRESS 10%
 2026-10-01 13:00:33 [rayan] image-to-3d SUCCEEDED 100%
+2026-10-01 13:00:39 [rayan] rig task made 01a0f78d-6bf4-77c2-a783-10029228a964
