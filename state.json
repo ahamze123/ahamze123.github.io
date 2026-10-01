@@ -366,6 +366,7 @@
    }
   },
   "comet": {
+   "extra": {},
    "full": {
     "bytes": 2490016,
     "pictures": [
@@ -486,6 +487,12 @@
    }
   },
   "drake": {
+   "full": {
+    "bytes": 2553580,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
