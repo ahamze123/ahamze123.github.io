@@ -50,7 +50,8 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - **Real 3D heroes (optional).** Every hero also has a real 3D figure made from their picture, so they look just like their card. The kids liked the block figures better, so the block figures are what you see; turn on **Menu → Settings → 🧸 3D heroes** on a tablet to play with the 3D ones. They stand, walk, run, jump, punch, wave, cheer, sit in cars, swim and get knocked down with their own moves, and friends playing online see them too. A hero wearing a shop costume or a power suit shows as their block figure, and so does a hero for the moment their 3D file is still loading.
 - Every hero has a picture card, made by our family. The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
-- There are **50 heroes**: 25 boys and 25 girls. Each has their own look, a special skill and two attacks of their own.
+- There are **52 heroes**: 25 boys and 27 girls. Each has their own look, a special skill and two attacks of their own.
+- **Luna the mermaid** 🧜‍♀️ (a blue mermaid costume with a tail and fin, a pearl crown with a little moon; she swims fast and dives deep) and **Butterfly Basma** 🦋 (purple suit, blue hair, big colourful pink butterfly wings; she can fly) can be played right from the start.
 - Tap 🦸 in the game to see every hero. A locked hero shows how to get them:
   - ⭐ finish their mission,
   - 🔍 find their hidden hero coin (look for a beam of light; the map shows a ❔),

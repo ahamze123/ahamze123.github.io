@@ -2076,7 +2076,7 @@ function drawHero(p,t){const m=MS.cur;MS.reset();const A=p.anim,L=p.looks;if(p.i
   if(A.spin){M4.tr(m,0,.9,0);M4.rx(m,A.spin);M4.tr(m,0,-.9,0);}
   M4.rx(m,A.lean.p);M4.rz(m,A.tilt.p);const sq=A.sq.p;M4.sc(m,1/Math.sqrt(sq),sq,1/Math.sqrt(sq));
   const sw=Math.sin(A.walk)*A.amp,drive=p.drive;
-  for(const s of [-1,1]){MS.push();M4.tr(m,s*.15,.64,0);let lx=sw*s*.95;if(A.fly>.01)lx=.15+s*Math.sin(t*5)*.12;if(p.swim)lx=Math.sin(t*9+s*1.6)*.55;if(p.chute)lx=.22+s*Math.sin(t*2.3)*.07;if(drive)lx=-1.5;if(p.ko>0)lx=.1*s;if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,1,p);if(r!==null&&r!==undefined)lx=r;}M4.rx(m,lx);
+  if(K.mer&&typeof drawMerTail==='function')drawMerTail(m,K,A,t,p);else for(const s of [-1,1]){MS.push();M4.tr(m,s*.15,.64,0);let lx=sw*s*.95;if(A.fly>.01)lx=.15+s*Math.sin(t*5)*.12;if(p.swim)lx=Math.sin(t*9+s*1.6)*.55;if(p.chute)lx=.22+s*Math.sin(t*2.3)*.07;if(drive)lx=-1.5;if(p.ko>0)lx=.1*s;if(A.pose&&typeof POSEF!=='undefined'&&POSEF[A.pose]){const r=POSEF[A.pose](s,t,1,p);if(r!==null&&r!==undefined)lx=r;}M4.rx(m,lx);
     cy(m,0,-.27,0,.23,.52,.23,cos==='pirate'&&!K.pt?hex('#3a3a55'):pants,6);if(K.ls)for(const y of [-.1,-.22])cy(m,0,y,0,.24,.05,.24,K.ls,6);
     if(K.bt){rb(m,0,-.4,0,.27,.22,.28,boot,1,0);if(K.bc)rb(m,0,-.3,0,.29,.06,.3,K.bc,1);}rb(m,0,-.56,.05,.28,.19,.37,boot,1,p.gad&&p.gad.boots?.25:0);
     if(p.gad&&p.gad.boots&&(p.airT>.05||A.fly>.1))sp(m,0,-.74,-.02,.16,.18+R()*.22,.16,'#ffb347',1,1);MS.pop();}
@@ -6914,7 +6914,7 @@ PLACE_BUILD.hall=function(K){const gold='#ffcf3a';K.rug(15,15,4,27,'#b8323c','#d
   // pedestals: boys on the west side, girls on the east side, two rows each (the back row stands higher)
   const boys=CHARS.filter(c=>c.g==='boy'),girls=CHARS.filter(c=>c.g==='girl');HALL.ped=[];
   const ped=(lx,lz,id,face,h)=>{K.box(lx-.8,0,lz-.8,1.6,h-.05,1.6,'#e8e0d0',3);K.box(lx-.86,h-.09,lz-.86,1.72,.1,1.72,gold,3,.2);K.box(lx-.5,.3,lz+(face>0?.81:-.83),1,.28,.02,'#23232f',1);K.solid(lx-.8,lz-.8,lx+.8,lz+.8,h);HALL.ped.push({id,x:K.X+lx,z:K.Z+lz,face,top:FY+h});};
-  const place=(L,xin,xout,face)=>L.forEach((c,i)=>{const back=i%2===1,row=Math.floor(i/2);ped(back?xout:xin,2.4+row*2.15+(back?1.07:0),c.id,face,back?1.7:.95);});
+  const place=(L,xin,xout,face)=>{const rows=Math.ceil(L.length/2),st=rows>1?Math.min(2.15,(25.9-(L.length%2?0:1.07))/(rows-1)):2.15;L.forEach((c,i)=>{const back=i%2===1,row=Math.floor(i/2);ped(back?xout:xin,2.4+row*st+(back?1.07:0),c.id,face,back?1.7:.95);});};
   place(boys,5.4,2.2,Math.PI/2);place(girls,24.6,27.8,-Math.PI/2);
   // the trophy shelf on the north wall and the golden brick wall above it
   K.box(7,0,.15,16,1.05,1,'#7a4a2a',6);K.box(6.95,1.05,.1,16.1,.08,1.1,gold,3,.2);K.box(7,1.9,.15,16,.1,.9,'#7a4a2a',6);K.box(6.95,2,.1,16.1,.06,1,gold,3,.2);
@@ -7676,8 +7676,10 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:39,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:40,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🦋',t:'Butterfly Basma',s:'Butterfly Basma flutters in! Purple suit, blue hair and big colourful butterfly wings. She can fly. Pick her on the first screen or in 🦸'},
+  {ic:'🧜‍♀️',t:'Luna the mermaid',s:'Luna the mermaid joins the heroes! She swims super fast and dives deep. Pick her on the first screen or in 🦸'},
   {ic:'🌪️',t:'Tornado Spin',s:'Tap 🌪️ Spin and your hero whirls into a tornado in their own colours, knocking baddies away. Every hero can do it (keyboard: R)'},
   {ic:'👢',t:'Heroes dressed like their cards',s:'Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders'},
   {ic:'🧸',t:'Real 3D heroes',s:'Every hero also has a real 3D figure made from their picture card. To play with them, turn on Menu, Settings, 3D heroes'},
@@ -10383,7 +10385,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.3';window.BB_VER=BB_VER;
+const BB_VER='26.4';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11486,6 +11488,37 @@ MV('For a more natural voice, download one on the iPad: Settings › Accessibili
 MV('Hero cards','بطاقات الأبطال');MV("Every hero has their own picture card now, made by our family. Tap a hero's picture in 🦸 to see the whole card",'لكل بطل الآن بطاقة بصورته، صنعتها عائلتنا. اضغط على صورة البطل في 🦸 لترى البطاقة كاملة');
 MV('Trails go around force fields','المسارات تلتف حول حقول القوة');MV('The glowing trail takes the way around places that are still locked, instead of leading you into a force field','المسار المضيء يأخذ الطريق حول الأماكن التي ما زالت مغلقة، بدل أن يقودك إلى حقل قوة');
 MV('Nicer voices','أصوات ألطف');MV("Everyone talks with the tablet's best voice now. Settings shows which voice it is and how to get an even more natural one",'الجميع يتكلمون الآن بأفضل صوت في الجهاز. الإعدادات تُظهر أي صوت هو وكيف تحصل على صوت أكثر طبيعية');
+// ================= v26.4: Butterfly Basma: purple suit, blue hair, big colourful pink butterfly wings (open from the start) =================
+// She flutters down slowly (glide), can fly, sprinkles sleepy butterfly dust and makes glitter. Her wings flap faster when she flies.
+CHARS.push({id:'basma',bg:'#c77dff',g:'girl',n:MV('Butterfly Basma','بسمة الفراشة'),skin:'#c68a5a',hs:'long',hair:'blue',suit:'nova',cape:'none',acc:'',em:'bfly',perk:'glide',a:'sleepy',b:'glitter',
+  cs:'#9b5cf0',ca:'#ff7ad0',hat:'bflyband',x:'bwings',
+  pt:'#8a4ff0',bt:'#ff7ad0',bc:'#7a3fc0',gl:'#c77dff',gc:'#ff7ad0',ec:'#ffd23f'});
+CHARBY.basma=CHARS[CHARS.length-1];HMOVE.basma=['float','fly'];HERO_TAGS.basma=['light','magic'];
+REWARD_HATS.add('bflyband');
+// a purple headband with two antennae and pink tips
+{const _dhx=drawHatX;drawHatX=function(m,hat,acc,hair,t){if(hat!=='bflyband')return _dhx(m,hat,acc,hair,t);cy(m,0,.58,0,.68,.06,.62,'#7a3fc0',1);
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.13,.62,.04);M4.rz(m,-s*(.4+Math.sin(t*3+s)*.07));M4.rx(m,-.25);cy(m,0,.2,0,.035,.4,.035,'#3a2a55',1);sp(m,0,.43,0,.13,.13,.13,'#ff7ad0',1,.4);MS.pop();}};}
+// a little butterfly on the chest
+{const _em=drawEmblem;drawEmblem=function(m,C,acc){if(C.em!=='bfly')return _em(m,C,acc);
+  for(const s of [-1,1]){sp(m,s*.075,.045,0,.13,.12,.04,acc,1,.7);sp(m,s*.06,-.06,0,.09,.09,.04,'#ff7ad0',1,.6);}bx(m,0,0,.01,.035,.18,.03,'#3a2a55',1);};}
+// ---------- the wings (body space: the back is at z -.19) ----------
+const BWING={up:'#ff7ad0',low:'#c77dff',spots:[[.12,.08,'#ffd23f',.17],[-.12,-.06,'#46e6ff',.13],[.2,-.12,'#ff9a3c',.1],[-.16,.15,'#ffffff',.08],[.02,-.16,'#7ed957',.09]]};
+{const _xb=drawHeroX;drawHeroX=function(m,C,A,t,p,suit,acc,hair){_xb(m,C,A,t,p,suit,acc,hair);if(C.x!=='bwings')return;
+  const fast=(A.fly||0)>.1||p.glide;const fa=Math.sin(t*(fast?16:3))*(fast?.45:.16);
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.07,1.15,-.22);M4.ry(m,s*(.3+fa));
+    MS.push();M4.tr(m,s*.4,.2,-.05);M4.rz(m,s*.3);sp(m,0,0,0,.72,.62,.04,BWING.up,1,.25);sp(m,0,0,0,.56,.46,.045,'#ff9fe0',1,.25);
+      for(const [x,y,c,r] of BWING.spots)for(const z of [.03,-.03])sp(m,s*x,y,z,r,r,.02,c,1,.45);MS.pop();
+    MS.push();M4.tr(m,s*.28,-.24,-.05);M4.rz(m,-s*.35);sp(m,0,0,0,.42,.46,.04,BWING.low,1,.25);for(const z of [.03,-.03]){sp(m,0,-.05,z,.15,.15,.02,'#46e6ff',1,.5);sp(m,s*.08,.1,z,.08,.08,.02,'#ffd23f',1,.5);}MS.pop();
+    MS.pop();}
+  if(R()<(fast?.25:.05)&&typeof burst==='function')burst(p.x+Rr(-.6,.6),p.y+1.2,p.z+Rr(-.6,.6),['#ff7ad0','#ffd23f','#46e6ff','#c77dff'],1,.6,.08,1);};}
+// ---------- her portrait (until she has a picture card): the wings behind her and the antennae ----------
+{const _dp=drawPortrait;drawPortrait=function(cv,C,sil){_dp(cv,C,sil);if(!C||C.id!=='basma'||sil)return;try{if(typeof CARD_IDS!=='undefined'&&CARD_IDS.has(C.id))return;const x=cv.getContext('2d'),u=cv.width/100;
+  const E=(a,b,rx,ry,rot,c)=>{x.fillStyle=c;x.beginPath();x.ellipse(a*u,b*u,rx*u,ry*u,rot,0,TAU);x.fill();};const O=(a,b,r,c)=>E(a,b,r,r,0,c);
+  // behind the hero: the spots first, then the wings under them
+  x.save();x.globalCompositeOperation='destination-over';for(const s of [-1,1]){O(50+s*36,52,4,'#ffd23f');O(50+s*38,66,3,'#46e6ff');O(50+s*32,88,3.2,'#46e6ff');}
+  for(const s of [-1,1]){E(50+s*30,58,18,22,s*.5,'#ff7ad0');E(50+s*26,86,11,13,s*.3,'#c77dff');}x.restore();
+  x.strokeStyle='#3a2a55';x.lineWidth=1.6*u;x.lineCap='round';for(const s of [-1,1]){x.beginPath();x.moveTo((50+s*8)*u,20*u);x.lineTo((50+s*16)*u,4*u);x.stroke();O(50+s*16,4,3.4,'#ff7ad0');}}catch(e){}};}
+MV('Butterfly Basma','بسمة الفراشة');MV('Butterfly Basma flutters in! Purple suit, blue hair and big colourful butterfly wings. She can fly. Pick her on the first screen or in 🦸','بسمة الفراشة وصلت! بزي بنفسجي وشعر أزرق وأجنحة فراشة ملونة كبيرة. تقدر تطير. اخترها في الشاشة الأولى أو في 🦸');
 // ================= v26.2: block heroes dressed like their picture cards =================
 // Each hero's boots, gloves, legs and trims now come from their card. They are used while the hero wears their own outfit
 // (no shop costume, power suit or shop suit colour on top), see "K" in drawHero (04_models.js).
@@ -11558,6 +11591,47 @@ function drawCardBody(m,K,A,t,p,suit,acc){
   if(K.sk==='leaf'){co(m,0,.62,0,.86,.4,.6,suit,6);for(let k=0;k<8;k++){const a=k/8*TAU;MS.push();M4.tr(m,Math.sin(a)*.4,.44,Math.cos(a)*.28);M4.ry(m,a);M4.rx(m,Math.PI);co(m,0,0,0,.16,.16,.06,k%2?'#7ed957':'#3fae4a',6);MS.pop();}}
   else if(K.sk==='tutu'){co(m,0,.64,0,.94,.36,.68,suit,6);co(m,0,.6,0,.98,.22,.72,shd(suit,.9),6);}}
 MV('Heroes dressed like their cards','أبطال بملابس بطاقاتهم');MV('Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders','كل بطل من المكعبات صار عنده الحذاء والقفازات والألوان من بطاقته. آية الفضائية عندها سماعاتها الوردية، والشعر الطويل ينزل على الكتفين');
+// ================= v26.4: Luna, a mermaid hero in a blue mermaid costume (open to everyone from the start) =================
+// Instead of legs she has a mermaid tail (see drawMerTail): it sways while she moves on land, curls back on the ground when she
+// stands, flaps when she swims and points forward when she sits in a car. Pearl Shot and a Water Twister, swims fast, dives deep.
+CHARS.push({id:'mluna',bg:'#46b0ff',g:'girl',n:MV('Luna','لونا'),skin:'#e0a67a',hs:'long',hair:'blond',suit:'blue',cape:'none',acc:'',em:'shell',perk:'swim',a:'pearl',b:'whirl',
+  cs:'#2f8fff',ca:'#ffe9a8',hat:'pearlmoon',
+  // the mermaid costume: the tail (mer), its scales (mers) and fin (merf); blue wrist cuffs; the hips are the top of the tail
+  mer:'#1e6fe0',mers:'#7ec8ff',merf:'#46e6ff',pt:'#1e6fe0',gc:'#46b0ff',ec:'#ffe9a8'});
+CHARBY.mluna=CHARS[CHARS.length-1];HMOVE.mluna=['swim','dive'];HERO_TAGS.mluna=['cool'];
+REWARD_HATS.add('pearlmoon');
+// a band of pearls with a little golden crescent moon at the front
+{const _dhx=drawHatX;drawHatX=function(m,hat,acc,hair,t){if(hat!=='pearlmoon')return _dhx(m,hat,acc,hair,t);
+  for(let k=0;k<12;k++){const a=k/12*TAU;sp(m,Math.sin(a)*.34,.64,Math.cos(a)*.31-.02,.1,.1,.1,'#fff6e8',3,.25);}
+  MS.push();M4.tr(m,0,.8,.24);for(let k=0;k<6;k++){const a=-1.15+k*.46;bx(m,Math.cos(a)*.1,Math.sin(a)*.1,0,.07,.07,.05,'#ffd23f',3,.5);}MS.pop();sp(m,0,.67,.31,.07,.07,.05,'#46e6ff',8,.6);};}
+// a scallop shell on the chest
+{const _em=drawEmblem;drawEmblem=function(m,C,acc){if(C.em!=='shell')return _em(m,C,acc);
+  for(let k=-2;k<=2;k++){MS.push();M4.rz(m,k*.34);bx(m,0,.07,0,.045,.2,.03,acc,1,.7);MS.pop();}sp(m,0,-.04,0,.13,.09,.04,acc,1,.7);};}
+// ---------- the mermaid tail (body space: the hips are at y .64, the front is +z) ----------
+function drawMerTail(m,K,A,t,p){const tc=K.mer,sc=K.mers||'#ffffff',fc=K.merf||tc;const sw=Math.sin(A.walk||0)*(A.amp||0);
+  const sit=p.drive||A.pose==='meditate'||A.pose==='sleep',swim=!!p.swim,fly=(A.fly||0)>.01;const fl=t*7;
+  let b0=0,b1=0,b2=0,bz=sw*.2+Math.sin(t*1.7)*.025;
+  if(sit){b0=-1.45;bz=0;}else if(swim){b0=Math.sin(fl)*.25;b1=Math.sin(fl-1)*.3;b2=Math.sin(fl-2)*.35;bz=0;}
+  else if(fly){b0=.2+Math.sin(t*5)*.1;b1=.15;b2=.25;}else if(p.ko>0){bz=0;}else if(p.chute){b0=.15;b1=.15;}
+  else if(!p.ground&&(p.airT||0)>.05){b0=.12;b1=.25;b2=.35;}
+  MS.push();M4.tr(m,0,.66,0);M4.rx(m,b0);M4.rz(m,bz);
+  // a frilly edge where the top meets the tail
+  for(let k=0;k<10;k++){const a=k/10*TAU;MS.push();M4.tr(m,Math.sin(a)*.29,-.03,Math.cos(a)*.2);M4.rx(m,Math.PI);co(m,0,0,0,.13,.14,.08,fc,1,.15);MS.pop();}
+  rb(m,0,-.16,0,.53,.32,.36,tc,1);for(const [x,y] of [[-.13,-.1],[.13,-.1],[0,-.2],[-.13,-.29],[.13,-.29]])bx(m,x,y,.18,.1,.06,.02,sc,1,.2);
+  M4.tr(m,0,-.32,0);M4.rx(m,b1);M4.rz(m,bz*.8);
+  rb(m,0,-.12,0,.42,.24,.3,tc,1);for(const [x,y] of [[0,-.05],[-.1,-.15],[.1,-.15]])bx(m,x,y,.155,.09,.055,.02,sc,1,.2);
+  M4.tr(m,0,-.24,0);M4.rx(m,b2);M4.rz(m,bz*.6);rb(m,0,-.04,0,.26,.1,.22,tc,1);
+  // the fin: two wide lobes fanning out at the bottom, with white tips that turn up
+  M4.tr(m,0,-.07,0);sp(m,0,0,0,.2,.1,.16,fc,1,.15);
+  for(const s of [-1,1]){MS.push();M4.rz(m,s*(1.4+(swim?Math.sin(fl-2.6)*.15:0)));rb(m,0,-.17,0,.22,.36,.07,fc,1,.15);M4.tr(m,0,-.33,0);M4.rz(m,-s*.55);rb(m,0,-.06,0,.18,.15,.065,'#ffffff',1,.3);MS.pop();}
+  MS.pop();}
+// ---------- her portrait (until she has a picture card): the pearls and the moon ----------
+{const _dp=drawPortrait;drawPortrait=function(cv,C,sil){_dp(cv,C,sil);if(!C||C.id!=='mluna'||sil)return;try{if(typeof CARD_IDS!=='undefined'&&CARD_IDS.has(C.id))return;const x=cv.getContext('2d'),u=cv.width/100;
+  const O=(a,b,r,c)=>{x.fillStyle=c;x.beginPath();x.arc(a*u,b*u,r*u,0,TAU);x.fill();};for(let k=0;k<7;k++)O(30+k*6.7,18-Math.sin(k/6*Math.PI)*4,3,'#fff6e8');
+  x.fillStyle='#ffd23f';x.beginPath();x.arc(50*u,8*u,7*u,.6,TAU-.6,false);x.arc(54*u,6.5*u,5.5*u,TAU-1.1,1.1,true);x.fill();
+  for(const [a,b] of [[36,96],[50,94],[64,96]])O(a,b,3.4,'#7ec8ff');}catch(e){}};}
+MV('A mermaid hero in a blue mermaid costume, with a pearl crown and a little moon','بطلة حورية بحر بزي حورية أزرق، مع تاج من اللؤلؤ وقمر صغير');
+MV('Luna the mermaid','لونا حورية البحر');MV('Luna the mermaid joins the heroes! She swims super fast and dives deep. Pick her on the first screen or in 🦸','لونا حورية البحر انضمت للأبطال! تسبح بسرعة كبيرة وتغوص عميقًا. اخترها في الشاشة الأولى أو في 🦸');
 // ================= v26.3: 🌪️ Tornado Spin: every hero can whirl into a tornado in their own colours =================
 // Tap 🌪️ Spin (keyboard R, a gamepad's left trigger): the hero spins inside a tornado of their suit and trim colours for
 // 2.5 seconds, runs a little faster, and baddies that come close are hit and swirled away (enemy shots bounce off).
