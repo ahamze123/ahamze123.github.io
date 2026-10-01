@@ -2918,6 +2918,16 @@
    "limit": 40,
    "run": 6,
    "spent_estimate": 30
+  },
+  {
+   "at": "2026-10-01 15:47",
+   "heroes": [
+    "aya",
+    "kira",
+    "leo"
+   ],
+   "limit": 0,
+   "run": 7
   }
  ]
 }
