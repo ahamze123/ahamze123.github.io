@@ -373,3 +373,4 @@
 2026-10-01 13:09:38 [erik] rigging SUCCEEDED 100%
 2026-10-01 13:09:38 [drake] rigging IN_PROGRESS 63%
 2026-10-01 13:09:39 [erik] rigged: {"model": {"bytes": 1939496, "triangles": 20726, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35440, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30792, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-01 13:09:43 [sam] model task made 01a0f795-c2ff-7700-9a76-7ff023bdddd0
