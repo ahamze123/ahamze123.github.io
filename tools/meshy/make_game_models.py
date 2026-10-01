@@ -16,8 +16,11 @@ import glbtool
 NAMES = {'Idle': 'idle', 'Regular_Jump': 'jump', 'Right_Jab_from_Guard': 'punch', 'Victory_Cheer': 'cheer',
          'Big_Wave_Hello': 'wave', 'Knock_Down': 'ko', 'Chair_Sit_Idle_M': 'sit', 'Chair_Sit_Idle_F': 'sit', 'Swim_Forward': 'swim'}
 # the part of each move the game uses (seconds, None = all of it) and how many times a second it is sampled
-GAMECUT = {'walk': (None, None, 30), 'run': (None, None, 30), 'idle': (None, None, 15), 'jump': (0, 1.0, 30), 'punch': (0, 1.2, 30),
+GAMECUT = {'walk': (None, None, 30), 'run': (None, None, 30), 'idle': (None, None, 15), 'jump': (1.2, 2.0, 30), 'punch': (0, 1.2, 30),
            'cheer': (0, 3.6, 30), 'wave': (0, 3.0, 30), 'ko': (None, None, 30), 'sit': (None, None, 10), 'swim': (None, None, 20)}
+# better moves bought for one hero and shared with everybody: Meshy's 'Idle' is a fighting stance turned to the side and
+# its 'Regular Jump' is turned too, so every hero stands with Kira's 'Idle 3' and jumps with her 'Jump with Arms Open'
+BETTER = [('kira', 'x_try1.glb', {'Idle_3': 'idle', 'Jump_with_Arms_Open': 'jump'})]
 GIRLS = set('mia,layla,ruby,noor,aya,kat,fay,nora,bella,lulu,mira,wanda,salma,tala,zara,kira,bushra,yasmin,sama,lina,sara,amira,uma,aisha,rina'.split(','))
 
 
@@ -25,7 +28,10 @@ def build(out, dest, h, share, mode, raw=False):
     src = os.path.join(out, h)
     if not os.path.exists(os.path.join(src, 'model.glb')):
         return None
-    d = glbtool.Doc.load(os.path.join(src, 'model.glb'))
+    # the same model with its full-size picture (2048 pixels) when it was read again, else the smaller one
+    full = os.path.join(src, 'model_full.glb')
+    d = glbtool.Doc.load(full if os.path.exists(full) and '--small' not in sys.argv else os.path.join(src, 'model.glb'))
+    d.shrink_textures(2048, 90)
     d.J.pop('animations', None)
     got = []
     for f, name in (('walk.glb', 'walk'), ('run.glb', 'run')):
@@ -50,6 +56,17 @@ def build(out, dest, h, share, mode, raw=False):
             how = 'from ' + donor
         else:
             how = 'none'
+    for donor, f, names in BETTER:
+        p = os.path.join(out, donor, f)
+        if not os.path.exists(p):
+            continue
+        src = glbtool.Doc.load(p)
+        for old_name, new_name in names.items():
+            if h == donor:
+                glbtool.merge_animations(d, src, {old_name: new_name}, 'copy', only=[old_name])
+            else:
+                glbtool.retarget_world(d, src, {old_name: new_name}, only=[old_name])
+    fixed = glbtool.fix_arm_weights(d) if '--no-armfix' not in sys.argv else 0
     if not raw:
         for name, (t0, t1, fps) in GAMECUT.items():
             glbtool.resample_clip(d, name, t0, t1, fps)
@@ -57,7 +74,7 @@ def build(out, dest, h, share, mode, raw=False):
         glbtool.quantize_mesh(d)
     os.makedirs(dest, exist_ok=True)
     n = d.save(os.path.join(dest, h + '.glb'))
-    return {'hero': h, 'bytes': n, 'clips': got, 'moves': how}
+    return {'hero': h, 'bytes': n, 'clips': got, 'moves': how, 'fixed': fixed}
 
 
 def main(argv):
@@ -72,7 +89,7 @@ def main(argv):
         r = build(out, dest, h, share, mode, '--raw' in argv)
         if r:
             made.append(h)
-            print('%-8s %5.2f MB  %-10s %s' % (h, r['bytes'] / 1e6, r['moves'], ','.join(r['clips'])))
+            print('%-8s %5.2f MB  %-10s cape/hair fix %5d  %s' % (h, r['bytes'] / 1e6, r['moves'], r['fixed'], ','.join(r['clips'])))
     lst = os.path.join(dest, 'list.json')
     old = []
     if os.path.exists(lst):
