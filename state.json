@@ -1666,6 +1666,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "salma": {
+   "model": {
+    "id": "01a0f79a-4a50-7122-8721-fe88fa29a219",
+    "made": "2026-10-01 13:14",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "sam": {
    "model": {
     "credits": 30,
