@@ -1568,6 +1568,7 @@
    }
   },
   "mira": {
+   "extra": {},
    "full": {
     "bytes": 2867464,
     "pictures": [
@@ -1688,6 +1689,12 @@
    }
   },
   "noor": {
+   "full": {
+    "bytes": 2379204,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
