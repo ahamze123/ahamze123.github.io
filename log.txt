@@ -497,3 +497,10 @@
 2026-10-01 13:17:10 [bushra] model task made 01a0f79c-94fb-70d2-b67c-4599b5855cf1
 2026-10-01 13:17:11 [bushra] image-to-3d IN_PROGRESS 1%
 2026-10-01 13:17:11 [salma] rig task made 01a0f79c-8dcb-7001-ab58-578ff468d2a0
+2026-10-01 13:17:13 [salma] rigging IN_PROGRESS 10%
+2026-10-01 13:17:23 [salma] rigging IN_PROGRESS 36%
+2026-10-01 13:17:33 [salma] rigging IN_PROGRESS 63%
+2026-10-01 13:17:43 [salma] rigging IN_PROGRESS 90%
+2026-10-01 13:17:47 [tala] image-to-3d IN_PROGRESS 27%
+2026-10-01 13:17:53 [salma] rigging SUCCEEDED 100%
+2026-10-01 13:17:54 [salma] rigged: {"model": {"bytes": 1876852, "triangles": 20785, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 35476, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 30824, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
