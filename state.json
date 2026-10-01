@@ -1533,7 +1533,23 @@
     "status": "SUCCEEDED"
    }
   },
-  "zork": {}
+  "zork": {
+   "model": {
+    "id": "01a0f795-4a0f-7760-b60e-291ae3ddb1e9",
+    "made": "2026-10-01 13:09",
+    "run": 4,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  }
  },
  "runs": [
   {
