@@ -17,3 +17,4 @@
 2026-10-01 12:23:55 [leo] rigging IN_PROGRESS 36%
 2026-10-01 12:24:05 [leo] rigging IN_PROGRESS 63%
 2026-10-01 12:24:07 [kira] image-to-3d SUCCEEDED 100%
+2026-10-01 12:24:13 [kira] rig task made 01a0f76c-1070-769b-ad9b-7b767a542aab
