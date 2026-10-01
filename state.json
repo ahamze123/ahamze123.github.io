@@ -2071,6 +2071,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0f79f-93bd-7266-9811-33cb2016206a/output/preview.png?Expires=1791120169&Signature=NLdqHSGnI6V-szmh98aGcTx9StDDorN1jkwOdz8LF6gzfb5A0jr-jPyLBdLRR-wihRzmxajwWdavns1XTgsh41TaFOzqm-UEgwlEGeMiLJbd~achIQvMv2B8RYEWnZKHb2GLZllNBJh0y4WcGrOved3ahjnKNap5FAEYMshXqD2DHd70RzYGZ7cuvkJ6gqdIB70~2kPpCgFwoOMMsmeLu0j5M6fUyJdVX5psO1fxGo6jjA3KqMg7A7QKv~pe2QYv-p5dn8qiGRrvseGYeSJoF60voCh~Rrj04yBGYZmw4tRccakJ0X9IZLhV5bXHnt7Ffk9WJbQ3WN7N5~wV8zWp0g__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a0f7a1-ce22-73fd-9e9f-4cce0d63184d",
+    "made": "2026-10-01 13:22",
+    "model": "01a0f79f-93bd-7266-9811-33cb2016206a",
+    "status": "PENDING"
    }
   },
   "tala": {
