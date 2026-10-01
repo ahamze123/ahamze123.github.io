@@ -1169,6 +1169,7 @@
    }
   },
   "layla": {
+   "extra": {},
    "full": {
     "bytes": 2420756,
     "pictures": [
@@ -1383,6 +1384,12 @@
    }
   },
   "lulu": {
+   "full": {
+    "bytes": 3078056,
+    "pictures": [
+     "2048x2048 image/png"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
