@@ -108,6 +108,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "aya": {
+   "model": {
+    "id": "01a0f7a9-5ac2-7285-87e3-f364e9bd9944",
+    "made": "2026-10-01 13:31",
+    "run": 5,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "bella": {
    "model": {
     "credits": 30,
