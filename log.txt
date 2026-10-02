@@ -964,3 +964,4 @@
 2026-10-02 21:56:21 [p_carrot] image-to-3d IN_PROGRESS 84%
 2026-10-02 21:56:24 [p_mushroom] image-to-3d IN_PROGRESS 84%
 2026-10-02 21:56:31 [p_carrot] image-to-3d SUCCEEDED 100%
+2026-10-02 21:56:33 [p_carrot] model saved (no skeleton): {"bytes": 166632, "triangles": 1569, "joints": 0, "clips": []}
