@@ -835,3 +835,5 @@
 2026-10-02 21:50:04 [p_castle] image-to-3d SUCCEEDED 100%
 2026-10-02 21:50:06 [p_castle] model saved (no skeleton): {"bytes": 2246148, "triangles": 40499, "joints": 0, "clips": []}
 2026-10-02 21:50:08 [p_appletree] model task made 01a0fe98-9673-7513-9f82-b7adec7d491a
+2026-10-02 21:50:10 [p_appletree] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:50:19 [p_bunny] image-to-3d SUCCEEDED 100%
