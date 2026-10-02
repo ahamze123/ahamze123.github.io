@@ -2090,6 +2090,23 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9c-1bc2-7304-8d22-f08b2f111763/output/preview.png?Expires=1791237321&Signature=gPE0yHBcRwGjtL82ueIWMk0WiKG3VNcOX3ANJBy1syRz40y3gb-~XK72TrR~8NaFr5hIuLM2kOMCyS29e8TRhku7mvQia9qtaSSnvYJOvX0ZgwlBCYxLtEKxTW5Jipf6oQVHV8MoRuLjWC5tbl5mBvDIQQKuMvp8SKULklcUusNMpkdQSoTaHDHqXaZrljcxnRn78LtF6g~Mz18RDnEYptitYORR6ZiK0DvXc9MBUZLUFEyvfOT25qEpgCAsypS99vTj34IZU5okdwML7CNjuyxFjKRhztWc1SB~2ih7cLE~psv105DVAnn8XzIGpw7102K78yTUL3lVuhkxJhS64A__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
+  "p_carrot": {
+   "model": {
+    "id": "01a0fe9d-7c28-772c-82e6-7d82980728d5",
+    "made": "2026-10-02 21:55",
+    "run": 15,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 1500,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_castle": {
    "model": {
     "credits": 30,
