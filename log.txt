@@ -957,3 +957,6 @@
 2026-10-02 21:56:10 [p_carrot] image-to-3d IN_PROGRESS 67%
 2026-10-02 21:56:11 [p_apple] model task made 01a0fe9e-21a8-751c-9973-d123937999cd
 2026-10-02 21:56:12 [p_star] model task made 01a0fe9e-21a6-74c8-991c-bef542ec442a
+2026-10-02 21:56:13 [p_apple] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:56:14 [p_lantern] image-to-3d SUCCEEDED 100%
+2026-10-02 21:56:14 [p_star] image-to-3d IN_PROGRESS 1%
