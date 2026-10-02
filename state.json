@@ -3336,6 +3336,14 @@
    "limit": 0,
    "run": 8,
    "spent_estimate": 0
+  },
+  {
+   "at": "2026-10-02 09:33",
+   "heroes": [
+    "mluna"
+   ],
+   "limit": 40,
+   "run": 9
   }
  ]
 }
