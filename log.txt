@@ -773,3 +773,7 @@
 2026-10-02 20:48:13 [prism] image-to-3d IN_PROGRESS 84%
 2026-10-02 20:48:33 [prism] image-to-3d SUCCEEDED 100%
 2026-10-02 20:48:38 [prism] rig task made 01a0fe60-3df8-76ea-aa6f-4a4c8e446163
+2026-10-02 20:48:39 [prism] rigging IN_PROGRESS 10%
+2026-10-02 20:48:49 [prism] rigging IN_PROGRESS 36%
+2026-10-02 20:49:00 [prism] rigging SUCCEEDED 100%
+2026-10-02 20:49:00 [prism] rigged: {"model": {"bytes": 1985300, "triangles": 20755, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58016, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47392, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
