@@ -730,3 +730,4 @@
 2026-10-02 09:35:53 [mluna] rigged: {"model": {"bytes": 2403084, "triangles": 20872, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57672, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47024, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-02 09:35:57 [mluna] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3401852}
 2026-10-02 09:35:59 run finished; credits used by new tasks (estimate): 35
+2026-10-02 10:05:07 run 10 heroes ['basma'] max credits 40

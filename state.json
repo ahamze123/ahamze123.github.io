@@ -3406,6 +3406,14 @@
    "limit": 40,
    "run": 9,
    "spent_estimate": 35
+  },
+  {
+   "at": "2026-10-02 10:05",
+   "heroes": [
+    "basma"
+   ],
+   "limit": 40,
+   "run": 10
   }
  ]
 }
