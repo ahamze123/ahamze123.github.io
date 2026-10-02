@@ -799,3 +799,17 @@
 2026-10-02 21:46:19 [p_bunny] model task made 01a0fe95-14ae-73b2-8ad0-793d6f25a9db
 2026-10-02 21:46:19 [p_dot] model task made 01a0fe95-14c3-705f-9dc7-10d41c1abbcf
 2026-10-02 21:46:19 [p_pip] model task made 01a0fe95-14c2-7077-9bda-29e0cb1a37f9
+2026-10-02 21:46:20 [p_luna] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:46:22 [p_bunny] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:46:21 [p_mimi] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:46:23 [p_dot] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:46:24 [p_pip] image-to-3d IN_PROGRESS 3%
+2026-10-02 21:46:45 [p_dot] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:46:45 [p_mimi] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:46:45 [p_bunny] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:46:45 [p_pip] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:47:15 [p_luna] image-to-3d IN_PROGRESS 36%
+2026-10-02 21:47:26 [p_dot] image-to-3d IN_PROGRESS 50%
+2026-10-02 21:47:46 [p_dot] image-to-3d IN_PROGRESS 99%
+2026-10-02 21:47:56 [p_mimi] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:47:56 [p_dot] image-to-3d SUCCEEDED 100%
