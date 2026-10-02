@@ -18,6 +18,11 @@ For every hero in queue.json 'heroes':
   4. more moves to try, queue.json 'extra': {"hero": {"set": [action ids]}}  ->  <hero>/x_<set>.glb   3 credits each
 A step that already worked is never made again, unless the hero is listed in 'redo'.
 No more than 'max_credits' are spent in one run.
+
+Pictures (queue.json 'images', made before the heroes): {"name": {"prompt": "...", "ai_model": "gpt-image-2",
+"aspect_ratio": "2:3", "refs": ["tools/meshy/pics/kira.jpg", "out:images/x.png"]}} -> images/<name>.png
+  text to image (no refs) or image to image (1-5 reference pictures from the repo, or 'out:' a picture made earlier)
+  3 to 12 credits each. A picture that worked is never made again, unless its name is in 'redo_images'.
 """
 import base64, json, os, subprocess, sys, threading, time, traceback, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -32,6 +37,8 @@ KEY = os.environ.get('MESHY_API_KEY', '').strip()
 POLL = float(os.environ.get('MESHY_POLL', '10'))
 PUSH = os.environ.get('MESHY_PUSH', '') == '1'
 COST = {'model': 30, 'rig': 5, 'anim': 3}
+IMG_COST = {'nano-banana': 3, 'nano-banana-2': 6, 'nano-banana-pro': 9, 'gpt-image-2': 12, 'gpt-image-2-5-flare': 12, 'gpt-image-2-5-sunburst': 12}
+ROOT = os.path.dirname(os.path.dirname(HERE))
 
 lock = threading.Lock()
 state = {'heroes': {}, 'runs': []}
@@ -188,6 +195,59 @@ def anim_task(h, slot, key, g, ids, path):
     return True
 
 
+def ref_uri(ref):
+    """a reference picture as a data URI: a path in the repo, or 'out:<path>' for a picture made in an earlier run"""
+    p = os.path.join(OUT, ref[4:]) if ref.startswith('out:') else os.path.join(ROOT, ref)
+    raw = open(p, 'rb').read()
+    mime = 'image/png' if raw[:4] == b'\x89PNG' else 'image/jpeg'
+    return 'data:%s;base64,%s' % (mime, base64.b64encode(raw).decode())
+
+
+def do_image(name, job, cfg):
+    who = '[img %s]' % name
+    S = state.setdefault('images', {})
+    I = S.get(name)
+    if I and name in (cfg.get('redo_images') or []) and I.get('run') != cfg.get('run'):
+        S.setdefault('_old', []).append(I); I = None
+    try:
+        if not I or I.get('status') in ('FAILED', 'CANCELED', 'EXPIRED'):
+            model = job.get('ai_model', 'nano-banana-pro')
+            if not budget(IMG_COST.get(model, 12)):
+                log(who, 'skipped: this run may not spend more credits'); return
+            body = {'ai_model': model, 'prompt': job['prompt']}
+            for k in ('aspect_ratio', 'remove_background', 'generate_multi_view', 'pose_mode'):
+                if k in job: body[k] = job[k]
+            refs = (job.get('refs') or [])[:5]
+            kind = 'image-to-image' if refs else 'text-to-image'
+            if refs: body['reference_image_urls'] = [ref_uri(r) for r in refs]
+            r = api('POST', '/openapi/v1/%s' % kind, body)
+            I = S[name] = {'id': r['result'], 'kind': kind, 'status': 'PENDING', 'run': cfg.get('run'), 'made': time.strftime('%Y-%m-%d %H:%M'),
+                           'settings': {k: v for k, v in body.items() if k != 'reference_image_urls'}, 'refs': refs}
+            log(who, kind, 'task made', I['id'])
+            save(True, 'picture %s: task' % name)
+        if I['status'] != 'SUCCEEDED' or not all(os.path.exists(os.path.join(OUT, f)) for f in I.get('files') or ['-']):
+            t = wait(I['kind'], I['id'], who)
+            I.update(status=t.get('status'), credits=t.get('consumed_credits'), error=(t.get('task_error') or {}).get('message') or None)
+            if t.get('status') != 'SUCCEEDED':
+                log(who, 'picture FAILED:', I.get('error')); save(True, 'picture %s failed' % name); return
+            urls = t.get('image_urls') or []
+            I['files'] = []
+            for k, u in enumerate(urls):
+                base = os.path.join(OUT, 'images', name + ('' if len(urls) == 1 else '_%d' % k))
+                download(u, base + '.tmp')
+                head = open(base + '.tmp', 'rb').read(4)
+                path = base + ('.png' if head == b'\x89PNG' else '.jpg')
+                os.replace(base + '.tmp', path)
+                I['files'].append(os.path.relpath(path, OUT))
+            log(who, 'saved', I['files'])
+            save(True, 'picture %s' % name)
+    except Exception as e:
+        log(who, 'ERROR', e)
+        traceback.print_exc()
+        if I is not None: I['last_error'] = str(e)[:500]
+        save(True, 'picture %s: error' % name)
+
+
 def do_hero(h, cfg):
     who = '[%s]' % h
     S = state['heroes'].setdefault(h, {})
@@ -340,6 +400,10 @@ def main():
         with open(os.path.join(OUT, 'library.json'), 'w') as f: json.dump(lib, f, indent=1)
         log('animation library saved')
     save(True, 'run %s started' % cfg.get('run'))
+    jobs = cfg.get('images') or {}
+    if jobs:
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            list(ex.map(lambda kv: do_image(kv[0], kv[1], cfg), jobs.items()))
     heroes = [h for h in (cfg.get('heroes') or []) if h]
     with ThreadPoolExecutor(max_workers=int(cfg.get('parallel', 3))) as ex:
         list(ex.map(lambda h: do_hero(h, cfg), heroes))

@@ -16,6 +16,7 @@ then put into the game's `models/` folder.
 - `model`, `rig`: Meshy settings. `per`: settings for one hero (for example `{"aya": {"target_polycount": 25000}}`).
 - `anims`: `heroes` that get animations, and the library `action_ids` (up to 10).
 - `redo`: heroes whose model should be made again (costs credits again).
+- `images`: pictures to make first (text to image, or image to image with 1-5 reference pictures), saved as `images/<name>.png` in `meshy-out`; `redo_images` makes one again.
 
 `glbtool.py` makes the pictures inside a model smaller, keeps only the skeleton and clips, and copies clips from one
 model to another (`python3 glbtool.py` for help).
