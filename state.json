@@ -2159,6 +2159,7 @@
     "rig": "01a0fe99-4228-7075-bd5c-986ab420563d",
     "status": "SUCCEEDED"
    },
+   "extra": {},
    "full": {
     "bytes": 5886296,
     "pictures": [
@@ -4037,7 +4038,8 @@
     "p_appletree"
    ],
    "limit": 300,
-   "run": 14
+   "run": 14,
+   "spent_estimate": 299
   }
  ]
 }
