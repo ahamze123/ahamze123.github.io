@@ -1996,6 +1996,12 @@
    }
   },
   "prism": {
+   "full": {
+    "bytes": 2940140,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
