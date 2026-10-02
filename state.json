@@ -3323,7 +3323,9 @@
   "prism_pic_c": {
    "credits": 12,
    "error": null,
-   "files": [],
+   "files": [
+    "images/prism_pic_c.png"
+   ],
    "id": "01a0fe4f-e094-7437-bdf4-20570c873daa",
    "kind": "image-to-image",
    "made": "2026-10-02 20:30",
