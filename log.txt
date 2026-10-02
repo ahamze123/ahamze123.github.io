@@ -1092,3 +1092,4 @@
 2026-10-02 23:26:30 [p_bear] model saved (no skeleton): {"bytes": 1695256, "triangles": 20436, "joints": 0, "clips": []}
 2026-10-02 23:26:38 [p_mermaid] image-to-3d SUCCEEDED 100%
 2026-10-02 23:26:40 [p_mermaid] model saved (no skeleton): {"bytes": 1806804, "triangles": 20312, "joints": 0, "clips": []}
+2026-10-02 23:26:42 run finished; credits used by new tasks (estimate): 174
