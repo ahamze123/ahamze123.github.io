@@ -861,3 +861,4 @@
 2026-10-02 21:51:22 [p_cottage] image-to-3d SUCCEEDED 100%
 2026-10-02 21:51:22 [p_luna] animation task made anim 01a0fe99-b9a6-7595-9ec7-baba865f1105 [243, 415, 460, 44, 28, 298, 405, 118]
 2026-10-02 21:51:24 [p_appletree] model saved (no skeleton): {"bytes": 804556, "triangles": 20632, "joints": 0, "clips": []}
+2026-10-02 21:51:25 [p_cottage] model saved (no skeleton): {"bytes": 1193432, "triangles": 20413, "joints": 0, "clips": []}
