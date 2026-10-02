@@ -3789,6 +3789,11 @@
    "status": "PENDING"
   },
   "p_mushroom": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_mushroom.png"
+   ],
    "id": "01a0fe9b-3b14-707a-b7b6-06024d0920b4",
    "kind": "text-to-image",
    "made": "2026-10-02 21:53",
@@ -3799,7 +3804,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute big red toadstool mushroom for a children's 3D game: a round red cap with white spots and a thick cream stem. Seen from the side, no ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_rock": {
    "credits": 9,
