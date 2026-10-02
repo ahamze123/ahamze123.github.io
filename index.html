@@ -7677,8 +7677,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:49,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:50,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🔉',t:'Calmer sounds',s:'Walking and jumping are quiet now: no more bangs when you land, softer jumps, and not so many sounds at once. Footsteps are off (turn them on in Settings if you like them, now soft and light)'},
+  {ic:'🐾',t:'Your pet, your choice',s:'Pets come out only when you call them: tap 🐾 and pick one. Tap 🐾 › 🏠 Send home to put your pet away. New pets from missions wait at home for you'},
+  {ic:'🌈',t:'Captain Prism has her own card',s:'The Story 2 hero now has her picture card and her own 3D look, like every other hero'},
   {ic:'🌈',t:'Story 2: The Rainbow Thief',s:'Finished the story? A new adventure starts! Professor Gloom hates colours and fun, and his grey airship is draining the colours from the Fun Park, the Mushroom Forest, Coral Cove, Frosty Peaks and the Sky Kingdom. Find the 6 Rainbow Gems, fire the Rainbow Cannon and beat him in his Gloom Mech. Open the Story Book to see it'},
   {ic:'🐠',t:'The sea is alive!',s:'Fish, clownfish, pufferfish, seahorses, crabs, octopuses, jellyfish, sea turtles, dolphins, friendly sharks and manta rays live all around the islands, and seals and narwhals in the cold sea by Frostpeak. Swim close to them to fill your Sea Album (Menu, Sea Album)'},
   {ic:'🤿',t:'Every hero can dive',s:'In the sea, hold ⬇ (or Shift) to swim down and let go to swim up. Watch your air bubbles! Divers and the Diving Helmet never run out of air'},
@@ -10405,7 +10408,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.3';window.BB_VER=BB_VER;
+const BB_VER='27.4';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -14414,6 +14417,104 @@ MV('Every hero can dive','كل الأبطال يستطيعون الغوص');MV('
 MV('Ride sea animals','اركب حيوانات البحر');MV('Swim next to a sea turtle, a dolphin or a manta ray and press Use to ride it. A dolphin leaps out of the water when you press jump!','اسبح بجانب سلحفاة بحرية أو دلفين أو سمكة مانتا واضغط «استخدم» لتركبها. الدلفين يقفز من الماء عندما تضغط القفز!');
 MV('Sea missions','مهمات البحر');MV('Captain Gill on the Sunset pier, Dr. Pearl on the beach east of Star Harbor and Iris the Ice Diver at Frostpeak need your help in the sea. They give sea pets: a clownfish, a pufferfish, a seahorse, a little octopus, a baby dolphin and a baby shark!','القبطان جِل على رصيف الغروب، والدكتورة لؤلؤة على الشاطئ شرق ميناء النجوم، وآيريس غوّاصة الجليد عند قمة الصقيع يحتاجون مساعدتك في البحر. يعطونك حيوانات أليفة بحرية: سمكة مهرج، وسمكة منتفخة، وحصان بحر، وأخطبوطًا صغيرًا، ودلفينًا صغيرًا، وقرشًا صغيرًا!');
 MV('Sunken treasure','كنز غارق');MV('Treasure chests, pearl clams and two shipwrecks are hidden on the sea floor','صناديق كنز ومحارات لؤلؤ وسفينتان غارقتان مخبأة في قاع البحر');
+// ================= v27.4: calmer sounds while you walk around =================
+// Walking and jumping were noisy: a footstep on every step (with a deep thump in it, six a second when you run), a "bam"
+// on many landings (every jump for heavy heroes, wild animals and robots, every super jump), pets barking every few
+// seconds, and lots of small sounds piling up with a long room echo. Now:
+// - footsteps are off unless you switch them on (⏸ › ⚙️ Settings › Footsteps). When on, they are soft, light taps
+//   without the thump or the echo, at most about three a second (Titan's giant steps follow the same switch)
+// - landing only makes a sound after a real fall, and a softer one; jumps are softer too
+// - pets bark, purr or chirp at most every 25 seconds by themselves (always when you pet them, feed them or play)
+// - when many sounds come at once, the small ones are left out (big ones like coins, prizes and buttons always play),
+//   coins picked up together make one jingle, and the room echo is quieter
+const QUIET={steps:false,stepT:-9,recent:[],dry:null,mute:false,jump:false,coinT:-9,petT:-99,petAct:-99};
+const QUIET_KEEP=new Set(['click','nope','open','coin','coin2','coin3','gold','chest','buy','heal','level','win','mission','boss','heroUnlock','join','team','honk','toot','airhorn']);
+// ---------- the sound bank: softer jumps and landings, new soft footsteps, a quieter echo, a dry line for footsteps ----------
+{const _bk=SND.bank;SND.bank=function(c){_bk.call(this,c);try{const G0=this.G;
+  G0.jump=.12;G0.djump=.13;G0.land=.12;G0.thud=Math.min(G0.thud||.22,.17);G0.stomp=.12;G0.hoof=.06;G0.stroke=.05;G0.woof=.13;
+  const T=Math.PI*2,E=Math.exp,S=Math.sin,rnd=()=>Math.random()*2-1;
+  const svf=()=>{let lo=0,bd=0;return (x,fc,q,sr)=>{const f=2*S(Math.PI*Math.min(fc,sr/6)/sr);lo+=f*bd;const hi=x-lo-q*bd;bd+=f*hi;return bd;};};
+  // a short, light tap: no deep thump, no long tail
+  const tap=kind=>this.mk(c,kind==='snow'?.08:.06,(d,sr,n)=>{const bp=svf();let lp=0;for(let i=0;i<n;i++){const t=i/sr,z=rnd();
+      if(kind==='hard')d[i]=bp(z,2700,.9,sr)*Math.min(1,t/.0015)*E(-t*130)+S(T*640*t)*E(-t*95)*.1;
+      else if(kind==='grass'){lp+=(z-lp)*.28;d[i]=lp*Math.min(1,t/.008)*E(-t*62);}
+      else if(kind==='sand')d[i]=bp(z,3400,1,sr)*Math.min(1,t/.01)*E(-t*58);
+      else if(kind==='snow')d[i]=bp(z,2000,.8,sr)*(Math.random()<.3?1:.25)*Math.min(1,t/.006)*E(-t*48);
+      else d[i]=(S(T*560*t)+.3*S(T*1120*t))*E(-t*90)*.55+bp(z,2500,.8,sr)*E(-t*210)*.35;}});
+  for(const k of ['grass','hard','sand','snow','wood'])this.gen['st_'+k]=()=>[0,1,2].map(()=>tap(k));
+  G0.st_grass=.026;G0.st_hard=.022;G0.st_sand=.024;G0.st_snow=.028;G0.st_wood=.024;
+  if(AU.send)AU.send.gain.value=.1;
+  if(AU.comp){QUIET.dry=c.createGain();QUIET.dry.gain.value=1;QUIET.dry.connect(AU.comp);}}catch(e){console.error('calm sounds',e);}};}
+// ---------- every sound effect: footsteps, crowd control, one jingle for coins together ----------
+{const _pl=SND.play;SND.play=function(name,v=1,rate=1,pan,delay=0){
+  const now=performance.now()/1000;const step=typeof name==='string'&&name.startsWith('st_');
+  if(step){if(!QUIET.steps)return true;if(now-QUIET.stepT<.28&&now>=QUIET.stepT)return true;QUIET.stepT=now;v*=.85+Math.random()*.3;}
+  if(QUIET.mute&&/^(thud|clang|place|slam|stomp)$/.test(name))return true;
+  if(QUIET.jump&&name!=='jump')v*=.5;
+  if(/^coin/.test(name)){if(now-QUIET.coinT<.09&&now>=QUIET.coinT)return true;QUIET.coinT=now;}
+  const R=QUIET.recent;while(R.length&&(now-R[0]>.35||now<R[0]))R.shift();
+  if(!QUIET_KEEP.has(name)){const vol=(this.G[name]||1)*v*AU.pv;if((R.length>=4&&vol<.12)||R.length>=7)return true;}
+  let r;if(step&&QUIET.dry&&AU.bus){const b=AU.bus;AU.bus=QUIET.dry;try{r=_pl.call(this,name,v,rate,pan,delay);}finally{AU.bus=b;}}
+  else r=_pl.call(this,name,v,rate,pan,delay);
+  if(r&&!step)R.push(now);return r;};}
+// Titan's giant steps (a deep tone and a little noise on every step) follow the footsteps switch, and are softer
+{const _t=AU.tone;AU.tone=function(f,d,type,v,...a){if(f===58&&d===.16&&type==='sine'){if(!QUIET.steps)return;v*=.45;}return _t.call(this,f,d,type,v,...a);};
+ const _n=AU.noise;AU.noise=function(d,v,f,...a){if(d===.06&&f===400){if(!QUIET.steps)return;v*=.45;}return _n.call(this,d,v,f,...a);};}
+// ---------- landings: only a real fall makes a sound ----------
+{const _l=SFX.land;SFX.land=function(){if(ME&&!ME.veh&&ME.landV<0&&ME.landV>-17)return;return _l.apply(this,arguments);};}
+// heavy heroes, wild animals, robots and skaters: their landing sound only after a fall of 3.5 m or more (the dust stays)
+{const _ml=moveLanded;moveLanded=function(p,fall,S0){if(fall<3.5&&!(typeof MOV!=='undefined'&&MOV.super)){QUIET.mute=true;try{return _ml.apply(this,arguments);}finally{QUIET.mute=false;}}return _ml.apply(this,arguments);};}
+// jumps: the hero's extra jump sound (robot clank, ninja whoosh, sparkles, skateboard click) at half loudness
+{const _j=SFX.jump;SFX.jump=function(){QUIET.jump=true;try{return _j.apply(this,arguments);}finally{QUIET.jump=false;}};}
+// ---------- pets: at most one sound every 25 seconds by themselves; always when you play with them ----------
+{const _ps=petSound;petSound=function(k){const now=performance.now()/1000;const act=now-QUIET.petAct<1.5;if(!act&&now-QUIET.petT<25)return;QUIET.petT=now;return _ps.apply(this,arguments);};}
+for(const nm of ['petPet','petPat','petTrick','petFeed','petBath','petThrow'])if(typeof window[nm]==='function'){const f0=window[nm];window[nm]=function(...a){QUIET.petAct=performance.now()/1000;return f0.apply(this,a);};}
+// ---------- ⏸ › ⚙️ Settings › Footsteps: On / Off (off at first) ----------
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='set'||$('ps_steps'))return r;const s=$('ps_snd');if(!s)return r;
+  const b=document.createElement('button');b.className='mb';b.id='ps_steps';b.textContent=trf('Footsteps: {0}',tr(QUIET.steps?'On':'Off'));
+  b.onclick=()=>{QUIET.steps=!QUIET.steps;QUIET.stepT=-9;b.textContent=trf('Footsteps: {0}',tr(QUIET.steps?'On':'Off'));SFX.click&&SFX.click();saveSoon();};s.parentNode.insertBefore(b,s.nextSibling);}catch(e){noteErr('calm settings',e);}return r;};}
+{const _es=extraSave;extraSave=function(){const o=_es();o.fst=QUIET.steps?1:0;return o;};}
+{const _el=extraLoad;extraLoad=function(x){_el(x);QUIET.steps=!!(x&&x.fst);};}
+MV('Footsteps: {0}','وقع الأقدام: {0}');
+// ================= v27.4: your pet comes out only when you call it =================
+// Pets came out by themselves: a pet won on a mission or found in the sea joined you at once and followed you everywhere,
+// and the only way to send it away was hidden in the Hero Shop. Now:
+// - a new pet won on a mission waits at home ("Tap 🐾 to take it with you"); a pet you buy in the Hero Shop still comes along
+// - 🐾 › 🏠 Send home: your pet goes home in a puff of sparkles
+// - 🐾 stays at the top while your pets are at home (a little faded): tap it and pick a pet to call it back
+function petSendHome(){const pr=prof();if(!pr||!pr.pet)return;const id=pr.pet,p=PETST.me;
+  if(p)burst(p.x,p.y+.5,p.z,['#ffffff','#ffcf3a','#ff9ec0'],18,3,.16,.6);
+  pr.pet='';PETST.me=null;PG.sniff=null;PG.ball=null;SFX.pop&&SFX.pop();toast('🏠 '+trf('{0} went home',petName(id,petRec(id))));saveSoon();petRender();}
+function petCall(id){const pr=prof();if(!pr||!(pr.pets||[]).includes(id)||!petDef(id))return;pr.pet=id;PETST.me=null;SFX.pop&&SFX.pop();
+  setTimeout(()=>{const p=PETST.me;if(p)burst(p.x,p.y+.5,p.z,['#ffffff','#ffcf3a','#7ef9ff'],18,3,.16,.6);},150);saveSoon();}
+{const _pr=petRender;petRender=function(){const el=$('petcare');if(!el||!PG.open)return;const pr=prof();const owned=(pr.pets||[]).filter(k=>petDef(k));
+  if(!pr.pet&&owned.length){
+    el.innerHTML=`<div class="pcp"><div class="pch"><span class="ic">🏠</span><b>${esc(tr('My pets'))}</b><button class="pcx" id="pc_x">✕</button></div>
+      <small>${esc(tr('Your pets are at home. Tap one to take it with you:'))}</small>
+      <div class="row">${owned.map(k=>{const q=petRec(k);return `<button class="pb alt" data-call="${k}">${petDef(k).i} ${esc(petName(k,q))} <small>${esc(trf('Lv {0}',petLv(q)+1))}</small></button>`;}).join('')}</div></div>`;
+    const x=el.querySelector('#pc_x');if(x)x.onclick=petClose;
+    el.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>{petCall(b.dataset.call);setTimeout(petRender,60);});return;}
+  _pr();
+  try{if(pr.pet&&!el.querySelector('#pc_home')){const f=el.querySelector('#pc_feed');if(f){const b=document.createElement('button');b.className='pb alt';b.id='pc_home';b.textContent='🏠 '+tr('Send home');b.onclick=petSendHome;f.parentNode.appendChild(b);}}}catch(e){noteErr('pet home',e);}};}
+// the 🐾 button stays while your pets are at home
+{const st=document.createElement('style');st.textContent='body.pethome #bpet{opacity:.6}';document.head.appendChild(st);}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const pr=prof();if(!pr)return;const own=(pr.pets||[]).some(k=>petDef(k));document.body.classList.toggle('haspet',!!pr.pet||own);document.body.classList.toggle('pethome',!pr.pet&&own);}catch(e){}};}
+// a pet won on a mission or found in the sea waits at home
+{const _gr=giveReward;giveReward=function(r){const pr=prof();const before=pr?pr.pet||'':'';const c=_gr.apply(this,arguments);
+  try{if(c&&r&&r.t==='pet'&&pr&&pr.pet===r.id&&before!==r.id){pr.pet=before;if(!before)PETST.me=null;}}catch(e){}return c;};}
+{const _ri=rewardInfo;rewardInfo=function(r){const o=_ri.apply(this,arguments);if(o&&r&&r.t==='pet')o.d='Tap 🐾 to take it with you';return o;};}
+// Story 2, The Lost Baby Animals: pets sniff out the cages, so the hunt says how to bring one
+{const _qs=qStart;qStart=function(id){const r=_qs.apply(this,arguments);try{if(id==='s2_pets')setTimeout(()=>{const pr=prof();if(pr&&!pr.pet&&(pr.pets||[]).length)toast('🐾 '+tr('Take a pet with you (tap 🐾): pets sniff out the baby animals!'));},2600);}catch(e){}return r;};}
+MV('Send home','أرسله إلى البيت');MV('{0} went home','{0} ذهب إلى البيت');MV('My pets','حيواناتي الأليفة');
+MV('Your pets are at home. Tap one to take it with you:','حيواناتك الأليفة في البيت. اضغط على واحد لتأخذه معك:');MV('Tap 🐾 to take it with you','اضغط 🐾 لتأخذه معك');
+MV('Take a pet with you (tap 🐾): pets sniff out the baby animals!','خذ حيوانًا أليفًا معك (اضغط 🐾): الحيوانات الأليفة تشمّ الحيوانات الصغيرة!');
+// ---------- what's new (Arabic) ----------
+MV('Calmer sounds','أصوات أهدأ');MV('Walking and jumping are quiet now: no more bangs when you land, softer jumps, and not so many sounds at once. Footsteps are off (turn them on in Settings if you like them, now soft and light)','المشي والقفز صارا هادئين: لا مزيد من الضربات عند الهبوط، وقفز أنعم، وأصوات أقل في نفس الوقت. صوت الأقدام مطفأ (شغّله من الإعدادات إن أحببته، صار ناعمًا وخفيفًا)');
+MV('Captain Prism has her own card','الكابتن بريزم لها بطاقتها الخاصة');MV('The Story 2 hero now has her picture card and her own 3D look, like every other hero','بطلة القصة 2 صار لها بطاقة بصورتها وشكل ثلاثي الأبعاد خاص بها، مثل كل الأبطال');MV('Your pet, your choice','حيوانك الأليف، اختيارك');MV('Pets come out only when you call them: tap 🐾 and pick one. Tap 🐾 › 🏠 Send home to put your pet away. New pets from missions wait at home for you','الحيوانات الأليفة تخرج فقط عندما تناديها: اضغط 🐾 واختر واحدًا. اضغط 🐾 ثم 🏠 أرسله إلى البيت لتعيده. الحيوانات الجديدة من المهمات تنتظرك في البيت');
+// ================= v27.4: Captain Prism gets her picture card and her 3D model, like every other hero =================
+// cards/prism_card.jpg and prism_face.jpg (her face in the 🦸 roster and next to your name), models/prism.glb (made with Meshy
+// from her standing picture, tools/meshy/pics/prism.jpg, with the same moves as the other girls)
+if(typeof CARD_IDS!=='undefined')CARD_IDS.add('prism');
 // ================= start =================
 boot();
 </script>

@@ -60,7 +60,7 @@ A brick hero adventure for kids, with two stories (8 chapters, then 6 more). It 
 - **🌪️ Tornado Spin.** Every hero can whirl into a tornado in their own colours: tap **🌪️ Spin** (keyboard **R**, a gamepad's left trigger). For 2.5 seconds baddies that come close are hit and swirled away and enemy shots bounce off; then the button fills up again in 4 seconds. Friends playing online see your tornado too.
 - **Block heroes dressed like their cards.** Every block hero wears the boots, gloves, legs and trims from their picture card: Astro Aya has her pink headphones, Karate Kira her red trims, Painter Sara her blue beret, cape and paint splashes, Robo Rina her pink buns, and long hair falls over the shoulders. Pick a different suit colour, a shop costume or a power suit and that shows instead.
 - **Real 3D heroes (optional).** Every hero also has a real 3D figure made from their picture, so they look just like their card. The kids liked the block figures better, so the block figures are what you see; turn on **Menu → Settings → 🧸 3D heroes** on a tablet to play with the 3D ones. They stand, walk, run, jump, punch, wave, cheer, sit in cars, swim and get knocked down with their own moves, and friends playing online see them too. A hero wearing a shop costume or a power suit shows as their block figure, and so does a hero for the moment their 3D file is still loading.
-- Every hero has a picture card, made by our family. The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
+- Every hero has a picture card, made by our family (Captain Prism's was made for her with Meshy, from her look in the game, like her 3D figure). The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
 - There are **52 heroes**: 25 boys and 27 girls. Each has their own look, a special skill and two attacks of their own.
 - **Luna the mermaid** 🧜‍♀️ (a blue mermaid costume with a tail and fin, a pearl crown with a little moon; she swims fast and dives deep) and **Butterfly Basma** 🦋 (purple suit, blue hair, big colourful pink butterfly wings; she can fly) can be played right from the start. Both have picture cards and real 3D figures too, made from the family's pictures (Luna's 3D figure wears scaly mermaid leggings with fin boots, so she can walk and run like the others).
@@ -154,6 +154,7 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 
 ## Pets that grow
 - Tap **🐾** (next to the other buttons when you have a pet, or **Menu → 🐾 My pet**) to look after your pet. The camera turns to your pet while the panel is open.
+- Your pet only comes out when you call it. **🐾 → 🏠 Send home** puts it away; while your pets are at home the 🐾 button looks faded, and tapping it shows them: tap one to take it with you. A pet won on a mission or found in the sea waits at home until you call it (a pet you buy in the Hero Shop comes along straight away).
 - **Feed it** (30 coins; it is full for a while), give it a **bath**, throw the **ball** and it fetches it back, or pet it with **✋ Use** next to it. Adventures count too: beating baddies and finishing quests with your pet along makes it grow.
 - Pets grow from **Baby** to **Little**, **Big**, **Grown-up** and **Super**, and get bigger at every level. Each level teaches a new trick (Sit, Spin, Jump, Roll over and a Super rainbow trick).
 - Bigger pets help more: a Little pet fetches coins from further away, a Big pet sniffs out treasure chests, golden bricks and hero coins (follow its paw prints), a Grown-up pet pounces on baddies, and a Super pet sparkles and brings double coins.
@@ -190,7 +191,8 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 - The songs stream from the `music` folder. Without internet the game plays its own calm backup music instead.
 - Cars in traffic don't beep. Your own horn is a soft, low toot, and jumping makes a soft swish.
 - People in the street cheer, say thank you and give friendly tips; they never say anything mean.
-- You hear footsteps on grass, sand, snow and wood, birds in the trees, waves on the beach and wind up high.
+- Walking is quiet: footsteps are off unless you turn on **Menu → Settings → Footsteps** (soft, light taps on grass, sand, snow and wood, at most about three a second). You hear birds in the trees, waves on the beach and wind up high.
+- Landings only make a sound after a real fall (not after every jump), jumps are soft, pets bark or purr by themselves at most every 25 seconds, coins picked up together make one jingle, and when lots happens at once the small sounds are left out.
 - Attacks, coins, doors, splashes and landings each have their own sound.
 
 ## Playing together online
