@@ -4172,6 +4172,11 @@
    "status": "SUCCEEDED"
   },
   "p_starfish": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_starfish.png"
+   ],
    "id": "01a0fee1-c5d7-7089-86b2-32bc18bb93bc",
    "kind": "text-to-image",
    "made": "2026-10-02 23:10",
@@ -4182,7 +4187,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute chubby orange starfish for a children's 3D game, five soft rounded arms with little bumps and a happy smiling face, lying flat. Seen from above at a slight angle. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_tree": {
    "credits": 9,
