@@ -848,3 +848,4 @@
 2026-10-02 21:50:51 [p_pip] image-to-3d SUCCEEDED 100%
 2026-10-02 21:50:51 [p_cottage] image-to-3d IN_PROGRESS 67%
 2026-10-02 21:50:53 [p_pip] model saved (no skeleton): {"bytes": 1821560, "triangles": 19294, "joints": 0, "clips": []}
+2026-10-02 21:50:55 [p_luna] rig task made 01a0fe99-4228-7075-bd5c-986ab420563d
