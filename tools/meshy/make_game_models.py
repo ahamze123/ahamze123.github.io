@@ -21,7 +21,7 @@ GAMECUT = {'walk': (None, None, 30), 'run': (None, None, 30), 'idle': (None, Non
 # better moves bought for one hero and shared with everybody: Meshy's 'Idle' is a fighting stance turned to the side and
 # its 'Regular Jump' is turned too, so every hero stands with Kira's 'Idle 3' and jumps with her 'Jump with Arms Open'
 BETTER = [('kira', 'x_try1.glb', {'Idle_3': 'idle', 'Jump_with_Arms_Open': 'jump'})]
-GIRLS = set('mia,layla,ruby,noor,aya,kat,fay,nora,bella,lulu,mira,wanda,salma,tala,zara,kira,bushra,yasmin,sama,lina,sara,amira,uma,aisha,rina'.split(','))
+GIRLS = set('mia,layla,ruby,noor,aya,kat,fay,nora,bella,lulu,mira,wanda,salma,tala,zara,kira,bushra,yasmin,sama,lina,sara,amira,uma,aisha,rina,mluna,basma'.split(','))
 
 
 def build(out, dest, h, share, mode, raw=False):
