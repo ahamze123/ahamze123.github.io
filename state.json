@@ -4040,6 +4040,23 @@
    "limit": 300,
    "run": 14,
    "spent_estimate": 299
+  },
+  {
+   "at": "2026-10-02 21:52",
+   "heroes": [
+    "p_tree",
+    "p_blossom",
+    "p_bush",
+    "p_flowers",
+    "p_rock",
+    "p_mushroom",
+    "p_lantern",
+    "p_carrot",
+    "p_apple",
+    "p_star"
+   ],
+   "limit": 400,
+   "run": 15
   }
  ]
 }

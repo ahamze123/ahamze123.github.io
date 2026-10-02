@@ -867,3 +867,4 @@
 2026-10-02 21:51:59 [p_luna] animations SUCCEEDED 100%
 2026-10-02 21:51:59 [p_luna] animations anim ['Idle_3', 'Happy_Sway_Standing', 'Jump_with_Arms_Open', 'Happy_jump_f', 'Big_Wave_Hello', 'Cheer_with_Both_Hands_Up', 'Joyful_Dance_with_Hand_Sway', 'Skip_Forward']
 2026-10-02 21:52:01 run finished; credits used by new tasks (estimate): 299
+2026-10-02 21:52:30 run 15 heroes ['p_tree', 'p_blossom', 'p_bush', 'p_flowers', 'p_rock', 'p_mushroom', 'p_lantern', 'p_carrot', 'p_apple', 'p_star'] max credits 400
