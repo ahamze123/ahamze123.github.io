@@ -792,3 +792,4 @@
 2026-10-02 21:44:52 [img p_castle] saved ['images/p_castle.png']
 2026-10-02 21:45:02 [img p_appletree] text-to-image SUCCEEDED 100%
 2026-10-02 21:45:02 [img p_appletree] saved ['images/p_appletree.png']
+2026-10-02 21:45:04 run finished; credits used by new tasks (estimate): 27
