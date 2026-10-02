@@ -975,3 +975,4 @@
 2026-10-02 21:57:17 [p_star] model saved (no skeleton): {"bytes": 97404, "triangles": 1556, "joints": 0, "clips": []}
 2026-10-02 21:57:25 [p_apple] image-to-3d IN_PROGRESS 84%
 2026-10-02 21:57:35 [p_apple] image-to-3d SUCCEEDED 100%
+2026-10-02 21:57:37 [p_apple] model saved (no skeleton): {"bytes": 100988, "triangles": 1572, "joints": 0, "clips": []}

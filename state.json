@@ -1999,6 +1999,12 @@
    "model": {
     "credits": 30,
     "error": null,
+    "file": {
+     "bytes": 100988,
+     "clips": [],
+     "joints": 0,
+     "triangles": 1572
+    },
     "id": "01a0fe9e-21a8-751c-9973-d123937999cd",
     "made": "2026-10-02 21:56",
     "run": 15,
