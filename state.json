@@ -1995,6 +1995,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "p_apple": {},
   "p_appletree": {
    "model": {
     "credits": 30,
@@ -2025,6 +2026,12 @@
    "model": {
     "credits": 30,
     "error": null,
+    "file": {
+     "bytes": 624832,
+     "clips": [],
+     "joints": 0,
+     "triangles": 6038
+    },
     "id": "01a0fe9c-1bc5-7607-a82e-50aba57549bc",
     "made": "2026-10-02 21:53",
     "run": 15,
