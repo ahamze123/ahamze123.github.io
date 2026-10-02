@@ -3727,6 +3727,11 @@
    "status": "SUCCEEDED"
   },
   "p_flowers": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_flowers.png"
+   ],
    "id": "01a0fe9a-cba8-7547-8b0f-f5576408f5e8",
    "kind": "text-to-image",
    "made": "2026-10-02 21:52",
@@ -3737,7 +3742,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute small clump of colorful flowers for a children's 3D game: pink, yellow, white and lavender daisies and tulips with green leaves, growing close together. Seen from the side, no pot, no ground, no base. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_rock": {
    "id": "01a0fe9b-0e87-77fe-865f-50ad2a683a77",
@@ -3753,6 +3758,9 @@
    "status": "PENDING"
   },
   "p_tree": {
+   "credits": 9,
+   "error": null,
+   "files": [],
    "id": "01a0fe9a-cba7-73c3-b765-01dd2e11eff3",
    "kind": "text-to-image",
    "made": "2026-10-02 21:52",
@@ -3763,7 +3771,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute round tree for a children's 3D game: a short curvy brown trunk and a big fluffy round bright green top made of soft puffy clumps, no fruit. The whole tree seen from the side, no ground, no base. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "prism_card_a": {
    "credits": 12,
