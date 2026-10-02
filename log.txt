@@ -1106,3 +1106,4 @@
 2026-10-02 23:29:57 [img hair_bun] image-to-image SUCCEEDED 100%
 2026-10-02 23:29:57 [img hair_pigtails] saved ['images/hair_pigtails.png']
 2026-10-02 23:29:57 [img hair_bun] saved ['images/hair_bun.png']
+2026-10-02 23:30:00 run finished; credits used by new tasks (estimate): 27
