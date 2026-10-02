@@ -1031,3 +1031,4 @@
 2026-10-02 23:12:27 [p_shell] model saved (no skeleton): {"bytes": 106784, "triangles": 1500, "joints": 0, "clips": []}
 2026-10-02 23:12:34 [p_umbrella] image-to-3d SUCCEEDED 100%
 2026-10-02 23:12:36 [p_umbrella] model saved (no skeleton): {"bytes": 257860, "triangles": 3045, "joints": 0, "clips": []}
+2026-10-02 23:12:44 [p_sandcastle] image-to-3d SUCCEEDED 100%
