@@ -914,3 +914,20 @@
 2026-10-02 21:53:59 [p_bush] model task made 01a0fe9c-1bc2-7304-8d22-f08b2f111763
 2026-10-02 21:53:59 [p_blossom] model task made 01a0fe9c-1bc5-7607-a82e-50aba57549bc
 2026-10-02 21:53:59 [p_flowers] model task made 01a0fe9c-1be1-76ee-bac9-5e388c437f7b
+2026-10-02 21:54:00 [p_tree] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:54:02 [p_bush] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:54:01 [p_rock] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:54:04 [p_blossom] image-to-3d IN_PROGRESS 3%
+2026-10-02 21:54:04 [p_flowers] image-to-3d IN_PROGRESS 3%
+2026-10-02 21:54:25 [p_tree] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:54:25 [p_blossom] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:54:25 [p_rock] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:54:25 [p_bush] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:54:25 [p_flowers] image-to-3d IN_PROGRESS 33%
+2026-10-02 21:54:45 [p_tree] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:54:55 [p_bush] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:54:55 [p_flowers] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:55:05 [p_tree] image-to-3d IN_PROGRESS 99%
+2026-10-02 21:55:15 [p_bush] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:55:15 [p_tree] image-to-3d SUCCEEDED 100%
+2026-10-02 21:55:15 [p_flowers] image-to-3d SUCCEEDED 100%
