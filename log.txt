@@ -781,3 +781,4 @@
 2026-10-02 20:49:04 run finished; credits used by new tasks (estimate): 56
 2026-10-02 21:44:16 run 13 heroes [] max credits 30
 2026-10-02 21:44:18 [img p_cottage] text-to-image task made 01a0fe93-402b-75b9-a37d-299b49fc3ce7
+2026-10-02 21:44:18 [img p_castle] text-to-image task made 01a0fe93-403a-7302-9bff-b74e3a2d8a8c
