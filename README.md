@@ -53,7 +53,7 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - Every hero has a picture card, made by our family. The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
 - There are **52 heroes**: 25 boys and 27 girls. Each has their own look, a special skill and two attacks of their own.
-- **Luna the mermaid** 🧜‍♀️ (a blue mermaid costume with a tail and fin, a pearl crown with a little moon; she swims fast and dives deep) and **Butterfly Basma** 🦋 (purple suit, blue hair, big colourful pink butterfly wings; she can fly) can be played right from the start.
+- **Luna the mermaid** 🧜‍♀️ (a blue mermaid costume with a tail and fin, a pearl crown with a little moon; she swims fast and dives deep) and **Butterfly Basma** 🦋 (purple suit, blue hair, big colourful pink butterfly wings; she can fly) can be played right from the start. Both have picture cards and real 3D figures too, made from the family's pictures (Luna's 3D figure wears scaly mermaid leggings with fin boots, so she can walk and run like the others).
 - Tap 🦸 in the game to see every hero. A locked hero shows how to get them:
   - ⭐ finish their mission,
   - 🔍 find their hidden hero coin (look for a beam of light; the map shows a ❔),
@@ -99,8 +99,17 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - **Rides**: boats, a jet ski, a helicopter, a biplane, a submarine, a horse, a camel, a unicorn, a sea turtle, the Nimbus Cloud and Trixie. Jump out of an aircraft and a parachute opens.
 - **Places to go inside**: the Hero Castle, Pizza Palace, the Fire Station, Brick Bank, Scoops Ice Cream, Toy Town, the Dino Museum, the Space Museum, the Spooky Manor, the Moon Greenhouse and the Hall of Heroes. Each has missions that fit the place.
 
+## The Fun Park
+A theme park on **Sunset Bay**, just north of the town (on the big map under 🎮 Fun, or **What's new → Show me the way**). Walk up to a ride and press **✋ Use** to get on:
+- **🎢 Roller Coaster**: a chain lift, a big drop, a loop (upside down!), a banked turn and camel hills, about 45 seconds. The train leaves 6 seconds after the first rider sits down, so friends can hop in too; friends online sit in the same train. Jump to get off before it leaves.
+- **🎡 Big Wheel**: you get the gondola at the bottom and go once round (40 seconds), with the whole park below you. Jump to get out early.
+- **🎠 Carousel**: three times round on a horse that goes up and down. Jump to get off any time.
+- **🚗 Bumper Cars**: drive with the stick and bump the park's cars and your friends. **✋** to get out.
+- **🌊 Water Slides**: the lift pad takes you up the tower; then pick the **Red Rocket** (straight and steep) or the **Blue Twister** (twice round), and splash into the pool.
+- The big wheel and the carousel turn the same on every tablet. Each ride's first go pays 500 coins, and riding all five wins the **Fun Park Champion** trophy (+5000 coins).
+
 ## Moving around
-- **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool) to swim, and jump again to climb out.
+- **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool, or the Fun Park's splash pool) to swim, and jump again to climb out.
 - **Flying**: flying heroes (like Omar and Ruby) hold jump to go up and hold **⬇ Down** (**Shift** on a keyboard) to fly down. With the Jet Wings gadget, the other heroes can glide. Tap **🦸 Land** (or press **L**) for a fast super hero landing.
 - **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 

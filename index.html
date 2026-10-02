@@ -2997,6 +2997,7 @@ function netSend(dt){if(!NET.game||NET.role==='solo')return;NET.sendT-=dt;if(NET
     o.en=list.map(({e})=>[e.id,ETYPES.indexOf(e.type),f2(e.x),f2(e.y),f2(e.z),f2(e.face||0),Math.max(0,Math.round(e.hp)),(e.hitT>0?1:0)|(e.angry?2:0)|(e.atk>0?4:0)|(e.shield?8:0)|(e.frozen>0?16:0)|(e.webbed>0?32:0)|(e.burn>0?64:0)|(e.webbed>0&&e.stk==='stun'?128:0)|(e.webbed>0&&e.stk==='vine'?256:0)|(e.frog>0?512:0)|(e.lev>0?1024:0)|(e.fear>0?2048:0)|(e.webbed>0&&e.stk==='sleep'?4096:0),e.boss?e.maxHp:0,e.col&&e.col!==ETYPE[e.type].col?e.col:0]);
     let s=JSON.stringify(o);while(s.length>3900&&o.en.length>4){o.en.length-=3;s=JSON.stringify(o);}
     if(BST.size&&s.length<3500){const keys=[...BST.keys()];const bs=[];let len=0;for(let k=0;k<keys.length&&len<3700-s.length;k++){const i=keys[(NET.bsI=(NET.bsI||0)+1)%keys.length];const c=colCode(i);bs.push([i,c]);len+=c.length+12;}o.bs=bs;s=JSON.stringify(o);while(s.length>3950&&o.bs.length)o.bs.pop(),s=JSON.stringify(o);}}
+  if(typeof netExtra==='function')try{netExtra(o);}catch(e){}
   try{NET.game.presence(o).catch(()=>{});}catch(e){}}
 // host: hand out player numbers (1 is the host). A number stays with a friend while they play.
 function netSlots(){const used=new Set([0]);const fs=Object.values(NET.peers);for(const r of fs)if(r.hs)used.add(r.hs);
@@ -3115,7 +3116,7 @@ function resTune(){const now=performance.now();const dt=RES.last?(now-RES.last)/
 function renderFrame(){const q=G.quality;resTune();const dpr=resPick(q);
   const w=Math.max(2,Math.floor(innerWidth*dpr)),h=Math.max(2,Math.floor(innerHeight*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
   const px=w*h,samples=q==='low'?0:q==='high'?Math.min(px<4.2e6?4:2,GLX.maxS):(px<3.4e6?Math.min(2,GLX.maxS):0);rtEnsure(w,h,samples);const asp=w/h;
-  M4.persp(RF.proj,(asp<1?CAMLOOK.fovP:CAMLOOK.fov)+(CAM.fovK||0),asp,.25,520);M4.look(RF.view,CAM.eye,[CAM.tx+(CAM.lax||0),CAM.ty+(CAM.lookY||0),CAM.tz+(CAM.laz||0)],[0,1,0]);M4.mul(RF.vp,RF.proj,RF.view);M4.inv(RF.ivp,RF.vp);M4.planes(RF.vp,RF.planes);
+  M4.persp(RF.proj,(asp<1?CAMLOOK.fovP:CAMLOOK.fov)+(CAM.fovK||0),asp,.25,520);M4.look(RF.view,CAM.eye,[CAM.tx+(CAM.lax||0),CAM.ty+(CAM.lookY||0),CAM.tz+(CAM.laz||0)],CAM.up||[0,1,0]);M4.mul(RF.vp,RF.proj,RF.view);M4.inv(RF.ivp,RF.vp);M4.planes(RF.vp,RF.planes);
   buildDyn();cullChunks();
   const shOn=q!=='low';const ext=q==='high'?44:34;
   if(shOn){// v25: the shadow area is moved ahead of the hero, where the camera is looking (it used to waste half of it behind the camera)
@@ -7676,8 +7677,10 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:44,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:45,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🎢',t:'The Fun Park!',s:'A real theme park on Sunset Bay, north of the town: a roller coaster with a loop, a big wheel, bumper cars, two water slides into a pool and a carousel. Press ✋ next to a ride to get on. Friends ride together!',go:()=>typeof FP!=='undefined'&&FP.ok?dd({x:FP.gate.x,z:FP.gate.z+3,label:tr('Fun Park'),icon:'🎢',col:'#ff5fa8'}):null},
+  {ic:'🧸',t:'Luna and Basma in 3D',s:'Luna and Butterfly Basma have their own picture cards now, and real 3D figures made from the family\'s pictures. To play with the 3D heroes, turn on Menu, Settings, 🧸 3D heroes'},
   {ic:'🧲',t:'Every power opens its treasure',s:'Sheriff Sam\'s lasso and stampede now open the Magnet Safe. Every hero with a power badge (🧲 🔥 💪 ⚔️ ⚡ 💧 🪄) opens the treasures that need it with any of their attacks'},
   {ic:'🦴',t:'Fossil Puzzle fixed',s:'In the Dino Museum, the fossil next to Curator Cora can be picked up now, so the puzzle can be finished'},
   {ic:'🎮',t:'The hosting card hides',s:'Tap the You\'re hosting! card to hide it. It also goes away by itself after 30 seconds'},
@@ -10391,7 +10394,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.8';window.BB_VER=BB_VER;
+const BB_VER='26.9';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -11556,6 +11559,7 @@ const BWING={up:'#ff7ad0',low:'#c77dff',spots:[[.12,.08,'#ffd23f',.17],[-.12,-.0
   for(const s of [-1,1]){E(50+s*30,58,18,22,s*.5,'#ff7ad0');E(50+s*26,86,11,13,s*.3,'#c77dff');}x.restore();
   x.strokeStyle='#3a2a55';x.lineWidth=1.6*u;x.lineCap='round';for(const s of [-1,1]){x.beginPath();x.moveTo((50+s*8)*u,20*u);x.lineTo((50+s*16)*u,4*u);x.stroke();O(50+s*16,4,3.4,'#ff7ad0');}}catch(e){}};}
 MV('Butterfly Basma','بسمة الفراشة');MV('Butterfly Basma flutters in! Purple suit, blue hair and big colourful butterfly wings. She can fly. Pick her on the first screen or in 🦸','بسمة الفراشة وصلت! بزي بنفسجي وشعر أزرق وأجنحة فراشة ملونة كبيرة. تقدر تطير. اخترها في الشاشة الأولى أو في 🦸');
+CARD_IDS.add('basma');// v26.9: her picture card, made from the family's standing picture
 // ================= v26.2: block heroes dressed like their picture cards =================
 // Each hero's boots, gloves, legs and trims now come from their card. They are used while the hero wears their own outfit
 // (no shop costume, power suit or shop suit colour on top), see "K" in drawHero (04_models.js).
@@ -11669,6 +11673,7 @@ function drawMerTail(m,K,A,t,p){const tc=K.mer,sc=K.mers||'#ffffff',fc=K.merf||t
   for(const [a,b] of [[36,96],[50,94],[64,96]])O(a,b,3.4,'#7ec8ff');}catch(e){}};}
 MV('A mermaid hero in a blue mermaid costume, with a pearl crown and a little moon','بطلة حورية بحر بزي حورية أزرق، مع تاج من اللؤلؤ وقمر صغير');
 MV('Luna the mermaid','لونا حورية البحر');MV('Luna the mermaid joins the heroes! She swims super fast and dives deep. Pick her on the first screen or in 🦸','لونا حورية البحر انضمت للأبطال! تسبح بسرعة كبيرة وتغوص عميقًا. اخترها في الشاشة الأولى أو في 🦸');
+CARD_IDS.add('mluna');// v26.9: her picture card, made from the family's standing picture
 // ================= v26.3: 🌪️ Tornado Spin: every hero can whirl into a tornado in their own colours =================
 // Tap 🌪️ Spin (keyboard R, a gamepad's left trigger): the hero spins inside a tornado of their suit and trim colours for
 // 2.5 seconds, runs a little faster, and baddies that come close are hit and swirled away (enemy shots bounce off).
@@ -12006,6 +12011,361 @@ MV('{0} is further in the story: you go on from chapter {1} together!','{0} وص
 MV("You play {0}'s story together. The chapters count in your game too!",'تلعبان قصة {0} معًا. الفصول تُحسب في لعبتك أيضًا!');
 MV('Your friend','صديقك');MV('Chapters {0} to {1} done!','انتهت الفصول من {0} إلى {1}!');
 MV('One story online','قصة واحدة عبر الإنترنت');MV('Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too','عند اللعب عبر الإنترنت تكملون من عند من وصل أبعد في القصة، وكل فصل تنهونه معًا يُحسب على كل جهاز. وقطع الصاروخ مشتركة أيضًا');
+// ================= v26.9: 🎢 the Fun Park, on Sunset Bay north of the town =================
+// A real theme park: a roller coaster with a lift hill, a big drop and a loop; a big wheel; bumper cars; two water slides
+// into a pool; a carousel; snack stands and a fountain. Walk up to a ride and press ✋ Use to get on. Friends playing
+// online ride together: the coaster waits a few seconds so everyone can hop in, and you see each other on the rides.
+// The land: a flat rectangle cleared of trees before the island's trees are planted (the trees are placed per square
+// by a hash, so leaving these squares out changes nothing anywhere else in the world).
+const FP={x0:545,z0:88,x1:640,z1:160,y:5,ok:false,
+  co:{cx:607,cz:109.5,P:null,L:0,T:null,TT:0,seats:6},// the coaster: track points, its time table
+  fw:{x:562,z:136,hub:16,r:13,n:12,per:40},          // the big wheel: centre, radius, gondolas, seconds per turn
+  ca:{x:609,z:149,r:4.6,n:8,per:13},                 // the carousel
+  bc:{x0:580,z0:122,x1:604,z1:140},                  // the bumper car floor
+  ws:{tx:630,tz:121,top:10.5,pool:{x0:622,z0:140,x1:638,z1:157}},// the water slide tower and its pool
+  gate:{x:592,z:159},plaza:{x:592,z:148}};
+const fpIn=(x,z,m=0)=>x>=FP.x0-m&&x<FP.x1+m&&z>=FP.z0-m&&z<FP.z1+m;
+// ---------- the ground ----------
+function fpGround(){const {x0,z0,x1,z1}=FP;const hs=[];for(let z=z0;z<z1;z+=3)for(let x=x0;x<x1;x+=3){const h=H[cid(x,z)];if(h>WL+.3)hs.push(h);}
+  hs.sort((a,b)=>a-b);const gy=Math.round(Math.max(WL+1.4,hs.length?hs[hs.length>>1]:5)*10)/10;FP.y=gy;const B=6;
+  for(let z=z0-B;z<z1+B;z++)for(let x=x0-B;x<x1+B;x++){if(!inMap(x,z))continue;const i=cid(x,z);if(H[i]<WL+.2)continue;
+    const d=Math.max(x0-x,x-(x1-1),z0-z,z-(z1-1),0);const k=d<=0?1:Math.max(0,1-d/B);if(k<=0)continue;const t=k*k*(3-2*k);
+    const old=H[i],bare=CH[i]<=old+.01;H[i]=old+(gy-old)*t;if(bare||d<=0)CH[i]=H[i];
+    if(d<=0){OCC[i]=1;BIO[i]=B.PARK;NRD[i]=1;TM[i]=T.GRASS;TC[i]=pal(((x>>1)+(z>>1))&1?'#7fd06a':'#77c862');}}
+  // paved paths: entrance → plaza → station, and round to every ride
+  const pave=(ax,az,bx2,bz,w)=>{const L=Math.hypot(bx2-ax,bz-az);for(let s=0;s<=L;s+=.5){const px=ax+(bx2-ax)*s/L,pz=az+(bz-az)*s/L;
+    for(let dz=-w;dz<=w;dz++)for(let dx=-w;dx<=w;dx++){const x=Math.round(px+dx),z=Math.round(pz+dz);if(!fpIn(x,z))continue;const i=cid(x,z);TM[i]=T.PLATE;TC[i]=pal(((x+z)&1)?'#f1dfc0':'#e7d0aa');}}};
+  const G0=FP.gate,PL=FP.plaza;pave(G0.x,FP.z1,PL.x,PL.z,2);pave(PL.x,PL.z,PL.x,116,2);pave(574,116,628,116,2);pave(PL.x,PL.z,572,PL.z,2);pave(PL.x,PL.z,612,PL.z,2);
+  pave(572,PL.z,572,141,2);pave(592,141,592,138,2);pave(612,PL.z,617,PL.z,1);pave(628,116,628,138,1);
+  for(let z=PL.z-5;z<=PL.z+5;z++)for(let x=PL.x-5;x<=PL.x+5;x++)if(Math.hypot(x-PL.x,z-PL.z)<5.5){const i=cid(x,z);TM[i]=T.PLATE;TC[i]=pal(((x+z)&1)?'#f6e7cc':'#ecd6b2');}
+  // the splash pool: real water (see POOLS in 16_regions.js)
+  const P=FP.ws.pool,wl=gy-.25,fl=gy-1.9;for(let z=P.z0;z<P.z1;z++)for(let x=P.x0;x<P.x1;x++){const i=cid(x,z);H[i]=fl;CH[i]=fl;TM[i]=T.STONE;TC[i]=pal(((x+z)&1)?'#bfe9ff':'#a8dcf5');}
+  POOLS.push({x0:P.x0,z0:P.z0,x1:P.x1,z1:P.z1,wl,fl,fp:1});FP.ok=true;}
+{const _rs=regionScatter;regionScatter=function(){try{fpGround();}catch(e){console.error('funpark ground',e);}return _rs();};}
+
+// ---------- the roller coaster track (built once, the same on every tablet) ----------
+// A turtle walks the track: straight bits, turns (with banking), climbs and drops, and a vertical loop.
+function fpTrack(){const DS=.5,out=[];let x=0,y=1.2,z=0,hd=0,c=0,bank=0;const sm=t=>t*t*(3-2*t);
+  const prog=[{L:14,tag:'station',lin:1},{L:8,tag:'out',lin:1},{L:27,yaw:180,bank:28,tag:'turn'},{L:2,bank:0,tag:'turn'},
+    {L:8,c:32,tag:'lift'},{L:24,tag:'lift',lin:1},{L:9,c:0,tag:'crest'},{L:7,c:-58,tag:'drop'},{L:11,tag:'drop',lin:1},{L:13,c:0,tag:'pull'},{L:7,tag:'run',lin:1},
+    {L:2*Math.PI*6.5,loop:1,side:3.2,tag:'loop'},{L:5,tag:'run',lin:1},{L:11,c:12,yaw:90,bank:50,tag:'helix'},{L:11,c:0,yaw:90,bank:50,tag:'helix'},{L:5,c:0,bank:0,tag:'helix'},
+    {L:7,c:14,tag:'camel'},{L:9,c:-14,tag:'camel'},{L:9,c:12,tag:'camel'},{L:9,c:-12,tag:'camel'},{L:7,c:0,tag:'camel'},{L:6,tag:'brake',lin:1}];
+  for(const pc of prog){const n=Math.max(1,Math.round(pc.L/DS));const c0=c,c1=pc.c!==undefined?pc.c*Math.PI/180:c,b0=bank,b1=pc.bank!==undefined?pc.bank*Math.PI/180:bank,yawT=(pc.yaw||0)*Math.PI/180,hd0=hd;
+    if(pc.loop){const R=pc.L/(2*Math.PI),fx=Math.cos(hd),fz=Math.sin(hd),rx=-fz,rz=fx;
+      for(let i=1;i<=n;i++){const t=i/n,th=t*2*Math.PI,sd=(pc.side||0)*sm(t);out.push({x:x+fx*R*Math.sin(th)+rx*sd,y:y+R*(1-Math.cos(th)),z:z+fz*R*Math.sin(th)+rz*sd,
+        F:[fx*Math.cos(th),Math.sin(th),fz*Math.cos(th)],U:[-fx*Math.sin(th),Math.cos(th),-fz*Math.sin(th)],tag:pc.tag});}
+      x+=rx*(pc.side||0);z+=rz*(pc.side||0);continue;}
+    for(let i=1;i<=n;i++){const t=i/n,s=pc.lin?t:sm(t);c=c0+(c1-c0)*s;bank=b0+(b1-b0)*s;hd=hd0+yawT*t;
+      const F=[Math.cos(c)*Math.cos(hd),Math.sin(c),Math.cos(c)*Math.sin(hd)];x+=F[0]*DS;y+=F[1]*DS;z+=F[2]*DS;
+      const U0=[-Math.sin(c)*Math.cos(hd),Math.cos(c),-Math.sin(c)*Math.sin(hd)],Rv=[-Math.sin(hd),0,Math.cos(hd)],cb=Math.cos(bank),sb=Math.sin(bank);
+      out.push({x,y,z,F,U:[U0[0]*cb+Rv[0]*sb,U0[1]*cb+Rv[1]*sb,U0[2]*cb+Rv[2]*sb],tag:pc.tag});}}
+  // the brake run goes straight back into the station, then the end is bent a little to meet the start exactly
+  const need=Math.round((0-x)/DS)-1;for(let k=1;k<=need;k++){const q=out[out.length-1];out.push({x:q.x+DS,y:q.y,z:q.z,F:[1,0,0],U:[0,1,0],tag:'brake'});}
+  const i0=out.findIndex(p=>p.tag==='camel'),L=out.length,s0=out[0],e=out[L-1];const dx=(s0.x-DS)-e.x,dy=s0.y-e.y,dz=s0.z-e.z;
+  for(let i=i0;i<L;i++){const t=sm((i-i0)/(L-1-i0));out[i].x+=dx*t;out[i].y+=dy*t;out[i].z+=dz*t;}
+  // into the park: mirrored (the station is on the park side) and moved to its place; R = U × F
+  const C=FP.co,gy=FP.y;C.P=out.map(p=>{const F=[p.F[0],p.F[1],-p.F[2]],U=[p.U[0],p.U[1],-p.U[2]];const Rr=[U[1]*F[2]-U[2]*F[1],U[2]*F[0]-U[0]*F[2],U[0]*F[1]-U[1]*F[0]];
+    return {x:C.cx+p.x,y:gy+p.y,z:C.cz-p.z,F,U,R:Rr,tag:p.tag};});C.L=C.P.length*DS;C.DS=DS;
+  // the time table: chain lift, then the energy of the drop (a little friction), brakes, and a stop in the station
+  const P=C.P,g=9.8,V=[];let v=0;for(let i=0;i<P.length;i++){const p=P[i],dy2=i?p.y-P[i-1].y:0;
+    if(p.tag==='station'||p.tag==='out')v=Math.min(4,Math.max(v,3));else if(p.tag==='lift')v=4;else v=Math.sqrt(Math.max(6.25,v*v-2*g*dy2-2*.018*g*DS));
+    if(p.tag==='brake')v=Math.max(3,v-DS*1.4);V.push(v);}
+  // the ride starts and ends where the train waits in the station (its front at sample C.i0): it builds up speed over
+  // the first 4 m and rolls gently to a stop at the end. T[j] = seconds to get j samples further than the parked spot.
+  const n=P.length,ip=C.i0=26;for(let k=0;k<8;k++){const i=(ip+k)%n;V[i]=Math.max(1,V[i]*(k+1)/8);}for(let k=1;k<=10;k++){const i=(ip-k+n)%n;V[i]=Math.min(V[i],1+k*.25);}
+  const T=[0];for(let j=1;j<=n;j++){const a2=(ip+j-1)%n,b2=(ip+j)%n;T.push(T[j-1]+DS*2/(V[a2]+V[b2]));}C.T=T;C.V=V;C.TT=T[n]+1.5;}
+// where the train is (metres along the track) t seconds after it left
+function coAt(t){const C=FP.co,T=C.T;if(!T||t<=0)return 0;if(t>=T[T.length-1])return C.L;let a=0,b=T.length-1;while(b-a>1){const m=(a+b)>>1;if(T[m]<=t)a=m;else b=m;}
+  return (a+(t-T[a])/((T[b]-T[a])||1))*C.DS;}
+// a point of the track at s metres (wraps round), with its frame
+function coFrame(s){const C=FP.co,P=C.P,n=P.length;const f=((s/C.DS)%n+n)%n,i=Math.floor(f),k=f-i,a=P[i],b=P[(i+1)%n];const L=(u,v)=>u+(v-u)*k;
+  const nz=v=>{const l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l];};
+  return {x:L(a.x,b.x),y:L(a.y,b.y),z:L(a.z,b.z),F:nz([L(a.F[0],b.F[0]),L(a.F[1],b.F[1]),L(a.F[2],b.F[2])]),U:nz([L(a.U[0],b.U[0]),L(a.U[1],b.U[1]),L(a.U[2],b.U[2])]),R:nz([L(a.R[0],b.R[0]),L(a.R[1],b.R[1]),L(a.R[2],b.R[2])]),tag:a.tag};}
+// a matrix that puts local x/y/z on the track's right/up/forward
+function frameM(f,ox=0,oy=0,oz=0){const m=new Float32Array(16);m[0]=f.R[0];m[1]=f.R[1];m[2]=f.R[2];m[4]=f.U[0];m[5]=f.U[1];m[6]=f.U[2];m[8]=f.F[0];m[9]=f.F[1];m[10]=f.F[2];
+  m[12]=f.x+f.R[0]*ox+f.U[0]*oy+f.F[0]*oz;m[13]=f.y+f.R[1]*ox+f.U[1]*oy+f.F[1]*oz;m[14]=f.z+f.R[2]*ox+f.U[2]*oy+f.F[2]*oz;m[15]=1;return m;}
+
+// ---------- building the park (static parts, baked into the world) ----------
+function fpBuild(){if(!FP.ok)return;const gy=FP.y;fpTrack();const C=FP.co,P=C.P;
+  // track: two red rails, a blue spine, white ties; supports down to the ground
+  for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];const f={x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2,F:a.F,U:a.U,R:a.R};const m=frameM(f);
+    sput('box',m,-.55,0,0,.14,.14,.56,'#e8343f',3);sput('box',m,.55,0,0,.14,.14,.56,'#e8343f',3);sput('box',m,0,-.38,0,.26,.26,.56,'#2f6bff',3);
+    if(i%2===0)sput('box',m,0,-.16,0,1.24,.08,.16,'#f4f4f4',1);
+    if(a.tag==='lift'&&i%2===0)sput('box',m,0,-.02,0,.18,.08,.2,'#9aa3b3',3);// the chain
+    const up=a.U[1]>.55,hgt=a.y-.6-gy;
+    if(i%10===0&&up&&hgt>.9&&a.tag!=='station'){const pm=mat4At(a.x-a.U[0]*.5,gy,a.z-a.U[2]*.5);sput('cyl',pm,0,hgt/2,0,.34,hgt,.34,'#ffffff',3);sput('cyl',pm,0,.15,0,.9,.3,.9,'#c9c3b6',1);
+      if(hgt>6)for(let y2=4;y2<hgt-1;y2+=4)sput('box',pm,0,y2,0,.12,.12,1.6,'#f4f4f4',3);}}
+  // the loop gets two big legs
+  const li=P.findIndex(p=>p.tag==='loop');if(li>=0){const a=P[li];for(const s of [-1,1]){const pm=mat4At(a.x+s*2.2,gy,a.z-2.4);sput('cyl',pm,0,6.5,0,.4,13,.4,'#ffffff',3);}}
+  // the station: a platform, a roof, a ramp and a sign
+  const st0=P[0],st1=P[27];const sx0=Math.min(st0.x,st1.x)-1,sx1=Math.max(st0.x,st1.x)+3,sz=st0.z+1.1;
+  sbox(sx0,gy,sz,sx1-sx0,.95,3.4,'#f2e3c6',1);solid(sx0,sz,sx1,sz+3.4,gy+.95);sbox(sx0,gy+.95,sz,sx1-sx0,.06,.18,'#ffcf3a',1);
+  for(let x=sx0;x<=sx1;x+=sx1-sx0>0?(sx1-sx0)/3:1){sbox(x-.12,gy+.95,sz+3.1,.24,3.4,.24,'#ff5fa8',1);sbox(x-.12,gy+.95,st0.z-1.5,.24,3.4,.24,'#ff5fa8',1);}
+  sbox(sx0-.4,gy+4.3,st0.z-2,sx1-sx0+.8,.35,sz+3.4-(st0.z-2)+.4,'#ff7aa2',1);sbox(sx0-.4,gy+4.65,st0.z-1.4,sx1-sx0+.8,.25,sz+3.4-(st0.z-1.4)-.2,'#ffffff',1);
+  for(let k=0;k<5;k++){const y0=gy+.95-(k+1)*.19;sbox(sx0+5,y0,sz+3.4+k*.5,5,.19,.5,'#e7d0aa',1);solid(sx0+5,sz+3.4+k*.5,sx0+10,sz+3.9+k*.5,y0+.19);}
+  C.plat={x:(sx0+sx1)/2,z:sz+1.7,y:gy+.95,x0:sx0,x1:sx1};C.sign={x:sx0+7.5,z:sz+4.6};
+  // the big wheel: two A-frame legs and a boarding platform (the wheel itself turns: see the drawing below)
+  const W=FP.fw;for(const s of [-1,1]){const pm=mat4At(W.x,gy,W.z+s*1.7);for(const d of [-1,1]){const q=Float32Array.from(pm);M4.tr(q,d*4.2,0,0);M4.rz(q,d*.29);sput('box',q,0,W.hub/2,0,.5,W.hub+.6,.5,'#ffffff',3);}
+    sput('cyl',pm,0,W.hub,0,1.3,.5,1.3,'#ffcf3a',3);}
+  sbox(W.x-3,gy,W.z-3.2,6,.5,6.4,'#e7d0aa',1);W.board={x:W.x,z:W.z+3.6,y:gy+.5};
+  // bumper cars: a dark shiny floor, a low wall all round with a gap, poles and a striped roof
+  const BC=FP.bc;sbox(BC.x0,gy,BC.z0,BC.x1-BC.x0,.12,BC.z1-BC.z0,'#34364a',8,0);
+  for(const [a,b,c,d] of [[BC.x0,BC.z0,BC.x1-BC.x0,.4],[BC.x0,BC.z0,.4,BC.z1-BC.z0],[BC.x1-.4,BC.z0,.4,BC.z1-BC.z0],[BC.x0,BC.z1-.4,(BC.x1-BC.x0)/2-1.6,.4],[(BC.x0+BC.x1)/2+1.6,BC.z1-.4,(BC.x1-BC.x0)/2-1.6,.4]]){
+    sbox(a,gy,b,c,.75,d,'#ffcf3a',1);solid(a,b,a+c,b+d,gy+.75);}
+  for(const [x,z] of [[BC.x0,BC.z0],[BC.x1,BC.z0],[BC.x0,BC.z1],[BC.x1,BC.z1],[(BC.x0+BC.x1)/2,BC.z0]]){sbox(x-.2,gy,z-.2,.4,5.2,.4,'#e8343f',3);solid(x-.2,z-.2,x+.2,z+.2,gy+5.2);}
+  {const w=BC.x1-BC.x0,d=BC.z1-BC.z0,rh=gy+5.2,e=3;for(let k=0;k<10;k++){const x=BC.x0-.5+k*(w+1)/10;sbox(x,rh,BC.z0-.5,(w+1)/10,.3,e,k%2?'#ffffff':'#2f6bff',1);sbox(x,rh,BC.z1+.5-e,(w+1)/10,.3,e,k%2?'#ffffff':'#2f6bff',1);}
+    for(let k=0;k<6;k++){const z=BC.z0-.5+e+k*(d+1-2*e)/6;sbox(BC.x0-.5,rh,z,e,.3,(d+1-2*e)/6,k%2?'#2f6bff':'#ffffff',1);sbox(BC.x1+.5-e,rh,z,e,.3,(d+1-2*e)/6,k%2?'#2f6bff':'#ffffff',1);}
+    for(let x=BC.x0+e;x<=BC.x1-e+.01;x+=2)sbox(x-.04,rh+.1,BC.z0+e-.5,.08,.08,d-2*e+1,'#3a3d52',3);for(let z=BC.z0+e;z<=BC.z1-e+.01;z+=2)sbox(BC.x0+e-.5,rh+.1,z-.04,w-2*e+1,.08,.08,'#3a3d52',3);}
+  BC.gate={x:(BC.x0+BC.x1)/2,z:BC.z1+.9};
+  // the carousel: a round floor, a pole in the middle and a striped tent roof (the horses turn)
+  const CA=FP.ca;{const m=mat4At(CA.x,gy,CA.z);sput('cyl',m,0,.2,0,CA.r*2+1.2,.4,CA.r*2+1.2,'#ffe8b3',1);sput('cyl',m,0,2.6,0,.6,5,.6,'#ffcf3a',3);
+    for(let k=0;k<12;k++){const q=Float32Array.from(m);M4.ry(q,k/12*TAU);sput('box',q,0,4.9,CA.r*.5,CA.r*.5,.2,CA.r*1.05,k%2?'#ff5d73':'#ffffff',1);}
+    sput('cone',m,0,6.1,0,CA.r*2.2,2.2,CA.r*2.2,'#ff5d73',1);sput('sph',m,0,7.4,0,.6,.6,.6,'#ffcf3a',3);solid(CA.x-.4,CA.z-.4,CA.x+.4,CA.z+.4,gy+6);}
+  CA.board={x:CA.x,z:CA.z-CA.r-1.4};
+  // the water slides: a tower (a lift pad goes up), the Red Rocket (straight and steep) and the Blue Twister (round and round)
+  const WS=FP.ws,top=gy+WS.top;sbox(WS.tx-2.5,gy,WS.tz-2.5,5,WS.top,5,'#46b0ff',1);solid(WS.tx-2.5,WS.tz-2.5,WS.tx+2.5,WS.tz+2.5,top);
+  sbox(WS.tx-3,top,WS.tz-3,6,.3,6,'#ffffff',1);for(const [a,b,c,d] of [[-3,-3,6,.15],[-3,-3,.15,6],[2.85,-3,.15,6]])sbox(WS.tx+a,top+.3,WS.tz+b,c,1,d,'#ffcf3a',1);
+  for(let k=0;k<4;k++)sbox(WS.tx-2.55,gy+1+k*2.4,WS.tz-2.55,5.1,.5,5.1,k%2?'#ffffff':'#2f8fff',1);
+  WS.pad={x:WS.tx,z:WS.tz-3.6,y:gy};WS.topSpot={x:WS.tx,z:WS.tz,y:top+.3};
+  fpSlides();for(const sl of WS.sl){for(let i=0;i<sl.P.length-1;i++){const a=sl.P[i],b=sl.P[i+1];const f={x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2,F:a.F,U:a.U,R:a.R};const m=frameM(f);
+      sput('box',m,0,-.12,0,1.3,.14,.62,sl.col2,8,.08);sput('box',m,-.66,.12,0,.2,.5,.62,sl.col,8);sput('box',m,.66,.12,0,.2,.5,.62,sl.col,8);sput('box',m,-.66,.4,0,.24,.08,.62,'#ffffff',1);sput('box',m,.66,.4,0,.24,.08,.62,'#ffffff',1);
+      sput('box',m,0,-.26,0,1.5,.14,.62,sl.col,8);
+      if(i%8===0&&a.y-gy>1.2){const pm=mat4At(a.x,gy,a.z);sput('cyl',pm,0,(a.y-gy)/2-.2,0,.26,a.y-gy-.4,.26,'#f4f4f4',3);}}}
+  {const pm=mat4At(FP.ws.pole.x,gy,FP.ws.pole.z);sput('cyl',pm,0,WS.top/2,0,.7,WS.top,.7,'#ffffff',3);sput('sph',pm,0,WS.top+.3,0,1,1,1,'#ffcf3a',3);solid(FP.ws.pole.x-.4,FP.ws.pole.z-.4,FP.ws.pole.x+.4,FP.ws.pole.z+.4,gy+WS.top);}
+  // the pool: water you can swim in (two blues, like the town pool), and its edge
+  {const Q=WS.pool,wl=gy-.25;sbox(Q.x0,wl-.3,Q.z0,Q.x1-Q.x0,.3,(Q.z1-Q.z0)*.35,'#4cc9f5',8,.2);sbox(Q.x0,wl-.3,Q.z0+(Q.z1-Q.z0)*.35,Q.x1-Q.x0,.3,(Q.z1-Q.z0)*.65,'#1fa3e6',8,.16);
+    for(let k=1;k<4;k++)sbox(Q.x0+k*(Q.x1-Q.x0)/4-.04,wl+.01,Q.z0+(Q.z1-Q.z0)*.45,.08,.06,(Q.z1-Q.z0)*.5,k%2?'#ff5d73':'#ffffff',1,.2);}
+  const Q=WS.pool;for(const [a,b,c,d] of [[Q.x0-.6,Q.z0-.6,Q.x1-Q.x0+1.2,.6],[Q.x0-.6,Q.z1,Q.x1-Q.x0+1.2,.6],[Q.x0-.6,Q.z0,.6,Q.z1-Q.z0],[Q.x1,Q.z0,.6,Q.z1-Q.z0]])sbox(a,gy-.05,b,c,.25,d,'#ffffff',1);
+  // the entrance: a big arch with stripes and balloons, and a low fence round the park
+  const E=FP.gate;for(const s of [-1,1]){sbox(E.x+s*6-.6,gy,E.z-.6,1.2,7,1.2,'#ff5fa8',1);solid(E.x+s*6-.6,E.z-.6,E.x+s*6+.6,E.z+.6,gy+7);sput('sph',mat4At(E.x+s*6,gy+7.5,E.z),0,0,0,1.3,1.3,1.3,'#ffcf3a',3);}
+  sbox(E.x-6.6,gy+5.6,E.z-.5,13.2,1.6,1,'#2f6bff',1);for(let k=0;k<9;k++)sbox(E.x-5.6+k*1.25,gy+5.75,E.z+.5,.9,1.3,.06,['#ff5d73','#ffcf3a','#46e6b0','#7ecbff','#b28dff'][k%5],1);
+  const fence=(ax,az,bx2,bz)=>{const L=Math.hypot(bx2-ax,bz-az),ux=(bx2-ax)/L,uz=(bz-az)/L;for(let s2=0;s2<=L;s2+=2)sbox(ax+ux*s2-.08,gy,az+uz*s2-.08,.16,.95,.16,'#ffffff',1);
+    sbox(Math.min(ax,bx2)-.05,gy+.72,Math.min(az,bz)-.05,Math.abs(bx2-ax)+.1,.14,Math.abs(bz-az)+.1,'#ff5fa8',1);sbox(Math.min(ax,bx2)-.05,gy+.4,Math.min(az,bz)-.05,Math.abs(bx2-ax)+.1,.1,Math.abs(bz-az)+.1,'#ffcf3a',1);};
+  fence(FP.x0,FP.z1,E.x-6.6,FP.z1);fence(E.x+6.6,FP.z1,FP.x1,FP.z1);fence(FP.x0,FP.z0+24,FP.x0,FP.z1);fence(FP.x1,FP.z0+24,FP.x1,FP.z1);
+  // the fountain in the plaza
+  const PL=FP.plaza;{const m=mat4At(PL.x,gy,PL.z);sput('cyl',m,0,.35,0,6,.7,6,'#e8f7ff',1);sput('cyl',m,0,.62,0,5.3,.16,5.3,'#46b0ff',8,.15);sput('cyl',m,0,1.4,0,.8,2,.8,'#ffffff',1);sput('cyl',m,0,2.4,0,2.2,.25,2.2,'#e8f7ff',1);
+    solid(PL.x-3,PL.z-3,PL.x+3,PL.z+3,gy+.7);}
+  // snack stands: popcorn, candy floss and ice cream
+  const stand=(x,z,col,top2,ic)=>{sbox(x-1.6,gy,z-1,3.2,1.1,2,'#ffffff',1);sbox(x-1.6,gy+1.1,z-1,3.2,.15,2,col,1);for(const s of [-1,1])sbox(x+s*1.45-.08,gy+1.25,z-.9,.16,1.6,.16,'#ffffff',1);
+    for(let k=0;k<6;k++)sbox(x-1.8+k*.6,gy+2.85,z-1.2,.6,.3,2.4,k%2?col:'#ffffff',1);sput('sph',mat4At(x,gy+3.5,z),0,0,0,.9,.9,.9,top2,1);solid(x-1.6,z-1,x+1.6,z+1,gy+1.1);FP.stands.push({x,z:z+1.6,ic});};
+  FP.stands=[];stand(566,154,'#ff5d73','#fff3c4','🍿');stand(574,154,'#ff9ec0','#ffb3e0','🍭');stand(617,155,'#7ecbff','#fff3c4','🍦');
+  // benches, lamps, bins and flowers along the paths
+  for(const [x,z,r] of [[588,152,Math.PI/2],[596,152,-Math.PI/2],[586,140,0],[598,140,0],[578,118,Math.PI],[606,118,Math.PI],[566,146,0],[618,140,0]])addBrk('bench',x,z,r);
+  for(const [x,z] of [[589,156],[595,156],[589,130],[595,130],[575,119],[621,119],[569,147],[615,151]])addBrk('lamp',x,z,0);
+  for(const [x,z] of [[597,156],[579,149]])addBrk('trash',x,z,0);
+  for(let k=0;k<26;k++){const x=FP.x0+3+((k*37)%89),z=FP.z0+26+((k*23)%42);if(TM[cid(x,z)]===T.GRASS&&!OCC2(x,z))flowers(x,z);}
+  // keep quests, chests and coins away from the rides: everything here is already marked as taken (OCC)
+}
+const OCC2=(x,z)=>{for(const r of [FP.bc,FP.ws.pool])if(x>r.x0-2&&x<r.x1+2&&z>r.z0-2&&z<r.z1+2)return true;if(Math.hypot(x-FP.fw.x,z-FP.fw.z)<9||Math.hypot(x-FP.ca.x,z-FP.ca.z)<7||Math.hypot(x-FP.plaza.x,z-FP.plaza.z)<5)return true;return z<FP.co.cz+6;};
+// the two water slides: paths from the tower top down into the pool
+function fpSlides(){const WS=FP.ws,gy=FP.y,top=gy+WS.top,Q=WS.pool;const mk=(pts,col,name,id)=>{const P=[];for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+      let F=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];const l=Math.hypot(...F)||1;F=F.map(v=>v/l);// up: world up made square to the slide; right = up × forward
+      let U=[-F[1]*F[0],1-F[1]*F[1],-F[1]*F[2]];const ul=Math.hypot(...U)||1;U=U.map(v=>v/ul);const Rr=[U[1]*F[2]-U[2]*F[1],U[2]*F[0]-U[0]*F[2],U[0]*F[1]-U[1]*F[0]];
+      P.push({x:pts[i][0],y:pts[i][1],z:pts[i][2],F,U,R:Rr});}
+    let L=0;for(let i=1;i<P.length;i++)L+=Math.hypot(P[i].x-P[i-1].x,P[i].y-P[i-1].y,P[i].z-P[i-1].z);return {id,name,col,P,L};};
+  // Red Rocket: from the south-east corner of the top, straight down to the pool, with a little hump
+  const red=[];const rx=WS.tx+1.6,rz0=WS.tz+3,rz1=Q.z0+7;for(let k=0;k<=60;k++){const t=k/60;const z=rz0+(rz1-rz0)*t;const y=top+.2-(top-(gy-.05))*Math.pow(t,.8)+Math.sin(t*Math.PI*2)*.5*(1-t);red.push([rx,y,z]);}
+  // Blue Twister: from the west side of the top, twice round its own pole, then into the pool
+  const blue=[];const cx=WS.tx-6.6,cz=WS.tz+3.2,R0=3.6;const a0=Math.atan2(WS.tz-cz,WS.tx-3-cx);blue.push([WS.tx-2.6,top+.2,WS.tz]);
+  for(let k=0;k<=100;k++){const t=k/100;const a=a0+t*Math.PI*4.2;let x=cx+Math.cos(a)*R0,z=cz+Math.sin(a)*R0;let y=top-(top-gy-1.2)*t;blue.push([x,y,z]);}
+  {const e=blue[blue.length-1];const ex=WS.tx-4,ez=Q.z0+3;for(let k=1;k<=24;k++){const t=k/24;blue.push([e[0]+(ex-e[0])*t,e[1]+((gy-.05)-e[1])*t,e[2]+(ez-e[2])*t]);}}
+  FP.ws.pole={x:cx,z:cz};
+  WS.sl=[mk(red,'#e8343f','Red Rocket','red'),mk(blue,'#2f8fff','Blue Twister','blue')];WS.sl[0].col2='#ff8f8f';WS.sl[1].col2='#8fd2ff';}
+{const _bq=buildQuests;buildQuests=function(){try{fpBuild();}catch(e){console.error('funpark',e);noteErr('funpark',e);}_bq();};}
+
+// ---------- the moving parts ----------
+const FPS={bots:[],botT:0,co:{dep:0,seats:{}},last:0};// the shared clock is Date.now(): the big wheel and the carousel turn the same on every tablet
+function fpNow(){return FPS.frz!==undefined?FPS.frz:Date.now()/1000+(FPS.off||0);}
+function fpWheelA(){const W=FP.fw;return (fpNow()%W.per)/W.per*TAU;}
+function fpCaroA(){const C=FP.ca;return (fpNow()%C.per)/C.per*TAU;}
+// the train: where its front is (metres along the track); it waits in the station between rides
+function coTrainS(){const C=FP.co,d=FPS.co.dep;const park=(C.i0||26)*C.DS;if(!d)return park;const t=fpNow()-d;if(t<0||t>C.TT)return park;return park+coAt(t);}
+function coCarFrame(s,k){return coFrame(s-k*2.35-1.1);}
+const CARCOL=['#e8343f','#ffcf3a','#2f8fff'];
+function drawCoasterCar(f,k,t){const m=frameM(f);MS.reset();const q=MS.cur;q.set(m);const c=CARCOL[k%3];
+  rb(q,0,.5,0,1.5,.55,2.05,c,8);rb(q,0,.86,-.62,1.4,.5,.22,c,8);rb(q,0,.86,.38,1.4,.5,.22,c,8);// body and two seat backs
+  bx(q,0,.62,-.12,1.2,.12,.6,'#23232f',1);bx(q,0,.62,.88,1.2,.12,.5,'#23232f',1);// seats
+  bx(q,0,1.2,.05,1.3,.08,.08,'#ffcf3a',3);bx(q,0,1.2,1.0,1.3,.08,.08,'#ffcf3a',3);// lap bars
+  if(k===0){rb(q,0,.55,1.25,1.3,.45,.5,c,8);sp(q,-.4,.62,1.48,.18,.18,.08,'#ffffff',1,.6);sp(q,.4,.62,1.48,.18,.18,.08,'#ffffff',1,.6);}
+  for(const sx of [-.58,.58])for(const sz of [-.7,.7])cy(q,sx,.12,sz,.22,.16,.22,'#2b2d42',3);}
+function drawFunPark(t){if(!FP.ok||camRealm()!=='earth')return;const cx=(FP.x0+FP.x1)/2,cz=(FP.z0+FP.z1)/2;if(Math.abs(cx-CAM.tx)>260||Math.abs(cz-CAM.tz)>260)return;
+  OUT=DYN;const gy=FP.y;const near=Math.abs(cx-CAM.tx)<130&&Math.abs(cz-CAM.tz)<130;
+  // the coaster train
+  if(FP.co.P){const s=coTrainS();for(let k=0;k<3;k++){const f=coCarFrame(s,k);if(inView(f.x,f.z))drawCoasterCar(f,k,t);}}
+  // the big wheel
+  {const W=FP.fw,a0=fpWheelA(),m=MS.cur;const seg=36;MS.reset();M4.tr(m,W.x,gy+W.hub,W.z);M4.rz(m,a0);
+    for(const sz of [-1.4,1.4]){for(let k=0;k<seg;k++){MS.push();M4.rz(m,k/seg*TAU);bx(m,W.r,0,sz,.32,TAU*W.r/seg+.05,.32,k%2?'#ffffff':'#ff5fa8',3);if(k%3===0)sp(m,W.r+.25,0,sz,.32,.32,.32,['#ffcf3a','#46e6ff','#ff8af0','#7ed957'][(k/3)%4],1,.9);MS.pop();}
+      for(let k=0;k<W.n;k++){MS.push();M4.rz(m,k/W.n*TAU);bx(m,W.r/2,0,sz,W.r,.16,.16,'#f4f4f4',3);MS.pop();}}
+    cy(m,0,0,0,1.5,3.4,1.5,'#ffcf3a',3);MS.push();M4.rx(m,Math.PI/2);cy(m,0,0,0,1.1,3.6,1.1,'#ffcf3a',3);MS.pop();
+    for(let k=0;k<W.n;k++){const a=a0+k/W.n*TAU,gx=W.x+Math.cos(a)*W.r,gyy=gy+W.hub+Math.sin(a)*W.r;MS.reset();M4.tr(m,gx,gyy,W.z);const c=['#ff5d73','#46b0ff','#ffcf3a','#46e6b0','#b28dff','#ff9a3c'][k%6];
+      bx(m,0,-.45,0,.12,.9,.12,'#9aa3b3',3);rb(m,0,-2.2,0,1.9,.16,2.3,c,8);// an open gondola: floor, low sides, four posts and a roof, so you can see who is riding
+      for(const s of [-1,1]){bx(m,s*.9,-1.88,0,.1,.5,2.3,c,8);bx(m,0,-1.88,s*1.1,1.9,.5,.1,c,8);for(const s2 of [-1,1])bx(m,s*.86,-1.35,s2*1.06,.07,1.2,.07,'#ffffff',3);}
+      rb(m,0,-.78,0,2.1,.16,2.5,c,8);co(m,0,-.55,0,2.2,.4,2.6,'#ffffff',1);}}
+  // the carousel: horses going round and up and down
+  {const CA=FP.ca,a0=fpCaroA(),m=MS.cur;MS.reset();M4.tr(m,CA.x,gy,CA.z);M4.ry(m,-a0);cy(m,0,.55,0,CA.r*2+.4,.25,CA.r*2+.4,'#ff9ec0',1);
+    for(let k=0;k<CA.n;k++){MS.push();M4.ry(m,k/CA.n*TAU);const bob=Math.sin(fpNow()*2.2+k*1.7)*.32;bx(m,0,2.7,CA.r*.78,.09,4.2,.09,'#ffcf3a',3);MS.push();M4.tr(m,0,1.45+bob,CA.r*.78);
+      const c=['#ffffff','#f2d0a0','#ff9ec0','#c9b6ff'][k%4];rb(m,0,.35,0,.5,.55,1.25,c,1);rb(m,0,.75,.52,.32,.6,.3,c,1);rb(m,0,.98,.75,.28,.28,.42,c,1);bx(m,0,.82,.4,.14,.5,.14,'#ff5d73',1);
+      for(const sx of [-.15,.15])for(const sz of [-.4,.4])bx(m,sx,-.15,sz,.12,.55,.12,c,1);rb(m,0,.66,-.05,.56,.12,.5,['#e8343f','#2f6bff','#ffcf3a','#46e6b0'][k%4],1);MS.pop();MS.pop();}}
+  // bumper cars driven by the park's own little drivers
+  if(near){for(const b of FPS.bots)drawBumper(b.x,b.z,b.h,b.col,t,b.drv);if(FPS.me&&FPS.me.k==='bc')drawBumper(FPS.me.x,FPS.me.z,FPS.me.h,'#ff5fa8',t,null);for(const rp of netFriends())if(rp.fpRide&&rp.fpRide[0]==='bc')drawBumper(rp.x,rp.z,rp.face,'#ff9a3c',t,null);}
+  // the fountain
+  if(near){const PL=FP.plaza;const m=MS.cur;MS.reset();M4.tr(m,PL.x,gy,PL.z);const w=1+Math.sin(t*6)*.06;cy(m,0,3.2,0,.35,2.4*w,.35,'#bfe9ff',8,.35);sp(m,0,4.5*w,0,.9,.6,.9,'#e8f7ff',8,.4);
+    if(R()<.5)PARTS.push({x:PL.x+Rr(-.3,.3),y:gy+4.4,z:PL.z+Rr(-.3,.3),vx:Rr(-2.2,2.2),vy:Rr(1,3),vz:Rr(-2.2,2.2),life:.9,s:.14,c:hex(R()<.5?'#bfe9ff':'#ffffff'),e:.3,g:9,k:'deb',rot:0});}}
+function drawBumper(x,z,h,col,t,drv){const gy=FP.y,m=MS.cur;MS.reset();M4.tr(m,x,gy+.12,z);M4.ry(m,h);rb(m,0,.42,0,1.5,.5,2,col,8);cy(m,0,.22,0,1.95,.3,2.4,'#2b2d42',6);rb(m,0,.75,-.55,1.2,.5,.3,col,8);
+  bx(m,0,1.9,-.75,.06,2.4,.06,'#9aa3b3',3);sp(m,0,3.1,-.75,.18,.18,.18,'#fff6a8',1,1);
+  if(drv){sp(m,0,1.25,-.05,.44,.44,.44,drv.skin,1);rb(m,0,.88,-.05,.5,.42,.36,drv.shirt,1);bx(m,0,1.42,-.05,.46,.12,.46,drv.hair,1);}}
+// the park's own drivers go round and round, bumping into each other
+function fpBots(dt){const BC=FP.bc;if(!FPS.bots.length){const cols=['#ff5d73','#46b0ff','#ffcf3a','#46e6b0','#b28dff'];const sk=['#f2c29b','#8d5a3b','#e0a67a','#c68a5a','#f2c29b'];
+    for(let k=0;k<5;k++)FPS.bots.push({x:BC.x0+4+k*4,z:BC.z0+5+(k%2)*6,h:k*1.3,v:3,turn:0,tt:R()*2,col:cols[k],drv:{skin:sk[k],shirt:['#2f6bff','#ffcf3a','#e8343f','#ffffff','#46e6b0'][k],hair:['#221b25','#8a5a3a','#e8c070','#221b25','#5a3b2e'][k]}});}
+  const all=FPS.bots.concat(fpBumperOthers());
+  for(const b of FPS.bots){b.tt-=dt;if(b.tt<=0){b.tt=Rr(.8,2.5);b.turn=Rr(-1.6,1.6);}b.h+=b.turn*dt;b.v=lerp(b.v,4,dt);
+    b.x+=Math.sin(b.h)*b.v*dt;b.z+=Math.cos(b.h)*b.v*dt;fpBumpWalls(b);}
+  for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++)fpBumpPair(all[i],all[j]);}
+function fpBumpWalls(b){const BC=FP.bc,r=1.2;let hit=false;if(b.x<BC.x0+.4+r){b.x=BC.x0+.4+r;b.h=-b.h;hit=true;}if(b.x>BC.x1-.4-r){b.x=BC.x1-.4-r;b.h=-b.h;hit=true;}
+  if(b.z<BC.z0+.4+r){b.z=BC.z0+.4+r;b.h=Math.PI-b.h;hit=true;}if(b.z>BC.z1-.4-r){b.z=BC.z1-.4-r;b.h=Math.PI-b.h;hit=true;}if(hit)b.v*=.5;return hit;}
+function fpBumpPair(a,b){const dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d>2.3||d<.01)return false;const nx=dx/d,nz=dz/d,o=(2.3-d)/2;
+  if(!a.fixed){a.x-=nx*o;a.z-=nz*o;a.h=Math.atan2(-nx,-nz)+Rr(-.4,.4);a.v=Math.max(a.v,3.5);}if(!b.fixed){b.x+=nx*o;b.z+=nz*o;b.h=Math.atan2(nx,nz)+Rr(-.4,.4);b.v=Math.max(b.v,3.5);}
+  if(a.me||b.me){if((FPS.bonkT||0)<=0){FPS.bonkT=.35;SFX.boing&&SFX.boing();shake(.12);burst((a.x+b.x)/2,FP.y+.8,(a.z+b.z)/2,['#ffcf3a','#ffffff'],8,3,.12,.4);}}return true;}
+function fpBumperOthers(){const L=[];if(FPS.me&&FPS.me.k==='bc')L.push(FPS.me);for(const rp of netFriends())if(rp.fpRide&&rp.fpRide[0]==='bc')L.push({x:rp.x,z:rp.z,h:rp.face,v:0,fixed:true});return L;}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{drawFunPark(t);}catch(e){noteErr('funpark draw',e);}};}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{if(FP.ok&&ME&&Math.abs(ME.x-(FP.x0+FP.x1)/2)<160&&Math.abs(ME.z-(FP.z0+FP.z1)/2)<160){fpBots(dt);if(FPS.bonkT>0)FPS.bonkT-=dt;}}catch(e){noteErr('funpark sim',e);}};}
+// ---------- signs ----------
+MV('Fun Park','مدينة الملاهي');MV('Roller Coaster','الأفعوانية');MV('Big Wheel','العجلة الكبيرة');MV('Bumper Cars','السيارات المتصادمة');MV('Water Slides','الزحاليق المائية');MV('Carousel','الدوامة الخيل');
+{const _ul=updateLabels;updateLabels=function(dt){_ul(dt);try{if(!FP.ok||G.mode==='title'||camRealm()!=='earth')return;const gy=FP.y,cx=(FP.x0+FP.x1)/2,cz=(FP.z0+FP.z1)/2;if(Math.abs(cx-CAM.tx)>150||Math.abs(cz-CAM.tz)>150)return;
+  label('fp_gate',FP.gate.x,gy+8.6,FP.gate.z,'🎪 '+tr('Fun Park'),'sign');const C=FP.co;if(C.sign)label('fp_co',C.sign.x,gy+5.6,C.sign.z-3,'🎢 '+tr('Roller Coaster'),'sign');
+  label('fp_fw',FP.fw.board.x,gy+3.6,FP.fw.board.z,'🎡 '+tr('Big Wheel'),'sign');label('fp_bc',FP.bc.gate.x,gy+5.9,FP.bc.gate.z-.6,'🚗 '+tr('Bumper Cars'),'sign');
+  label('fp_ws',FP.ws.pad.x,gy+3.4,FP.ws.pad.z,'🌊 '+tr('Water Slides'),'sign');label('fp_ca',FP.ca.board.x,gy+7.6,FP.ca.board.z+1.4,'🎠 '+tr('Carousel'),'sign');}catch(e){}};}
+
+// ---------- riding ----------
+// FPS.me: the ride you are on. While riding, the ride moves your hero (your normal moving is paused, like in the balloon).
+FPS.me=null;FPS.ridden=new Set();FPS.rd=null;
+const FPR={co:{ic:'🎢',n:'Roller Coaster'},fw:{ic:'🎡',n:'Big Wheel'},ca:{ic:'🎠',n:'Carousel'},bc:{ic:'🚗',n:'Bumper Cars'},ws:{ic:'🌊',n:'Water Slides'}};
+function fpStart(k,o){const p=ME;if(p.veh&&typeof exitVeh==='function')exitVeh(p);if(p.carry&&typeof dropCarry==='function')dropCarry(p);if(p.carryF&&typeof dropFriend==='function')dropFriend();
+  p.fly=false;p.vx=p.vy=p.vz=0;p.chute=false;p.dive=false;FPS.me={k,t0:fpNow(),...o};if(k!=='bc'&&k!=='ws')p.drive=true;G.ia=null;SFX.whoosh&&SFX.whoosh();}
+function fpStop(x,y,z,vy=0){const p=ME,k=FPS.me&&FPS.me.k;FPS.me=null;p.drive=false;CAM.up=null;if(x!==undefined){p.x=x;p.z=z;p.y=y;}p.vx=p.vz=0;p.vy=vy;p.ground=vy===0;p.safe={x:p.x,y:p.y,z:p.z};
+  if(k)fpReward(k);}
+function fpReward(k){if(FPS.ridden.has(k))return;FPS.ridden.add(k);addCoins(500);SFX.coin&&SFX.coin(1000);const R=FPR[k];toast(R.ic+' '+trf('First ride on the {0}! +500 coins',tr(R.n)));stInc('fpride');
+  if(FPS.ridden.size>=5&&!(G.trophies&&G.trophies.has('funpark'))){(G.trophies=G.trophies||new Set()).add('funpark');addCoins(5000);
+    setTimeout(()=>{banner('🎪 '+tr('Fun Park Champion!'),tr('You rode every ride! +5000 coins and a trophy for the Hall of Heroes'),'#ff5fa8');SFX.win&&SFX.win();if(typeof fireworksAt==='function')fireworksAt(FP.plaza.x,FP.y,FP.plaza.z);},900);}
+  saveSoon();}
+// the coaster: one train, 6 seats; it leaves 6 seconds after the first rider sits down, so friends can hop in too
+function coState(){const d=FPS.co.dep,now=fpNow();if(!d)return 'idle';if(now<d)return 'boarding';if(now<d+FP.co.TT)return 'riding';return 'idle';}
+function fpCoBoard(){const st=coState();if(st==='riding'){toast('🎢 '+trf('The train is out on the track. It is back in {0} s',Math.ceil(FPS.co.dep+FP.co.TT-fpNow())));SFX.nope&&SFX.nope();return;}
+  if(st==='idle'){FPS.co.dep=Math.ceil(fpNow())+6;FPS.co.seats={};netEvent('fp',['co',FPS.co.dep]);}
+  const used=new Set(Object.values(FPS.co.seats));for(const rp of netFriends())if(rp.fpRide&&rp.fpRide[0]==='co'&&rp.fpRide[1]===FPS.co.dep)used.add(rp.fpRide[2]);
+  let seat=0;while(used.has(seat)&&seat<5)seat++;FPS.co.seats.me=seat;fpStart('co',{seat,dep:FPS.co.dep});toast('🎢 '+tr('Hold on tight! Friends can hop in too'));}
+function coSeatFrame(seat,s){const f=coCarFrame(s,seat>>1);return {f,side:seat&1?.36:-.36};}
+// the big wheel: you get the gondola at the bottom and ride once round (40 seconds)
+function fpFwBoard(){const W=FP.fw,a0=fpWheelA();let best=0,bd=9;for(let k=0;k<W.n;k++){let a=a0+k/W.n*TAU;let d=Math.abs(((a+Math.PI/2)%TAU+TAU)%TAU);d=Math.min(d,TAU-d);if(d<bd){bd=d;best=k;}}
+  let side=-.45;for(const rp of netFriends())if(rp.fpRide&&rp.fpRide[0]==='fw'&&rp.fpRide[1]===best)side=.45;fpStart('fw',{g:best,side,dur:W.per});toast('🎡 '+tr('Up you go! You can see the whole park'));}
+function fwSeat(g,side){const W=FP.fw,a=fpWheelA()+g/W.n*TAU;return {x:W.x+Math.cos(a)*W.r+side,y:FP.y+W.hub+Math.sin(a)*W.r-2.12,z:W.z};}
+// the carousel: you get the horse closest to the gate; three times round, or jump off any time
+function fpCaBoard(){const C=FP.ca,a0=fpCaroA();let best=0,bd=9;for(let k=0;k<C.n;k++){const a=-a0+k/C.n*TAU;const x=C.x+Math.sin(a)*C.r*.78,z=C.z+Math.cos(a)*C.r*.78;const d=Math.hypot(x-C.board.x,z-C.board.z);if(d<bd){bd=d;best=k;}}
+  fpStart('ca',{h:best,dur:C.per*3});toast('🎠 '+tr('Giddy up! Jump to get off'));}
+function caSeat(h){const C=FP.ca,a=-fpCaroA()+h/C.n*TAU,bob=Math.sin(fpNow()*2.2+h*1.7)*.32;return {x:C.x+Math.sin(a)*C.r*.78,y:FP.y+1.45+bob+.6,z:C.z+Math.cos(a)*C.r*.78,face:a-Math.PI/2};}
+// bumper cars: drive with the stick, bump everybody, ✋ to get out
+function fpBcBoard(){const B=FP.bc;fpStart('bc',{x:B.gate.x,z:B.z1-2.4,h:Math.PI,v:0,me:1});toast('🚗 '+tr('Bump the other cars! ✋ to get out'));}
+// water slides: the lift pad takes you up; at the top choose a slide
+function fpUp(){const S=FP.ws.topSpot;ME.x=S.x;ME.z=S.z;ME.y=S.y;ME.vx=ME.vz=ME.vy=0;ME.safe={x:S.x,y:S.y,z:S.z};SFX.whoosh&&SFX.whoosh();burst(S.x,S.y+.5,S.z,['#46e6ff','#ffffff'],14,4,.14,.6);}
+function fpWsBoard(i){fpStart('ws',{sl:i,s:0,v:2.5});}
+// ---------- the ride itself, every frame ----------
+function fpRideUpdate(dt,inp){const p=ME,R=FPS.me,A=p.anim;p.vx=p.vz=p.vy=0;p.ground=true;G.ia=null;A.cheer=Math.max(0,(A.cheer||0)-dt);
+  if(R.k==='co'){const C=FP.co;const t=fpNow()-R.dep;if(FPS.co.dep!==R.dep&&t<0){R.dep=FPS.co.dep;}
+    const s=coTrainS();const {f,side}=coSeatFrame(R.seat,s);R.f=f;R.side=side;p.x=f.x+f.R[0]*side+f.U[0]*.6;p.y=f.y+f.R[1]*side+f.U[1]*.6;p.z=f.z+f.R[2]*side+f.U[2]*.6;p.face=Math.atan2(f.F[0],f.F[2]);
+    if(t<0){if(Math.ceil(-t)!==R.cd){R.cd=Math.ceil(-t);if(R.cd<=6)banner('🎢 '+R.cd,tr('Hold on tight!'),'#ff5fa8');SFX.click&&SFX.click();}}
+    else{if(f.tag==='lift'&&(R.clk=(R.clk||0)-dt)<=0){R.clk=.32;SFX.click&&SFX.click();}if((f.tag==='drop'||f.tag==='loop')&&!R.wh){R.wh=1;SFX.whoosh&&SFX.whoosh();}if(f.tag==='drop'||f.tag==='loop'||f.tag==='camel')A.cheer=.6;
+      if(t>=C.TT){const P=C.plat;fpStop(p.x,P.y+.05,P.z+.6);return;}}
+    if(inp.jumpP&&t<0){delete FPS.co.seats.me;fpStop(p.x,C.plat.y+.05,C.plat.z+.6);}animSprings(p,dt);return;}
+  if(R.k==='fw'){const q=fwSeat(R.g,R.side);p.x=q.x;p.y=q.y;p.z=q.z;p.face=0;const t=fpNow()-R.t0;
+    if(t>=R.dur||(inp.jumpP&&t>1.5)){const W=FP.fw;if(t>=R.dur)fpStop(W.board.x+R.side,W.board.y+.05,W.board.z);else fpStop(p.x,p.y,p.z+1.6,4);return;}animSprings(p,dt);return;}
+  if(R.k==='ca'){const q=caSeat(R.h);p.x=q.x;p.y=q.y;p.z=q.z;p.face=q.face;const t=fpNow()-R.t0;if(t>=R.dur||(inp.jumpP&&t>.8)){const C=FP.ca;fpStop(C.board.x,FP.y+.05,C.board.z);return;}animSprings(p,dt);return;}
+  if(R.k==='bc'){const [fx,fz]=camForward(),rx=-fz,rz=fx;let mx=inp.mx,mz=inp.mz;const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}const wx=rx*mx+fx*(-mz),wz=rz*mx+fz*(-mz),wl=Math.hypot(wx,wz);
+    if(wl>.15){const want=Math.atan2(wx,wz);let d=want-R.h;d=Math.atan2(Math.sin(d),Math.cos(d));R.h+=clamp(d,-3.2*dt,3.2*dt);R.v=lerp(R.v,7*Math.min(1,wl),Math.min(1,dt*2.2));}else R.v=lerp(R.v,0,Math.min(1,dt*1.5));
+    R.x+=Math.sin(R.h)*R.v*dt;R.z+=Math.cos(R.h)*R.v*dt;if(fpBumpWalls(R)){if((FPS.bonkT||0)<=0){FPS.bonkT=.35;SFX.boing&&SFX.boing();}}
+    p.x=R.x;p.z=R.z;p.y=FP.y+.4;p.face=R.h;p.drive=true;if(inp.interactP){const B=FP.bc;fpStop(B.gate.x,FP.y+.05,B.gate.z+.6);}animSprings(p,dt);return;}
+  if(R.k==='ws'){const S=FP.ws.sl[R.sl],P=S.P;// slide: gravity along the slide, a little friction
+    let i=Math.min(P.length-2,Math.floor(R.i||0));const a=P[i],b=P[i+1];const seg=Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z)||.01;const slope=(a.y-b.y)/seg;R.v=Math.max(2.5,Math.min(14,R.v+(9.8*slope-.6-R.v*.05)*dt));
+    let adv=R.v*dt;let k=(R.i||0)%1;while(adv>0&&i<P.length-1){const A2=P[i],B2=P[i+1];const L=Math.hypot(B2.x-A2.x,B2.y-A2.y,B2.z-A2.z)||.01;const left=(1-k)*L;if(adv<left){k+=adv/L;adv=0;}else{adv-=left;i++;k=0;}}
+    R.i=i+k;if(i>=P.length-1){const e=P[P.length-1];SFX.splash&&SFX.splash();burst(e.x,FP.y-.2,e.z,['#bfe9ff','#ffffff','#46b0ff'],40,7,.2,.9);shake(.2);fpStop(e.x+e.F[0]*1.2,FP.y-.6,e.z+e.F[2]*1.2,1);return;}
+    const A2=P[i],B2=P[Math.min(P.length-1,i+1)];const L2=(u,v)=>u+(v-u)*k;p.x=L2(A2.x,B2.x);p.y=L2(A2.y,B2.y)+.05;p.z=L2(A2.z,B2.z);p.face=Math.atan2(A2.F[0],A2.F[2]);R.f={x:p.x,y:p.y,z:p.z,F:A2.F,U:A2.U,R:A2.R};
+    A.cheer=.6;if(R0()<.6)PARTS.push({x:p.x+Rr(-.4,.4),y:p.y+.1,z:p.z+Rr(-.4,.4),vx:-A2.F[0]*2+Rr(-1,1),vy:Rr(.5,2),vz:-A2.F[2]*2+Rr(-1,1),life:.5,s:.12,c:hex(R0()<.5?'#bfe9ff':'#ffffff'),e:.3,g:7,k:'deb',rot:0});
+    animSprings(p,dt);return;}}
+const R0=()=>Math.random();
+{const _um=updateMe;updateMe=function(dt,inp){if(!FPS.me)return _um(dt,inp);try{fpRideUpdate(dt,inp);}catch(e){noteErr('fpride',e);FPS.me=null;ME.drive=false;CAM.up=null;}};}
+// ---------- getting on: ✋ Use next to a ride ----------
+MV('Ride the Roller Coaster!','اركب الأفعوانية!');MV('Ride the Big Wheel','اركب العجلة الكبيرة');MV('Ride the Carousel','اركب الدوامة');MV('Drive a Bumper Car','قُد سيارة متصادمة');MV('Up to the slides','اصعد إلى الزحاليق');
+MV('Slide: Red Rocket','انزلق: الصاروخ الأحمر');MV('Slide: Blue Twister','انزلق: الإعصار الأزرق');MV('Hop in! Leaving in {0}','اقفز إلى الداخل! تنطلق بعد {0}');MV('Back in {0} s','يعود بعد {0} ث');
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(!FP.ok||FPS.me||p.veh||Math.abs(p.x-(FP.x0+FP.x1)/2)>60||Math.abs(p.z-(FP.z0+FP.z1)/2)>45)return;
+  const C=FP.co;if(C.plat&&p.x>C.plat.x0-1&&p.x<C.plat.x1+1&&Math.abs(p.z-C.plat.z)<3&&p.y>C.plat.y-.6){const st=coState();
+    const lab=st==='riding'?'🎢 '+trf('Back in {0} s',Math.ceil(FPS.co.dep+C.TT-fpNow())):st==='boarding'?'🎢 '+trf('Hop in! Leaving in {0}',Math.max(0,Math.ceil(FPS.co.dep-fpNow()))):'🎢 '+tr('Ride the Roller Coaster!');
+    cand({x:p.x,z:C.plat.z,y:C.plat.y},'fpco',lab,4,7,{fn:()=>fpCoBoard()});}
+  const W=FP.fw;if(W.board)cand({x:W.board.x,z:W.board.z,y:W.board.y},'fpfw','🎡 '+tr('Ride the Big Wheel'),3.2,7,{fn:()=>fpFwBoard()});
+  const CA=FP.ca;if(CA.board)cand({x:CA.board.x,z:CA.board.z,y:FP.y},'fpca','🎠 '+tr('Ride the Carousel'),3,7,{fn:()=>fpCaBoard()});
+  const B=FP.bc;if(B.gate)cand({x:B.gate.x,z:B.gate.z,y:FP.y},'fpbc','🚗 '+tr('Drive a Bumper Car'),3,7,{fn:()=>fpBcBoard()});
+  const S=FP.ws;if(S.pad)cand({x:S.pad.x,z:S.pad.z,y:FP.y},'fpup','⬆️ '+tr('Up to the slides'),2.8,7,{fn:()=>fpUp()});
+  if(S.sl&&p.y>FP.y+S.top-1)S.sl.forEach((sl,i)=>{const a=sl.P[0];cand({x:a.x,z:a.z,y:a.y},'fpsl',(i?'🔵 ':'🔴 ')+tr(i?'Slide: Blue Twister':'Slide: Red Rocket'),2.4,7,{fn:()=>fpWsBoard(i)});});};}
+
+// ---------- drawing riders: seated, and turned with the ride (upside down in the loop!) ----------
+// The hero is drawn as usual at the origin into a little list, then every piece is moved onto the seat's frame.
+const FPCAP={list:[],fake:null};
+function fpDrawOnFrame(d,t,M,dh,scale){if(!FPCAP.fake){FPCAP.fake={};for(const k of ['box','rbox','cyl','sph','cone','wedge'])FPCAP.fake[k]={put:(m,cx,cy,cz,sx,sy,sz,c,a)=>{FPCAP.list.push([k,Float32Array.from(m),cx,cy,cz,sx,sy,sz,c,a]);}};}
+  const keep=OUT;FPCAP.list.length=0;const g3=typeof G3D!=='undefined'&&G3D.on;OUT=FPCAP.fake;try{if(g3)G3D.on=false;dh({...d,x:0,y:0,z:0,face:0,drive:true,scale:scale||1},t);}finally{if(g3)G3D.on=true;OUT=keep;}
+  const mm=new Float32Array(16);for(const q of FPCAP.list){M4.mul(mm,M,q[1]);keep[q[0]].put(mm,q[2],q[3],q[4],q[5],q[6],q[7],q[8],q[9]);}}
+// the frame a rider sits in: [right, up, forward] and the place of the seat
+function fpSeatMatrix(R){if(R.k==='co'){const s=coTrainS();const {f,side}=coSeatFrame(R.seat,s);return frameM(f,side,.42,-.1);}
+  if(R.k==='ws'&&R.f)return frameM(R.f,0,.05,0);return null;}
+{const _dh=drawHero;drawHero=function(d,t){try{let R=null;if(d===ME&&FPS.me)R=FPS.me;else if(d!==ME&&FPS.riders.length){for(const r of FPS.riders)if(Math.abs(r.x-d.x)<.01&&Math.abs(r.z-d.z)<.01){R=r.R;break;}}
+    if(R){const M=fpSeatMatrix(R);if(M){fpDrawOnFrame(d,t,M,_dh,R.k==='co'?.92:1);return;}}}catch(e){noteErr('fprider',e);}return _dh(d,t);};}
+// friends on rides: where they sit on MY copy of the ride (so it looks smooth even with a slow connection)
+FPS.riders=[];
+function fpFriendsTick(){FPS.riders.length=0;for(const rp of netFriends()){const r=rp.fpRide;if(!r)continue;
+    if(r[0]==='co'){if(!FPS.co.dep||Math.abs(FPS.co.dep-r[1])>.5){if(coState()==='idle'||r[1]<FPS.co.dep)FPS.co.dep=r[1];}const R={k:'co',seat:r[2]|0,dep:r[1]};const s=coTrainS();const {f,side}=coSeatFrame(R.seat,s);
+      rp.x=f.x+f.R[0]*side+f.U[0]*.6;rp.y=f.y+f.R[1]*side+f.U[1]*.6;rp.z=f.z+f.R[2]*side+f.U[2]*.6;rp.face=Math.atan2(f.F[0],f.F[2]);FPS.riders.push({x:rp.x,z:rp.z,R});}
+    else if(r[0]==='fw'){const q=fwSeat(r[1]|0,r[2]||.45);rp.x=q.x;rp.y=q.y;rp.z=q.z;rp.face=0;rp.drive=true;}
+    else if(r[0]==='ca'){const q=caSeat(r[1]|0);rp.x=q.x;rp.y=q.y;rp.z=q.z;rp.face=q.face;rp.drive=true;}
+    else if(r[0]==='bc'){rp.drive=true;}}}
+// what my tablet tells the others: which ride, and where on it
+function netExtra(o){const R=FPS.me;if(!R)return;o.fr=R.k==='co'?['co',R.dep,R.seat]:R.k==='fw'?['fw',R.g,R.side]:R.k==='ca'?['ca',R.h]:R.k==='bc'?['bc']:R.k==='ws'?['ws',R.sl]:null;}
+{const _orp=onRemotePresence;onRemotePresence=function(peer){const r=_orp.apply(this,arguments);try{const o=peer&&peer.presence;if(!o||o.v!==3)return r;const id=typeof o.id==='string'&&o.id?o.id.slice(0,16):'p'+String(peer.peer).slice(0,20);
+  const rp=NET.peers[id];if(!rp)return r;const f=o.fr;rp.fpRide=Array.isArray(f)&&typeof f[0]==='string'&&FPR[f[0]]?[f[0],num(f[1],0),num(f[2],0)]:null;}catch(e){}return r;};}
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='fp'){try{if(a[0]==='co'){const d=num(a[1],0);if(d>0&&(coState()==='idle'||(coState()==='boarding'&&d<FPS.co.dep)))FPS.co.dep=d;}}catch(e){}return;}return _ae(type,a,rp);};}
+// ---------- the camera on a ride ----------
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);const R=FPS.me;if(LOOK.nf0===undefined)LOOK.nf0=LOOK.nf;LOOK.nf=R&&(R.k==='co'||R.k==='ws'||R.k==='fw')?0:LOOK.nf0;if(!R){if(CAM.up)CAM.up=null;return;}
+  if(R.k==='co'&&fpNow()>=R.dep){const s=coTrainS();const f=coFrame(s-2.35*(R.seat>>1)-1.1);const e=[f.x-f.F[0]*5.6+f.U[0]*3,f.y-f.F[1]*5.6+f.U[1]*3,f.z-f.F[2]*5.6+f.U[2]*3];
+    CAM.eye=e;CAM.tx=f.x+f.F[0]*9+f.U[0]*.9;CAM.ty=f.y+f.F[1]*9+f.U[1]*.9;CAM.tz=f.z+f.F[2]*9+f.U[2]*.9;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=[f.U[0],f.U[1],f.U[2]];return;}
+  if(R.k==='ws'&&R.f){const f=R.f,P=FP.ws.sl[R.sl].P,j=Math.max(0,Math.floor(R.i||0)-9),q=P[j];CAM.eye=[q.x,q.y+2.8,q.z];CAM.tx=f.x+f.F[0]*2.5;CAM.ty=f.y+.4;CAM.tz=f.z+f.F[2]*2.5;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=null;return;}
+  if(R.k==='fw'){const W=FP.fw;const p=ME;CAM.eye=[p.x+(p.x-W.x)*.35,p.y+3.2,W.z+13];CAM.tx=p.x;CAM.ty=p.y+.6;CAM.tz=p.z;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=null;return;}
+  CAM.up=null;};}
+// ---------- remember the rides you have been on ----------
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.fpr=[...FPS.ridden];return o;};extraLoad=function(x){_el(x);FPS.ridden=new Set(x&&Array.isArray(x.fpr)?x.fpr.filter(k=>typeof k==='string'&&FPR[k]):[]);};}
+{const _ss2=simStep;simStep=function(dt,inp){_ss2(dt,inp);try{if(FP.ok)fpFriendsTick();}catch(e){}};}
+if(typeof TROPHIES!=='undefined')TROPHIES.funpark=TROPHIES.funpark||{n:'Fun Park Champion',ic:'🎪',d:'Rode every ride in the Fun Park'};
+MV('First ride on the {0}! +500 coins','أول ركوب على {0}! +500 قطعة نقدية');MV('Fun Park Champion!','بطل مدينة الملاهي!');MV('You rode every ride! +5000 coins and a trophy for the Hall of Heroes','ركبت كل الألعاب! +5000 قطعة نقدية وكأس لقاعة الأبطال');
+MV('Hold on tight! Friends can hop in too','تمسّك جيدًا! يستطيع أصدقاؤك الركوب أيضًا');MV('Hold on tight!','تمسّك جيدًا!');MV('The train is out on the track. It is back in {0} s','القطار على السكة الآن. يعود بعد {0} ث');
+MV('Up you go! You can see the whole park','إلى الأعلى! يمكنك رؤية المدينة كلها');MV('Giddy up! Jump to get off','هيا يا حصان! اقفز لتنزل');MV('Bump the other cars! ✋ to get out','اصطدم بالسيارات الأخرى! ✋ للنزول');
+MV('Fun Park Champion','بطل مدينة الملاهي');MV('Rode every ride in the Fun Park','ركب كل الألعاب في مدينة الملاهي');
+// ---------- on the big map, and in What's new ----------
+MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!FP.ok)return;add({id:'funpark',cat:'fun',x:FP.gate.x,z:FP.gate.z+2,ic:'🎢',col:'#ff5fa8',t:tr('Fun Park'),s:tr('Roller coaster, big wheel, bumper cars, water slides and a carousel'),pr:6});});
+MV('Roller coaster, big wheel, bumper cars, water slides and a carousel','أفعوانية وعجلة كبيرة وسيارات متصادمة وزحاليق مائية ودوامة');MV('The Fun Park!','مدينة الملاهي!');
+MV('A real theme park on Sunset Bay, north of the town: a roller coaster with a loop, a big wheel, bumper cars, two water slides into a pool and a carousel. Press ✋ next to a ride to get on. Friends ride together!','مدينة ملاهٍ حقيقية في خليج الغروب، شمال البلدة: أفعوانية فيها حلقة، وعجلة كبيرة، وسيارات متصادمة، وزحليقتان مائيتان تنتهيان في مسبح، ودوامة خيل. اضغط ✋ بجانب أي لعبة لتركبها. يركب الأصدقاء معًا!');
+// ---------- people in the park: stand keepers, visitors, a balloon seller ----------
+FPS.folk=null;
+function fpFolk(){if(FPS.folk)return FPS.folk;const gy=FP.y;const L=(shirt,pants,skin,hair,o={})=>({shirt,pants,skin,hair,hs:o.hs??1,...o});const P=[];
+  const add=(x,z,face,look,o={})=>P.push({x,y:gy,z,face,anim:newAnim(),look,...o});
+  for(const s of FP.stands)add(s.x,s.z-2.1,0,L('#ffffff','#2d2f45',['#f2c29b','#8d5a3b','#e0a67a'][P.length%3],'#221b25',{hat:'chef'}));
+  add(586,156.5,Math.PI*.15,L('#ff9ec0','#2b2d42','#c68a5a','#221b25',{dress:1,hs:2}),{bal:1});
+  add(589.5,151.2,Math.PI,L('#46b0ff','#2d2f45','#f2c29b','#8a5a3a',{scale:.72}),{balOne:'#ff5d73'});add(590.6,151.4,Math.PI*1.1,L('#ffcf3a','#3f5a7a','#f2c29b','#8a5a3a'));
+  add(600,146,-Math.PI/2,L('#7ed957','#2b2d42','#8d5a3b','#221b25',{scale:.75}),{cheerAt:'co'});add(577,121,Math.PI,L('#ff8a1f','#2d2f45','#e0a67a','#5a3b2e'),{cheerAt:'co'});
+  add(613.5,119,Math.PI,L('#b28dff','#2b2d42','#f2c29b','#e8c070',{dress:1,hs:2,scale:.74}),{cheerAt:'co'});add(614.6,119.2,Math.PI,L('#2f6bff','#2d2f45','#f2c29b','#221b25'));
+  add(566,141,-Math.PI/2,L('#46e6b0','#2b2d42','#c68a5a','#221b25',{scale:.7}),{balOne:'#46b0ff'});
+  FPS.folk=P;return P;}
+function drawFolk(t){const P=fpFolk(),m=MS.cur;const run=coState()==='riding';for(const o of P){if(!inView(o.x,o.z)||Math.abs(o.x-CAM.tx)>90||Math.abs(o.z-CAM.tz)>90)continue;
+    o.anim.cheer=(o.cheerAt&&run&&Math.sin(t*1.3+o.x)>.2)?.5:0;o.anim.wave=(!o.cheerAt&&Math.sin(t*.7+o.z)>.93)?.5:0;drawPerson(o,t,o.look);
+    if(o.bal||o.balOne){const cols=o.bal?['#ff5d73','#ffcf3a','#46b0ff','#7ed957','#b28dff','#ff9ec0','#ff8a1f']:[o.balOne];const sc=o.look.scale||1;
+      for(let k=0;k<cols.length;k++){const a=k/cols.length*TAU,r=cols.length>1?.55:0;const bx2=o.x+Math.sin(o.face+.9)*.36*sc+Math.cos(a)*r,bz=o.z+Math.cos(o.face+.9)*.36*sc+Math.sin(a)*r,by=o.y+2.7*sc+(k%3)*.3+Math.sin(t*1.6+k)*.08;
+        MS.reset();M4.tr(m,bx2,by,bz);sp(m,0,0,0,.5,.6,.5,cols[k],8,.08);bx(m,0,-.62,0,.02,.7,.02,'#ffffff',1);}}}}
+{const _dfp=drawFunPark;drawFunPark=function(t){_dfp(t);if(!FP.ok||camRealm()!=='earth')return;const cx=(FP.x0+FP.x1)/2,cz=(FP.z0+FP.z1)/2;if(Math.abs(cx-CAM.tx)>110||Math.abs(cz-CAM.tz)>110)return;OUT=MOB;drawFolk(t);OUT=DYN;};}
+MV('Luna and Basma in 3D','لونا وبسمة بالأبعاد الثلاثية');MV('Luna and Butterfly Basma have their own picture cards now, and real 3D figures made from the family\'s pictures. To play with the 3D heroes, turn on Menu, Settings, 🧸 3D heroes','للونا وبسمة الفراشة بطاقات صور خاصة بهما الآن، وشخصيات حقيقية ثلاثية الأبعاد مصنوعة من صور العائلة. لتلعب بالأبطال ثلاثيي الأبعاد، شغّل القائمة، الإعدادات، 🧸 الأبطال ثلاثيو الأبعاد');
 // ================= v26.6: 🎨 Hero Maker: the kids make their own heroes =================
 // Menu > 🎨 Hero Maker (or 🦸 > Make your own hero). Pick skin, hair, suit colours, boots and gloves, a chest picture, a hat,
 // a face extra, a cape, wings or a jetpack, legs, a dress or a mermaid tail, something in the hand, two attacks, a special
