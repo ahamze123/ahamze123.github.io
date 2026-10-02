@@ -18,4 +18,4 @@ From Block Buddies: the glowing trail and golden arrow that lead the way, trees 
 
 Luna and her friends were drawn by the family in ChatGPT and turned into 3D with Meshy (Meshy runs 14 and 15 in `tools/meshy`): `models/luna.glb` has Luna's skeleton and moves (walk, skip, run, idle, sway, jump, happy jump, wave, cheer, dance); the animals, the castle, cottage, trees, flowers and the things to collect are still models that the game moves. If a model can't load, the game draws a simple stand-in.
 
-`index.html` is the whole game (three.js 0.147 from jsDelivr). Progress is saved on the tablet (`luna-sparkle-kingdom-v1`).
+`index.html` is the whole game (three.js 0.147 and its model loader are in `lib/`, so it needs no other website). Progress is saved on the tablet (`luna-sparkle-kingdom-v1`).
