@@ -2068,6 +2068,12 @@
    "model": {
     "credits": 30,
     "error": null,
+    "file": {
+     "bytes": 227152,
+     "clips": [],
+     "joints": 0,
+     "triangles": 2599
+    },
     "id": "01a0fe9c-1bc2-7304-8d22-f08b2f111763",
     "made": "2026-10-02 21:53",
     "run": 15,
