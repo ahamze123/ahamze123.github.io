@@ -724,3 +724,4 @@
 2026-10-02 09:35:17 [mluna] image-to-3d IN_PROGRESS 67%
 2026-10-02 09:35:27 [mluna] image-to-3d IN_PROGRESS 99%
 2026-10-02 09:35:37 [mluna] image-to-3d SUCCEEDED 100%
+2026-10-02 09:35:42 [mluna] rig task made 01a0fbf8-2732-745e-b05c-85763835bc9d
