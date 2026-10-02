@@ -1995,6 +1995,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "p_appletree": {
+   "model": {
+    "id": "01a0fe98-9673-7513-9f82-b7adec7d491a",
+    "made": "2026-10-02 21:50",
+    "run": 14,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_bunny": {
    "model": {
     "id": "01a0fe95-14ae-73b2-8ad0-793d6f25a9db",
