@@ -767,3 +767,8 @@
 2026-10-02 20:46:26 [img prism_card_a] image-to-image SUCCEEDED 100%
 2026-10-02 20:46:26 [img prism_card_a] saved ['images/prism_card_a.png']
 2026-10-02 20:46:29 [prism] model task made 01a0fe5e-4e7e-75b2-af99-76f729158cff
+2026-10-02 20:46:30 [prism] image-to-3d IN_PROGRESS 1%
+2026-10-02 20:47:32 [prism] image-to-3d IN_PROGRESS 36%
+2026-10-02 20:48:02 [prism] image-to-3d IN_PROGRESS 67%
+2026-10-02 20:48:13 [prism] image-to-3d IN_PROGRESS 84%
+2026-10-02 20:48:33 [prism] image-to-3d SUCCEEDED 100%
