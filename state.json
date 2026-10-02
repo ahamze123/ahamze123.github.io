@@ -1997,6 +1997,8 @@
   },
   "p_appletree": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0fe98-9673-7513-9f82-b7adec7d491a",
     "made": "2026-10-02 21:50",
     "run": 14,
@@ -2009,7 +2011,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe98-9673-7513-9f82-b7adec7d491a/output/preview.png?Expires=1791237080&Signature=pPNZHubB-3XcIChdXEKAUZbvP3fEgbs7P2DZSsqSKkjhzA6LXdaTymr6ujx~~-uMmfA4NZAuQgslATQUIqIiWen0sxMjW43YH4FaTdaGpSrPtoxdKoR6Mw-VzvCZ9mjgLFmCZy-ykJxWCAN1kVpqyTNzrdm7uFq0ULGu03ymlnaMjG9cV5jgDAIXboCCIqdkS~r9fPuiMFAV0VszEI78E04ZZ~le4YK0DPei6pebdvGHbtRxiKqTCcEh7AtMoimuqBrZZsRHzrh-MXQVPPA~hYId5F8yiGntc2Rkx0TR1vIH3OYxGTLqca-ljeXfupP6AjqCakZMecngcRqmS6ZYJQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "p_bunny": {
@@ -2066,6 +2069,8 @@
   },
   "p_cottage": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0fe98-4a52-7405-b51a-118dd4c73f2d",
     "made": "2026-10-02 21:49",
     "run": 14,
@@ -2078,7 +2083,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe98-4a52-7405-b51a-118dd4c73f2d/output/preview.png?Expires=1791237078&Signature=U~pAYlLQfVningYGhwB9Cso~BiXiA9U88i5hd9C2g8-EtIl97l9Rnf-qEZaTG9vfKvm6mnO5xpMzXiPQe6Iyw0OkO15rc2GtnV1cpS2DhozFx~oWNFb~rVH-QyxR5kv-pTvxLCUGBcQTg32IMXSkp8b0q9oNVAX2Fyg6almMWdP7GFUw9YEMPwxqhQbHpQok1FBKuIS7f3wCBlfDy7sTL-c005SjiTrZMSf2Ds2X6kEtmvJlrOBh1ni17D1JpDLYtHl3cDbOyAs8xTDkWhXQw8EhUuNCB1TuqO9L3MsNH2hAaxfvR0SFJOJtAka5MxIODRJAa3Vbxh~LFG6RlbXfow__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "p_dot": {

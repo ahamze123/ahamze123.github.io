@@ -857,3 +857,5 @@
 2026-10-02 21:51:17 [p_luna] rigging SUCCEEDED 100%
 2026-10-02 21:51:17 [p_luna] rigged: {"model": {"bytes": 4818688, "triangles": 30187, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57148, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46512, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-02 21:51:20 [p_luna] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 5886296}
+2026-10-02 21:51:21 [p_appletree] image-to-3d SUCCEEDED 100%
+2026-10-02 21:51:22 [p_cottage] image-to-3d SUCCEEDED 100%
