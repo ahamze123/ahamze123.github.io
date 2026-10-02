@@ -2163,6 +2163,12 @@
    "model": {
     "credits": 30,
     "error": null,
+    "file": {
+     "bytes": 306500,
+     "clips": [],
+     "joints": 0,
+     "triangles": 3126
+    },
     "id": "01a0fe9c-1be1-76ee-bac9-5e388c437f7b",
     "made": "2026-10-02 21:53",
     "run": 15,
