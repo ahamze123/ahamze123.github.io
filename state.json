@@ -4050,6 +4050,11 @@
    "status": "SUCCEEDED"
   },
   "color_page2": {
+   "credits": 3,
+   "error": null,
+   "files": [
+    "images/color_page2.png"
+   ],
    "id": "01a0feec-748a-75fa-a276-56516947d4fc",
    "kind": "text-to-image",
    "made": "2026-10-02 23:21",
@@ -4060,7 +4065,7 @@
     "aspect_ratio": "4:3",
     "prompt": "A coloring page for a 5 year old: a cute kitten and a bunny having a tea party at a little table with a teapot, cups and cupcakes, and a heart balloon. Very thick clean black outlines, big simple shapes, pure white inside every shape, no shading, no gray, no color, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "dress_items": {
    "credits": 9,
