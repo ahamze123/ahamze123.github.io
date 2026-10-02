@@ -3279,6 +3279,11 @@
  },
  "images": {
   "prism_pic_a": {
+   "credits": 12,
+   "error": null,
+   "files": [
+    "images/prism_pic_a.png"
+   ],
    "id": "01a0fe4f-e094-7255-935b-0d4a4448cbdc",
    "kind": "image-to-image",
    "made": "2026-10-02 20:30",
@@ -3292,7 +3297,7 @@
     "aspect_ratio": "2:3",
     "prompt": "Use the reference pictures ONLY for the art style: glossy 3D toy action-figure style like a premium kids' superhero figure, whole body from head to feet on a plain pure white background, standing straight and facing the viewer, arms held a little away from the body (relaxed A-pose), feet slightly apart, soft studio light. Do NOT copy the characters in the references. Make ONE new character: Captain Prism, a cheerful girl superhero about 9 years old, light tan skin, big friendly brown eyes, a happy smile, and a long high blond ponytail. She wears a white superhero bodysuit with purple side panels and purple shoulder pads, a sparkling rainbow prism gem emblem on her chest, a gold belt with a small purple gem buckle, white gloves with purple cuffs, purple leggings, tall white boots with gold tops, and a flowing rainbow cape with red, orange, yellow, green, blue and purple stripes that hangs behind her to her knees. No wings, no mask, no hat, nothing in her hands, no text, no logo."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "prism_pic_b": {
    "credits": 9,
@@ -3316,6 +3321,9 @@
    "status": "SUCCEEDED"
   },
   "prism_pic_c": {
+   "credits": 12,
+   "error": null,
+   "files": [],
    "id": "01a0fe4f-e094-7437-bdf4-20570c873daa",
    "kind": "image-to-image",
    "made": "2026-10-02 20:30",
@@ -3329,7 +3337,7 @@
     "aspect_ratio": "2:3",
     "prompt": "Use the reference pictures ONLY for the art style: glossy 3D toy action-figure style like a premium kids' superhero figure, whole body from head to feet on a plain pure white background, standing straight and facing the viewer, arms held a little away from the body (relaxed A-pose), feet slightly apart, soft studio light. Do NOT copy the characters in the references. Make ONE new character: Captain Prism, a cheerful girl superhero about 9 years old, light tan skin, big friendly brown eyes, a happy smile, and a long high blond ponytail. She wears a white superhero bodysuit with purple side panels and purple shoulder pads, a sparkling rainbow prism gem emblem on her chest, a gold belt with a small purple gem buckle, white gloves with purple cuffs, purple leggings, tall white boots with gold tops, and a flowing rainbow cape with red, orange, yellow, green, blue and purple stripes that hangs behind her to her knees. No wings, no mask, no hat, nothing in her hands, no text, no logo."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   }
  },
  "runs": [
