@@ -3295,6 +3295,11 @@
    "status": "PENDING"
   },
   "prism_card_b": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/prism_card_b.png"
+   ],
    "id": "01a0fe5d-c211-765f-b14a-6aa914d93473",
    "kind": "image-to-image",
    "made": "2026-10-02 20:45",
@@ -3308,7 +3313,7 @@
     "aspect_ratio": "9:16",
     "prompt": "Make a tall hero card picture of the girl superhero in the FIRST picture. Keep her exactly the same: her face, light tan skin, brown eyes, long high blond ponytail, white and purple suit with purple shoulder pads, the rainbow gem on her chest, gold belt with a purple gem, white gloves with purple cuffs, purple leggings, white boots with gold tops and her rainbow cape. Use the SECOND picture only for the card style: a glossy 3D cartoon render with the hero big in the frame and an exciting magical background (do not copy that character, her wand or the moon). Pose: a confident, happy hero pose, one arm raised high with a bright rainbow beam shooting up from her glove, the other hand in a fist, her rainbow cape flowing in the wind. Background: a purple and blue sky with soft rainbow light rays and twinkling sparkles. Her whole body from head to boots inside the picture. No text, no letters, no logo, no frame."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "prism_pic_a": {
    "credits": 12,
