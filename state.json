@@ -4731,6 +4731,18 @@
    "limit": 200,
    "run": 16,
    "spent_estimate": 195
+  },
+  {
+   "at": "2026-10-02 23:21",
+   "heroes": [
+    "p_turtle",
+    "p_mermaid",
+    "p_bear",
+    "p_penguin",
+    "p_luna"
+   ],
+   "limit": 190,
+   "run": 17
   }
  ]
 }
