@@ -780,3 +780,4 @@
 2026-10-02 20:49:02 [prism] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 2940140}
 2026-10-02 20:49:04 run finished; credits used by new tasks (estimate): 56
 2026-10-02 21:44:16 run 13 heroes [] max credits 30
+2026-10-02 21:44:18 [img p_cottage] text-to-image task made 01a0fe93-402b-75b9-a37d-299b49fc3ce7

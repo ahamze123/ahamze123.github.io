@@ -3339,6 +3339,19 @@
   }
  },
  "images": {
+  "p_cottage": {
+   "id": "01a0fe93-402b-75b9-a37d-299b49fc3ce7",
+   "kind": "text-to-image",
+   "made": "2026-10-02 21:44",
+   "refs": [],
+   "run": 13,
+   "settings": {
+    "ai_model": "nano-banana-pro",
+    "aspect_ratio": "1:1",
+    "prompt": "A cute small storybook cottage for a children's 3D game. Cream walls, a rounded coral pink roof, a round wooden door, two windows with flower boxes full of pink flowers, a little chimney. Glossy 3D animated-movie style, soft even light. The whole cottage in view, seen from the front at a slight angle, standing on a small flat base. Plain pure white background, no shadow, no people, no text."
+   },
+   "status": "PENDING"
+  },
   "prism_card_a": {
    "credits": 12,
    "error": null,
