@@ -3340,6 +3340,11 @@
  },
  "images": {
   "p_appletree": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_appletree.png"
+   ],
    "id": "01a0fe93-4046-7786-a07d-2a23181daa38",
    "kind": "text-to-image",
    "made": "2026-10-02 21:44",
@@ -3350,7 +3355,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute round apple tree for a children's 3D game: a short curvy brown trunk and a big fluffy round green top full of shiny red apples. Glossy 3D animated-movie style, soft even light. The whole tree in view from the side, standing on a small flat base. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_castle": {
    "credits": 9,
