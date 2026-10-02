@@ -7677,8 +7677,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:48,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:49,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🌈',t:'Story 2: The Rainbow Thief',s:'Finished the story? A new adventure starts! Professor Gloom hates colours and fun, and his grey airship is draining the colours from the Fun Park, the Mushroom Forest, Coral Cove, Frosty Peaks and the Sky Kingdom. Find the 6 Rainbow Gems, fire the Rainbow Cannon and beat him in his Gloom Mech. Open the Story Book to see it'},
   {ic:'🐠',t:'The sea is alive!',s:'Fish, clownfish, pufferfish, seahorses, crabs, octopuses, jellyfish, sea turtles, dolphins, friendly sharks and manta rays live all around the islands, and seals and narwhals in the cold sea by Frostpeak. Swim close to them to fill your Sea Album (Menu, Sea Album)'},
   {ic:'🤿',t:'Every hero can dive',s:'In the sea, hold ⬇ (or Shift) to swim down and let go to swim up. Watch your air bubbles! Divers and the Diving Helmet never run out of air'},
   {ic:'🐬',t:'Ride sea animals',s:'Swim next to a sea turtle, a dolphin or a manta ray and press Use to ride it. A dolphin leaps out of the water when you press jump!'},
@@ -10404,7 +10405,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.2';window.BB_VER=BB_VER;
+const BB_VER='27.3';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -13522,6 +13523,319 @@ MV('Copied! Paste it in your message.','تم النسخ! الصقه في رسا�
 // look's name, or with no look, now gets the right look.
 {const _dp=drawPerson;drawPerson=function(o,t,look){if(typeof look==='string')look=NPC_LOOKS[look]||null;if(!look||typeof look!=='object')look=(o&&o.look&&typeof o.look==='object'&&o.look)||NPC_LOOKS.kid;
   if(o&&o.anim){const A=o.anim;if(!isFinite(A.walk))A.walk=0;if(!isFinite(A.amp))A.amp=0;}return _dp(o,t,look);};}
+// ================= v27.3: 📖 Story 2: The Rainbow Thief =================
+// After the Glitch King, a new villain: Professor Gloom hates colours and fun. His grey airship circles over Brick City and
+// its Gloom Ray drains the colours from five places (they look grey while you are there). Six chapters, each a quest chain
+// with its own friend, a Rainbow Gem and a prize; the last one is a boss fight against Professor Gloom in his Gloom Mech,
+// which friends online fight together. Story 2 opens when Story 1 is finished; the 📖 Story Book shows both.
+// Chapters use the new things: the Fun Park's roller coaster, your pet (it sniffs out the caged baby animals), swimming,
+// the Sky Kingdom, and hero powers.
+const S2={started:false,zones:[],ship:{a:0,y:0,low:0},cannon:null,fired:0,sat:LOOK.sat,callT:0};
+const STORY2=[
+  {id:'s2_fp',n:'The Silent Fun Park',place:'The Fun Park',ic:'🎢',col:'#ff5fa8',who:'ringmaster',
+    call:'Professor Gloom\'s Grey Bots stopped the Fun Park and drained its colours! Ringmaster Rico needs you at the gate.',prize:[{t:'hat',id:'rbcap'},{t:'coins',n:8000}]},
+  {id:'s2_pets',n:'The Lost Baby Animals',place:'Mushroom Forest',ic:'🐾',col:'#56e07a',who:'rosa',
+    call:'Gloom locked baby animals in grey cages all over the Mushroom Forest! Ranger Rosa says your pet can sniff them out.',prize:[{t:'pet',id:'rfoal'},{t:'coins',n:8000}]},
+  {id:'s2_cove',n:'The Deep Blue Gem',place:'Coral Cove',ic:'🐚',col:'#46e6b0',who:'dina',
+    call:'The sea at Coral Cove turned grey! Diver Dina found glowing pearls in the water. Swim out and bring them back.',prize:[{t:'emote',id:'🌈'},{t:'coins',n:10000}]},
+  {id:'s2_frost',n:'The Frozen Rainbow',place:'Frosty Peaks',ic:'❄️',col:'#6fd0ff',who:'sven',
+    call:'Gloom froze a Rainbow Gem inside the Grumpy Yeti\'s ice! Sven is waiting for you at the lodge.',prize:[{t:'coins',n:12000},{t:'boost',id:'xp2'}]},
+  {id:'s2_sky',n:'Storm over the Sky Kingdom',place:'The Sky Kingdom',ic:'⛈️',col:'#b28dff',who:'celeste',
+    call:'Grey storm clouds are swallowing the Sky Kingdom! Queen Celeste needs a hero who can fly through the rainbow rings.',prize:[{t:'trophy',id:'stormchaser'},{t:'coins',n:12000}]},
+  {id:'s2_final',n:'Gloom\'s Airship',place:'Brick City',ic:'🎈',col:'#ffcf3a',who:'prism',
+    call:'You have all five Rainbow Gems! Captain Prism is building the Rainbow Cannon at Hero HQ. Time to bring down Gloom\'s airship!',prize:[{t:'hero',id:'prism'},{t:'hat',id:'rbcrown'},{t:'trophy',id:'rainbow'},{t:'coins',n:50000}]}];
+const S2N=STORY2.length;
+function s2Done(){let n=0;for(const C of STORY2){if(qDone(C.id)||(QUESTS.length&&!qDef(C.id)))n++;else break;}return n;}
+function s2Open(){return storyDone()>=8;}
+// ---------- the grey: the picture loses its colour near a place Gloom drained (while that chapter is not done) ----------
+function s2GreyAt(x,z){if(!S2.started||!s2Open())return 0;let g=0;const cur=s2Done();for(let i=0;i<STORY2.length-1;i++){if(i<cur)continue;const Z=S2.zones[i];if(!Z)continue;const d=d2(x,z,Z.x,Z.z);if(d<Z.r)g=Math.max(g,Math.min(1,(Z.r-d)/18));}return g;}
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);try{if(S2.sat0===undefined)S2.sat0=LOOK.sat;const g=G.mode==='title'?0:s2GreyAt(CAM.tx,CAM.tz);S2.g=lerp(S2.g||0,g,Math.min(1,dt*1.5));LOOK.sat=S2.sat0*(1-S2.g*.82);}catch(e){}};}
+// ---------- the world: the people, the cages, the cannon spot, the zones ----------
+function s2Build(){const W=WORLD;const npc=(id,name,x,z,look)=>{if(!isFinite(x)||!isFinite(z)||W.npcs.some(n=>n.id===id))return;W.npcs.push({id,name,x,z,look:look||id});};
+  if(typeof FP!=='undefined'&&FP.ok)npc('ringmaster','Ringmaster Rico',FP.gate.x-4,FP.gate.z+3,'ringmaster');
+  const hq=LOC.hq;npc('prism','Captain Prism',hq.x+7,hq.z+16,'prism');
+  const fz=typeof FP!=='undefined'&&FP.ok?{x:(FP.x0+FP.x1)/2,z:(FP.z0+FP.z1)/2,r:72}:{x:575,z:215,r:60};
+  const cove=typeof COVE!=='undefined'?{x:COVE.x,z:COVE.z,r:COVE.reef+20}:null;const sky=typeof SKY!=='undefined'&&SKY.ok?{x:SKY.x,z:SKY.z,r:110}:null;
+  S2.zones=[fz,{x:LOC.forest.x,z:LOC.forest.z,r:62},cove,{x:LOC.lodge.x,z:LOC.lodge.z,r:66},sky,null];
+  const P=FP&&FP.ok?FP.plaza:{x:575,z:215};const gate=FP&&FP.ok?FP.gate:P;
+  const cages=qPts(7701,LOC.forest.x,LOC.forest.z,34,5,{gap:9});
+  const pearls=cove&&typeof reefPts==='function'?reefPts(7702,5,COVE.r+6,COVE.reef-4).map(q=>[q[0],q[1],WL-.4]):[];
+  const ringC=sky?{x:SKY.x,z:SKY.z,y:(SKY.isl&&SKY.isl[0]&&SKY.isl[0].top)||60}:null;const rings=[];if(ringC)for(let k=0;k<6;k++){const a=k/6*TAU;rings.push([ringC.x+Math.cos(a)*34,ringC.z+Math.sin(a)*34,ringC.y+6+Math.sin(k*1.7)*4]);}
+  S2.cannon={x:LOC.hq.x+2,z:LOC.hq.z+22};const can=S2.cannon;const parts=[[can.x-4,can.z,hAt(can.x-4,can.z)],[can.x+4,can.z,hAt(can.x+4,can.z)],[can.x,can.z+4,hAt(can.x,can.z+4)]];
+  const add=q=>{if(!QUESTS.some(x=>x.id===q.id))QUESTS.push(q);};
+  add({id:'s2_fp',town:'sunset',giver:'ringmaster',title:'The Silent Fun Park',col:'#ff5fa8',coins:6000,xp:600,s2:1,
+    intro:['Oh, a hero! Professor Gloom flew over in his grey airship and zapped my park with his Gloom Ray!','His Grey Bots stopped the rides and everything turned grey. And look, a Rainbow Gem got stuck at the very top of the roller coaster!'],
+    steps:[{k:'defeat',etype:'gbot',n:8,x:P.x,z:P.z-6,r:20,text:'Chase the Grey Bots out of the park'},{k:'ride',ride:'co',text:'Ride the roller coaster and grab the Rainbow Gem at the top'},{k:'talk',npc:'ringmaster',text:'Show the gem to Ringmaster Rico'}],
+    done:['The colours are back and the rides are running! Wear this Rainbow Cap, it suits you!']});
+  add({id:'s2_pets',town:'forest',giver:'rosa',need:['s2_fp'],title:'The Lost Baby Animals',col:'#56e07a',coins:6000,xp:600,s2:1,
+    intro:['Gloom locked five baby animals in grey cages somewhere in my forest!','If your pet is with you, it will sniff them out. Follow the paw prints and open every cage!'],
+    steps:[{k:'fix',look:'cage',pts:cages,verb:'Open the cage',text:'Open the 5 grey cages'},{k:'talk',npc:'rosa',text:'Tell Ranger Rosa'}],
+    done:['Every baby is safe! This little rainbow foal wants to come with you. Look after it!']});
+  const hasCove=!!(cove&&pearls.length>=5);if(hasCove)add({id:'s2_cove',town:'cove',giver:'dina',need:['s2_pets'],title:'The Deep Blue Gem',col:'#46e6b0',coins:7000,xp:700,s2:1,
+    intro:['The sea went grey, and five glowing pearls fell into the water out by the reef.','Swim out and collect them. Together they make the Deep Blue Gem!'],
+    steps:[{k:'collect',item:'pearl',pts:pearls,text:'Collect the 5 glowing pearls in the sea'},{k:'talk',npc:'dina',text:'Bring the pearls to Diver Dina'}],
+    done:['The Deep Blue Gem! Look how the sea sparkles again. Here, a rainbow dance for you!']});
+  add({id:'s2_frost',town:'frost',giver:'sven',need:[hasCove?'s2_cove':'s2_pets'],title:'The Frozen Rainbow',col:'#6fd0ff',coins:8000,xp:800,s2:1,
+    intro:['Gloom\'s grey slime is everywhere, and the Grumpy Yeti swallowed a Rainbow Gem!','Clear the slime, then beat the Yeti. Be brave, hero!'],
+    steps:[{k:'defeat',etype:'iceslime',n:6,x:LOC.lodge.x+8,z:LOC.lodge.z+12,r:16,text:'Clear the grey slime'},{k:'boss',etype:'yeti2',x:LOC.lodge.x+10,z:LOC.lodge.z+16,text:'Get the gem back from the Grumpy Yeti'},{k:'talk',npc:'sven',text:'Tell Sven'}],
+    done:['Ha! The Frozen Rainbow Gem! The snow sparkles in every colour again.']});
+  if(sky)add({id:'s2_sky',town:'sky',giver:'celeste',need:['s2_frost'],title:'Storm over the Sky Kingdom',col:'#b28dff',coins:8000,xp:800,s2:1,
+    intro:['Grey storm clouds are swallowing my kingdom!','Chase the storm clouds away, then fly through the rainbow rings to find the last gem. You need a flying hero, or the Nimbus Cloud!'],
+    steps:[{k:'defeat',etype:'storm',n:6,x:ringC.x,z:ringC.z,r:22,text:'Chase away the grey storm clouds'},{k:'rings',pts:rings,time:90,text:'Fly through the 6 rainbow rings'},{k:'talk',npc:'celeste',text:'Tell Queen Celeste'}],
+    done:['My kingdom shines again! The Storm Chaser trophy is yours, brave hero.']});
+  add({id:'s2_final',town:'brick',giver:'prism',need:[sky?'s2_sky':'s2_frost'],title:'Gloom\'s Airship',col:'#ffcf3a',coins:20000,xp:2000,s2:1,
+    intro:['Five Rainbow Gems! Now we can build the Rainbow Cannon.','Fix its three parts, then stand by the cannon. When it fires, Gloom\'s airship comes down, and he will fight in his Gloom Mech!'],
+    steps:[{k:'fix',look:'gemsock',pts:parts,verb:'Fix the Rainbow Cannon',text:'Fix the 3 parts of the Rainbow Cannon'},{k:'go',x:can.x,z:can.z,r:4,text:'Stand by the Rainbow Cannon'},{k:'boss',etype:'gloom',x:can.x,z:can.z-14,text:'Beat Professor Gloom!'},{k:'talk',npc:'prism',text:'Talk to Captain Prism'}],
+    done:['You did it! Gloom is gone, and every colour is back in Blocktopia!','I am Captain Prism. From now on I will fight next to you. Pick me in the hero list!']});
+  // hide the old fence of the park entrance people: Rico stands by the gate
+}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{s2Build();}catch(e){console.error('story2',e);noteErr('story2',e);}};}
+// a Story 2 friend asks for the story chapter first (before their other quests)
+{const _tq=talkQuest;talkQuest=function(n,say){try{if(!QS.act&&!WS.act&&n){const q=QUESTS.find(x=>x.s2&&x.giver===n.id&&qAvailable(x));if(q){say(q.intro,()=>qStart(q.id));return true;}}}catch(e){}return _tq(n,say);};}
+// Story 2 quests only open when Story 1 is finished (and one after another)
+{const _qa=qAvailable;qAvailable=function(q){if(q&&q.s2&&!s2Open())return false;return _qa(q);};}
+// ---------- the people ----------
+Object.assign(NPC_LOOKS,{ringmaster:{shirt:'#e8343f',coat:'#c22a35',pants:'#2b2d42',skin:'#c68a5a',hair:'#221b25',hs:1,hat:'top',mustache:1},
+  prism:{shirt:'#ffffff',coat:'#8a4ff0',pants:'#2f6bff',skin:'#e0a67a',hair:'#ffcf3a',hs:2,hat:'none'},
+  gloom:{shirt:'#5b5f6e',coat:'#3a3d4a',pants:'#2b2d42',skin:'#e8dcc8',hair:'#c9c9c9',hs:1,hat:'top',mustache:1}});
+// ---------- colours, the gem, little helpers ----------
+const S2C=['#ff5d73','#ff9a3c','#ffcf3a','#7ed957','#46b0ff','#b28dff'];
+function s2Gem(m,x,y,z,t,s=1){MS.reset();M4.tr(m,x,y+Math.sin(t*2.2)*.2,z);M4.ry(m,t*1.4);M4.sc(m,s,s,s);
+  for(let k=0;k<6;k++){MS.push();M4.ry(m,k/6*TAU);co(m,0,.32,.18,.34,.62,.22,S2C[k],8,.9);MS.pop();MS.push();M4.ry(m,k/6*TAU);M4.rz(m,Math.PI);co(m,0,.32,-.18,.34,.62,.22,S2C[(k+3)%6],8,.9);MS.pop();}
+  sp(m,0,0,0,.42,.42,.42,'#ffffff',1,1);sp(m,0,0,0,1.6,1.6,1.6,'#fff3c4',1,.12);
+  if(R()<.35)PARTS.push({x:x+Rr(-.8,.8),y:y+Rr(-.5,.8),z:z+Rr(-.8,.8),vx:0,vy:Rr(.5,1.5),vz:0,life:.8,s:.14,c:hex(Rpick(S2C)),e:1,g:-.4,k:'deb',rot:0});}
+function s2Burst(x,y,z,n=30){burst(x,y,z,S2C,n,6,.2,1.2);}
+// the top of the roller coaster (the highest point of its 'crest' piece)
+function s2Crest(){if(S2.crest)return S2.crest;if(typeof FP==='undefined'||!FP.ok)return null;const C=FP.co,P=C.P;let bi=-1,by=-1e9;
+  for(let i=0;i<P.length;i++){if(P[i].tag!=='crest'&&P[i].tag!=='lift')continue;if(P[i].y>by){by=P[i].y;bi=i;}}if(bi<0)return null;
+  const f=coFrame(bi*C.DS);S2.crest={i:bi,x:f.x+f.U[0]*2.6,y:f.y+f.U[1]*2.6,z:f.z+f.U[2]*2.6};return S2.crest;}
+// someone on the coaster is going over the top right now
+function s2RideHit(){const c=s2Crest();if(!c||coState()!=='riding')return false;const C=FP.co,n=C.P.length;
+  const near=s=>{const i=((Math.round(s/C.DS))%n+n)%n;let d=Math.abs(i-c.i);d=Math.min(d,n-d);return d<=7;};
+  let riders=FPS.me&&FPS.me.k==='co';for(const rp of netFriends())if(rp.fpRide&&rp.fpRide[0]==='co')riders=true;if(!riders)return false;
+  const s=coTrainS();for(let k=0;k<3;k++)if(near(s-k*2.35-1.1))return true;return false;}
+// ---------- the new step: ride the coaster over the top to grab the Rainbow Gem ----------
+{const _qu=questUpdate;questUpdate=function(dt){const st=QS.act?qStepDef():null;
+  if(st&&st.k==='ride'&&isAuth()){if(s2RideHit()){const c=s2Crest();s2Burst(c.x,c.y,c.z,40);SFX.coin&&SFX.coin(1000);netEvent('fx','s2gem',+c.x.toFixed(1),+c.y.toFixed(1),+c.z.toFixed(1),0);
+      toast('🌈 '+tr('You grabbed the Rainbow Gem!'));qNext();}return;}
+  // the last fight waits until the Rainbow Cannon has fired and the airship came down
+  if(st&&st.k==='boss'&&st.etype==='gloom'&&!QS.spawned&&isAuth()){if(!S2.fire){s2Fire();netEvent('s2',['fire']);}if(S2.fire&&S2.fire.t<6)return;}
+  return _qu(dt);};}
+{const _qo=questObjective;questObjective=function(){const o=_qo();try{if(o&&o.quest){const st=qStepDef();if(st&&st.k==='ride'&&FP.ok){const P=FP.co.plat;o.t={x:(P.x0+P.x1)/2,z:P.z,y:P.y};}}}catch(e){}return o;};}
+{const _dq=drawQuest;drawQuest=function(t){_dq(t);try{const st=qStepDef();if(!st)return;OUT=DYN;const m=MS.cur;
+  if(st.k==='ride'){const c=s2Crest();if(c&&Math.abs(c.x-CAM.tx)<160&&Math.abs(c.z-CAM.tz)<160)s2Gem(m,c.x,c.y,c.z,t,1.3);}}catch(e){noteErr('s2draw',e);}};}
+// ---------- cages in the forest (a 'fix' step with look 'cage'): a baby animal inside each ----------
+const S2BABY=['puppy','kitten','bunny','penguin','panda'];
+MPLOOK.add('cage');MPLOOK.add('gemsock');
+{const _df=drawFixLook;drawFixLook=function(look,x,y,z,ok,t,i,m){if(look!=='cage'&&look!=='gemsock')return _df(look,x,y,z,ok,t,i,m);MS.reset();M4.tr(m,x,y,z);
+  if(look==='gemsock'){cy(m,0,.5,0,.9,1,.9,'#e8eef4',4);cy(m,0,1.04,0,1.1,.12,1.1,'#ffcf3a',3);
+    if(ok)s2Gem(m,x,y+1.9,z,t+i,.8);else{sp(m,0,1.14,0,.45,.12,.45,'#3a3f4d',1);if(Math.sin(t*6+i)>.6)sp(m,Rr(-.3,.3),1.4,Rr(-.3,.3),.08,.08,.08,'#ffffff',1,1);}return;}
+  const kind=S2BABY[i%S2BABY.length];
+  if(!ok){cy(m,0,.08,0,1.6,.16,1.6,'#5b5f6e',3);cy(m,0,1.7,0,1.6,.14,1.6,'#5b5f6e',3);co(m,0,1.95,0,.9,.4,.9,'#6b6f7c',3);sp(m,0,2.2,0,.16,.16,.16,'#4a4d58',3);
+    for(let k=0;k<12;k++){const a=k/12*TAU;cy(m,Math.cos(a)*.74,.9,Math.sin(a)*.74,.06,1.6,.06,'#8a8f9c',3);}
+    bx(m,0,.9,.76,.36,.3,.06,'#4a4d58',3);sp(m,0,.9,.8,.08,.08,.04,'#ffcf3a',1,.6);// the lock
+    OUT=MOB;drawPet({kind,x,y:y+.16,z,face:Math.sin(t*.7+i)*.6,walk:0,amp:0,happy:0,hop:0},t);OUT=DYN;
+    if(Math.sin(t*3+i*1.7)>.85){MS.reset();M4.tr(m,x,y+2.6,z);sp(m,0,0,0,.32,.32,.32,'#ffffff',1,.8);sp(m,0,0,.2,.14,.14,.06,'#ff8fb0',1,1);}}
+  else{// the cage is open and colourful again; the baby hops next to it
+    cy(m,0,.08,0,1.6,.16,1.6,S2C[i%6],3);MS.push();M4.tr(m,0,1.7,0);M4.rz(m,.9);M4.tr(m,.8,0,0);cy(m,0,0,0,1.6,.14,1.6,S2C[(i+2)%6],3);MS.pop();
+    for(let k=0;k<12;k++){if(k>=2&&k<=4)continue;const a=k/12*TAU;cy(m,Math.cos(a)*.74,.9,Math.sin(a)*.74,.06,1.6,.06,S2C[k%6],3);}
+    const h=Math.abs(Math.sin(t*4.5+i))*.5;OUT=MOB;drawPet({kind,x:x+1.4,y:y+h,z:z+.4,face:t*1.6+i,walk:t*5,amp:.5,happy:1,hop:h},t);OUT=DYN;}};}
+// your pet sniffs out the cages: paw prints to the closest closed cage
+function s2PetSniff(dt){const st=qStepDef();if(!st||st.look!=='cage'||QS.act!=='s2_pets'||typeof PG==='undefined')return;const pet=PETST.me;if(!pet||pet.hidden)return;
+  S2.sniffT=(S2.sniffT||0)-dt;if(S2.sniffT>0)return;S2.sniffT=9;let best=null,bd=90;st.pts.forEach((q,i)=>{if(QS.bits&(1<<i))return;const d=d2(q[0],q[1],ME.x,ME.z);if(d<bd){bd=d;best=q;}});
+  if(!best||bd<5)return;PG.sniff={x:best[0],z:best[1],fx:pet.x,fz:pet.z,t:8};try{petSound(pet.kind);}catch(e){}pet.trick={k:'jump',t:0};
+  if(!S2.sniffTold){S2.sniffTold=1;toast('🐾 '+tr('Your pet smells a baby animal! Follow the paw prints'));}}
+// no pet? Ranger Rosa gives you a puppy for the hunt (and to keep)
+{const _qs=qStart;qStart=function(id){const r=_qs.apply(this,arguments);try{if(id==='s2_pets'){const pr=prof();if(!pr.pets||!pr.pets.length){const c=giveReward({t:'pet',id:'puppy'});if(c)setTimeout(()=>{rewardCard(c);toast('🐶 '+tr('Ranger Rosa gave you a puppy to help you look!'));},900);}}}catch(e){}return r;};}
+// ---------- Professor Gloom's helpers and Gloom himself ----------
+ETYPE.gbot={hp:6,size:1,rad:.5,hgt:1.7,speed:3.2,dmg:1,xp:18,coins:50,fx:'#b0b6c8',name:'Grey Bot'};
+ETYPE.gloom={hp:240,size:2.2,rad:1.7,hgt:5.2,speed:2.3,dmg:2,xp:1000,coins:15000,boss:1,name:'Professor Gloom',fx:'#b0b6c8'};
+for(const k of ['gbot','gloom'])if(!ETYPES.includes(k))ETYPES.push(k);
+MV('Grey Bot','روبوت رمادي');MV('Professor Gloom','البروفيسور غلوم');
+{const _ba=bossAI;bossAI=function(e,dt,p,d){if(e.type!=='gloom')return _ba(e,dt,p,d);const T0=ETYPE.gloom;e.walk+=dt;e.t-=dt;e.t2=(e.t2??2.5)-dt;e.t3=(e.t3??8)-dt;const frac=e.hp/e.maxHp,A=e.arena;
+  if(!e.dropped){e.dropped=1;e.y+=24;e.vy=-4;e.ground=false;}
+  const ph=frac>.66?1:frac>.33?2:3;if(ph!==e.ph){const first=e.ph===undefined;e.ph=ph;if(!first){banner(ph===2?tr('Gloom calls his Grey Bots!'):tr('The Gloom Mech is wobbling!'),ph===2?tr('Chase the bots away and keep zapping Gloom'):tr('Jump over the grey rings! Almost there!'),'#9aa0b4');
+      for(let k=0;k<(ph===2?3:4);k++)spawnEnemy('gbot',e.x+Rr(-7,7),e.z+Rr(-7,7),{tag:'m',angry:true});}}
+  if(p){const dx=p.x-e.x,dz=p.z-e.z;e.face=angLerp(e.face,Math.atan2(dx,dz),dt*2.2);}
+  const sp=e.atk>0?0:T0.speed*(ph===3?1.35:1);if(p&&d>4&&e.ground){e.vx=lerp(e.vx,Math.sin(e.face)*sp,dt*3);e.vz=lerp(e.vz,Math.cos(e.face)*sp,dt*3);}else{e.vx*=.9;e.vz*=.9;}
+  // stomp: a grey ring to jump over
+  if(e.t<=0&&e.ground){e.t=ph===3?2.6:3.8;e.atk=.7;setTimeout(()=>{if(e.dead)return;SFX.boom&&SFX.boom();shake(.5);ringHazard(e.x,e.z,'#9aa0b4',7,14,2);if(ph===3)setTimeout(()=>{if(!e.dead)ringHazard(e.x,e.z,'#9aa0b4',7,14,2);},700);},500);}
+  // grey goo balls (and lasers when he is cross)
+  if(e.t2<=0&&p){e.t2=ph===1?2.8:ph===2?2.2:1.7;const n=ph===1?1:3;for(let k=0;k<n;k++)enemyShot(e.x,e.y+4.6,e.z,p.x+Rr(-2,2)*(k?1:0),p.y,p.z+Rr(-2,2)*(k?1:0),'bomb',10);
+    if(ph>=2)for(let k=-1;k<=1;k++){const a=e.face+k*.3;enemyShot(e.x,e.y+3.2,e.z,e.x+Math.sin(a)*14,p.y+1,e.z+Math.cos(a)*14,'laser',12);}}
+  if(e.t3<=0&&ph>=2&&EN.filter(q=>q.type==='gbot'&&!q.dead).length<4){e.t3=10;spawnEnemy('gbot',e.x+Rr(-6,6),e.z+Rr(-6,6),{tag:'m',angry:true});}
+  moveBody(e,dt,e.rad*.7);if(A&&d2(e.x,e.z,A.x,A.z)>(A.r||16)){const a=Math.atan2(e.z-A.z,e.x-A.x);e.x=A.x+Math.cos(a)*(A.r||16);e.z=A.z+Math.sin(a)*(A.r||16);}};}
+// the grey bot: like the city bots, but grey and grumpy, with a little rain cloud over its head
+{const _de=drawEnemy;drawEnemy=function(e,t){if(e.type!=='gbot'&&e.type!=='gloom')return _de(e,t);const m=MS.cur;MS.reset();const hit=e.hitT>0;M4.tr(m,e.x,e.y,e.z);M4.ry(m,e.face||0);const w=e.walk||0;
+  if(e.type==='gbot'){const body=hit?'#ffffff':'#8a8f9c';
+    for(const k of [-1,1]){MS.push();M4.tr(m,k*.24,.5,0);M4.rx(m,Math.sin(w*6)*.5*k);cy(m,0,-.2,0,.18,.42,.18,'#5b5f6e',3);rb(m,0,-.44,.06,.26,.14,.34,'#3a3d4a',3);MS.pop();}
+    rb(m,0,.95,0,.8,.72,.6,body,3,hit?.9:0);bx(m,0,1.04,.31,.5,.16,.02,'#c9ced9',1,.8);for(const k of [-1,1])bx(m,k*.12,1.04,.33,.1,.08,.02,'#3a3d4a',1);
+    MS.push();M4.tr(m,0,.8,.32);M4.rz(m,Math.PI);for(let k=-2;k<=2;k++)bx(m,k*.05,Math.abs(k)*-.025,0,.06,.04,.02,'#3a3d4a',1);MS.pop();// frown
+    for(const k of [-1,1]){MS.push();M4.tr(m,k*.5,1.18,0);M4.rx(m,e.atk>0?-1.4:Math.sin(w*6)*-.4*k);M4.rz(m,k*.2);cy(m,0,-.25,0,.16,.45,.16,'#5b5f6e',3);rb(m,0,-.52,0,.28,.22,.28,'#6b6f7c',3);MS.pop();}
+    MS.push();M4.tr(m,0,2+Math.sin(t*2+e.id)*.08,0);sp(m,0,0,0,.34,.2,.3,'#6b7080',1);sp(m,-.2,-.02,0,.24,.16,.24,'#5d6271',1);sp(m,.2,-.02,0,.24,.16,.24,'#5d6271',1);
+    for(let k=0;k<3;k++){const f=(t*2.6+k*.33)%1;bx(m,-.15+k*.15,-.2-f*.7,0,.03,.14,.03,'#9fb4d8',1,.5);}MS.pop();return;}
+  // Professor Gloom in his Gloom Mech: two big legs, a grey body, goo cannons, and Gloom himself in a glass dome on top
+  const s=e.size||2.2;M4.sc(m,s/2.2,s/2.2,s/2.2);const body=hit?'#ffffff':'#5b5f6e',dark='#3a3d4a';
+  for(const k of [-1,1]){MS.push();M4.tr(m,k*.75,1.5,0);M4.rx(m,Math.sin(w*3)*.35*k);cy(m,0,-.5,0,.45,1.2,.45,'#6b6f7c',4);rb(m,0,-1.25,.15,.75,.35,1.05,dark,3);MS.pop();}
+  rb(m,0,2.5,0,2.3,1.6,1.7,body,3,hit?.9:0);bx(m,0,2.5,.86,1.6,.5,.04,'#8a8f9c',1);for(let k=-2;k<=2;k++)sp(m,k*.3,2.5,.9,.08,.08,.04,Math.sin(t*5+k)>0?'#ff4f6d':'#662233',1,1);
+  for(const k of [-1,1]){MS.push();M4.tr(m,k*1.35,2.8,0);M4.rx(m,e.atk>0?-1.2:-.2+Math.sin(w*3)*.2*k);cy(m,0,-.4,0,.32,.9,.32,'#6b6f7c',4);MS.push();M4.tr(m,0,-.95,.1);M4.rx(m,Math.PI/2);cy(m,0,0,0,.42,.7,.42,dark,4);cy(m,0,.38,0,.3,.06,.3,'#9fd89a',1,.8);MS.pop();MS.pop();}
+  // the Gloom Ray dish on his back
+  MS.push();M4.tr(m,0,3.6,-.7);M4.rx(m,-.6);cy(m,0,0,0,.08,.6,.08,dark,3);MS.push();M4.tr(m,0,.4,0);co(m,0,0,0,.8,.3,.8,'#8a8f9c',3);sp(m,0,.18,0,.12,.12,.12,'#b0b6c8',1,1);MS.pop();MS.pop();
+  // the glass dome and Gloom inside it
+  sp(m,0,3.55,0,1.25,1.05,1.25,'#cfe8ff',8,.12);cy(m,0,3.32,0,1.3,.1,1.3,dark,3);
+  const sc=s/2.2;OUT=MOB;drawPerson({x:e.x,y:e.y+3.05*sc,z:e.z,face:e.face||0,anim:{wave:hit?0:Math.sin(t*1.5)>.6?1:0,cheer:0,punch:e.atk>0?1:0,walk:0,amp:0},hy:0},t,{...NPC_LOOKS.gloom,scale:.62*sc});OUT=DYN;};}
+// ---------- Gloom's airship: it circles high over Brick City while Story 2 is running ----------
+function s2ShipPos(t){const hq=LOC.hq,gy=hAt(hq.x,hq.z);const S=S2.ship;const a=t*.045;const cx=hq.x+Math.cos(a)*62,cz=hq.z+Math.sin(a)*62,cy=gy+72;
+  if(S.away!==undefined){const b=S.from||{x:cx,y:cy,z:cz,face:a};return {x:b.x+S.away*S.away*1.2,y:b.y+S.away*S.away*1.6,z:b.z-S.away*S.away*1.5,face:b.face};}
+  if(!S.low)return {x:cx,y:cy,z:cz,face:a+Math.PI/2};const can=S2.cannon;const tx=can.x,tz=can.z-20,ty=hAt(can.x,can.z)+30;const k=S.low*S.low*(3-2*S.low);
+  return {x:lerp(cx,tx,k),y:lerp(cy,ty,k),z:lerp(cz,tz,k),face:lerp(a+Math.PI/2,Math.atan2(can.x-tx,can.z-tz)+Math.PI/2,k)};}
+function s2ShipOn(){return S2.started&&((!S2.gone&&!qDone('s2_final'))||(S2.away!==undefined&&S2.away<9));}
+function drawGloomShip(t){if(!s2ShipOn()||camRealm()!=='earth')return;const P=s2ShipPos(G.t||t);if(Math.abs(P.x-CAM.tx)>420||Math.abs(P.z-CAM.tz)>420)return;S2.shipP=P;
+  OUT=DYN;const m=MS.cur;MS.reset();M4.tr(m,P.x,P.y+(S2.ship.hit>0?Math.sin(t*40)*.3:0)+Math.sin(t*.8)*.6,P.z);M4.ry(m,P.face);const tilt=S2.ship.low>.05&&S2.ship.low<.95?.12:0;M4.rz(m,tilt);
+  sp(m,0,0,0,7.2,3.3,3.3,'#7d8291',1);sp(m,0,.4,0,6.6,2.6,2.8,'#8a8f9c',1);for(const k of [-1,1]){MS.push();M4.tr(m,-6,0,0);bx(m,0,k*1.6,0,2.2,.18,2.4,'#5b5f6e',3);bx(m,0,0,k*1.6,2.2,2.4,.18,'#5b5f6e',3);MS.pop();}
+  // a big grumpy face on each side
+  for(const k of [-1,1]){sp(m,2.4,.6,k*3.05,.45,.45,.08,'#ffffff',1);sp(m,1.2,.6,k*3.12,.45,.45,.08,'#ffffff',1);sp(m,2.4,.55,k*3.12,.2,.2,.06,'#2b2d42',1);sp(m,1.2,.55,k*3.12,.2,.2,.06,'#2b2d42',1);
+    MS.push();M4.tr(m,1.8,-.6,k*3.1);M4.rz(m,Math.PI);for(let q=-3;q<=3;q++)bx(m,q*.2,Math.abs(q)*-.06,0,.22,.12,.05,'#2b2d42',1);MS.pop();MS.push();M4.tr(m,2.4,1.15,k*3.08);M4.rz(m,-.4);bx(m,0,0,0,.7,.14,.05,'#2b2d42',1);MS.pop();MS.push();M4.tr(m,1.2,1.15,k*3.1);M4.rz(m,.4);bx(m,0,0,0,.7,.14,.05,'#2b2d42',1);MS.pop();}
+  // the cabin, the propeller and the Gloom Ray
+  rb(m,0,-3.6,0,4.2,1.4,1.8,'#5b5f6e',3);for(let q=-1;q<=1;q++)for(const k of [-1,1])bx(m,q*1.2,-3.5,k*.92,.7,.5,.04,'#cfe8ff',1,.4);cy(m,0,-2.6,0,.2,1.2,.2,'#3a3d4a',3);
+  MS.push();M4.tr(m,-7.6,0,0);M4.rx(m,t*12);for(let q=0;q<3;q++){MS.push();M4.rx(m,q/3*TAU);bx(m,0,1,0,.14,2,.4,'#3a3d4a',3);MS.pop();}MS.pop();
+  if(!S2.ship.low||S2.ship.low<.5){MS.push();M4.tr(m,0,-4.4,0);const f=.7+Math.sin(t*9)*.15;co(m,0,-3*f,0,1.6*f,6*f,1.6*f,'#b0b6c8',1,.08);MS.pop();}
+  if(S2.ship.hit>0||S2.ship.low>0)if(R()<.4)smokePuff(P.x+Rr(-4,4),P.y+Rr(0,2),P.z+Rr(-3,3),1,'#6b6f7c');}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{drawGloomShip(t);drawRainbowCannon(t);drawS2Beam(t);}catch(e){noteErr('s2ship',e);}};}
+// ---------- the Rainbow Cannon at Hero HQ (built in the last chapter; it stays there after) ----------
+function s2CannonOn(){return S2.cannon&&(QS.act==='s2_final'||qDone('s2_final'));}
+function drawRainbowCannon(t){if(!s2CannonOn()||camRealm()!=='earth')return;const c=S2.cannon;if(Math.abs(c.x-CAM.tx)>140||Math.abs(c.z-CAM.tz)>140)return;const y=hAt(c.x,c.z);
+  OUT=DYN;const m=MS.cur;MS.reset();M4.tr(m,c.x,y,c.z);cy(m,0,.4,0,3.2,.8,3.2,'#e8eef4',4);cy(m,0,.86,0,3.4,.12,3.4,'#ffcf3a',3);
+  const built=qDone('s2_final')||QS.step>0;const aim=S2.shipP?Math.atan2(S2.shipP.x-c.x,S2.shipP.z-c.z):0;MS.push();M4.tr(m,0,1.4,0);M4.ry(m,aim);cy(m,0,0,0,1.6,.9,1.6,'#5b5f6e',4);
+  MS.push();M4.tr(m,0,.6,0);M4.rx(m,.75);for(let k=0;k<6;k++)cy(m,0,1+k*.55,0,1-k*.06,.55,1-k*.06,built?S2C[k]:'#9aa0b4',4,built?.35:0);cy(m,0,4.4,0,.8,.2,.8,'#ffffff',1,built?.9:0);MS.pop();MS.pop();
+  if(built&&R()<.2)PARTS.push({x:c.x+Rr(-1,1),y:y+Rr(1.5,4),z:c.z+Rr(-1,1),vx:0,vy:Rr(.4,1.2),vz:0,life:.8,s:.12,c:hex(Rpick(S2C)),e:1,g:-.3,k:'deb',rot:0});}
+// ---------- FIRE! (all tablets play it; the host waits for it before Gloom comes down) ----------
+function s2Fire(){if(S2.fire)return;S2.fire={t:0};banner('🌈 '+tr('Rainbow Cannon: FIRE!'),tr('Hold on, here comes Professor Gloom!'),'#ffcf3a');try{SFX.whoosh&&SFX.whoosh();}catch(e){}}
+function drawS2Beam(t){const F=S2.fire;if(!F||F.t<1.2||F.t>2.6||!S2.shipP)return;const c=S2.cannon,y0=hAt(c.x,c.z)+4.6,P=S2.shipP;OUT=DYN;const m=MS.cur;const n=26;
+  for(let k=0;k<n;k++){const u=k/n;const x=lerp(c.x,P.x,u),y=lerp(y0,P.y,u),z=lerp(c.z,P.z,u);MS.reset();M4.tr(m,x,y,z);for(let q=0;q<6;q++)sp(m,Math.cos(q+t*8)*.5,Math.sin(q+t*8)*.5,0,.55,.55,.55,S2C[q],1,1);}}
+function s2FireTick(dt){const F=S2.fire;if(!F)return;const t0=F.t;F.t+=dt;
+  if(t0<1.2&&F.t>=1.2){shake(.3);try{SFX.boom&&SFX.boom();}catch(e){}}
+  if(t0<2.6&&F.t>=2.6&&S2.shipP){const P=S2.shipP;s2Burst(P.x,P.y,P.z,60);S2.ship.hit=3;shake(.5);try{SFX.boom&&SFX.boom();}catch(e){}banner('💥 '+tr('Direct hit!'),tr('The airship is coming down!'),'#ff5fa8');}
+  if(F.t>2.6)S2.ship.low=Math.min(1,(S2.ship.low||0)+dt/3);if(S2.ship.hit>0)S2.ship.hit-=dt;}
+// the camera watches the shot when you are near the cannon
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);try{const F=S2.fire;if(!F||F.t<.6||F.t>5.5||!S2.shipP||!S2.cannon)return;const c=S2.cannon;if(d2(ME.x,ME.z,c.x,c.z)>45)return;
+  const P=S2.shipP,y0=hAt(c.x,c.z);const dx=P.x-c.x,dz=P.z-c.z,l=Math.hypot(dx,dz)||1;CAM.eye=[c.x-dx/l*14,y0+6,c.z-dz/l*14];CAM.tx=lerp(c.x,P.x,.6);CAM.ty=lerp(y0+4,P.y,.6);CAM.tz=lerp(c.z,P.z,.6);CAM.lax=0;CAM.laz=0;CAM.lookY=0;}catch(e){}};}
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='die'){try{if(ETYPES[num(a[1],-1)]==='gloom')setTimeout(()=>s2Beaten(num(a[2]),num(a[3]),num(a[4])),0);}catch(e){}}
+  if(type==='s2'){try{if(a[0]==='fire')s2Fire();}catch(e){}return;}
+  if(type==='fx'&&a&&a[0]==='s2gem'){try{s2Burst(num(a[1]),num(a[2]),num(a[3]),40);toast('🌈 '+tr('The Rainbow Gem!'));}catch(e){}return;}return _ae(type,a,rp);};}
+// Gloom is beaten: he flies off in his escape pod, the airship goes away and the colours come back
+{const _ke=killEnemy;killEnemy=function(e){const was=e&&!e.dead&&e.type==='gloom';const r=_ke(e);if(was)s2Beaten(e.x,e.y,e.z);return r;};}
+function s2Beaten(x,y,z){if(S2.gone)return;S2.pod={x,y:y+4,z,t:0};S2.gone=1;if(S2.shipP){S2.ship.from={...S2.shipP};S2.ship.away=0;}for(const q of EN)if(q.type==='gbot'&&q.tag==='m')q.dead=true;s2Burst(x,y+3,z,80);try{if(typeof fwCelebrate==='function')fwCelebrate(x,z,y);}catch(e){}
+  banner('🌈 '+tr('You beat Professor Gloom!'),tr('Every colour is back in Blocktopia!'),'#ffcf3a');floatText(x,y+6,z,tr('I\'ll be back... in COLOUR!'),'blue');}
+// the escape pod
+function drawS2Pod(t){const P=S2.pod;if(!P||camRealm()!=='earth')return;OUT=DYN;const m=MS.cur;MS.reset();M4.tr(m,P.x+P.t*P.t*.8,P.y+P.t*P.t*2.2,P.z);M4.rz(m,Math.sin(P.t*6)*.3);
+  sp(m,0,0,0,1,1.1,1,'#8a8f9c',1);sp(m,0,.5,0,.8,.7,.8,'#cfe8ff',8,.15);sp(m,0,.45,0,.32,.32,.32,'#e8dcc8',1);co(m,0,.85,0,.3,.4,.3,'#3a3d4a',1);
+  MS.push();M4.tr(m,0,1.25,0);M4.ry(m,t*20);bx(m,0,0,0,2,.06,.2,'#3a3d4a',1);MS.pop();if(R()<.5)smokePuff(P.x+P.t*P.t*.8,P.y+P.t*P.t*2.2-1,P.z,1,'#9aa0b4');}
+{const _dsf2=drawShotFx;drawShotFx=function(t){_dsf2(t);try{drawS2Pod(t);}catch(e){}};}
+// ---------- every frame: the first call, chapter prizes and calls, the cannon, the ship, the pod ----------
+S2.radioQ=[];
+function s2Tick(dt){if(G.mode==='title'||!ME)return;S2.started=s2Open()&&!!G.s2i;
+  const busy=()=>G.mode!=='play'||DLG||(typeof PZ!=='undefined'&&PZ.on)||(typeof STY!=='undefined'&&STY.radioQ&&STY.radioQ.length)||($('radiobox')&&!$('radiobox').hidden)||($('victory')&&!$('victory').hidden)||(typeof RQ!=='undefined'&&RQ.length);
+  // Story 2 begins: Mayor Pip calls (once), a little while after Story 1 is finished
+  if(s2Open()&&!G.s2i){if(!busy()){S2.callT=(S2.callT||0)+dt;if(S2.callT>8){S2.callT=0;G.s2i=1;S2.started=true;s2Radio(null);saveSoon();}}else S2.callT=Math.min(S2.callT||0,4);}
+  // chapters done (here or on a friend's tablet): prizes, then the next friend calls
+  G.s2p=G.s2p||[];for(let i=0;i<S2N;i++){if(G.s2p.includes(i)||!qDone(STORY2[i].id))continue;G.s2p.push(i);const cards=[];for(const r of STORY2[i].prize){try{const c=giveReward(r);if(c)cards.push(c);}catch(e){noteErr('s2prize',e);}}S2.radioQ.push({i,cards});saveSoon();}
+  if(S2.radioQ.length&&!busy()){S2.radioT=(S2.radioT||0)+dt;if(S2.radioT>3.5){S2.radioT=0;s2Radio(S2.radioQ.shift());}}else if(!S2.radioQ.length)S2.radioT=0;
+  s2FireTick(dt);if(S2.ship.away!==undefined)S2.ship.away+=dt;if(S2.pod){S2.pod.t+=dt;if(S2.pod.t>7)S2.pod=null;}
+  if(QS.act!=='s2_final'&&!qDone('s2_final')&&S2.fire&&!EN.some(e=>e.type==='gloom'&&!e.dead)){S2.fire=null;S2.ship.low=0;}// the chapter was stopped: the ship goes back up
+  try{s2PetSniff(dt);}catch(e){}}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{s2Tick(dt);}catch(e){noteErr('s2tick',e);}};}
+// ---------- the radio ----------
+const S2CALLER={ringmaster:['🎪','Ringmaster Rico'],dina:['🤿','Diver Dina'],celeste:['👸','Queen Celeste'],prism:['🌈','Captain Prism']};
+function s2Who(id){return S2CALLER[id]||(typeof CALLER!=='undefined'&&CALLER[id])||['📻','Hero HQ'];}
+function s2Radio(q){const el=mkModal('radiobox');storyPause(true);const cur=s2Done();const next=STORY2[cur];const intro=!q;const done=q?STORY2[q.i]:null;
+  const who=intro?['🎩','Mayor Pip']:next?s2Who(next.who):['🌈','Captain Prism'];
+  const msg=intro?tr('Oh no, hero! A grey airship is flying over Blocktopia. It is Professor Gloom, and he hates colours and fun! His Gloom Ray is turning our favourite places grey. Ringmaster Rico at the Fun Park needs you first!')
+    :next?tr(next.call):tr('You did it! Professor Gloom flew away and every colour is back. Blocktopia has never looked so bright! I will fight next to you now: pick me in the hero list.');
+  const got=q?(q.cards.map(c=>`${c.ic||'🎁'} ${esc(tr(c.n||c.k||''))}`).join(' · ')||done.prize.map(prizeText).join(' · ')):'';
+  el.innerHTML=`<div class="mbox stbx"><h2>📻 ${esc(tr('Incoming call!'))}</h2>${intro?`<p class="intro-s">🌈 ${esc(tr('Story 2: The Rainbow Thief'))}</p>`:`<p class="intro-s">✅ ${esc(trf('Chapter {0} done: {1}',q.i+1,tr(done.n)))}</p><p class="radio-msg" style="text-align:center">🎁 ${got}</p>`}
+    <div class="radio-who"><div class="ic">${who[0]}</div><div><b>${esc(tr(who[1]))}</b></div></div><p class="radio-msg">${esc(msg)}</p>
+    <div class="intro-row">${next?`<button class="big" id="rdgo">🧭 ${esc(tr('Show me the way'))}</button>`:''}<button class="big alt sm" id="rdok">${esc(tr('OK'))}</button></div></div>`;
+  el.hidden=false;try{SFX.mission&&SFX.mission();if(VOICE.on)VOICE.say(msg,who[1]);}catch(e){}
+  const close=()=>{el.hidden=true;try{VOICE.stop();}catch(e){}storyPause(false);};$('rdok').onclick=close;if($('rdgo'))$('rdgo').onclick=()=>{close();s2Guide();};}
+function s2Guide(){const C=STORY2[s2Done()];if(!C)return;const Q=qDef(C.id);if(!Q)return;let t=null,label='';
+  if(QS.act===C.id){const o=questObjective();if(o&&o.t){t=o.t;label=String(o.text||'');}}
+  if(!t){const g=NPCS.find(n=>n.id===Q.giver);if(!g)return;const v=typeof viaDoor==='function'?viaDoor({x:g.x,z:g.z}):g;t=v;label=trf('Talk to {0}',tr(g.name));}
+  try{navSet({x:t.x,z:t.z,realm:'earth',label,icon:'🌈',col:C.col});}catch(e){}}
+// ---------- the Story Book: a second part ----------
+{const _pt=prizeText;prizeText=function(r){try{if(r.t==='hat'){const h=HATS.find(x=>x.id===r.id);return (HAT_ICON[r.id]||'🎩')+' '+(h?tr(h.n):'');}if(r.t==='emote')return r.id+' '+tr('Dance');
+  if(r.t==='trophy'){const q=TROPHIES[r.id];return q?q.ic+' '+tr(q.n):'🏆';}if(r.t==='boost'){const q=BOOSTS[r.id];return q?q.ic+' '+tr(q.n):'⚡';}}catch(e){}return _pt(r);};}
+{const _ob=openStoryBook;openStoryBook=function(){_ob();try{const el=$('storybox'),box=el&&el.querySelector('.mbox');if(!box)return;const cur=s2Done();const sec=document.createElement('div');sec.className='s2sec';
+  if(!s2Open())sec.innerHTML=`<h2 style="margin-top:16px">🌈 ${esc(tr('Story 2: The Rainbow Thief'))}</h2><p class="small" style="margin:0;text-align:center;font-weight:900">🔒 ${esc(tr('Finish the story above to open Story 2!'))}</p>`;
+  else{const rows=STORY2.map((C,i)=>{const st=i<cur?'done':i===cur?'cur':'lock';const Q=qDef(C.id),g=Q&&NPCS.find(n=>n.id===Q.giver);
+      const sub=st==='done'?tr('Done!'):st==='cur'?(QS.act===C.id?tr('You are on it!'):g?trf('Next: talk to {0}',tr(g.name)):tr(C.place)):trf('Opens after chapter {0}',i);
+      return `<div class="stch ${st}" style="--c:${C.col}"><div class="ic">${st==='lock'?'🔒':C.ic}</div><div><b>${esc(trf('Chapter {0}: {1}',i+1,tr(C.n)))}</b><small>📍 ${esc(tr(C.place))} · ${esc(sub)}</small><small class="stpz">🎁 ${esc(C.prize.map(prizeText).join(' · '))}</small></div><div class="st">${st==='done'?'✅':st==='cur'?'⭐':''}</div></div>`;}).join('');
+    sec.innerHTML=`<h2 style="margin-top:16px">🌈 ${esc(tr('Story 2: The Rainbow Thief'))}</h2><div class="stbar"><i style="width:${Math.round(cur/S2N*100)}%"></i></div><p class="small" style="margin:0;text-align:center;font-weight:900">${esc(cur>=S2N?tr('You beat Professor Gloom! Every colour is back.'):trf('Chapter {0} of {1}',cur+1,S2N))}</p>
+      ${rows}${cur<S2N?`<div class="intro-row"><button class="big" id="s2go">🧭 ${esc(tr('Show me the way'))}</button></div>`:''}`;}
+  box.appendChild(sec);if($('s2go'))$('s2go').onclick=()=>{closeStoryBook();if(!G.s2i){G.s2i=1;S2.started=true;}s2Guide();};}catch(e){noteErr('s2book',e);}};}
+// ---------- saving ----------
+{const _es=extraSave;extraSave=function(){const o=_es();o.s2i=G.s2i?1:0;o.s2p=G.s2p||[];return o;};}
+{const _el=extraLoad;extraLoad=function(x){_el(x);G.s2i=x&&x.s2i?1:0;G.s2p=x&&Array.isArray(x.s2p)?x.s2p.filter(Number.isInteger):[];};}
+// ---------- the prizes: two hats, a rainbow foal, two trophies and a new hero ----------
+HATS.push({id:'rbcap',n:'Rainbow Cap',p:-1},{id:'rbcrown',n:'Rainbow Crown',p:-1});REWARD_HATS.add('rbcap');REWARD_HATS.add('rbcrown');HAT_ICON.rbcap='🧢';HAT_ICON.rbcrown='👑';
+{const _dhx=drawHatX;drawHatX=function(m,hat,acc,hair,t){
+  if(hat==='rbcap'){for(let k=0;k<6;k++)cy(m,0,.56+k*.055,0,.68-k*.09,.07,.64-k*.09,S2C[k],6);MS.push();M4.tr(m,0,.58,.3);M4.rx(m,-.12);rb(m,0,0,0,.56,.05,.36,'#ffffff',1);MS.pop();sp(m,0,.94,0,.14,.11,.14,'#ffffff',6);sp(m,.09,.92,0,.1,.08,.1,'#ffffff',6);return;}
+  if(hat==='rbcrown'){cy(m,0,.68,0,.72,.16,.68,'#ffcf3a',3,.3);for(let k=0;k<6;k++){MS.push();M4.ry(m,k/6*TAU);co(m,0,.86,.3,.13,.26,.11,'#ffcf3a',3,.3);sp(m,0,.7,.35,.07,.07,.04,S2C[k],8,.8);sp(m,0,1.02,.3,.06,.06,.06,S2C[k],8,.9);MS.pop();}
+    if(R()<.08&&typeof burst==='function'&&ME)burst(ME.x+Rr(-.3,.3),ME.y+2.3,ME.z+Rr(-.3,.3),S2C,1,.5,.07,.6);return;}
+  return _dhx(m,hat,acc,hair,t);};}
+PETS.push({id:'rfoal',n:MV('Sparkle the Rainbow Foal','سبارْكل المُهر قوس قزح'),p:-1,i:'🦄',d:MV('A baby unicorn with a rainbow mane','مهر وحيد قرن صغير بعُرف بألوان قوس قزح')});
+{const _dp=drawPet;drawPet=function(o,t){if(!o||o.kind!=='rfoal')return _dp(o,t);const m=MS.cur;MS.reset();M4.tr(m,o.x,o.y,o.z);M4.ry(m,o.face||0);const sw=Math.sin(o.walk||0)*.6*(o.amp||0),W='#fbf7ff';
+  for(const [lx,lz,ph] of [[-.12,.2,1],[.12,.2,-1],[-.12,-.2,-1],[.12,-.2,1]]){MS.push();M4.tr(m,lx,.44,lz);M4.rx(m,sw*ph*.8);cy(m,0,-.2,0,.08,.42,.08,W,6);cy(m,0,-.42,0,.09,.06,.09,'#ffcf3a',3);MS.pop();}
+  sp(m,0,.58,0,.34,.3,.56,W,6);MS.push();M4.tr(m,0,.76,.24);M4.rx(m,-.5);cy(m,0,.12,0,.16,.32,.16,W,6);MS.pop();
+  MS.push();M4.tr(m,0,.98,.36);M4.rz(m,Math.sin(t*1.5)*.06);sp(m,0,0,0,.24,.22,.32,W,6);sp(m,0,-.05,.16,.15,.13,.12,'#ffe1ef',6);
+    for(const s of [-1,1]){sp(m,s*.1,.05,.1,.05,.07,.03,DARK,1);co(m,s*.08,.18,-.04,.05,.1,.04,W,6);}MS.push();M4.tr(m,0,.2,.06);M4.rx(m,.35);co(m,0,.1,0,.05,.24,.05,'#ffcf3a',3,.4);MS.pop();MS.pop();
+  for(let k=0;k<6;k++)sp(m,0,.96-k*.07,.28-k*.08,.07,.07,.07,S2C[k],1,.3);
+  MS.push();M4.tr(m,0,.62,-.28);M4.rx(m,-.7+Math.sin(t*3)*.2);for(let k=0;k<6;k++)sp(m,0,-k*.06,-k*.03,.06,.06,.06,S2C[k],1,.3);MS.pop();
+  if(o.happy>0&&R()<.2)burst(o.x,o.y+.9,o.z,S2C,1,1,.08,.6);};}
+TROPHIES.stormchaser=TROPHIES.stormchaser||{n:'Storm Chaser',ic:'⛈️',d:'Chased the grey storm away from the Sky Kingdom'};
+TROPHIES.rainbow=TROPHIES.rainbow||{n:'Rainbow Hero',ic:'🌈',d:'Beat Professor Gloom and brought every colour back'};
+// Captain Prism: a hero in white and purple with a rainbow cape. She shoots rainbow lasers and rainbow balls and can fly.
+CHARS.push({id:'prism',u:1,bg:'#8a4ff0',g:'girl',n:MV('Captain Prism','الكابتن بريزم'),skin:'#e0a67a',hs:'pony',hair:'blond',suit:'nova',cs:'#ffffff',ca:'#8a4ff0',cape:'rainbow',acc:'',em:'gem',perk:'quick',
+  pt:'#8a4ff0',bt:'#ffffff',bc:'#ffcf3a',gl:'#ffffff',gc:'#8a4ff0',ec:'#ffcf3a',
+  a:'laser',b:(typeof SHOTDEF!=='undefined'&&SHOTDEF.rainbowball)?'rainbowball':'heart'});
+CHARBY.prism=CHARS[CHARS.length-1];if(typeof HMOVE!=='undefined')HMOVE.prism=['hero','fly'];if(typeof HERO_TAGS!=='undefined')HERO_TAGS.prism=['light','magic'];HERO_UNLOCK.prism={q:'s2_final'};
+// ---------- words (Arabic) ----------
+MV('Story 2: The Rainbow Thief','القصة 2: لص قوس قزح');MV('Finish the story above to open Story 2!','أنهِ القصة في الأعلى لتفتح القصة 2!');MV('You are on it!','أنت تعمل عليها الآن!');
+MV('You beat Professor Gloom! Every colour is back.','هزمت البروفيسور غلوم! عادت كل الألوان.');MV('Dance','رقصة');MV('The Fun Park','مدينة الملاهي');
+MV('Ringmaster Rico','مدير السيرك ريكو');MV('Captain Prism','الكابتن بريزم');MV('Rainbow Cap','قبعة قوس قزح');MV('Rainbow Crown','تاج قوس قزح');
+MV('Storm Chaser','مطارد العواصف');MV('Chased the grey storm away from the Sky Kingdom','طرد العاصفة الرمادية من مملكة السماء');MV('Rainbow Hero','بطل قوس قزح');MV('Beat Professor Gloom and brought every colour back','هزم البروفيسور غلوم وأعاد كل الألوان');
+MV('The Silent Fun Park','مدينة الملاهي الصامتة');MV('The Lost Baby Animals','الحيوانات الصغيرة الضائعة');MV('The Deep Blue Gem','جوهرة الأزرق العميق');MV('The Frozen Rainbow','قوس قزح المتجمد');MV('Storm over the Sky Kingdom','عاصفة فوق مملكة السماء');MV('Gloom\'s Airship','منطاد غلوم');
+MV('Professor Gloom\'s Grey Bots stopped the Fun Park and drained its colours! Ringmaster Rico needs you at the gate.','روبوتات البروفيسور غلوم الرمادية أوقفت مدينة الملاهي وسرقت ألوانها! مدير السيرك ريكو يحتاجك عند البوابة.');
+MV('Gloom locked baby animals in grey cages all over the Mushroom Forest! Ranger Rosa says your pet can sniff them out.','غلوم حبس حيوانات صغيرة في أقفاص رمادية في كل غابة الفطر! الحارسة روزا تقول إن حيوانك الأليف يستطيع أن يشمّها ويجدها.');
+MV('The sea at Coral Cove turned grey! Diver Dina found glowing pearls in the water. Swim out and bring them back.','صار البحر في خليج المرجان رماديًا! الغواصة دينا وجدت لآلئ مضيئة في الماء. اسبح وأحضرها.');
+MV('Gloom froze a Rainbow Gem inside the Grumpy Yeti\'s ice! Sven is waiting for you at the lodge.','غلوم جمّد جوهرة قوس قزح داخل جليد اليتي الغاضب! سفين ينتظرك عند الكوخ.');
+MV('Grey storm clouds are swallowing the Sky Kingdom! Queen Celeste needs a hero who can fly through the rainbow rings.','غيوم عاصفة رمادية تبتلع مملكة السماء! الملكة سيليست تحتاج بطلًا يستطيع الطيران عبر حلقات قوس قزح.');
+MV('You have all five Rainbow Gems! Captain Prism is building the Rainbow Cannon at Hero HQ. Time to bring down Gloom\'s airship!','معك جواهر قوس قزح الخمس كلها! الكابتن بريزم تبني مدفع قوس قزح في مقر الأبطال. حان وقت إسقاط منطاد غلوم!');
+MV('Oh, a hero! Professor Gloom flew over in his grey airship and zapped my park with his Gloom Ray!','أوه، بطل! البروفيسور غلوم طار فوقنا بمنطاده الرمادي وضرب مدينتي بشعاع الكآبة!');
+MV('His Grey Bots stopped the rides and everything turned grey. And look, a Rainbow Gem got stuck at the very top of the roller coaster!','روبوتاته الرمادية أوقفت الألعاب وصار كل شيء رماديًا. وانظر، جوهرة قوس قزح علقت في أعلى قمة الأفعوانية!');
+MV('Chase the Grey Bots out of the park','اطرد الروبوتات الرمادية من المدينة');MV('Ride the roller coaster and grab the Rainbow Gem at the top','اركب الأفعوانية والتقط جوهرة قوس قزح في القمة');MV('Show the gem to Ringmaster Rico','أرِ الجوهرة لمدير السيرك ريكو');
+MV('The colours are back and the rides are running! Wear this Rainbow Cap, it suits you!','عادت الألوان والألعاب تعمل! البس قبعة قوس قزح هذه، إنها تليق بك!');
+MV('Gloom locked five baby animals in grey cages somewhere in my forest!','غلوم حبس خمسة حيوانات صغيرة في أقفاص رمادية في مكان ما في غابتي!');
+MV('If your pet is with you, it will sniff them out. Follow the paw prints and open every cage!','إذا كان حيوانك الأليف معك فسيجدها بأنفه. اتبع آثار الأقدام وافتح كل الأقفاص!');
+MV('Open the cage','افتح القفص');MV('Open the 5 grey cages','افتح الأقفاص الرمادية الخمسة');MV('Tell Ranger Rosa','أخبر الحارسة روزا');
+MV('Every baby is safe! This little rainbow foal wants to come with you. Look after it!','كل الصغار بأمان! هذا المهر الصغير بلون قوس قزح يريد أن يأتي معك. اعتنِ به!');
+MV('The sea went grey, and five glowing pearls fell into the water out by the reef.','صار البحر رماديًا، وسقطت خمس لآلئ مضيئة في الماء عند الشعاب.');MV('Swim out and collect them. Together they make the Deep Blue Gem!','اسبح واجمعها. معًا تصنع جوهرة الأزرق العميق!');
+MV('Collect the 5 glowing pearls in the sea','اجمع اللآلئ المضيئة الخمس في البحر');MV('Bring the pearls to Diver Dina','أحضر اللآلئ إلى الغواصة دينا');MV('The Deep Blue Gem! Look how the sea sparkles again. Here, a rainbow dance for you!','جوهرة الأزرق العميق! انظر كيف يلمع البحر من جديد. تفضل، رقصة قوس قزح لك!');
+MV('Gloom\'s grey slime is everywhere, and the Grumpy Yeti swallowed a Rainbow Gem!','هلام غلوم الرمادي في كل مكان، واليتي الغاضب ابتلع جوهرة قوس قزح!');MV('Clear the slime, then beat the Yeti. Be brave, hero!','نظّف الهلام ثم اهزم اليتي. كن شجاعًا أيها البطل!');
+MV('Clear the grey slime','نظّف الهلام الرمادي');MV('Get the gem back from the Grumpy Yeti','استرجع الجوهرة من اليتي الغاضب');MV('Tell Sven','أخبر سفين');MV('Ha! The Frozen Rainbow Gem! The snow sparkles in every colour again.','ها! جوهرة قوس قزح المتجمدة! الثلج يلمع بكل الألوان من جديد.');
+MV('Grey storm clouds are swallowing my kingdom!','غيوم عاصفة رمادية تبتلع مملكتي!');MV('Chase the storm clouds away, then fly through the rainbow rings to find the last gem. You need a flying hero, or the Nimbus Cloud!','اطرد غيوم العاصفة ثم طِر عبر حلقات قوس قزح لتجد الجوهرة الأخيرة. تحتاج بطلًا يطير أو غيمة نيمبوس!');
+MV('Chase away the grey storm clouds','اطرد غيوم العاصفة الرمادية');MV('Fly through the 6 rainbow rings','طِر عبر حلقات قوس قزح الست');MV('Tell Queen Celeste','أخبر الملكة سيليست');MV('My kingdom shines again! The Storm Chaser trophy is yours, brave hero.','مملكتي تلمع من جديد! كأس مطارد العواصف لك أيها البطل الشجاع.');
+MV('Five Rainbow Gems! Now we can build the Rainbow Cannon.','خمس جواهر قوس قزح! الآن نستطيع بناء مدفع قوس قزح.');MV('Fix its three parts, then stand by the cannon. When it fires, Gloom\'s airship comes down, and he will fight in his Gloom Mech!','أصلح أجزاءه الثلاثة ثم قف بجانب المدفع. عندما يطلق، سينزل منطاد غلوم، وسيقاتل في روبوته العملاق!');
+MV('Fix the Rainbow Cannon','أصلح مدفع قوس قزح');MV('Fix the 3 parts of the Rainbow Cannon','أصلح الأجزاء الثلاثة لمدفع قوس قزح');MV('Stand by the Rainbow Cannon','قف بجانب مدفع قوس قزح');MV('Beat Professor Gloom!','اهزم البروفيسور غلوم!');MV('Talk to Captain Prism','تحدّث إلى الكابتن بريزم');
+MV('You did it! Gloom is gone, and every colour is back in Blocktopia!','فعلتها! ذهب غلوم وعادت كل الألوان إلى بلوكتوبيا!');MV('I am Captain Prism. From now on I will fight next to you. Pick me in the hero list!','أنا الكابتن بريزم. من الآن سأقاتل بجانبك. اخترني من قائمة الأبطال!');
+MV('You grabbed the Rainbow Gem!','التقطت جوهرة قوس قزح!');MV('The Rainbow Gem!','جوهرة قوس قزح!');MV('Your pet smells a baby animal! Follow the paw prints','حيوانك الأليف يشم حيوانًا صغيرًا! اتبع آثار الأقدام');MV('Ranger Rosa gave you a puppy to help you look!','الحارسة روزا أعطتك جروًا ليساعدك في البحث!');
+MV('Gloom calls his Grey Bots!','غلوم ينادي روبوتاته الرمادية!');MV('Chase the bots away and keep zapping Gloom','اطرد الروبوتات واستمر في ضرب غلوم');MV('The Gloom Mech is wobbling!','روبوت غلوم العملاق يترنّح!');MV('Jump over the grey rings! Almost there!','اقفز فوق الحلقات الرمادية! اقتربت!');
+MV('Rainbow Cannon: FIRE!','مدفع قوس قزح: أطلق!');MV('Hold on, here comes Professor Gloom!','تمسّك، البروفيسور غلوم قادم!');MV('Direct hit!','إصابة مباشرة!');MV('The airship is coming down!','المنطاد ينزل!');
+MV('You beat Professor Gloom!','هزمت البروفيسور غلوم!');MV('Every colour is back in Blocktopia!','عادت كل الألوان إلى بلوكتوبيا!');MV('I\'ll be back... in COLOUR!','سأعود... بالألوان!');
+MV('Oh no, hero! A grey airship is flying over Blocktopia. It is Professor Gloom, and he hates colours and fun! His Gloom Ray is turning our favourite places grey. Ringmaster Rico at the Fun Park needs you first!','يا للمصيبة أيها البطل! منطاد رمادي يطير فوق بلوكتوبيا. إنه البروفيسور غلوم، وهو يكره الألوان والمرح! شعاعه يحوّل أماكننا المفضلة إلى اللون الرمادي. مدير السيرك ريكو في مدينة الملاهي يحتاجك أولًا!');
+MV('You did it! Professor Gloom flew away and every colour is back. Blocktopia has never looked so bright! I will fight next to you now: pick me in the hero list.','فعلتها! طار البروفيسور غلوم بعيدًا وعادت كل الألوان. لم تكن بلوكتوبيا مشرقة هكذا من قبل! سأقاتل بجانبك الآن: اخترني من قائمة الأبطال.');
+// ---------- what's new (Arabic) ----------
+MV('Story 2: The Rainbow Thief','القصة 2: لص قوس قزح');MV('Finished the story? A new adventure starts! Professor Gloom hates colours and fun, and his grey airship is draining the colours from the Fun Park, the Mushroom Forest, Coral Cove, Frosty Peaks and the Sky Kingdom. Find the 6 Rainbow Gems, fire the Rainbow Cannon and beat him in his Gloom Mech. Open the Story Book to see it','أنهيت القصة؟ مغامرة جديدة تبدأ! البروفيسور غلوم يكره الألوان والمرح، ومنطاده الرمادي يسرق الألوان من مدينة الملاهي وغابة الفطر وخليج المرجان وقمم الصقيع ومملكة السماء. اعثر على جواهر قوس قزح الست، وأطلق مدفع قوس قزح، واهزمه في روبوته العملاق. افتح كتاب القصة لتراها');
 // ================= v27.2: 🌊 the Ocean: the whole sea comes alive =================
 // Sea animals live everywhere in the deep water around the islands: fish schools, clownfish in their anemones, pufferfish,
 // seahorses, starfish, crabs, lobsters, octopuses, jellyfish, sea turtles, dolphins, friendly sharks, manta rays, and in the

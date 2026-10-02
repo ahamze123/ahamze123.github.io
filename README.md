@@ -1,6 +1,6 @@
 # Block Buddies
 
-A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to collect, five connected islands, a water park island, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
+A brick hero adventure for kids, with two stories (8 chapters, then 6 more). It has over 50 heroes to collect, five connected islands, a water park island, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
 
 **Play:** https://ahamze123.github.io
 
@@ -12,6 +12,16 @@ A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to
 - The glowing trail always takes the way around a force field, never through it.
 - Glowing purple laser fences show where the force fields are, and the big map shades the places that are still locked. Quests, jobs and trails only send you to places that are already open: if you pick a locked place (on the map, a hidden hero coin, the Moon), the game says which chapter opens it.
 - Playing online, you all play one story: it goes on from whoever is furthest along, and every chapter you finish together counts on every tablet, also when you play alone again. Commander Nova's rocket parts and the Moon quests are shared too. Each tablet gets its own prizes.
+
+## Story 2: The Rainbow Thief
+- Opens when Story 1 is finished: Mayor Pip calls on the hero radio. **Professor Gloom** hates colours and fun. His grumpy grey airship circles over Brick City, and his Gloom Ray drains the colours from five places (they look grey while you are there, until you win their chapter).
+- Six chapters, each with a friend, a Rainbow Gem and a prize. The 📖 Story Book shows them under Story 1, with **Show me the way**:
+  1. **The Silent Fun Park** (Ringmaster Rico at the Fun Park gate): chase the Grey Bots out of the park, then ride the roller coaster and grab the gem at the top. Prize: the Rainbow Cap.
+  2. **The Lost Baby Animals** (Ranger Rosa, Mushroom Forest): your pet sniffs out 5 baby animals in grey cages (no pet? Rosa gives you a puppy); open every cage. Prize: a **Rainbow Foal** pet.
+  3. **The Deep Blue Gem** (Diver Dina, Coral Cove): swim out for the 5 glowing pearls.
+  4. **The Frozen Rainbow** (Sven, Frosty Peaks): clear the grey slime and beat the Grumpy Yeti.
+  5. **Storm over the Sky Kingdom** (Queen Celeste): chase away the storm clouds and fly through the 6 rainbow rings. Prize: the Storm Chaser trophy.
+  6. **Gloom's Airship** (Captain Prism at Hero HQ): fix the 3 parts of the Rainbow Cannon, stand by it while it fires, and when the airship comes down, beat Professor Gloom in his **Gloom Mech** (friends online fight him together). Prizes: **Captain Prism** as a new hero, the Rainbow Crown, the Rainbow Hero trophy and 50,000 coins.
 
 ## Missions that make you think
 - Fixing things, rescuing animals, charging the factory sockets, pulling the big handle and building (trampolines, statues, the Crystal Bridge) are puzzles now instead of holding the button: memory, what comes next, counting, sums, putting things in order, finding the odd one out and connecting wires.
