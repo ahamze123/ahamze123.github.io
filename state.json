@@ -2185,7 +2185,23 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9c-1be1-76ee-bac9-5e388c437f7b/output/preview.png?Expires=1791237314&Signature=iIAvqktf9Q2PFpKKTxn~H24fTFe2BFrZfrWhUrxUUYKYXfwY3xQX3qS8FoZuEbi9NeufZu5g657DIWR-j2D7ggFyoxy8EdrELYQtMBXfieTV9fENV2-bIxCg3-mtHeETlj5rfVgRZh51~xi3Z~j9g31IK35V~QCUQqhFyTNxq6iA-OQstvYD-0PC3gtBWKrv7S0073kgR-OZI4f96ADmpiATZ3KlZkaWecO59NCjgjoHsO4GHdR238C1lIhK6fJLy4Xegjn0xhS5M26Kb60Cn7sd2xJ5NrXonsNsdvu5016uzggmmzmp-r7pmdK~KEL1oBjuvAKgBLxIo~R5s~qfpQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
-  "p_lantern": {},
+  "p_lantern": {
+   "model": {
+    "id": "01a0fe9d-5dea-713c-a0b3-82c4c12af686",
+    "made": "2026-10-02 21:55",
+    "run": 15,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 4000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_luna": {
    "anim": {
     "action_ids": [
