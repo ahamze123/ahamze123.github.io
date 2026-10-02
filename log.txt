@@ -1033,3 +1033,4 @@
 2026-10-02 23:12:36 [p_umbrella] model saved (no skeleton): {"bytes": 257860, "triangles": 3045, "joints": 0, "clips": []}
 2026-10-02 23:12:44 [p_sandcastle] image-to-3d SUCCEEDED 100%
 2026-10-02 23:12:46 [p_sandcastle] model saved (no skeleton): {"bytes": 496012, "triangles": 4045, "joints": 0, "clips": []}
+2026-10-02 23:12:48 run finished; credits used by new tasks (estimate): 195
