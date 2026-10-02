@@ -184,6 +184,7 @@
    }
   },
   "basma": {
+   "extra": {},
    "full": {
     "bytes": 3309992,
     "pictures": [
@@ -3473,7 +3474,8 @@
     "basma"
    ],
    "limit": 40,
-   "run": 10
+   "run": 10,
+   "spent_estimate": 35
   }
  ]
 }
