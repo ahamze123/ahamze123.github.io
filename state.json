@@ -2472,6 +2472,8 @@
   },
   "p_star": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0fe9e-21a6-74c8-991c-bef542ec442a",
     "made": "2026-10-02 21:56",
     "run": 15,
@@ -2484,7 +2486,8 @@
      "target_polycount": 1500,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9e-21a6-74c8-991c-bef542ec442a/output/preview.png?Expires=1791237432&Signature=LatQtjyidijPMjuWwLwdaY1AVQbmr38ltine2Wg7QvDMQfaDSz5PMvMQJpj62qSN-uALL8LhimonrV7kC5gS-caE85yqcmJHyRuvCjUCWGbHTp~Uf-itsg7XueKfgmvKd3Ny4nPktgXZIBE0~T4VaeERVRjX~zT8cmPk8yClBOb-l0NsB~iHxqmewLfrBb385SDxaqvE26buz8RocDh2ntkcjmXdNlK68JAHZ53kTnayl40~5oP~S183ihLmQwms-4TJ3hK2ypoqjcadXESoE-K2nE33gk05dMtUJ7OzTL31d4q~RXCtHKcSMWV6fqAotxNMqMwB406Tu9LxhV3W5A__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "p_stardust": {
