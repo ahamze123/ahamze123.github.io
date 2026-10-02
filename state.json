@@ -2016,6 +2016,12 @@
    "model": {
     "credits": 30,
     "error": null,
+    "file": {
+     "bytes": 2246148,
+     "clips": [],
+     "joints": 0,
+     "triangles": 40499
+    },
     "id": "01a0fe96-f2d9-74ff-a88d-6b64ee9c9f24",
     "made": "2026-10-02 21:48",
     "run": 14,

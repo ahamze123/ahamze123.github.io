@@ -833,3 +833,4 @@
 2026-10-02 21:49:54 [p_castle] image-to-3d IN_PROGRESS 99%
 2026-10-02 21:49:59 [p_bunny] image-to-3d IN_PROGRESS 67%
 2026-10-02 21:50:04 [p_castle] image-to-3d SUCCEEDED 100%
+2026-10-02 21:50:06 [p_castle] model saved (no skeleton): {"bytes": 2246148, "triangles": 40499, "joints": 0, "clips": []}
