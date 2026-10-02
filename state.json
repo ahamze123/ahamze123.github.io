@@ -1995,7 +1995,23 @@
     "status": "SUCCEEDED"
    }
   },
-  "p_apple": {},
+  "p_apple": {
+   "model": {
+    "id": "01a0fe9e-21a8-751c-9973-d123937999cd",
+    "made": "2026-10-02 21:56",
+    "run": 15,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 1500,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_appletree": {
    "model": {
     "credits": 30,
@@ -2427,6 +2443,7 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9c-1bc5-7608-9808-455e5ffc36d7/output/preview.png?Expires=1791237358&Signature=oo~pC6VPSusnDNQh9QGGLFPqSp9ZobDKSMGFFY8klaupSZVpcHJFikpnPY28w~6UV5J0up76emck2Y~GQNDpqR74t0uY9cTg6WMyg70qY0kk~81YE0QjIxq9rwFQz~OQxe0EKdSyXxuJFSNyoPC8kuTXetJrYWWQyfUv~yoznyacbLMSeas3vt3twJpAjk7qdrBgC8xCh31nRm6OaawzeOiPZDCE7crpFjl~MFzLYxIuwmJ6KZN2nxL9Atqxmdr6PNL16LPMxCVvN22Za-OV-J~dLiDrJZ5Cw4lV74WP-ELNlCZWeyoHCLCjBRsSNSsRz5Qlkzl0nenQ46DOwVv3rg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
+  "p_star": {},
   "p_stardust": {
    "model": {
     "credits": 30,
