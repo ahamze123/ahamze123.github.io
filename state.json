@@ -4031,6 +4031,19 @@
   }
  },
  "images": {
+  "dress_items": {
+   "id": "01a0feeb-f875-7168-8c98-f722f5fe3478",
+   "kind": "text-to-image",
+   "made": "2026-10-02 23:21",
+   "refs": [],
+   "run": 17,
+   "settings": {
+    "ai_model": "nano-banana-pro",
+    "aspect_ratio": "1:1",
+    "prompt": "A sticker sheet of princess dress-up accessories for a children's game, arranged in a neat 3 by 3 grid with lots of white space around each item, every item small enough to sit fully inside its own square: a golden crown with pink gems; a flower crown of pink and white roses; a seashell crown with pearls; a silver star tiara; a magic wand with a golden star; a pink heart wand; sparkly pink fairy wings seen from the back; blue butterfly wings seen from the back; a pearl necklace with a pink heart. Glossy 3D animated-movie style, soft even light. Plain pure white background, no shadows, no text, no grid lines."
+   },
+   "status": "PENDING"
+  },
   "p_apple": {
    "credits": 9,
    "error": null,
