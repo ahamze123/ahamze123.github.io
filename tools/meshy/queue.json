@@ -1,16 +1,10 @@
 {
- "run": 17,
- "heroes": [
-  "p_turtle",
-  "p_mermaid",
-  "p_bear",
-  "p_penguin",
-  "p_luna"
- ],
+ "run": 18,
+ "heroes": [],
  "refetch": [],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 190,
+ "max_credits": 30,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -24,79 +18,33 @@
   "heroes": [],
   "action_ids": []
  },
- "extra": {
-  "p_luna": {
-   "moves2": [
-    32,
-    274,
-    569,
-    568
-   ]
-  }
- },
- "per": {
-  "p_turtle": {
-   "rig": false,
-   "pose_mode": "",
-   "target_polycount": 20000,
-   "shrink": 1024
-  },
-  "p_mermaid": {
-   "rig": false,
-   "pose_mode": "",
-   "target_polycount": 20000,
-   "shrink": 1024
-  },
-  "p_bear": {
-   "rig": false,
-   "pose_mode": "",
-   "target_polycount": 20000,
-   "shrink": 1024
-  },
-  "p_penguin": {
-   "rig": false,
-   "pose_mode": "",
-   "target_polycount": 20000,
-   "shrink": 1024
-  }
- },
+ "extra": {},
+ "per": {},
  "redo": [],
  "images": {
-  "p_bear": {
+  "hair_pigtails": {
    "ai_model": "nano-banana-pro",
    "aspect_ratio": "1:1",
    "refs": [
-    "tools/meshy/pics/p_bear_src.jpg"
+    "tools/meshy/pics/p_luna.png"
    ],
-   "prompt": "Show the bear chef from this picture alone on a plain pure white background: exactly the same bear, same fur colour and face, the same white chef's hat and pink apron with the cupcake, holding the wooden spoon, standing and facing the camera. The whole body from the top of the hat to the feet inside the picture, nothing cut off. Nothing else in the picture: no candy, no trees, no ground, no shadow, no text. Same glossy 3D animated-movie style, soft even light."
+   "prompt": "Change only her hairstyle: her curly brown hair is now in two high bouncy pigtails tied with big pink satin bows. Keep everything else exactly the same: the same girl and face, the same big smile and skin, the same golden heart tiara, the same pink dress and shoes, the same pose, and the same size and position in the picture. Plain pure white background, no shadow, no text. Same glossy 3D animated-movie style."
   },
-  "p_penguin": {
+  "hair_bun": {
    "ai_model": "nano-banana-pro",
    "aspect_ratio": "1:1",
    "refs": [
-    "tools/meshy/pics/p_penguin_src.jpg"
+    "tools/meshy/pics/p_luna.png"
    ],
-   "prompt": "Show the penguin from this picture alone on a plain pure white background: exactly the same little penguin with the red knitted scarf and white fluffy earmuffs, standing and facing the camera with flippers out. The whole body from head to feet inside the picture, nothing cut off. Nothing else in the picture: no snow, no trees, no ground, no shadow, no text. Same 3D animated-movie style, soft even light."
+   "prompt": "Change only her hairstyle: her curly brown hair is now in a big round high bun on top of her head with a pink scrunchie, and two little curls framing her face. Keep everything else exactly the same: the same girl and face, the same big smile and skin, the same golden heart tiara, the same pink dress and shoes, the same pose, and the same size and position in the picture. Plain pure white background, no shadow, no text. Same glossy 3D animated-movie style."
   },
-  "luna_room": {
-   "ai_model": "nano-banana-pro",
-   "aspect_ratio": "4:3",
-   "prompt": "Inside a little princess's bedroom in a fairy-tale castle, for a children's game, seen straight from the front like a cozy stage. Pink, lavender and white with gold details. From left to right: a tall pink wardrobe with open doors showing dresses; a white vanity table with a big round mirror and a jewelry box; a small white piano; a big arched window with a sunny sky; a canopy bed with pink curtains, fluffy pillows and a teddy bear; a painting easel with a blank canvas; a small white bathtub full of bubbles with a rubber duck. A soft round rug on the floor and fairy lights. Every piece of furniture clearly separated and fully visible, nothing cut off. Glossy 3D animated-movie style, soft warm light, bright cheerful colors. No people, no animals, no text."
-  },
-  "dress_items": {
+  "hair_braid": {
    "ai_model": "nano-banana-pro",
    "aspect_ratio": "1:1",
-   "prompt": "A sticker sheet of princess dress-up accessories for a children's game, arranged in a neat 3 by 3 grid with lots of white space around each item, every item small enough to sit fully inside its own square: a golden crown with pink gems; a flower crown of pink and white roses; a seashell crown with pearls; a silver star tiara; a magic wand with a golden star; a pink heart wand; sparkly pink fairy wings seen from the back; blue butterfly wings seen from the back; a pearl necklace with a pink heart. Glossy 3D animated-movie style, soft even light. Plain pure white background, no shadows, no text, no grid lines."
-  },
-  "color_page1": {
-   "ai_model": "nano-banana",
-   "aspect_ratio": "4:3",
-   "prompt": "A coloring page for a 5 year old: a cute unicorn standing in a meadow in front of a little castle, with a rainbow, a smiling sun and two flowers. Very thick clean black outlines, big simple shapes, pure white inside every shape, no shading, no gray, no color, no text."
-  },
-  "color_page2": {
-   "ai_model": "nano-banana",
-   "aspect_ratio": "4:3",
-   "prompt": "A coloring page for a 5 year old: a cute kitten and a bunny having a tea party at a little table with a teapot, cups and cupcakes, and a heart balloon. Very thick clean black outlines, big simple shapes, pure white inside every shape, no shading, no gray, no color, no text."
+   "refs": [
+    "tools/meshy/pics/p_luna.png"
+   ],
+   "prompt": "Change only her hairstyle: her brown hair is now in one long thick braid falling over her right shoulder, with little pink flowers woven into it. Keep everything else exactly the same: the same girl and face, the same big smile and skin, the same golden heart tiara, the same pink dress and shoes, the same pose, and the same size and position in the picture. Plain pure white background, no shadow, no text. Same glossy 3D animated-movie style."
   }
  },
  "redo_images": []
