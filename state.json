@@ -2398,6 +2398,12 @@
    "model": {
     "credits": 30,
     "error": null,
+    "file": {
+     "bytes": 116140,
+     "clips": [],
+     "joints": 0,
+     "triangles": 1561
+    },
     "id": "01a0fe9c-1bc5-7608-9808-455e5ffc36d7",
     "made": "2026-10-02 21:53",
     "run": 15,

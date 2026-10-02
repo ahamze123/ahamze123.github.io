@@ -952,3 +952,4 @@
 2026-10-02 21:56:04 [p_lantern] image-to-3d IN_PROGRESS 74%
 2026-10-02 21:56:05 [p_rock] image-to-3d SUCCEEDED 100%
 2026-10-02 21:56:05 [p_blossom] image-to-3d SUCCEEDED 100%
+2026-10-02 21:56:07 [p_rock] model saved (no skeleton): {"bytes": 116140, "triangles": 1561, "joints": 0, "clips": []}
