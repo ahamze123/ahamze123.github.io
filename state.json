@@ -2118,6 +2118,8 @@
   },
   "p_carrot": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0fe9d-7c28-772c-82e6-7d82980728d5",
     "made": "2026-10-02 21:55",
     "run": 15,
@@ -2130,7 +2132,8 @@
      "target_polycount": 1500,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9d-7c28-772c-82e6-7d82980728d5/output/preview.png?Expires=1791237388&Signature=l7ABTOas5EMVRpY039mJpHcskob53RS7zLpJvdPuxCE8xNjOyYXSSvRQK5ftVzFpgpBCtnq0fIOylTGKXpNZq~s1Ma~23IL4-jpDHjXvsfdvKWDCwUifqfzT~DlVfawxSfku4K~RIRi0NrcNJphmOORHOYDASXPazixppzP5DsCWDfxZ-gQ6CLJU1a2cyNri6RPEBA0~4l7hJc5Q2uWjm-Pn~omV3SAsw7R7jkpk4FHCtO~78OCJrvG4s7EqbqFg1V9pRnIMfbOSK8ZgtZGnEi0j9dW-hOu11FZAJCmTZ8Utzgf-7ypbbD8hsoN1Eqhe2Qg9fJjOktxoWdWIJOD~1w__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "p_castle": {

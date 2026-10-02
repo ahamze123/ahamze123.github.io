@@ -961,3 +961,6 @@
 2026-10-02 21:56:14 [p_lantern] image-to-3d SUCCEEDED 100%
 2026-10-02 21:56:14 [p_star] image-to-3d IN_PROGRESS 1%
 2026-10-02 21:56:16 [p_lantern] model saved (no skeleton): {"bytes": 329748, "triangles": 4006, "joints": 0, "clips": []}
+2026-10-02 21:56:21 [p_carrot] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:56:24 [p_mushroom] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:56:31 [p_carrot] image-to-3d SUCCEEDED 100%
