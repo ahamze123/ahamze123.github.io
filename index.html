@@ -342,7 +342,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
 #gbv small.ggn{font-size:.62em;opacity:.8;margin-left:1px;font-weight:800}
 #gmhud{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top));transform:translateX(-50%);z-index:12;background:rgba(26,22,66,.88);color:#ffe27a;font:800 17px/1 system-ui,sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 3px 0 rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}
 #gmhud.low{color:#ff8a9a;animation:gmpulse .6s infinite alternate}@keyframes gmpulse{to{transform:translateX(-50%) scale(1.06)}}
-#hostcard{order:3;max-width:290px;padding:8px 12px;cursor:pointer}#hostcard .hc b{display:block;font-size:14px}#hostcard .hc small{display:block;font-size:12.5px;line-height:1.3;margin-top:3px;opacity:.92}#hostcard .hc .x{opacity:.55;font-size:11px}
+#hostcard{order:3;max-width:290px;padding:8px 12px;cursor:pointer;pointer-events:auto}#hostcard .hc b{display:block;font-size:14px}#hostcard .hc small{display:block;font-size:12.5px;line-height:1.3;margin-top:3px;opacity:.92}#hostcard .hc .x{opacity:.55;font-size:11px}
 </style>
 <canvas id="gl" tabindex="0"></canvas>
 <div id="tags"></div>
@@ -7676,8 +7676,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:43,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:44,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🧲',t:'Every power opens its treasure',s:'Sheriff Sam\'s lasso and stampede now open the Magnet Safe. Every hero with a power badge (🧲 🔥 💪 ⚔️ ⚡ 💧 🪄) opens the treasures that need it with any of their attacks'},
+  {ic:'🦴',t:'Fossil Puzzle fixed',s:'In the Dino Museum, the fossil next to Curator Cora can be picked up now, so the puzzle can be finished'},
+  {ic:'🎮',t:'The hosting card hides',s:'Tap the You\'re hosting! card to hide it. It also goes away by itself after 30 seconds'},
   {ic:'🤝',t:'Team games: play together',s:'Menu, Mini-games: Star Hunt, Coin Rain and Twin Buttons. Whoever starts one brings everyone online into it, and you win together'},
   {ic:'🎨',t:'Hero Maker: make your own heroes',s:'Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too'},
   {ic:'💾',t:'Keep your game safe',s:'Menu, Settings, 💾 My game: Save a copy keeps your whole game in a file (in Files, or send it to Mum or Dad). Open a copy brings it back on any tablet'},
@@ -10388,18 +10391,25 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.7';window.BB_VER=BB_VER;
+const BB_VER='26.8';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
-function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
-  const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
+function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
+  let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
+  // v26.8: the card goes away by itself after 30 seconds, and a tap anywhere on it hides it (see the pointerdown below)
+  if(want){if(!NET.hcT0)NET.hcT0=now;else if(now-NET.hcT0>30000){NET.hcHide=1;want=false;}}
   if(!want){if(el&&!el.hidden)el.hidden=true;return;}
   if(!el){const f=$('friends');if(!f)return;el=document.createElement('div');el.id='hostcard';el.className='card';el.onclick=()=>{NET.hcHide=1;el.hidden=true;};f.parentNode.insertBefore(el,f.nextSibling);}
   el.hidden=false;const n=playerCount(),name=prof().name;const SA=!!(NET.room&&NET.room.standalone);
-  const how=SA?trf('On the other iPads: open Block Buddies, tap Play online, then tap Join next to {0}',name):trf('On the other devices: open this same game, tap Play online, then tap Join next to {0}',name);
+  const how=SA?trf('On the other tablets: open Block Buddies, tap Play online, then tap Join next to {0}',name):trf('On the other devices: open this same game, tap Play online, then tap Join next to {0}',name);
   const h=`<div class="hc"><b>🎮 ${esc(tr("You're hosting!"))} <span class="pill2" dir="ltr">👥 ${n}/${MAXP}</span></b><small>${esc(n>1?trf('{0} more friends can still join',MAXP-n):how)}</small>${n>1?'':`<small>${esc(tr('Everyone needs the internet. The same Wi-Fi works best.'))}</small>`}<small class="x">${esc(tr('Tap to hide'))}</small></div>`;
   if(el._h!==h){el._h=h;el.innerHTML=h;}}
 {const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{hostCard();}catch(e){}};}
-{const _nh=netHost;netHost=async function(){NET.hcHide=0;const ok=await _nh();if(ok)setTimeout(()=>{if(NET.role==='host')banner(tr("You're hosting!"),tr('Friends can join you now'),'#46e6b0');},900);return ok;};}
+// The card sits in the HUD, under the touch controls (the joystick area covers the left of the screen), so a tap on it
+// never reached it. Now a tap that lands on the card hides it, whatever is on top.
+addEventListener('pointerdown',e=>{const el=$('hostcard');if(!el||el.hidden)return;const r=el.getBoundingClientRect();
+  if(e.clientX>=r.left-8&&e.clientX<=r.right+8&&e.clientY>=r.top-8&&e.clientY<=r.bottom+8){NET.hcHide=1;el.hidden=true;}},true);
+MV('On the other tablets: open Block Buddies, tap Play online, then tap Join next to {0}','على الأجهزة اللوحية الأخرى: افتح بلوك بديز، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');
+{const _nh=netHost;netHost=async function(){NET.hcHide=0;NET.hcT0=0;const ok=await _nh();if(ok)setTimeout(()=>{if(NET.role==='host')banner(tr("You're hosting!"),tr('Friends can join you now'),'#46e6b0');},900);return ok;};}
 MV("You're hosting!",'أنت المضيف!');MV('On the other iPads: open Block Buddies, tap Play online, then tap Join next to {0}','على أجهزة الآيباد الأخرى: افتح بلوك بديز، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');
 MV('On the other devices: open this same game, tap Play online, then tap Join next to {0}','على الأجهزة الأخرى: افتح هذه اللعبة نفسها، اضغط «العب أونلاين»، ثم اضغط «انضم» بجانب {0}');MV('{0} more friends can still join','ما زال بإمكان {0} أصدقاء الانضمام');
 MV('Everyone needs the internet. The same Wi-Fi works best.','يحتاج الجميع إلى الإنترنت. شبكة الواي فاي نفسها هي الأفضل.');MV('Tap to hide','اضغط للإخفاء');MV('Friends can join you now','يستطيع أصدقاؤك الانضمام إليك الآن');
@@ -12257,6 +12267,44 @@ MV('Coins fall from the sky for one minute. Catch 60 together!','تتساقط ا
 MV('Play online with a friend to unlock Twin Buttons.','العب على الإنترنت مع صديق لتفتح لعبة الزرّين.');
 MV('Team games: play together','ألعاب الفريق: العبوا معًا');MV('Menu, Mini-games: Star Hunt, Coin Rain and Twin Buttons. Whoever starts one brings everyone online into it, and you win together','القائمة، الألعاب المصغرة: صيد النجوم ومطر العملات والزرّان التوأم. من يبدأ لعبة يأخذ كل من على الإنترنت معه، وتفوزون معًا');
 MV('There is not enough room here. Try a more open place!','لا يوجد مكان كافٍ هنا. جرّب مكانًا أوسع!');
+// ================= v26.8 fixes from the family and from the check-up =================
+// ---------- a quest thing right next to a person ----------
+// The ✋ Use button always picked "Talk to ..." when a person stood within 2.6 m, so a quest thing next to them (a fossil at
+// Curator Cora's feet in the Fossil Puzzle) could never be picked up and the quest got stuck. Now, while a quest step wants
+// you to do something with a thing (pick it up, put it in a box, fix it, cook, serve...), that thing wins over a chat with
+// someone who is not part of this step.
+{const QK=/^q(act|fix|pick|rescue|grab|put|serve|cook|pz)$/;
+  const _fi=findInteract;findInteract=function(p){const r=_fi(p);try{
+    if(!r||r.k!=='talk'||!r.o||p.veh||(typeof DLG!=='undefined'&&DLG&&DLG.npc===r.o))return r;
+    const st=typeof qStepDef==='function'?qStepDef():null;if(!st||st.k==='talk')return r;
+    let best=null,bd=1e9;const near=(o,k,label,range,prio,extra={})=>{if(!o||!QK.test(k))return;const d=d2(p.x,p.z,o.x,o.z);
+      if(d<range&&Math.abs((o.y??p.y)-p.y)<3.2&&d<bd){bd=d;best={k,o,label,...extra};}};
+    questInteract(near,p);if(best&&bd<=d2(p.x,p.z,r.o.x,r.o.z)+.8)return best;}catch(e){}return r;};}
+// ---------- hero treasures (gates) open with every attack of a hero who has the power ----------
+// "Hero mission with pulling power? No one has it": Sheriff Sam has 🧲 Pulling power, but his Lasso and his Stampede only
+// looked for baddies, so the Magnet Safe never felt them (the same for other attacks that happen at once instead of
+// flying: whips, waves, stampedes, tornadoes...). Now any attack that happens at once also hits a treasure right in front
+// of you, and the treasure says what it needs if your hero does not have that power.
+function gateAssist(p,k){if(!INSTANT[k]||!WORLD.gates)return;const fx=Math.sin(p.face),fz=Math.cos(p.face);let best=null,bd=1e9;
+  for(const g of WORLD.gates){if(G.gates.has(g.id)||Math.abs(g.y-p.y)>3.5)continue;const dx=g.x-p.x,dz=g.z-p.z,d=Math.hypot(dx,dz);if(d>6.5)continue;
+    if(d>2.2&&(dx*fx+dz*fz)/d<.2)continue;if(d<bd){bd=d;best=g;}}
+  if(best)gateHit(best,1);}
+{const _hp=heroPrimary;heroPrimary=function(p,inp,dt){const s0=p.shotT||0,a0=p.atkT||0;const r=_hp(p,inp,dt);
+  try{if(p===ME&&((p.shotT||0)>s0+.01||(p.atkT||0)>a0+.01))gateAssist(p,charOf(prof()).a);}catch(e){}return r;};}
+{const _hs=heroSecondary;heroSecondary=function(p,inp,dt){const s0=p.powT||0;const r=_hs(p,inp,dt);
+  try{if(p===ME&&(p.powT||0)>s0+.01)gateAssist(p,charOf(prof()).b);}catch(e){}return r;};}
+// Attacks that fly out and come back (yo-yo, boomerangs) or roll along the ground moved by themselves and never looked
+// for treasures either: now they hit one once on their way.
+{const coreHit=s=>{if(!s||!s.mine||s.coreHit)return;for(const c of MIS.cores())if(!c.dead&&d2(c.x,c.z,s.x,s.z)<1.2+(s.r||.35)&&s.y<c.y+3.5){s.coreHit=1;MIS.hitCore(c,s.dmg||1);break;}};
+  const _xr=x3ret;x3ret=function(s,dt,d){const r=_xr(s,dt,d);try{coreHit(s);}catch(e){}return r;};
+  const _xl=x3roll;x3roll=function(s,dt,d){const r=_xl(s,dt,d);try{coreHit(s);}catch(e){}return r;};}
+// ---------- Arabic for the news ----------
+MV('Every power opens its treasure','كل قوة تفتح كنزها');
+MV('Sheriff Sam\'s lasso and stampede now open the Magnet Safe. Every hero with a power badge (🧲 🔥 💪 ⚔️ ⚡ 💧 🪄) opens the treasures that need it with any of their attacks','حبل الشريف سام وقطيع خيوله يفتحان الخزنة المغناطيسية الآن. كل بطل لديه شارة قوة (🧲 🔥 💪 ⚔️ ⚡ 💧 🪄) يفتح الكنوز التي تحتاجها بأي هجوم من هجماته');
+MV('Fossil Puzzle fixed','تم إصلاح لغز الحفريات');
+MV('In the Dino Museum, the fossil next to Curator Cora can be picked up now, so the puzzle can be finished','في متحف الديناصورات يمكنك الآن التقاط الحفرية التي بجانب أمينة المتحف كورا، فيمكن إكمال اللغز');
+MV('The hosting card hides','بطاقة الاستضافة تختفي');
+MV('Tap the You\'re hosting! card to hide it. It also goes away by itself after 30 seconds','اضغط على بطاقة «أنت المضيف!» لإخفائها. وهي تختفي وحدها أيضًا بعد 30 ثانية');
 // ================= v25.6: one broken thing never stops the whole game =================
 // The moving things of the world (heroes, pets, cars, enemies, quest markers, the glowing trail...) were drawn in one big
 // step. If one of them could not be drawn, the whole picture stopped, and after a few seconds the game said "Oops! The game
