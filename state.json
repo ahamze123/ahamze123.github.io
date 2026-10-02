@@ -3353,6 +3353,11 @@
    "status": "PENDING"
   },
   "p_castle": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_castle.png"
+   ],
    "id": "01a0fe93-403a-7302-9bff-b74e3a2d8a8c",
    "kind": "text-to-image",
    "made": "2026-10-02 21:44",
@@ -3363,7 +3368,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute fairy-tale princess castle for a children's 3D game. Pink and white walls, round towers with lavender and pink cone roofs, golden trims, a big arched door, small arched windows, little flags on the tower tops. Glossy 3D animated-movie style, soft even light. The whole castle in view, seen from the front at a slight angle, standing on a small flat base. Plain pure white background, no shadow, no people, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_cottage": {
    "credits": 9,

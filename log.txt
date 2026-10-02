@@ -788,3 +788,5 @@
 2026-10-02 21:44:21 [img p_appletree] text-to-image IN_PROGRESS 30%
 2026-10-02 21:44:41 [img p_cottage] text-to-image SUCCEEDED 100%
 2026-10-02 21:44:42 [img p_cottage] saved ['images/p_cottage.png']
+2026-10-02 21:44:52 [img p_castle] text-to-image SUCCEEDED 100%
+2026-10-02 21:44:52 [img p_castle] saved ['images/p_castle.png']
