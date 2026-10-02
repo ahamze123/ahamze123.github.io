@@ -107,6 +107,15 @@ A theme park on **Sunset Bay**, just north of the town (on the big map under �
 - **🚗 Bumper Cars**: drive with the stick and bump the park's cars and your friends. **✋** to get out.
 - **🌊 Water Slides**: the lift pad takes you up the tower; then pick the **Red Rocket** (straight and steep) or the **Blue Twister** (twice round), and splash into the pool.
 - The big wheel and the carousel turn the same on every tablet. Each ride's first go pays 500 coins, and riding all five wins the **Fun Park Champion** trophy (+5000 coins).
+- Nothing can hurt you while you ride, and **Menu → Go to Hero HQ** (or going to a friend) takes you off the ride.
+
+## Pets that grow
+- Tap **🐾** (next to the other buttons when you have a pet, or **Menu → 🐾 My pet**) to look after your pet. The camera turns to your pet while the panel is open.
+- **Feed it** (30 coins; it is full for a while), give it a **bath**, throw the **ball** and it fetches it back, or pet it with **✋ Use** next to it. Adventures count too: beating baddies and finishing quests with your pet along makes it grow.
+- Pets grow from **Baby** to **Little**, **Big**, **Grown-up** and **Super**, and get bigger at every level. Each level teaches a new trick (Sit, Spin, Jump, Roll over and a Super rainbow trick).
+- Bigger pets help more: a Little pet fetches coins from further away, a Big pet sniffs out treasure chests, golden bricks and hero coins (follow its paw prints), a Grown-up pet pounces on baddies, and a Super pet sparkles and brings double coins.
+- Dress your pet up (a bow, a party hat, a crown, sunglasses, a bell, a cape, a flower or a star), pick its colour and give it a name. Each pet keeps its own name, level and clothes, and friends playing online see how big your pet is and what it wears.
+- A hungry pet shows a little 🍖 bubble.
 
 ## Moving around
 - **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool, or the Fun Park's splash pool) to swim, and jump again to climb out.

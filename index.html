@@ -7677,8 +7677,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:45,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:46,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🐾',t:'Pets grow up!',s:'Tap 🐾 to look after your pet: feed it, give it a bath, play fetch and teach it tricks. Pets grow from Baby to Super and get bigger. Bigger pets help more: they fetch coins from further away, sniff out treasure and pounce on baddies. Dress them up and give them a name!'},
+  {ic:'🔭',t:'Stargazer fixed',s:'On Frosty Peaks, the observatory telescope can be fixed now from the slope below it or from the top of the dome'},
+  {ic:'🎡',t:'Safe rides',s:'Menu, Go to Hero HQ works while you are on a Fun Park ride, and nothing can hurt you while you ride'},
   {ic:'🎢',t:'The Fun Park!',s:'A real theme park on Sunset Bay, north of the town: a roller coaster with a loop, a big wheel, bumper cars, two water slides into a pool and a carousel. Press ✋ next to a ride to get on. Friends ride together!',go:()=>typeof FP!=='undefined'&&FP.ok?dd({x:FP.gate.x,z:FP.gate.z+3,label:tr('Fun Park'),icon:'🎢',col:'#ff5fa8'}):null},
   {ic:'🧸',t:'Luna and Basma in 3D',s:'Luna and Butterfly Basma have their own picture cards now, and real 3D figures made from the family\'s pictures. To play with the 3D heroes, turn on Menu, Settings, 🧸 3D heroes'},
   {ic:'🧲',t:'Every power opens its treasure',s:'Sheriff Sam\'s lasso and stampede now open the Magnet Safe. Every hero with a power badge (🧲 🔥 💪 ⚔️ ⚡ 💧 🪄) opens the treasures that need it with any of their attacks'},
@@ -10394,7 +10397,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.9';window.BB_VER=BB_VER;
+const BB_VER='27.0';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -12511,6 +12514,182 @@ MV('Get out of the car first','انزل من السيارة أولًا');MV('Spi
 MV('Super Star','النجم الخارق');MV('Captain Sparkle','كابتن لمعة');MV('Thunder Kid','فتى الرعد');MV('Rainbow Rocket','صاروخ قوس قزح');MV('Night Ninja','نينجا الليل');MV('Sky Dancer','راقصة السماء');MV('Lightning Lily','ليلى البرق');
 MV('Blaze Boy','فتى اللهب');MV('Crystal Queen','ملكة الكريستال');MV('Turbo Tiger','النمر السريع');MV('Moon Hopper','قافز القمر');MV('Coral Kid','فتى المرجان');MV('Flash Fox','الثعلب البرق');MV('Bubble Hero','بطل الفقاعات');MV('Storm Pal','صديق العاصفة');MV('Sunny Jet','نفاثة الشمس');
 MV('Hero Maker: make your own heroes','صانع الأبطال: اصنع أبطالك');MV('Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too','القائمة، 🎨 صانع الأبطال: اختر الشعر والألوان والأجنحة أو ذيل الحورية والقبعة والهجمات والحركة الخاصة، وسمِّ بطلك والعب به. الأصدقاء على الإنترنت يرونه أيضًا');
+// ================= v27.0: 🐾 pets that grow =================
+// Every pet grows up as you look after it and take it on adventures: Baby → Little → Big → Grown-up → Super.
+// Tap 🐾 (next to the other buttons at the top) to feed it, play fetch, give it a bath, dress it up and give it a name.
+// Each level teaches a trick, and bigger pets help more: Little pets fetch coins from further away, Big pets sniff out
+// treasure, Grown-up pets pounce on baddies, and a Super pet shines and brings double coins. Friends see how big your pet is.
+// Pets grow from: petting (✋ next to it), feeding, fetch, baths, tricks, coins they bring, baddies you beat and quests.
+const PG={th:[0,120,360,800,1600],names:['Baby','Little','Big','Grown-up','Super'],scale:[.72,.86,1,1.16,1.32],
+  acc:[['none','✖️'],['bow','🎀'],['party','🥳'],['crown','👑'],['shades','🕶️'],['bell','🔔'],['cape','🦸'],['flower','🌸'],['star','⭐']],
+  cols:['#ff5d73','#ffcf3a','#46b0ff','#7ed957','#b28dff','#ff9ec0','#ffffff','#23232f'],
+  tricks:[['sit','🪑','Sit'],['spin','🌀','Spin'],['jump','⬆️','Jump'],['roll','🔄','Roll over'],['super','🌈','Super trick']],
+  open:false,ball:null,sniff:null,pounceT:3,sniffT:25,petT:0,feedT:0,decayT:0,en:-1,qn:-1,qT:0,anchor:{},hungryTold:false,sniffTold:0};
+function petRec(id,pr){pr=pr||prof();pr.petx=pr.petx||{};let r=pr.petx[id];if(!r||typeof r!=='object')r=pr.petx[id]={xp:0,name:'',acc:'none',col:'#ff5d73',happy:80};
+  if(!isFinite(r.xp))r.xp=0;if(!isFinite(r.happy))r.happy=80;return r;}
+function petLv(r){let l=0;for(let i=0;i<PG.th.length;i++)if((r.xp||0)>=PG.th[i])l=i;return l;}
+function petDef(id){return PETS.find(q=>q.id===id);}
+function petName(id,r){const P=petDef(id);return r&&r.name?r.name:tr(P?P.n:'Pet');}
+function petXP(n){const pr=prof();if(!pr.pet||!(n>0))return;const r=petRec(pr.pet);const a=petLv(r);r.xp=Math.min(99999,(r.xp||0)+n);const b=petLv(r);if(b>a)petGrew(pr.pet,r,b);if(PG.open)petRender();}
+function petHappy(n){const pr=prof();if(!pr.pet)return;const r=petRec(pr.pet);r.happy=clamp((r.happy||0)+n,0,100);}
+function petGrew(id,r,lv){const P=petDef(id);banner((P?P.i:'🐾')+' '+trf('{0} grew up!',petName(id,r)),trf('Now {0}. New trick: {1}',tr(PG.names[lv]),tr(PG.tricks[lv][2])),'#ff9ec0');
+  SFX.levelup&&SFX.levelup();const p=PETST.me;if(p){burst(p.x,p.y+.6,p.z,['#ffcf3a','#ff9ec0','#7ef9ff'],30,5,.18,1);p.trick={k:'super',t:0};}saveSoon();}
+// ---------- tricks ----------
+const TRICKT={sit:1.6,spin:1.1,jump:1,roll:1.2,super:2.2};
+function petTrick(k){const p=PETST.me,pr=prof();if(!p||!pr.pet)return;const r=petRec(pr.pet),i=PG.tricks.findIndex(q=>q[0]===k);if(i<0)return;
+  if(i>petLv(r)){toast('🔒 '+trf('{0} learns this trick at level {1}',petName(pr.pet,r),i+1));SFX.nope&&SFX.nope();return;}
+  if(p.trick&&p.trick.t<.4)return;p.trick={k,t:0};petSound(p.kind);if((PG.trT||0)<G.t){PG.trT=G.t+8;petXP(4);}if(k==='super')SFX.magic&&SFX.magic();}
+// the matrix for a pet's trick: turns and lifts around the pet's own spot
+function petTrickM(o,scale){const m=M4.id(),f=o.face||0,tk=o.trick;M4.tr(m,o.x,o.y,o.z);M4.ry(m,f);if(tk){const u=Math.min(1,tk.t/TRICKT[tk.k]);
+    if(tk.k==='sit'){M4.rx(m,-.35*Math.sin(Math.PI*Math.min(1,u*1.4)));}
+    else if(tk.k==='spin')M4.ry(m,u*TAU);
+    else if(tk.k==='jump'){M4.tr(m,0,Math.sin(Math.PI*u)*1.3,0);M4.rx(m,-Math.sin(Math.PI*u)*.4);}
+    else if(tk.k==='roll'){M4.tr(m,0,Math.sin(Math.PI*u)*.35,0);M4.rz(m,u*TAU);}
+    else if(tk.k==='super'){M4.tr(m,0,Math.sin(Math.PI*u)*2.6,0);M4.ry(m,u*TAU*2);}}
+  M4.sc(m,scale,scale,scale);M4.ry(m,-f);M4.tr(m,-o.x,-o.y,-o.z);return m;}
+// ---------- drawing: bigger as they grow, a trick, and what they wear ----------
+const PCAP={list:[],fake:null};
+function petCapture(fn){if(!PCAP.fake){PCAP.fake={};for(const k of ['box','rbox','cyl','sph','cone','wedge'])PCAP.fake[k]={put:(m,cx,cy,cz,sx,sy,sz,c,a)=>{PCAP.list.push([k,Float32Array.from(m),cx,cy,cz,sx,sy,sz,c,a]);}};}
+  const keep=OUT;PCAP.list.length=0;OUT=PCAP.fake;try{fn();}finally{OUT=keep;}return PCAP.list.slice();}
+// where the top of a pet's head is (found once per kind by drawing it at the centre of the world)
+function petAnchor(kind,dp){if(PG.anchor[kind])return PG.anchor[kind];const o={kind,x:0,y:0,z:0,face:0,walk:0,amp:0,hop:0,vy:0,happy:0};
+  const L=petCapture(()=>dp(o,0));let best={y:.6,z:.2,w:.3},by=-1;for(const q of L){const m=q[1];const wx=m[0]*q[2]+m[4]*q[3]+m[8]*q[4]+m[12],wy=m[1]*q[2]+m[5]*q[3]+m[9]*q[4]+m[13],wz=m[2]*q[2]+m[6]*q[3]+m[10]*q[4]+m[14];
+    const top=wy+Math.abs(q[6])*.5*Math.hypot(m[4],m[5],m[6]);if(wz>-.05&&top>by){by=top;best={y:top,z:wz,w:Math.max(.2,Math.abs(q[5])*Math.hypot(m[0],m[1],m[2]))};}}
+  if(kind==='dragon'||kind==='ember')best.z=Math.max(best.z,.3);PG.anchor[kind]=best;return best;}
+function petDrawAcc(o,M,acc,col,t){const A=petAnchor(o.kind,PG.dp);const m=MS.cur;MS.reset();m.set(M);M4.tr(m,o.x,o.y,o.z);M4.ry(m,o.face||0);M4.tr(m,0,A.y,A.z);const w=Math.max(.24,Math.min(.5,A.w));
+  if(acc==='bow'){for(const s of [-1,1]){MS.push();M4.rz(m,s*.5);sp(m,s*.09,.02,0,.16,.11,.07,col,1);MS.pop();}sp(m,0,.02,0,.07,.07,.07,col,1);}
+  else if(acc==='party'){co(m,0,.17,0,.2,.34,.2,col,1);sp(m,0,.36,0,.07,.07,.07,'#ffffff',1);}
+  else if(acc==='crown'){cy(m,0,.05,0,w*.8,.12,w*.8,'#ffcf3a',3);for(let k=0;k<5;k++){MS.push();M4.ry(m,k/5*TAU);co(m,w*.36,.16,0,.07,.12,.07,'#ffcf3a',3);MS.pop();}sp(m,0,.08,w*.4,.06,.06,.04,col,1,.6);}
+  else if(acc==='shades'){M4.tr(m,0,-.12,.08);bx(m,0,0,w*.42,w*.95,.05,.03,'#23232f',1);for(const s of [-1,1])bx(m,s*w*.22,-.03,w*.43,w*.38,.11,.03,col==='#ffffff'?'#23232f':col,8);}
+  else if(acc==='bell'){M4.tr(m,0,-A.y*.55,0);cy(m,0,0,-.02,w*1.1,.06,w*1.1,col,1);sp(m,0,-.08,w*.55,.09,.09,.09,'#ffcf3a',3);}
+  else if(acc==='cape'){M4.tr(m,0,-A.y*.4,-A.z-.1);M4.rx(m,-1.2+Math.sin(t*4)*.12);bx(m,0,-.2,0,w*1.4,.4,.03,col,6);}
+  else if(acc==='flower'){M4.tr(m,w*.3,.02,0);for(let k=0;k<5;k++){MS.push();M4.rz(m,k/5*TAU);sp(m,0,.06,0,.07,.09,.04,col,1);MS.pop();}sp(m,0,0,.01,.05,.05,.05,'#ffcf3a',1);}
+  else if(acc==='star'){MS.push();M4.tr(m,0,.32+Math.sin(t*3)*.05,0);M4.ry(m,t*2);for(let k=0;k<5;k++){MS.push();M4.rz(m,k/5*TAU);co(m,0,.07,0,.08,.15,.05,col==='#23232f'?'#ffcf3a':col,1,.7);MS.pop();}MS.pop();}}
+function petLookOf(o){if(o===PETST.me){const pr=prof();if(!pr.pet)return null;const r=petRec(pr.pet);return {lv:petLv(r),acc:r.acc||'none',col:r.col||PG.cols[0],happy:r.happy};}
+  for(const rp of netFriends())if(rp.petObj===o&&Array.isArray(rp.petG))return {lv:clamp(rp.petG[0]|0,0,4),acc:(PG.acc[rp.petG[1]]||PG.acc[0])[0],col:PG.cols[rp.petG[2]]||PG.cols[0],happy:80};return null;}
+{const _dp=drawPet;PG.dp=_dp;drawPet=function(o,t){let L=null;try{L=petLookOf(o);}catch(e){}if(!L||(L.lv===2&&!o.trick&&L.acc==='none'))return _dp(o,t);
+  try{const M=petTrickM(o,PG.scale[L.lv]);const list=petCapture(()=>_dp(o,t));const mm=new Float32Array(16);for(const q of list){M4.mul(mm,M,q[1]);OUT[q[0]].put(mm,q[2],q[3],q[4],q[5],q[6],q[7],q[8],q[9]);}
+    if(L.acc&&L.acc!=='none')petDrawAcc(o,M,L.acc,L.col,t);
+    if(L.lv>=4&&R()<.25)PARTS.push({x:o.x+Rr(-.5,.5),y:o.y+Rr(.2,1.4),z:o.z+Rr(-.5,.5),vx:0,vy:Rr(.4,1.2),vz:0,life:.7,s:.1,c:hex(Rpick(['#ffcf3a','#ff9ec0','#7ef9ff','#ffffff'])),e:1,g:-.5,k:'deb',rot:0});}catch(e){noteErr('petdraw',e);_dp(o,t);}};}
+// ---------- every frame: tricks, fetch, growing from adventures, helping ----------
+{const _up=updatePet;updatePet=function(pet,o,dt,mine){if(pet.trick){pet.trick.t+=dt;if(pet.trick.t>=TRICKT[pet.trick.k]){if(pet.trick.k==='super'&&mine)burst(pet.x,pet.y+1,pet.z,['#ff5d73','#ffcf3a','#7ed957','#46b0ff','#b28dff'],24,5,.16,1);pet.trick=null;}}
+  if(!mine)return _up(pet,o,dt,mine);
+  const B=PG.ball;if(B&&!pet.hidden){petFetchTick(pet,o,dt,B);return;}
+  const had=pet.coin;const r=_up(pet,o,dt,mine);
+  try{if(had&&!pet.coin&&(had.dead||had.got)){petXP(2);const pr=prof(),rr=petRec(pr.pet);if(petLv(rr)>=4&&had.v)addCoins(had.v);}
+    const pr=prof();if(!pr.pet)return r;const rr=petRec(pr.pet),lv=petLv(rr);
+    // Little and up: coins from further away
+    if(lv>=1&&!pet.coin&&R()<.08){let best=null,bd=lv>=3?20:16;for(const k of PICK){if(k.type!=='coin'||k.dead||k.t<.6)continue;const d=d2(k.x,k.z,pet.x,pet.z);if(d<bd&&d2(k.x,k.z,o.x,o.z)<bd){bd=d;best=k;}}if(best)pet.coin=best;}
+    // Big and up: sniffs out treasure now and then
+    PG.sniffT-=dt;if(lv>=2&&PG.sniffT<=0){PG.sniffT=35;const s=petSniff(o);if(s){PG.sniff={x:s.x,z:s.z,fx:pet.x,fz:pet.z,t:9};petSound(pet.kind);pet.trick={k:'jump',t:0};
+        if(PG.sniffTold<3){PG.sniffTold++;toast('🐾 '+trf('{0} smells treasure! Follow the paw prints',petName(pr.pet,rr)));}}}
+    if(PG.sniff){PG.sniff.t-=dt;if(PG.sniff.t<=0)PG.sniff=null;}
+    // Grown-up and up: pounces on baddies near you
+    PG.pounceT-=dt;if(lv>=3&&PG.pounceT<=0){let e=null,bd=7;for(const q of EN){if(q.dead||q.boss)continue;const d=d2(q.x,q.z,o.x,o.z);if(d<bd&&Math.abs(q.y-o.y)<3){bd=d;e=q;}}
+      if(e){PG.pounceT=lv>=4?2.5:4;pet.x=e.x-Math.sin(pet.face)*.6;pet.z=e.z-Math.cos(pet.face)*.6;pet.face=Math.atan2(e.x-pet.x,e.z-pet.z);pet.vy=5;pet.hop=.01;pet.y+=.05;
+        hitEnemy(e,lv>=4?4:2,Math.sin(pet.face)*6,Math.cos(pet.face)*6);applyStatus(e,'stun',1);floatText(e.x,e.y+2,e.z,tr('Pounce!'),'white');petSound(pet.kind);burst(e.x,e.y+.8,e.z,['#ffffff','#ffcf3a'],10,3,.12,.5);}else PG.pounceT=.5;}}catch(e){noteErr('petgrow',e);}
+  return r;};}
+// the nearest treasure the pet can smell: a chest, a golden brick, a hidden hero coin
+function petSniff(o){let best=null,bd=70;const consider=(x,z)=>{if(!isFinite(x)||!isFinite(z))return;const d=d2(x,z,o.x,o.z);if(d<bd&&d>6&&inView(x,z)){bd=d;best={x,z};}};
+  try{for(const c of ACTIVE_CHESTS())consider(c.x,c.z);}catch(e){}
+  try{(WORLD.gblocks||[]).forEach((g,i)=>{if(!G.gb.has('w'+i))consider(g.x,g.z);});}catch(e){}
+  try{if(typeof HTOK!=='undefined')for(const h of HTOK.list||[])if(!heroOK(h.id))consider(h.x,h.z);}catch(e){}return best;}
+// ---------- fetch: throw the ball, the pet runs for it and brings it back ----------
+function petThrow(){const p=PETST.me;if(!p||p.hidden){toast(tr('Your pet is not with you'));return;}if(PG.ball)return;const f=ME.face;const d=Rr(7,10);
+  PG.ball={x:ME.x+Math.sin(f)*.6,y:ME.y+1.4,z:ME.z+Math.cos(f)*.6,vx:Math.sin(f)*d/1,vy:5.5,vz:Math.cos(f)*d/1,st:'fly',t:0};ME.anim.punch=1;SFX.whoosh&&SFX.whoosh();}
+function petFetchTick(pet,o,dt,B){B.t+=dt;if(B.st==='fly'){B.vy-=14*dt;B.x+=B.vx*dt;B.y+=B.vy*dt;B.z+=B.vz*dt;const g=chAt(B.x,B.z);if(B.y<=g+.15){B.y=g+.15;B.st='ground';SFX.thud&&SFX.thud();}}
+  let tx,tz;if(B.st==='carry'){tx=o.x+Math.sin(o.face)*1.2;tz=o.z+Math.cos(o.face)*1.2;}else{tx=B.x;tz=B.z;}
+  const dx=tx-pet.x,dz=tz-pet.z,l=Math.hypot(dx,dz);const sp=10;if(l>.4){const k=Math.min(l,sp*dt);pet.x+=dx/l*k;pet.z+=dz/l*k;pet.face=angLerp(pet.face,Math.atan2(dx,dz),Math.min(1,dt*12));pet.walk+=sp*dt*2.2;pet.amp=lerp(pet.amp,1,Math.min(1,dt*8));}
+  else pet.amp=lerp(pet.amp,0,Math.min(1,dt*8));const g=chAt(pet.x,pet.z);if(pet.kind==='dragon'||pet.kind==='ember')pet.y=lerp(pet.y,g+1.6,Math.min(1,dt*4));else pet.y=lerp(pet.y,g,Math.min(1,dt*14));
+  if(B.st==='ground'&&l<.7){B.st='carry';petSound(pet.kind);}
+  if(B.st==='carry'){B.x=pet.x+Math.sin(pet.face)*.35;B.z=pet.z+Math.cos(pet.face)*.35;B.y=pet.y+.35*(PG.scale[petLv(petRec(prof().pet))]||1);if(l<.6){PG.ball=null;pet.happy=1.4;petXP(25);petHappy(20);floatText(pet.x,pet.y+1.2,pet.z,'❤','red');SFX.coin&&SFX.coin(10);}}
+  if(B.t>14)PG.ball=null;}
+// ---------- feeding, baths, petting ----------
+function petFeed(){const pr=prof();if(!pr.pet)return;const r=petRec(pr.pet),p=PETST.me;if(PG.feedT>G.t){toast('🍖 '+trf('{0} is full! Try again in a little while',petName(pr.pet,r)));return;}
+  if(G.coins<30){toast(tr('Not enough coins'));SFX.nope&&SFX.nope();return;}G.coins-=30;PG.feedT=G.t+20;petHappy(35);petXP(30);if(p){p.happy=1.6;p.trick={k:'jump',t:0};for(let k=0;k<5;k++)floatText(p.x+Rr(-.3,.3),p.y+1+k*.12,p.z+Rr(-.3,.3),Rpick(['🍖','🦴','🥕','🐟']),'white');}
+  petSound(p?p.kind:'puppy');SFX.coin&&SFX.coin(10);if(PG.open)petRender();}
+function petBath(){const pr=prof();if(!pr.pet)return;const p=PETST.me;petHappy(30);if((PG.bathT||0)<G.t){PG.bathT=G.t+15;petXP(10);}
+  if(p){p.trick={k:'spin',t:0};for(let k=0;k<26;k++)PARTS.push({x:p.x+Rr(-.6,.6),y:p.y+Rr(.2,1.2),z:p.z+Rr(-.6,.6),vx:Rr(-1,1),vy:Rr(.5,2),vz:Rr(-1,1),life:1.2,s:.16,c:hex(R()<.5?'#e8f7ff':'#bfe9ff'),e:.2,g:-.4,k:'deb',rot:0});}SFX.splash&&SFX.splash();if(PG.open)petRender();}
+{const _pp=petPet;petPet=function(){_pp();if(PG.petT<G.t){PG.petT=G.t+6;petXP(6);petHappy(8);}};}
+// ---------- growing from adventures: baddies beaten and quests finished while your pet is with you ----------
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{if(G.mode!=='play')return;const pr=prof();if(!pr.pet||!PETST.me)return;
+  const en=(G.stats&&G.stats.en)||0;if(PG.en<0)PG.en=en;if(en>PG.en){petXP(3*Math.min(20,en-PG.en));PG.en=en;}
+  PG.qT-=dt;if(PG.qT<=0){PG.qT=3;const qn=QUESTS.reduce((n,q)=>n+(qDone(q.id)?1:0),0);if(PG.qn<0)PG.qn=qn;if(qn>PG.qn){petXP(40*(qn-PG.qn));PG.qn=qn;}}
+  PG.decayT+=dt;if(PG.decayT>90){PG.decayT=0;const r=petRec(pr.pet);r.happy=Math.max(10,(r.happy||0)-1);if(r.happy<35&&!PG.hungryTold){PG.hungryTold=true;toast('🐾 '+trf('{0} is hungry! Tap 🐾 to feed them',petName(pr.pet,r)));}}}catch(e){}};}
+// ---------- what friends see ----------
+{const _ne=netExtra;netExtra=function(o){_ne(o);const pr=prof();if(!pr.pet)return;const r=petRec(pr.pet);o.pg=[petLv(r),Math.max(0,PG.acc.findIndex(a=>a[0]===r.acc)),Math.max(0,PG.cols.indexOf(r.col))];};}
+{const _orp=onRemotePresence;onRemotePresence=function(peer){const r=_orp.apply(this,arguments);try{const o=peer&&peer.presence;if(!o||o.v!==3)return r;const id=typeof o.id==='string'&&o.id?o.id.slice(0,16):'p'+String(peer.peer).slice(0,20);
+  const rp=NET.peers[id];if(rp)rp.petG=Array.isArray(o.pg)?o.pg.slice(0,3).map(v=>num(v,0)):null;}catch(e){}return r;};}
+// ---------- the 🐾 panel ----------
+function petUI(){let el=$('petcare');if(el)return el;el=document.createElement('div');el.id='petcare';el.hidden=true;document.body.appendChild(el);const st=document.createElement('style');st.textContent=`
+#petcare{position:fixed;inset:0;z-index:30;pointer-events:none;font-family:var(--body,system-ui,sans-serif)}
+#petcare .pcp{position:absolute;left:calc(8px + env(safe-area-inset-left,0px));top:8px;bottom:8px;width:min(420px,54vw);background:rgba(20,16,56,.93);border-radius:18px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;pointer-events:auto;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.35);overflow:auto;-webkit-overflow-scrolling:touch}
+#petcare .pch{display:flex;align-items:center;gap:8px}#petcare .pch .ic{font-size:34px;line-height:1}#petcare .pch b{font-size:19px;flex:1}
+#petcare .pcx{border:0;border-radius:12px;background:#ff5d73;color:#fff;font-size:18px;font-weight:900;width:40px;height:40px}
+#petcare input{width:100%;box-sizing:border-box;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:16px;font-weight:800;padding:7px 10px}
+#petcare .lv{font-weight:900;font-size:15px}#petcare .bar{height:12px;border-radius:8px;background:rgba(255,255,255,.15);overflow:hidden}#petcare .bar i{display:block;height:100%;background:linear-gradient(90deg,#ffcf3a,#ff9ec0);border-radius:8px}
+#petcare .row{display:flex;flex-wrap:wrap;gap:6px}#petcare .pb{border:0;border-radius:14px;padding:9px 12px;background:#ffd23f;color:#1c1846;font-weight:900;font-size:15px;min-height:44px}
+#petcare .pb.alt{background:rgba(255,255,255,.14);color:#fff}#petcare .pb.lock{opacity:.45}#petcare small{opacity:.85;font-size:12.5px;line-height:1.35}
+#petcare .sw{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.25);padding:0}#petcare .sw.on{border-color:#fff;transform:scale(1.12)}
+#petcare .ch{min-width:44px;min-height:44px;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font-size:22px}#petcare .ch.on{border-color:#ffd23f;background:rgba(255,210,63,.28)}
+#petcare h4{margin:4px 0 0;font-size:13px;opacity:.8;letter-spacing:.04em;text-transform:uppercase}
+#bpet{display:none}body.haspet #bpet{display:inline-flex}`;document.head.appendChild(st);
+  el.addEventListener('pointerdown',e=>e.stopPropagation());return el;}
+function petOpen(){const el=petUI();if(G.mode!=='play'&&G.mode!=='menu')return;for(const k of ['pause','roster','shop'])if($(k))$(k).hidden=true;if(G.mode==='menu')G.mode='play';
+  PG.open=true;el.hidden=false;petRender();SFX.click&&SFX.click();}
+function petClose(){PG.open=false;const el=$('petcare');if(el)el.hidden=true;saveSoon();}
+function petRender(){const el=$('petcare');if(!el||!PG.open)return;const pr=prof();const id=pr.pet;const owned=(pr.pets||[]).filter(k=>petDef(k));
+  if(!id){el.innerHTML=`<div class="pcp"><div class="pch"><span class="ic">🐾</span><b>${esc(tr('My pet'))}</b><button class="pcx" id="pc_x">✕</button></div>
+    <small>${esc(owned.length?tr('Pick a pet to take with you:'):tr('You have no pet yet. Pets are in the Hero Shop (Pets), and some are prizes for missions.'))}</small>
+    <div class="row">${owned.map(k=>`<button class="ch" data-pet="${k}" title="${esc(tr(petDef(k).n))}">${petDef(k).i}</button>`).join('')}</div></div>`;petWire(el);return;}
+  const P=petDef(id),r=petRec(id),lv=petLv(r),nx=PG.th[lv+1];const pct=nx?Math.round((r.xp-PG.th[lv])/(nx-PG.th[lv])*100):100;
+  const hearts='❤️'.repeat(Math.max(1,Math.round(r.happy/20)))+'🤍'.repeat(5-Math.max(1,Math.round(r.happy/20)));
+  const helps=[[0,'Brings you coins'],[1,'Coins from further away'],[2,'Sniffs out treasure'],[3,'Pounces on baddies'],[4,'Super shine and double coins']];
+  el.innerHTML=`<div class="pcp"><div class="pch"><span class="ic">${P?P.i:'🐾'}</span><b>${esc(petName(id,r))}</b><button class="pcx" id="pc_x">✕</button></div>
+    <input id="pc_name" maxlength="14" placeholder="${esc(tr('Give your pet a name'))}" value="${esc(r.name||'')}">
+    <div class="lv">${esc(trf('Level {0} · {1}',lv+1,tr(PG.names[lv])))} <small>⭐ ${r.xp|0}${nx?' / '+nx:''}</small></div><div class="bar"><i style="width:${pct}%"></i></div>
+    <div>${hearts} <small>${esc(r.happy<35?tr('Hungry! Give a treat'):r.happy<70?tr('Happy'):tr('Very happy!'))}</small></div>
+    <div class="row"><button class="pb" id="pc_feed">🍖 ${esc(tr('Feed'))} · 30🪙</button><button class="pb" id="pc_ball">🎾 ${esc(tr('Fetch'))}</button><button class="pb" id="pc_bath">🛁 ${esc(tr('Bath'))}</button></div>
+    <h4>${esc(tr('Tricks'))}</h4><div class="row">${PG.tricks.map((q,i)=>`<button class="pb alt ${i>lv?'lock':''}" data-trick="${q[0]}">${i>lv?'🔒':q[1]} ${esc(tr(q[2]))}${i>lv?' · '+esc(trf('Lv {0}',i+1)):''}</button>`).join('')}</div>
+    <h4>${esc(tr('Helps you'))}</h4><small>${helps.map(([l,t])=>(l<=lv?'✅ ':'🔒 ')+esc(tr(t))+(l>lv?' ('+esc(trf('Lv {0}',l+1))+')':'')).join('<br>')}</small>
+    <h4>${esc(tr('Dress up'))}</h4><div class="row">${PG.acc.map(a=>`<button class="ch ${r.acc===a[0]?'on':''}" data-acc="${a[0]}">${a[1]}</button>`).join('')}</div>
+    <div class="row">${PG.cols.map(c=>`<button class="sw ${r.col===c?'on':''}" data-col="${c}" style="background:${c}"></button>`).join('')}</div>
+    ${owned.length>1?`<h4>${esc(tr('Your pets'))}</h4><div class="row">${owned.map(k=>{const q=petRec(k);return `<button class="ch ${k===id?'on':''}" data-pet="${k}" title="${esc(petName(k,q))}">${petDef(k).i}<small style="font-size:10px;display:block">${petLv(q)+1}</small></button>`;}).join('')}</div>`:''}</div>`;
+  petWire(el);}
+function petWire(el){const on=(id,f)=>{const b=el.querySelector('#'+id);if(b)b.onclick=f;};on('pc_x',petClose);on('pc_feed',()=>{petFeed();});on('pc_ball',()=>{petThrow();});on('pc_bath',()=>{petBath();});
+  const nm=el.querySelector('#pc_name');if(nm){nm.oninput=()=>{const pr=prof();if(!pr.pet)return;petRec(pr.pet).name=nm.value.replace(/[<>]/g,'').slice(0,14);const b=el.querySelector('.pch b');if(b)b.textContent=petName(pr.pet,petRec(pr.pet));};nm.onkeydown=e=>e.stopPropagation();}
+  el.querySelectorAll('[data-trick]').forEach(b=>b.onclick=()=>petTrick(b.dataset.trick));
+  el.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{const pr=prof();if(!pr.pet)return;petRec(pr.pet).acc=b.dataset.acc;SFX.click&&SFX.click();petRender();});
+  el.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{const pr=prof();if(!pr.pet)return;petRec(pr.pet).col=b.dataset.col;SFX.click&&SFX.click();petRender();});
+  el.querySelectorAll('[data-pet]').forEach(b=>b.onclick=()=>{const pr=prof();pr.pet=b.dataset.pet;PETST.me=null;SFX.click&&SFX.click();saveSoon();setTimeout(petRender,50);});}
+// while the panel is open your hero stays put and the camera looks at your pet
+{const _ri=readInput;readInput=function(dt){const i=_ri(dt);if(PG.open&&i){i.mx=0;i.mz=0;}return i;};}
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);if(!PG.open||!PETST.me||PETST.me.hidden)return;const p=PETST.me,pr=prof(),lv=pr.pet?petLv(petRec(pr.pet)):2,s=PG.scale[lv];
+  const a=(ME.face||0)+.9,d=2.6+s*1.2;const off=innerWidth>innerHeight*1.15?1.1:0;const rx=Math.cos(a),rz=-Math.sin(a);
+  CAM.tx=p.x-rx*off;CAM.ty=p.y+.5*s;CAM.tz=p.z-rz*off;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.eye=[p.x+Math.sin(a)*d-rx*off,p.y+1.3+s*.4,p.z+Math.cos(a)*d-rz*off];};}
+// the 🐾 button at the top (only while a pet is with you), and in the menu
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const has=!!prof().pet;document.body.classList.toggle('haspet',has);if(!$('bpet')){const row=$('pbtns');if(row){petUI();const b=document.createElement('button');b.className='ib';b.id='bpet';b.title=tr('My pet');b.textContent='🐾';
+      b.onclick=()=>{if(PG.open)petClose();else if(G.mode==='play')petOpen();};row.insertBefore(b,row.firstChild);}}
+    if(PG.open&&(G.mode!=='play'||ME.veh))petClose();}catch(e){}};}
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='main'||$('pm_pet'))return r;const h=$('pm_heroes');if(!h)return r;const b=document.createElement('button');b.className='mb';b.id='pm_pet';b.textContent='🐾 '+tr('My pet');
+  b.onclick=()=>{$('pause').hidden=true;G.mode='play';petOpen();};h.parentNode.insertBefore(b,h.nextSibling);}catch(e){}return r;};}
+// paw prints to the treasure the pet smelled
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);const S=PG.sniff;if(!S||camRealm()!=='earth')return;OUT=DYN;const m=MS.cur;const L=d2(S.fx,S.fz,S.x,S.z),n=Math.min(14,Math.floor(L/2.2));const fx=(S.x-S.fx)/L,fz=(S.z-S.fz)/L;
+  for(let k=1;k<=n;k++){const x=S.fx+fx*k*2.2+(k%2?.25:-.25)*fz,z=S.fz+fz*k*2.2-(k%2?.25:-.25)*fx;if(!inView(x,z))continue;MS.reset();M4.tr(m,x,chAt(x,z)+.04,z);M4.ry(m,Math.atan2(fx,fz));
+    const a=Math.min(1,S.t/2);sp(m,0,0,0,.26*a,.04,.3*a,'#ffcf3a',1,.6);for(const s of [-1,0,1])sp(m,s*.12,0,.2,.09*a,.04,.09*a,'#ffcf3a',1,.6);}
+  MS.reset();M4.tr(m,S.x,chAt(S.x,S.z)+.1,S.z);const b=1+Math.sin(t*5)*.15;sp(m,0,.15,0,.6*b,.1,.6*b,'#ffcf3a',1,.8);};}
+MV('My pet','حيواني الأليف');MV('Feed','أطعم');MV('Fetch','الكرة');MV('Bath','حمّام');MV('Tricks','الحركات');MV('Helps you','يساعدك');MV('Dress up','التلبيس');MV('Your pets','حيواناتك');
+MV('Give your pet a name','أعطِ حيوانك اسمًا');MV('Level {0} · {1}','المستوى {0} · {1}');MV('Lv {0}','مستوى {0}');MV('Hungry! Give a treat','جائع! أعطه وجبة');MV('Happy','سعيد');MV('Very happy!','سعيد جدًا!');
+MV('Baby','صغير جدًا');MV('Little','صغير');MV('Big','كبير');MV('Grown-up','كبير بالغ');MV('Super','خارق');
+MV('Sit','اجلس');MV('Spin','دوران');MV('Jump','قفز');MV('Roll over','تدحرج');MV('Super trick','حركة خارقة');
+MV('Brings you coins','يحضر لك القطع النقدية');MV('Coins from further away','قطع نقدية من مكان أبعد');MV('Sniffs out treasure','يشم الكنوز');MV('Pounces on baddies','ينقض على الأشرار');MV('Super shine and double coins','لمعان خارق وقطع نقدية مضاعفة');
+MV('{0} grew up!','{0} كبر!');MV('Now {0}. New trick: {1}','الآن {0}. حركة جديدة: {1}');MV('{0} learns this trick at level {1}','{0} يتعلم هذه الحركة في المستوى {1}');
+MV('{0} smells treasure! Follow the paw prints','{0} يشم كنزًا! اتبع آثار الأقدام');MV('Pounce!','انقضاض!');MV('{0} is full! Try again in a little while','{0} شبعان! جرّب بعد قليل');
+MV('{0} is hungry! Tap 🐾 to feed them','{0} جائع! اضغط 🐾 لتطعمه');MV('Your pet is not with you','حيوانك ليس معك');MV('Pick a pet to take with you:','اختر حيوانًا يرافقك:');
+MV('You have no pet yet. Pets are in the Hero Shop (Pets), and some are prizes for missions.','ليس لديك حيوان أليف بعد. الحيوانات في متجر الأبطال (الحيوانات)، وبعضها جوائز للمهمات.');
+// a little thought bubble when your pet is hungry
+{const _ul=updateLabels;updateLabels=function(dt){_ul(dt);try{const p=PETST.me,pr=prof();if(!p||p.hidden||!pr.pet||G.mode!=='play')return;const r=petRec(pr.pet);
+  if(r.happy<35&&Math.sin(G.t*1.7)>.2)label('pethungry',p.x,p.y+1.5*PG.scale[petLv(r)],p.z,'💭🍖','emote');}catch(e){}};}
 // ================= v26.7: 🤝 team games: play together instead of against each other =================
 // Menu > Mini-games > Team games. Whoever starts one brings everyone online into it (like a race):
 //  🌟 Star Hunt: 12 stars around you, find them all together in 3 minutes (also on your own)
@@ -12665,6 +12844,35 @@ MV('Fossil Puzzle fixed','تم إصلاح لغز الحفريات');
 MV('In the Dino Museum, the fossil next to Curator Cora can be picked up now, so the puzzle can be finished','في متحف الديناصورات يمكنك الآن التقاط الحفرية التي بجانب أمينة المتحف كورا، فيمكن إكمال اللغز');
 MV('The hosting card hides','بطاقة الاستضافة تختفي');
 MV('Tap the You\'re hosting! card to hide it. It also goes away by itself after 30 seconds','اضغط على بطاقة «أنت المضيف!» لإخفائها. وهي تختفي وحدها أيضًا بعد 30 ثانية');
+// ================= v27.0 fixes (from the deep check-up) =================
+// Big map: on an iPad the filter chips did not fit next to the title, so the last chip (🦸 Heroes) was cut off under the ✕.
+// When they don't fit, the title hides; if they still don't fit, the chips get a little narrower.
+{const st=document.createElement('style');st.textContent='.mapwin.tight .mapttl{display:none}.mapwin.tight2 .mchip{padding:7px 8px;font-size:13px}';document.head.appendChild(st);}
+function mapFit(){try{const C=$('mapchips'),W=$('mapwin');if(!C||!W||$('bigmap').hidden)return;W.classList.remove('tight','tight2');
+  if(C.scrollWidth>C.clientWidth+2){W.classList.add('tight');if(C.scrollWidth>C.clientWidth+2)W.classList.add('tight2');}}catch(e){}}
+{const _mc=mapChips;mapChips=function(){const r=_mc.apply(this,arguments);mapFit();return r;};}
+{const _mr=mapResize;mapResize=function(){const r=_mr.apply(this,arguments);mapFit();return r;};}
+window.addEventListener('resize',()=>{if(MAPV&&MAPV.open)mapFit();});
+// Fun Park: "Go to Hero HQ", "Go to friend", going inside or anything else that moves you away ends your ride (before, the
+// ride pulled you straight back to your seat). While you ride, nothing can hurt you.
+function fpAbort(){if(typeof FPS==='undefined'||!FPS.me)return;if(FPS.co&&FPS.co.seats)delete FPS.co.seats.me;FPS.me=null;ME.drive=false;CAM.up=null;}
+{const _tp=teleport;teleport=function(){fpAbort();return _tp.apply(this,arguments);};}
+{const _gi=goInside;goInside=function(){fpAbort();return _gi.apply(this,arguments);};}
+{const _hm=hurtMe;hurtMe=function(){if(typeof FPS!=='undefined'&&FPS.me)return;return _hm.apply(this,arguments);};}
+{const _um=updateMe;updateMe=function(dt,inp){const R=typeof FPS!=='undefined'?FPS.me:null;
+  if(R&&R.lx!==undefined&&(Math.abs(ME.x-R.lx)>6||Math.abs(ME.z-R.lz)>6||(ME.realm&&ME.realm!=='earth')))fpAbort();
+  const r=_um(dt,inp);if(typeof FPS!=='undefined'&&FPS.me){FPS.me.lx=ME.x;FPS.me.lz=ME.z;}return r;};}
+// Quests: a thing to fix that floats above the ground you can stand on (the Stargazer telescope on Frosty Peak: its spot
+// is on the edge of the observatory, 6 m above the slope, so the ✋ Fix button never came) can be fixed from close below
+// or above it now.
+{const _qi=questInteract;questInteract=function(cand,p){const c2=(o,k,label,range,prio,extra)=>{try{if(o&&(k==='qfix'||k==='qpz'||k==='qneed')&&isFinite(o.y)&&Math.abs(o.y-chAt(o.x,o.z))>1.5&&d2(p.x,p.z,o.x,o.z)<3.2&&Math.abs(p.y-o.y)<11){o={x:o.x,z:o.z,y:p.y};range=Math.max(range,3.2);}}catch(e){}return cand(o,k,label,range,prio,extra);};return _qi(c2,p);};}
+// ---------- Arabic for the news ----------
+MV('Pets grow up!','الحيوانات الأليفة تكبر!');
+MV('Tap 🐾 to look after your pet: feed it, give it a bath, play fetch and teach it tricks. Pets grow from Baby to Super and get bigger. Bigger pets help more: they fetch coins from further away, sniff out treasure and pounce on baddies. Dress them up and give them a name!','اضغط 🐾 لتعتني بحيوانك الأليف: أطعمه وحمّمه والعب معه بالكرة وعلّمه حركات. الحيوانات تكبر من صغير إلى خارق ويزيد حجمها. وكلما كبرت ساعدتك أكثر: تجلب القطع النقدية من مسافة أبعد وتشم الكنوز وتنقض على الأشرار. ألبسها وأعطها اسمًا!');
+MV('Stargazer fixed','تم إصلاح مهمة مراقب النجوم');
+MV('On Frosty Peaks, the observatory telescope can be fixed now from the slope below it or from the top of the dome','في القمم الجليدية يمكنك الآن إصلاح تلسكوب المرصد من المنحدر تحته أو من فوق القبة');
+MV('Safe rides','ألعاب آمنة');
+MV('Menu, Go to Hero HQ works while you are on a Fun Park ride, and nothing can hurt you while you ride','القائمة، «اذهب إلى مقر الأبطال» يعمل وأنت على لعبة في مدينة الملاهي، ولا شيء يؤذيك وأنت تركب');
 // ================= v25.6: one broken thing never stops the whole game =================
 // The moving things of the world (heroes, pets, cars, enemies, quest markers, the glowing trail...) were drawn in one big
 // step. If one of them could not be drawn, the whole picture stopped, and after a few seconds the game said "Oops! The game
