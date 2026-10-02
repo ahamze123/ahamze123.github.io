@@ -725,3 +725,6 @@
 2026-10-02 09:35:27 [mluna] image-to-3d IN_PROGRESS 99%
 2026-10-02 09:35:37 [mluna] image-to-3d SUCCEEDED 100%
 2026-10-02 09:35:42 [mluna] rig task made 01a0fbf8-2732-745e-b05c-85763835bc9d
+2026-10-02 09:35:43 [mluna] rigging IN_PROGRESS 10%
+2026-10-02 09:35:53 [mluna] rigging SUCCEEDED 100%
+2026-10-02 09:35:53 [mluna] rigged: {"model": {"bytes": 2403084, "triangles": 20872, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57672, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47024, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
