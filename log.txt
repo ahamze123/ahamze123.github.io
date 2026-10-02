@@ -813,3 +813,4 @@
 2026-10-02 21:47:46 [p_dot] image-to-3d IN_PROGRESS 99%
 2026-10-02 21:47:56 [p_mimi] image-to-3d IN_PROGRESS 67%
 2026-10-02 21:47:56 [p_dot] image-to-3d SUCCEEDED 100%
+2026-10-02 21:47:58 [p_dot] model saved (no skeleton): {"bytes": 1326720, "triangles": 20891, "joints": 0, "clips": []}
