@@ -3781,6 +3781,11 @@
    "status": "SUCCEEDED"
   },
   "p_lantern": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_lantern.png"
+   ],
    "id": "01a0fe9b-3b10-75d6-a626-af5a61a0fd1c",
    "kind": "text-to-image",
    "made": "2026-10-02 21:53",
@@ -3791,7 +3796,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute fairy-tale garden lantern for a children's 3D game: a tall slim purple lamp post with a golden lantern on top that has glass windows and a pointed golden roof. The whole lantern seen from the front, no ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_mushroom": {
    "credits": 9,
