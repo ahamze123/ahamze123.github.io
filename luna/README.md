@@ -2,7 +2,7 @@
 
 Princess Luna's 3D adventure, made for a 5-year-old. **Play:** https://ahamze123.github.io/luna/
 
-Luna walks around a little island kingdom (tap the ground, or hold a finger down to steer; arrow keys or WASD on a computer) and helps five friends get ready for the Sparkle Party. Everything is read aloud, so she doesn't need to read.
+Luna walks around a little island kingdom and helps five friends get ready for the Sparkle Party. Like Block Buddies, she moves with the pink motion stick on the left (it jumps to wherever a finger touches the left side), and the camera swings round behind her as she walks; dragging on the right side turns the camera, and a tap on the right walks to that spot (arrow keys or WASD on a computer). The game waits on its start screen until **Start game** is tapped, and **Full screen** fills the screen (on an iPad or iPhone it explains Add to Home Screen instead). Everything is read aloud, so she doesn't need to read.
 
 1. **Bun-Bun** the bunny: find 5 carrots.
 2. **Mimi** the cat: find her lost kitten **Pip** by the red mushrooms and bring her home.

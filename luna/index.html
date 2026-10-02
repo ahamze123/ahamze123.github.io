@@ -76,7 +76,23 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
   box-shadow: 0 7px 0 #c2266a, 0 14px 26px var(--shadow); display: grid; place-items: center; }
 .jump:active { transform: translateY(5px); box-shadow: 0 2px 0 #c2266a, 0 8px 18px var(--shadow); }
 .jump svg { width: 34px; height: 34px; margin-bottom: -6px; }
-.hint { position: absolute; left: calc(16px + var(--sl)); bottom: calc(30px + var(--sb)); max-width: calc(100% - 150px);
+/* the motion stick (like Block Buddies): rests bottom left, and jumps to wherever a finger touches the left side */
+.joy { position: absolute; left: calc(24px + var(--sl)); bottom: calc(30px + var(--sb)); width: 112px; height: 112px; border-radius: 50%;
+  display: grid; place-items: center; pointer-events: none; opacity: .8;
+  background: radial-gradient(circle, rgba(255,255,255,.45), rgba(255,255,255,.2) 70%); border: 4px solid rgba(255,255,255,.9);
+  box-shadow: 0 8px 22px var(--shadow); }
+.joy.on { bottom: auto; opacity: 1; }
+.joy-knob { width: 54px; height: 54px; border-radius: 50%; background: var(--rose); border: 4px solid #fff;
+  box-shadow: 0 5px 0 #c2266a, 0 8px 16px var(--shadow); }
+.hero-pic { height: min(34vh, 330px); width: auto; max-width: 86%; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(44,23,69,.4));
+  animation: floaty 3.2s ease-in-out infinite; }
+@keyframes floaty { 50% { transform: translateY(-8px); } }
+.helpcard { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(44,23,69,.45); }
+.helpcard .sticker { width: min(460px, 100%); padding: 20px 22px; display: grid; gap: 12px; text-align: left; }
+.helpcard h2 { margin: 0; font-family: var(--font-display); font-weight: 900; font-size: 24px; color: var(--rose); }
+.helpcard p { margin: 0; font-size: 18px; line-height: 1.35; font-weight: 800; }
+.helpcard .ok { justify-self: end; }
+.hint { position: absolute; left: calc(16px + var(--sl)); bottom: calc(160px + var(--sb)); max-width: min(300px, calc(100% - 32px));
   font-family: var(--font-display); font-weight: 900; font-size: 18px; line-height: 1.15; padding: 10px 16px;
   transition: opacity .5s; }
 .hint.gone { opacity: 0; pointer-events: none; }
@@ -102,8 +118,8 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 
 /* ---------- title + finale ---------- */
 .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
-  justify-content: flex-end; gap: 14px; padding: 24px 16px calc(40px + var(--sb)); text-align: center;
-  background: linear-gradient(to top, rgba(44, 23, 69, .55), rgba(44, 23, 69, 0) 55%); }
+  justify-content: flex-end; gap: 12px; padding: calc(24px + var(--st)) 16px calc(36px + var(--sb)); text-align: center;
+  background: linear-gradient(to top, rgba(44, 23, 69, .7), rgba(44, 23, 69, .12) 70%); }
 .screen h1 { margin: 0; font-family: var(--font-display); font-weight: 900; color: #fff;
   font-size: clamp(44px, 11vw, 92px); line-height: .92; letter-spacing: -.01em; text-wrap: balance;
   text-shadow: 0 4px 0 var(--rose), 0 8px 0 rgba(44,23,69,.35); }
@@ -166,10 +182,12 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
     </div>
     <div class="mission sticker" id="mission"><span class="m-icon" id="mIcon"></span><span class="m-text" id="mText"></span><span class="m-count" id="mCount"></span></div>
     <div class="top-btns">
+      <button class="round sticker" id="btnFull" aria-label="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="#2c1745" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="round sticker" id="btnVoice" aria-label="Hear it again"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#2c1745"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="#ff4f93" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></button>
       <button class="round sticker" id="btnSound" aria-label="Music on or off"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l11-2v12" stroke="#2c1745" stroke-width="2.4" fill="none" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="3" fill="#ff4f93"/><circle cx="17.5" cy="16" r="3" fill="#ff4f93"/></svg></button>
     </div>
-    <div class="hint sticker" id="hint">Tap the ground to walk!</div>
+    <div class="joy" id="joy" aria-hidden="true"><div class="joy-knob" id="joyKnob"></div></div>
+    <div class="hint sticker" id="hint">Move with the pink button, or tap where to go!</div>
     <button class="jump" id="btnJump" aria-label="Jump"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.6L21 9.5l-5.2 4.3L17.6 21 12 17.2 6.4 21l1.8-7.2L3 9.5l6.6-.9z" fill="#fff"/></svg>Jump</button>
   </div>
 
@@ -190,10 +208,19 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
   </div>
 
   <div id="title" class="screen">
+    <img id="titlePic" class="hero-pic" alt="Princess Luna">
     <h1>Sparkle<br>Kingdom</h1>
     <p class="sub">Princess Luna's adventure</p>
-    <button class="big" id="btnPlay">Play</button>
-    <button class="small" id="btnNew" hidden>Start a new adventure</button>
+    <button class="big" id="btnPlay">Start game</button>
+    <div class="row"><button class="small" id="btnFull2">Full screen</button><button class="small" id="btnNew" hidden>Start a new adventure</button></div>
+  </div>
+
+  <div id="fsHelp" class="helpcard" hidden>
+    <div class="sticker" role="dialog">
+      <h2>Full screen</h2>
+      <p>On an iPad or iPhone: tap <b>Share</b>, then <b>Add to Home Screen</b>. Open Sparkle Kingdom from its Home Screen icon and it fills the whole screen.</p>
+      <button class="ok" id="fsHelpOk">OK!</button>
+    </div>
   </div>
 
   <div id="finale" class="screen" hidden>
@@ -1185,7 +1212,7 @@ const GemPop = (() => {
 const TEMPLATES = {};
 /* trees, bushes and houses turn see-through around Luna when they are in front of her, so she never gets lost behind them */
 const SEE = { uSeeCenter: { value: new THREE.Vector2(-9999, -9999) }, uSeeRadius: { value: 0 }, uSeeDepth: { value: 0 } };
-const SEE_THROUGH = new Set(["tree", "blossom", "bush", "appletree", "cottage", "rock", "mushroom"]);
+const SEE_THROUGH = new Set(["tree", "blossom", "bush", "appletree", "cottage", "rock", "mushroom", "lantern"]);
 function seeThrough(m) {
   if (!m || m.userData.see) return; m.userData.see = true;
   m.onBeforeCompile = (sh) => {
@@ -1605,22 +1632,59 @@ function pick(rr0) {
 }
 function walkTo(x, z, reach, cb) { player.target = { x, z }; player.arriveR = reach; player.onArrive = cb || null; player.stuck = 0; }
 let holding = false, lastMove = 0;
+/* like Block Buddies: the motion stick on the left of the screen, and on the right a tap walks there and a drag turns the camera */
+const Joy = { id: null, ox: 0, oy: 0, x: 0, y: 0, R: 56, t0: 0, sx: 0, sy: 0, moved: 0 };
+const Look = { id: null, sx: 0, sy: 0, lx: 0, t0: 0, moved: 0 };
+const joyEl = () => $("joy");
+function joyRest() {
+  const el = joyEl(); el.classList.remove("on"); el.style.left = ""; el.style.top = ""; $("joyKnob").style.transform = "";
+  Joy.x = Joy.y = 0; Joy.id = null;
+}
+function tapAt(cx, cy) {
+  const r0 = screenRay(cx, cy), hit = pick(r0);
+  if (hit) return hit.tap();
+  const p = groundPoint(r0); if (!p) return;
+  TapMark.at(p.x, p.z); walkTo(p.x, p.z, 0.3);
+}
 canvas.addEventListener("pointerdown", e => {
   if (Game.mode !== "play" || Game.dialog) return;
   Sound.unlock(); Game.idle = 0; $("hint").classList.add("gone");
-  const r0 = screenRay(e.clientX, e.clientY), hit = pick(r0);
-  if (hit) { hit.tap(); return; }
-  const p = groundPoint(r0); if (!p) return;
-  TapMark.at(p.x, p.z); walkTo(p.x, p.z, 0.3); holding = true;
   try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+  const left = e.clientX < window.innerWidth * 0.45;
+  if (left && Joy.id === null) {
+    Joy.id = e.pointerId; Joy.ox = Joy.sx = e.clientX; Joy.oy = Joy.sy = e.clientY; Joy.t0 = performance.now(); Joy.moved = 0;
+    const el = joyEl(); el.classList.add("on"); el.style.left = (e.clientX - Joy.R) + "px"; el.style.top = (e.clientY - Joy.R) + "px";
+  } else if (Look.id === null) {
+    Look.id = e.pointerId; Look.sx = Look.lx = e.clientX; Look.sy = e.clientY; Look.t0 = performance.now(); Look.moved = 0;
+  }
 });
 canvas.addEventListener("pointermove", e => {
-  if (!holding || Game.dialog) return;
-  const now = performance.now(); if (now - lastMove < 50) return; lastMove = now;
-  const p = groundPoint(screenRay(e.clientX, e.clientY)); if (p) walkTo(p.x, p.z, 0.3);
+  if (e.pointerId === Joy.id) {
+    let dx = e.clientX - Joy.ox, dy = e.clientY - Joy.oy; const d = Math.hypot(dx, dy);
+    Joy.moved = Math.max(Joy.moved, Math.hypot(e.clientX - Joy.sx, e.clientY - Joy.sy));
+    if (d > Joy.R) {   // the stick follows a finger that slides further
+      Joy.ox += dx * (1 - Joy.R / d); Joy.oy += dy * (1 - Joy.R / d); dx = e.clientX - Joy.ox; dy = e.clientY - Joy.oy;
+      const el = joyEl(); el.style.left = (Joy.ox - Joy.R) + "px"; el.style.top = (Joy.oy - Joy.R) + "px";
+    }
+    Joy.x = dx / Joy.R; Joy.y = -dy / Joy.R;
+    $("joyKnob").style.transform = "translate(" + dx + "px," + dy + "px)";
+    if (Joy.moved > 10) player.target = null;
+  } else if (e.pointerId === Look.id) {
+    Look.moved = Math.max(Look.moved, Math.hypot(e.clientX - Look.sx, e.clientY - Look.sy));
+    if (Look.moved > 12 && !Game.party) { CAM.yaw -= (e.clientX - Look.lx) * 0.009; CAM.manual = 1.6; }
+    Look.lx = e.clientX;
+  }
 });
-const endHold = () => { holding = false; };
-canvas.addEventListener("pointerup", endHold); canvas.addEventListener("pointercancel", endHold);
+function pointerEnd(e) {
+  if (e.pointerId === Joy.id) {
+    const quick = performance.now() - Joy.t0 < 280 && Joy.moved < 10;
+    joyRest(); if (quick && e.type === "pointerup" && !Game.dialog) tapAt(e.clientX, e.clientY);
+  } else if (e.pointerId === Look.id) {
+    const quick = performance.now() - Look.t0 < 400 && Look.moved < 12;
+    Look.id = null; if (quick && e.type === "pointerup" && !Game.dialog && Game.mode === "play") tapAt(e.clientX, e.clientY);
+  }
+}
+canvas.addEventListener("pointerup", pointerEnd); canvas.addEventListener("pointercancel", pointerEnd);
 window.addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; if (e.key === " " && Game.mode === "play") { e.preventDefault(); doJump(); } });
 window.addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
@@ -1636,10 +1700,15 @@ function twirl() { if (luna.twirl > 0) return; luna.twirl = 0.9; Sound.fx.twirl(
 const SPEED = 6.4;
 function updatePlayer(dt, t) {
   const pos = player.pos, dir = new THREE.Vector3();
-  const kx = (keys.arrowright || keys.d ? 1 : 0) - (keys.arrowleft || keys.a ? 1 : 0);
-  const kz = (keys.arrowdown || keys.s ? 1 : 0) - (keys.arrowup || keys.w ? 1 : 0);
+  let sx = (keys.arrowright || keys.d ? 1 : 0) - (keys.arrowleft || keys.a ? 1 : 0);
+  let sy = (keys.arrowup || keys.w ? 1 : 0) - (keys.arrowdown || keys.s ? 1 : 0);
+  if (Joy.id !== null && Math.hypot(Joy.x, Joy.y) > 0.12) { sx = Joy.x; sy = Joy.y; }
   const canMove = Game.mode === "play" && !Game.dialog;
-  if (canMove && (kx || kz)) { dir.set(kx, 0, kz).normalize(); player.target = null; Game.idle = 0; }
+  if (canMove && (sx || sy)) {
+    const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw), m = Math.min(1, Math.hypot(sx, sy));
+    dir.set(fx * sy - fz * sx, 0, fz * sy + fx * sx);
+    dir.normalize().multiplyScalar(m < 0.35 ? 0.35 : m); player.target = null; Game.idle = 0;
+  }
   else if (canMove && player.target) {
     dir.set(player.target.x - pos.x, 0, player.target.z - pos.z);
     const d = dir.length();
@@ -1678,24 +1747,33 @@ function updatePlayer(dt, t) {
 }
 
 /* ---------- camera: follows Luna from above and behind ---------- */
-const CAM = { pos: new THREE.Vector3(0, 14, 10), look: new THREE.Vector3(0, 1, -18) };
+const CAM = { pos: new THREE.Vector3(0, 14, 10), look: new THREE.Vector3(0, 1, -18), yaw: Math.PI, manual: 0 };
 function updateCamera(dt, t) {
   let wp, wl, k = 3.2;
   if (Game.mode === "title") {
-    const a = Math.sin(t * 0.18) * 0.45;
-    wp = new THREE.Vector3(player.pos.x + Math.sin(a) * 3.7, player.y + 1.45, player.pos.z + Math.cos(a) * 3.7);
-    wl = new THREE.Vector3(player.pos.x, player.y + 0.72, player.pos.z); k = 2;
+    // the start screen shows the kingdom: a slow swing in front of the castle
+    const a = Math.sin(t * 0.12) * 0.55;
+    wp = new THREE.Vector3(Math.sin(a) * 24, 11, -26 + Math.cos(a) * 24); wl = new THREE.Vector3(0, 5.5, -36); k = 1.2;
   } else if (Game.dialog && Game.talkTo && friends[Game.talkTo]) {
     const f = friends[Game.talkTo].root.position, mx = (f.x + player.pos.x) / 2, mz = (f.z + player.pos.z) / 2, my = (f.y + player.y) / 2;
     wp = new THREE.Vector3(mx, my + 2.7, mz + 5.6); wl = new THREE.Vector3(mx, my + 1.0, mz); k = 2.4;
   } else if (Game.party) {
     wp = new THREE.Vector3(0, 4.4, -8.6); wl = new THREE.Vector3(0, 3.6, -30); k = 1.4;
   } else {
-    const s = camera.aspect < 0.9 ? 1.25 : 1;
-    wp = new THREE.Vector3(player.pos.x, player.y + 5.6 * s, player.pos.z + 8.4 * s);
-    // like Block Buddies: look a little ahead of where she is walking
+    const s = camera.aspect < 0.9 ? 1.25 : 1, sp = Math.hypot(player.vel.x, player.vel.z);
+    // like Block Buddies: the camera swings round behind her as she walks (not when she walks towards it),
+    // and after the camera was turned by hand it waits a moment before following again
+    if (CAM.manual > 0) CAM.manual -= dt;
+    else if (sp > 0.6) {
+      let d = player.heading - CAM.yaw; d = Math.atan2(Math.sin(d), Math.cos(d));
+      if (Math.abs(d) < 2.1) CAM.yaw += d * (1 - Math.exp(-dt * 1.7 * Math.min(1, sp / SPEED)));
+    }
+    const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw);
+    wp = new THREE.Vector3(player.pos.x - fx * 8.4 * s, player.y + 5.6 * s, player.pos.z - fz * 8.4 * s);
+    // and it looks a little ahead of where she is walking
     CAM.ahead = (CAM.ahead || new THREE.Vector3()).lerp(new THREE.Vector3(player.vel.x, 0, player.vel.z).multiplyScalar(0.32), 1 - Math.exp(-dt * 2));
-    wl = new THREE.Vector3(player.pos.x + CAM.ahead.x, player.y + 1.2, player.pos.z - 1.2 + CAM.ahead.z);
+    wl = new THREE.Vector3(player.pos.x + fx * 1.2 + CAM.ahead.x, player.y + 1.2, player.pos.z + fz * 1.2 + CAM.ahead.z);
+    k = 3.6;
   }
   const f = 1 - Math.exp(-dt * k);
   CAM.pos.lerp(wp, f); CAM.look.lerp(wl, f);
@@ -2044,6 +2122,7 @@ function updateQuality(dt) {
 /* ================= START: load the models, build the kingdom, title screen, main loop ================= */
 function startGame(stage) {
   Sound.unlock(); Sound.startMusic();
+  CAM.yaw = Math.PI; player.heading = 0;
   $("title").hidden = true; $("finale").hidden = true; $("hud").hidden = false;
   Game.mode = "play"; setGems(Math.min(stage, 5));
   if (stage >= 1) helped.bunny = true;
@@ -2055,7 +2134,34 @@ function startGame(stage) {
   else startStage(stage);
 }
 
-$("btnPlay").onclick = () => { const s = loadStage(); startGame(s > 0 && s < 5 ? s : 0); };
+/* full screen, like Block Buddies: the browser's full screen where it works, and on iPhone and iPad the Home Screen tip */
+const fsOn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+const fsApp = () => (window.matchMedia && matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches) || navigator.standalone === true;
+const fsIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const fsAPI = () => !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+function fsEnter() {
+  const e = document.documentElement, f = e.requestFullscreen || e.webkitRequestFullscreen;
+  if (!f) return false;
+  try { const r = f.call(e, { navigationUI: "hide" }); if (r && r.catch) r.catch(() => {}); return true; } catch (err) { return false; }
+}
+function fsPress() {
+  Sound.unlock();
+  if (fsOn()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+  if (!fsAPI() || !fsEnter()) { $("fsHelp").hidden = false; return; }
+  setTimeout(() => { if (!fsOn() && !fsApp() && fsIOS()) $("fsHelp").hidden = false; }, 1200);
+}
+$("btnFull").onclick = fsPress; $("btnFull2").onclick = fsPress;
+$("fsHelpOk").onclick = () => { $("fsHelp").hidden = true; };
+const fsChanged = () => { setTimeout(resize, 120); $("btnFull").classList.toggle("off", fsOn()); };
+document.addEventListener("fullscreenchange", fsChanged); document.addEventListener("webkitfullscreenchange", fsChanged);
+if (fsApp()) { $("btnFull").hidden = true; $("btnFull2").hidden = true; }
+$("titlePic").src = PICS.lunaFull;
+
+$("btnPlay").onclick = () => {
+  // on Android tablets and phones the game goes full screen by itself when it starts
+  if (navigator.maxTouchPoints > 0 && !fsIOS() && fsAPI() && !fsApp() && !fsOn()) fsEnter();
+  const s = loadStage(); startGame(s > 0 && s < 5 ? s : 0);
+};
 $("btnNew").onclick = () => { saveStage(0); startGame(0); };
 $("btnAgain").onclick = () => { saveStage(0); location.reload(); };
 $("btnExplore").onclick = () => {
