@@ -7676,8 +7676,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:42,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:43,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🤝',t:'Team games: play together',s:'Menu, Mini-games: Star Hunt, Coin Rain and Twin Buttons. Whoever starts one brings everyone online into it, and you win together'},
   {ic:'🎨',t:'Hero Maker: make your own heroes',s:'Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too'},
   {ic:'💾',t:'Keep your game safe',s:'Menu, Settings, 💾 My game: Save a copy keeps your whole game in a file (in Files, or send it to Mum or Dad). Open a copy brings it back on any tablet'},
   {ic:'🦋',t:'Butterfly Basma',s:'Butterfly Basma flutters in! Purple suit, blue hair and big colourful butterfly wings. She can fly. Pick her on the first screen or in 🦸'},
@@ -10387,7 +10388,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='26.6';window.BB_VER=BB_VER;
+const BB_VER='26.7';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=performance.now();else if(performance.now()-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   const want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -12140,6 +12141,122 @@ MV('Get out of the car first','انزل من السيارة أولًا');MV('Spi
 MV('Super Star','النجم الخارق');MV('Captain Sparkle','كابتن لمعة');MV('Thunder Kid','فتى الرعد');MV('Rainbow Rocket','صاروخ قوس قزح');MV('Night Ninja','نينجا الليل');MV('Sky Dancer','راقصة السماء');MV('Lightning Lily','ليلى البرق');
 MV('Blaze Boy','فتى اللهب');MV('Crystal Queen','ملكة الكريستال');MV('Turbo Tiger','النمر السريع');MV('Moon Hopper','قافز القمر');MV('Coral Kid','فتى المرجان');MV('Flash Fox','الثعلب البرق');MV('Bubble Hero','بطل الفقاعات');MV('Storm Pal','صديق العاصفة');MV('Sunny Jet','نفاثة الشمس');
 MV('Hero Maker: make your own heroes','صانع الأبطال: اصنع أبطالك');MV('Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too','القائمة، 🎨 صانع الأبطال: اختر الشعر والألوان والأجنحة أو ذيل الحورية والقبعة والهجمات والحركة الخاصة، وسمِّ بطلك والعب به. الأصدقاء على الإنترنت يرونه أيضًا');
+// ================= v26.7: 🤝 team games: play together instead of against each other =================
+// Menu > Mini-games > Team games. Whoever starts one brings everyone online into it (like a race):
+//  🌟 Star Hunt: 12 stars around you, find them all together in 3 minutes (also on your own)
+//  🪙 Coin Rain: one minute of coins falling from the sky, catch 60 together (also on your own)
+//  🔘 Twin Buttons: two buttons, two heroes: stand on both at the same time to open the treasure, 5 rounds (needs a friend)
+// Every tablet builds the same stars, coins and buttons from the same seed; only "found", "caught", "standing on" and
+// "next round" travel online (netEvent 'tg'), so nothing has to be sent many times a second.
+const TG={on:false,kind:'',seed:0,cx:0,cz:0,cy:0,t:0,T:0,lead:'',found:null,mine:0,by:{},items:[],round:0,pads:[[],[]],onPad:-1,hold:0,done:false,realm:'earth'};
+const TGK={star:{ic:'🌟',n:'Star Hunt',T:180,need:12},coin:{ic:'🪙',n:'Coin Rain',T:60,need:60},twin:{ic:'🔘',n:'Twin Buttons',T:0,need:5}};
+function tgRng(seed){let a=seed>>>0;return ()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
+// a free spot on the ground near the middle (not in water, not on a building, same world as the middle)
+function tgSpot(rnd,rMin,rMax,avoid,minGap){for(let k=0;k<400;k++){const a=rnd()*TAU,d=rMin+rnd()*(rMax-rMin);const x=TG.cx+Math.cos(a)*d,z=TG.cz+Math.sin(a)*d;const xi=Math.floor(x),zi=Math.floor(z);
+    if(!tgOpenAt(x,z))continue;const i=cid(xi,zi);if(Math.abs(H[i]-TG.cy)>7)continue;
+    if(avoid&&avoid.some(q=>d2(q.x,q.z,x,z)<minGap))continue;return {x:xi+.5,z:zi+.5,y:H[i]};}return null;}
+function tgOpenAt(x,z){const xi=Math.floor(x),zi=Math.floor(z);if(!inMap(xi,zi)||inInBox(x,z)||realmAt(x,z)!==TG.realm)return false;const i=cid(xi,zi);if(H[i]<WL+.3||CH[i]>H[i]+.05)return false;
+  try{if(typeof areaNeed==='function'&&typeof storyDone==='function'&&areaNeed(x,z,H[i])>storyDone())return false;if(typeof GGATES!=='undefined'&&typeof ggDomeK==='function'&&GGATES.some(g=>ggDomeK(g)>=.5&&d2(x,z,g.x,g.z)<g.R+2))return false;}catch(e){}return true;}
+function tgBuild(pos){const rnd=tgRng(TG.seed);TG.items=[];const gy=(x,z)=>{const i=cid(clamp(Math.floor(x),0,N-1),clamp(Math.floor(z),0,N-1));return Math.max(H[i],WL);};
+  if(TG.kind==='star'){if(pos&&pos.length>=2){for(let k=0;k+1<pos.length&&k<24;k+=2)TG.items.push({x:pos[k],z:pos[k+1],y:gy(pos[k],pos[k+1]),got:false});}
+    else for(let k=0;k<12;k++){const s=tgSpot(rnd,8,46,TG.items,6)||tgSpot(rnd,4,30,null,0);if(s)TG.items.push({...s,got:false});}}
+  else if(TG.kind==='coin'){for(let k=0;k<170;k++){const a=rnd()*TAU,d=Math.sqrt(rnd())*13;const x=TG.cx+Math.cos(a)*d,z=TG.cz+Math.sin(a)*d;const big=rnd()<.06;const i=cid(clamp(Math.floor(x),0,N-1),clamp(Math.floor(z),0,N-1));
+      TG.items.push({x,z,y:gy(x,z),at:1.5+k*.33,got:CH[i]>H[i]+.05||inInBox(x,z),big});}}
+  else if(TG.kind==='twin'){if(pos&&pos.length>=4)tgSetPads(pos);else tgPads();}}
+function tgSetPads(q){const gy=(x,z)=>hAt(x,z);TG.items=[{x:q[0],z:q[1],y:gy(q[0],q[1])},{x:q[2],z:q[3],y:gy(q[2],q[3])}];TG.pads=[[],[]];TG.onPad=-1;TG.hold=0;}
+const tgPos=()=>TG.kind==='twin'?[TG.items[0].x,TG.items[0].z,TG.items[1].x,TG.items[1].z]:TG.kind==='star'?TG.items.flatMap(s=>[s.x,s.z]):[];
+// the two buttons of this round: further apart every round
+function tgPads(){const rnd=tgRng(TG.seed+TG.round*977);const want=8+TG.round*6;let best=null;
+  for(let k=0;k<240&&!best;k++){const A=tgSpot(rnd,1,10,null,0);if(!A)continue;const a=rnd()*TAU,dist=want*(.75+rnd()*.5);const bx=A.x+Math.cos(a)*dist,bz=A.z+Math.sin(a)*dist;if(!tgOpenAt(bx,bz))continue;
+    const B={x:Math.floor(bx)+.5,z:Math.floor(bz)+.5,y:hAt(bx,bz)};if(Math.abs(B.y-A.y)>4)continue;best=[A,B];}
+  // no good pair that far apart: any two open spots a little apart, or else the buttons of the last round
+  if(!best){const R2=tgRng(TG.seed+TG.round*31+7);let A=null;for(let k=0;k<300&&!best;k++){const q=tgSpot(R2,1,18+TG.round*5,A?[A]:null,6);if(!q)continue;if(!A)A=q;else best=[A,q];}}
+  if(!best&&TG.padsOK&&TG.items.length===2)best=TG.items;TG.padsOK=!!best;if(!best)best=[{x:TG.cx+3,z:TG.cz,y:TG.cy},{x:TG.cx-3,z:TG.cz,y:TG.cy}];TG.items=best;TG.pads=[[],[]];TG.onPad=-1;TG.hold=0;}
+const tgFriends=()=>netFriends().filter(r=>r.ok&&!r.stale);
+function tgCan(kind){if(kind==='twin'&&!tgFriends().length)return tr('Twin Buttons needs a friend online');if(ME.veh&&kind==='twin')return tr('Get out of the car first');if(inInBox(ME.x,ME.z))return tr('Go outside first');return '';}
+function tgBegin(kind,seed,cx,cz,lead,pos){const K=TGK[kind];Object.assign(TG,{on:true,kind,seed,cx,cz,lead,t:0,T:K.T,mine:0,by:{},round:0,done:false,padsOK:false,items:[],realm:realmAt(cx,cz)});TG.cy=hAt(cx,cz);if(!(TG.cy>-5))TG.cy=ME.y;tgBuild(pos);
+  TG.need=kind==='star'?TG.items.length:K.need;tgHud();}
+function tgStart(kind){const why=tgCan(kind);if(why){toast(why);return false;}if(HS.on){toast(tr('Finish hide and seek first'));return false;}if(G.race){toast(tr('Finish the race first'));return false;}
+  const seed=(Math.random()*1e9)|0;tgBegin(kind,seed,Math.round(ME.x*10)/10,Math.round(ME.z*10)/10,NET.pid||'me');
+  if((kind==='star'&&TG.items.length<6)||(kind==='twin'&&!TG.padsOK)){TG.on=false;const el=$('tghud');if(el)el.hidden=true;toast(tr('There is not enough room here. Try a more open place!'));return false;}netEvent('tg','go',kind,seed,TG.cx,TG.cz,...tgPos());
+  const fs=tgFriends();banner(tr(TGK[kind].n),tgGoal(),kind==='twin'?'#46b0ff':'#ffcf3a');try{SFX.mission();}catch(e){}return true;}
+function tgGoal(){return TG.kind==='star'?trf('Find all {0} stars together!',TG.need):TG.kind==='coin'?trf('Catch {0} coins together!',TG.need):tr('Stand on both buttons at the same time!');}
+// a friend started one: go to them and play along
+function tgJoin(kind,seed,cx,cz,rp,pos){if(!TGK[kind]||!isFinite(cx)||!isFinite(cz))return;if(TG.on&&TG.seed===seed)return;
+  if(G.mode!=='play'||ME.ko>0||(G.race&&G.race.vs)||HS.on){toast(trf('{0} started {1}!',rp?rp.name:'',tr(TGK[kind].n)));return;}
+  if(ME.carried)ME.carried=false;if(ME.carryF&&typeof dropFriend==='function')dropFriend();if(typeof setBuildMode==='function')setBuildMode(false);if(DLG)endDialog();
+  if(d2(ME.x,ME.z,cx,cz)>12){if(ME.veh&&typeof exitVeh==='function')try{exitVeh(ME);}catch(e){}const a=Math.random()*TAU;teleport(cx+Math.cos(a)*2.5,cz+Math.sin(a)*2.5);}
+  tgBegin(kind,seed,cx,cz,rp?rp.id:'',pos);banner(trf('{0} started {1}!',rp?rp.name:'',tr(TGK[kind].n)),tgGoal(),kind==='twin'?'#46b0ff':'#ffcf3a');try{SFX.mission();}catch(e){}}
+function tgEnd(win,why){if(!TG.on)return;TG.on=false;TG.done=true;const el=$('tghud');if(el)el.hidden=true;const k=TG.kind;
+  let coins=0,head='',sub='';
+  if(k==='star'){const n=TG.items.filter(s=>s.got).length;coins=n*300+(win?2500:0);head=win?tr('You found all the stars!'):tr('Time is up!');sub=trf('{0} stars found together · you found {1}',n,TG.mine);}
+  else if(k==='coin'){const n=TG.items.filter(c=>c.got).length;coins=win?2000:500;head=n>=TG.need?tr('Great teamwork!'):tr('Time is up!');sub=trf('{0} coins caught together · you caught {1}',n,TG.mine);}
+  else if(k==='twin'){coins=win?3000:0;head=win?tr('All the treasure is open!'):tr('Twin Buttons stopped');sub=win?tr('Great teamwork!'):'';}
+  if(why)sub=why;if(coins){addCoins(coins);sub+=' · +'+fmt(coins)+' 🪙';}banner(head,sub,win?'#46e6b0':'#2f6bff');if(win){ME.anim.cheer=2.5;try{SFX.win();}catch(e){}}saveSoon();}
+function tgQuit(){if(!TG.on)return;netEvent('tg','q',TG.seed);tgEnd(false,tr('Stopped'));}
+// ---------- what travels online ----------
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type!=='tg')return _ae.apply(this,arguments);try{tgEvent(Array.isArray(a)?a:[],rp);}catch(e){noteErr('tg',e);}};}
+function tgEvent(a,rp){const s=a[0];
+  if(s==='go'){tgJoin(String(a[1]),num(a[2]),num(a[3]),num(a[4]),rp,a.slice(5,29).map(v=>num(v)).filter(v=>isFinite(v)));return;}if(!TG.on)return;
+  if(s==='q'){if(num(a[1])===TG.seed)tgEnd(false,trf('{0} stopped the game',rp?rp.name:''));return;}
+  const who=rp?rp.id:'?';
+  if(s==='st'||s==='cn'){const it=TG.items[num(a[1],-1)];if(it&&!it.got){it.got=true;TG.by[who]=(TG.by[who]||0)+1;if(inView(it.x,it.z))burst(it.x,it.y+1.2,it.z,['#ffcf3a','#ffffff'],8,3,.14,1);tgCheck();}}
+  else if(s==='on'&&TG.kind==='twin'){const k=num(a[1],-1);for(const P of TG.pads){const i=P.indexOf(who);if(i>=0)P.splice(i,1);}if(k===0||k===1)TG.pads[k].push(who);}
+  else if(s==='rd'&&TG.kind==='twin'){const r=num(a[1]);if(r>TG.round)tgRound(r,a.slice(2,6).map(v=>num(v)));}}
+function tgCheck(){if(!TG.on)return;const n=TG.items.filter(q=>q.got).length;if(TG.kind==='star'&&n>=TG.items.length)tgEnd(true);tgHud();}
+function tgRound(r,pos){const P=TG.items;if(P[0]){const x=(P[0].x+P[1].x)/2,z=(P[0].z+P[1].z)/2;burst(x,TG.cy+1,z,['#ffcf3a','#ffffff','#46e6ff'],24,6,.2,1);}addCoins(800);try{SFX.chest();}catch(e){}
+  if(r>=TGK.twin.need){TG.round=r;tgEnd(true);return;}TG.round=r;if(pos&&pos.length===4&&pos.every(v=>isFinite(v)&&v>0))tgSetPads(pos);else tgPads();banner(trf('Round {0} of {1}',r+1,TGK.twin.need),tr('The buttons are further apart now!'),'#46b0ff');tgHud();}
+// ---------- every frame ----------
+function tgUpdate(dt){if(!TG.on||!ME)return;TG.t+=dt;const p=ME;
+  if(TG.kind==='star'){TG.items.forEach((s,i)=>{if(!s.got&&d2(p.x,p.z,s.x,s.z)<1.7&&Math.abs((p.y||0)-s.y)<3){s.got=true;TG.mine++;TG.by.me=(TG.by.me||0)+1;netEvent('tg','st',i);burst(s.x,s.y+1.2,s.z,['#ffcf3a','#ffffff'],16,4,.16,1);floatText(s.x,s.y+2,s.z,'🌟','gold');try{SFX.gold();}catch(e){}tgCheck();}});
+    if(TG.t>=TG.T)tgEnd(false);}
+  else if(TG.kind==='coin'){for(let i=0;i<TG.items.length;i++){const c=TG.items[i];if(c.got||TG.t<c.at)continue;const age=TG.t-c.at;if(age>9)continue;const y=c.y+Math.max(0,12-age*9);
+      if(d2(p.x,p.z,c.x,c.z)<1.4&&Math.abs((p.y||0)+.8-y)<2.2){c.got=true;TG.mine++;netEvent('tg','cn',i);addCoins(c.big?100:10);try{SFX.coin();}catch(e){}floatText(c.x,y+1,c.z,c.big?'+100':'+10','gold');tgCheck();}}
+    if(TG.t>=TG.T)tgEnd(TG.items.filter(c=>c.got).length>=TG.need);}
+  else if(TG.kind==='twin'){const P=TG.items;let k=-1;for(let j=0;j<2;j++)if(P[j]&&d2(p.x,p.z,P[j].x,P[j].z)<1.25&&Math.abs((p.y||0)-P[j].y)<1.6)k=j;
+    if(k!==TG.onPad){TG.onPad=k;netEvent('tg','on',k);for(const L of TG.pads){const i=L.indexOf('me');if(i>=0)L.splice(i,1);}if(k>=0){TG.pads[k].push('me');try{SFX.click();}catch(e){}}}
+    // the one who started checks: both buttons pressed by two different heroes for a moment
+    const lead=TG.lead===NET.pid||TG.lead==='me'||NET.role==='solo';const a=TG.pads[0],b=TG.pads[1];const ok=a.length&&b.length&&(a.some(x=>b.some(y=>y!==x)));
+    TG.hold=ok?TG.hold+dt:0;if(lead&&TG.hold>.6){TG.hold=0;const r=TG.round+1;tgRound(r);if(TG.on)netEvent('tg','rd',r,...tgPos());else netEvent('tg','rd',r);}
+    // a friend who left takes their foot off the button
+    for(const L of TG.pads)for(let i=L.length-1;i>=0;i--)if(L[i]!=='me'&&!NET.peers[L[i]])L.splice(i,1);
+    if(!tgFriends().length&&NET.role==='solo')tgEnd(false,tr('Twin Buttons needs a friend online'));}
+  tgHud();}
+{const _hs=heroStates;heroStates=function(dt){_hs(dt);try{tgUpdate(dt);}catch(e){noteErr('tg',e);}};}
+// ---------- the HUD line at the top ----------
+function tgHud(){let el=$('tghud');if(!el){el=document.createElement('div');el.id='tghud';el.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:6;background:rgba(20,16,56,.85);color:#fff;font:900 16px system-ui,sans-serif;padding:7px 14px;border-radius:14px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.3)';document.body.appendChild(el);}
+  if(!TG.on||G.mode==='title'){if(!el.hidden)el.hidden=true;return;}el.hidden=false;const left=Math.max(0,Math.ceil(TG.T-TG.t)),mm=Math.floor(left/60),ss=String(left%60).padStart(2,'0');let s='';
+  if(TG.kind==='star')s=`🌟 ${TG.items.filter(q=>q.got).length}/${TG.items.length} · ⏱ ${mm}:${ss}`;else if(TG.kind==='coin')s=`🪙 ${TG.items.filter(q=>q.got).length}/${TG.need} · ⏱ ${mm}:${ss}`;
+  else s=`🔘 ${tr('Round')} ${TG.round+1}/${TGK.twin.need} · ${TG.pads[0].length?'🟥✅':'🟥'} ${TG.pads[1].length?'🟦✅':'🟦'}`;if(el._s!==s){el._s=s;el.textContent=s;}}
+// ---------- drawing: stars with a beam, falling coins, the two buttons ----------
+function tgDraw(t){if(!TG.on)return;const m=MS.cur;
+  if(TG.kind==='star')for(const s of TG.items){if(s.got||!inView(s.x,s.z))continue;drawBeam(s.x,s.y,s.z,t,'#ffcf3a');MS.reset();M4.tr(m,s.x,s.y+1.25+Math.sin(t*2.5+s.x)*.15,s.z);M4.ry(m,t*2);
+    for(let k=0;k<5;k++){MS.push();M4.rz(m,k*TAU/5);bx(m,0,.22,0,.18,.42,.14,'#ffd23f',1,.9);MS.pop();}sp(m,0,0,0,.34,.34,.2,'#fff6c8',1,1);}
+  else if(TG.kind==='coin')for(const c of TG.items){if(c.got||TG.t<c.at)continue;const age=TG.t-c.at;if(age>9||!inView(c.x,c.z))continue;const y=c.y+Math.max(0,12-age*9);if(age>7.5&&Math.floor(t*10)%2)continue;drawCoin(c.x,y+.5,c.z,c.big?1000:100,t);}
+  else if(TG.kind==='twin'){TG.items.forEach((P,j)=>{if(!P||!inView(P.x,P.z))return;const on=TG.pads[j].length>0;const col=j?'#2f6bff':'#e8343f';MS.reset();M4.tr(m,P.x,P.y,P.z);
+      cy(m,0,.06,0,2.3,.12,2.3,'#e8e0d0',3);cy(m,0,on?.12:.2,0,1.9,on?.08:.2,1.9,col,1,on?.9:.35);for(let k=0;k<8;k++){const a=k/8*TAU+t;bx(m,Math.cos(a)*1.3,.3+Math.sin(t*4+k)*.1,Math.sin(a)*1.3,.14,.14,.14,col,1,1);}
+      if(!on)drawBeam(P.x,P.y,P.z,t,col);});
+    const A=TG.items[0],B=TG.items[1];if(A&&B){const x=(A.x+B.x)/2,z=(A.z+B.z)/2;if(inView(x,z))try{drawChest({x,y:hAt(x,z),z,r:t*.3},t);}catch(e){}}}}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{const keep=OUT;OUT=DYN;tgDraw(t);OUT=keep;}catch(e){noteErr('tgdraw',e);}};}
+// ---------- Menu > Mini-games: the team games ----------
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='games'||$('tg_box'))return r;const back=$('pm_back');if(!back)return r;const on=tgFriends().length>0;const box=document.createElement('div');box.id='tg_box';
+    const item=(k,c,txt)=>`<div class="mi" style="--c:${c}"><span style="font-size:22px">${TGK[k].ic}</span><div><b>${esc(tr(TGK[k].n))}</b><small>${esc(txt)}</small></div></div>`+
+      (TG.on&&TG.kind===k?`<button class="mb warn" id="tg_q_${k}">${esc(tr('Stop'))} ${TGK[k].ic}</button>`:`<button class="mb" id="tg_${k}" ${k==='twin'&&!on?'disabled style="opacity:.4"':''}>${TGK[k].ic} ${esc(tr('Start'))}</button>`);
+    box.innerHTML=`<h3 style="margin:10px 0 4px">🤝 ${esc(tr('Team games'))}</h3><div class="mlist">`+item('star','#ffcf3a',on?tr('Find 12 hidden stars together before time runs out. Everyone online plays!'):tr('Find 12 hidden stars before time runs out. With friends online you hunt together!'))
+      +item('coin','#ff9a3c',tr('Coins fall from the sky for one minute. Catch 60 together!'))+item('twin','#46b0ff',on?tr('Two buttons, two heroes: stand on both at the same time to open the treasure!'):tr('Play online with a friend to unlock Twin Buttons.'))+`</div>`;
+    back.before(box);for(const k of Object.keys(TGK)){const b=$('tg_'+k);if(b)b.onclick=()=>{closePause();tgStart(k);};const q=$('tg_q_'+k);if(q)q.onclick=()=>{tgQuit();closePause();};}}catch(e){noteErr('tgmenu',e);}return r;};}
+MV('Team games','ألعاب الفريق');MV('Star Hunt','صيد النجوم');MV('Coin Rain','مطر العملات');MV('Twin Buttons','الزرّان التوأم');MV('Start','ابدأ');MV('Stop','أوقف');MV('Stopped','توقفت');MV('Round','الجولة');
+MV('Find all {0} stars together!','اعثروا على كل النجوم الـ{0} معًا!');MV('Catch {0} coins together!','التقطوا {0} عملة معًا!');MV('Stand on both buttons at the same time!','قفوا على الزرّين في الوقت نفسه!');
+MV('{0} started {1}!','{0} بدأ {1}!');MV('You found all the stars!','وجدتم كل النجوم!');MV('Time is up!','انتهى الوقت!');MV('{0} stars found together · you found {1}','{0} نجوم وجدتموها معًا · أنت وجدت {1}');
+MV('Great teamwork!','عمل جماعي رائع!');MV('{0} coins caught together · you caught {1}','{0} عملة التقطتموها معًا · أنت التقطت {1}');MV('All the treasure is open!','فُتح كل الكنز!');MV('Twin Buttons stopped','توقفت لعبة الزرّين');
+MV('{0} stopped the game','{0} أوقف اللعبة');MV('Round {0} of {1}','الجولة {0} من {1}');MV('The buttons are further apart now!','الزرّان أبعد الآن!');MV('Twin Buttons needs a friend online','لعبة الزرّين تحتاج صديقًا على الإنترنت');
+MV('Go outside first','اخرج أولًا');MV('Finish hide and seek first','أنهِ الغميضة أولًا');MV('Finish the race first','أنهِ السباق أولًا');
+MV('Find 12 hidden stars together before time runs out. Everyone online plays!','اعثروا على 12 نجمة مخبأة معًا قبل انتهاء الوقت. كل من على الإنترنت يلعب!');
+MV('Find 12 hidden stars before time runs out. With friends online you hunt together!','اعثر على 12 نجمة مخبأة قبل انتهاء الوقت. ومع الأصدقاء على الإنترنت تبحثون معًا!');
+MV('Coins fall from the sky for one minute. Catch 60 together!','تتساقط العملات من السماء لمدة دقيقة. التقطوا 60 معًا!');MV('Two buttons, two heroes: stand on both at the same time to open the treasure!','زرّان وبطلان: قفا على الزرّين في الوقت نفسه لفتح الكنز!');
+MV('Play online with a friend to unlock Twin Buttons.','العب على الإنترنت مع صديق لتفتح لعبة الزرّين.');
+MV('Team games: play together','ألعاب الفريق: العبوا معًا');MV('Menu, Mini-games: Star Hunt, Coin Rain and Twin Buttons. Whoever starts one brings everyone online into it, and you win together','القائمة، الألعاب المصغرة: صيد النجوم ومطر العملات والزرّان التوأم. من يبدأ لعبة يأخذ كل من على الإنترنت معه، وتفوزون معًا');
+MV('There is not enough room here. Try a more open place!','لا يوجد مكان كافٍ هنا. جرّب مكانًا أوسع!');
 // ================= v25.6: one broken thing never stops the whole game =================
 // The moving things of the world (heroes, pets, cars, enemies, quest markers, the glowing trail...) were drawn in one big
 // step. If one of them could not be drawn, the whole picture stopped, and after a few seconds the game said "Oops! The game

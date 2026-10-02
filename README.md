@@ -138,6 +138,8 @@ Hero HQ in Brick City is now a castle. Walk through the big wooden door to find 
 - The host sees a card saying how many heroes are playing and how friends join. If the lobby says it is connecting, wait a few seconds: the host's name appears with a **Join** button.
 - You can also host or join from the in-game menu under **Online**.
 - You play one story together. A friend who is further along brings their chapters with them, so nobody plays the first chapters again, and every chapter, rocket part and quest you finish together is saved on every tablet.
+- **🤝 Team games** (**Menu → Mini-games → Team games**): whoever starts one brings everyone online into it, and you win together. **🌟 Star Hunt**: find 12 glowing stars around you before 3 minutes are up. **🪙 Coin Rain**: coins fall from the sky for one minute, catch 60 together. **🔘 Twin Buttons**: two buttons, two heroes; stand on both at the same time to open the treasure, 5 rounds with the buttons further apart each time. Star Hunt and Coin Rain also work on your own.
+
 
 ## Language
 Tap **🌐 العربية** on the first screen (or Menu → Settings → Language) to play in Arabic.
