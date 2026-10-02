@@ -184,6 +184,12 @@
    }
   },
   "basma": {
+   "full": {
+    "bytes": 3309992,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,

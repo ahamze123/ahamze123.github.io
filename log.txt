@@ -741,3 +741,4 @@
 2026-10-02 10:07:20 [basma] rigging IN_PROGRESS 36%
 2026-10-02 10:07:30 [basma] rigging SUCCEEDED 100%
 2026-10-02 10:07:31 [basma] rigged: {"model": {"bytes": 2420308, "triangles": 20743, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57868, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47260, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-02 10:07:33 [basma] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3309992}
