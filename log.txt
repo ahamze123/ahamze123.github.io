@@ -1024,3 +1024,6 @@
 2026-10-02 23:12:04 [p_umbrella] image-to-3d IN_PROGRESS 84%
 2026-10-02 23:12:14 [p_starfish] image-to-3d SUCCEEDED 100%
 2026-10-02 23:12:16 [p_starfish] model saved (no skeleton): {"bytes": 109248, "triangles": 1560, "joints": 0, "clips": []}
+2026-10-02 23:12:24 [p_sandcastle] image-to-3d IN_PROGRESS 84%
+2026-10-02 23:12:24 [p_palm] image-to-3d SUCCEEDED 100%
+2026-10-02 23:12:24 [p_shell] image-to-3d SUCCEEDED 100%
