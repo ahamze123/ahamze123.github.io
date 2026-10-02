@@ -1,16 +1,16 @@
 {
- "run": 16,
+ "run": 17,
  "heroes": [
-  "p_palm",
-  "p_shell",
-  "p_sandcastle",
-  "p_umbrella",
-  "p_starfish"
+  "p_turtle",
+  "p_mermaid",
+  "p_bear",
+  "p_penguin",
+  "p_luna"
  ],
  "refetch": [],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 200,
+ "max_credits": 190,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -24,65 +24,79 @@
   "heroes": [],
   "action_ids": []
  },
- "extra": {},
+ "extra": {
+  "p_luna": {
+   "moves2": [
+    32,
+    274,
+    569,
+    568
+   ]
+  }
+ },
  "per": {
-  "p_palm": {
+  "p_turtle": {
    "rig": false,
    "pose_mode": "",
-   "target_polycount": 5000,
+   "target_polycount": 20000,
    "shrink": 1024
   },
-  "p_shell": {
+  "p_mermaid": {
    "rig": false,
    "pose_mode": "",
-   "target_polycount": 1500,
-   "shrink": 512
-  },
-  "p_sandcastle": {
-   "rig": false,
-   "pose_mode": "",
-   "target_polycount": 4000,
+   "target_polycount": 20000,
    "shrink": 1024
   },
-  "p_umbrella": {
+  "p_bear": {
    "rig": false,
    "pose_mode": "",
-   "target_polycount": 3000,
-   "shrink": 512
+   "target_polycount": 20000,
+   "shrink": 1024
   },
-  "p_starfish": {
+  "p_penguin": {
    "rig": false,
    "pose_mode": "",
-   "target_polycount": 1500,
-   "shrink": 512
+   "target_polycount": 20000,
+   "shrink": 1024
   }
  },
  "redo": [],
  "images": {
-  "p_palm": {
+  "p_bear": {
    "ai_model": "nano-banana-pro",
    "aspect_ratio": "1:1",
-   "prompt": "A cute palm tree for a children's 3D game: a gently curved light brown trunk with soft rings and a bushy crown of big bright green leaves with three coconuts. The whole tree seen from the side, no ground, no base. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
+   "refs": [
+    "tools/meshy/pics/p_bear_src.jpg"
+   ],
+   "prompt": "Show the bear chef from this picture alone on a plain pure white background: exactly the same bear, same fur colour and face, the same white chef's hat and pink apron with the cupcake, holding the wooden spoon, standing and facing the camera. The whole body from the top of the hat to the feet inside the picture, nothing cut off. Nothing else in the picture: no candy, no trees, no ground, no shadow, no text. Same glossy 3D animated-movie style, soft even light."
   },
-  "p_shell": {
+  "p_penguin": {
    "ai_model": "nano-banana-pro",
    "aspect_ratio": "1:1",
-   "prompt": "A cute big scallop seashell for a children's 3D game, pearly white with soft ridges, standing on its edge facing the camera, chunky and rounded. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
+   "refs": [
+    "tools/meshy/pics/p_penguin_src.jpg"
+   ],
+   "prompt": "Show the penguin from this picture alone on a plain pure white background: exactly the same little penguin with the red knitted scarf and white fluffy earmuffs, standing and facing the camera with flippers out. The whole body from head to feet inside the picture, nothing cut off. Nothing else in the picture: no snow, no trees, no ground, no shadow, no text. Same 3D animated-movie style, soft even light."
   },
-  "p_sandcastle": {
+  "luna_room": {
    "ai_model": "nano-banana-pro",
-   "aspect_ratio": "1:1",
-   "prompt": "A cute sandcastle for a children's 3D game: golden sand towers with little pink flags, a small arched door and seashells pressed into the walls. The whole sandcastle seen from the front at a slight angle, standing on a small patch of sand. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
+   "aspect_ratio": "4:3",
+   "prompt": "Inside a little princess's bedroom in a fairy-tale castle, for a children's game, seen straight from the front like a cozy stage. Pink, lavender and white with gold details. From left to right: a tall pink wardrobe with open doors showing dresses; a white vanity table with a big round mirror and a jewelry box; a small white piano; a big arched window with a sunny sky; a canopy bed with pink curtains, fluffy pillows and a teddy bear; a painting easel with a blank canvas; a small white bathtub full of bubbles with a rubber duck. A soft round rug on the floor and fairy lights. Every piece of furniture clearly separated and fully visible, nothing cut off. Glossy 3D animated-movie style, soft warm light, bright cheerful colors. No people, no animals, no text."
   },
-  "p_umbrella": {
+  "dress_items": {
    "ai_model": "nano-banana-pro",
    "aspect_ratio": "1:1",
-   "prompt": "A cute beach umbrella with pink and white stripes standing in the sand, with a folded yellow beach towel and a little bucket and spade next to it, for a children's 3D game. The whole set seen from the side, small patch of sand under it. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
+   "prompt": "A sticker sheet of princess dress-up accessories for a children's game, arranged in a neat 3 by 3 grid with lots of white space around each item, every item small enough to sit fully inside its own square: a golden crown with pink gems; a flower crown of pink and white roses; a seashell crown with pearls; a silver star tiara; a magic wand with a golden star; a pink heart wand; sparkly pink fairy wings seen from the back; blue butterfly wings seen from the back; a pearl necklace with a pink heart. Glossy 3D animated-movie style, soft even light. Plain pure white background, no shadows, no text, no grid lines."
   },
-  "p_starfish": {
-   "ai_model": "nano-banana-pro",
-   "aspect_ratio": "1:1",
-   "prompt": "A cute chubby orange starfish for a children's 3D game, five soft rounded arms with little bumps and a happy smiling face, lying flat. Seen from above at a slight angle. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
+  "color_page1": {
+   "ai_model": "nano-banana",
+   "aspect_ratio": "4:3",
+   "prompt": "A coloring page for a 5 year old: a cute unicorn standing in a meadow in front of a little castle, with a rainbow, a smiling sun and two flowers. Very thick clean black outlines, big simple shapes, pure white inside every shape, no shading, no gray, no color, no text."
+  },
+  "color_page2": {
+   "ai_model": "nano-banana",
+   "aspect_ratio": "4:3",
+   "prompt": "A coloring page for a 5 year old: a cute kitten and a bunny having a tea party at a little table with a teapot, cups and cupcakes, and a heart balloon. Very thick clean black outlines, big simple shapes, pure white inside every shape, no shading, no gray, no color, no text."
   }
  },
  "redo_images": []
