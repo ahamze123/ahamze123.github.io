@@ -1,6 +1,6 @@
 # Block Buddies
 
-A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to collect, five connected islands, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
+A brick hero adventure for kids, with a story in 8 chapters. It has 50 heroes to collect, five connected islands, a water park island, a Hero Castle to explore, a Sky Kingdom in the clouds, Dino Valley, a rocket to the Moon and about 100 quests. Up to 4 players can play together online.
 
 **Play:** https://ahamze123.github.io
 
@@ -105,9 +105,29 @@ A theme park on **Sunset Bay**, just north of the town (on the big map under �
 - **🎡 Big Wheel**: you get the gondola at the bottom and go once round (40 seconds), with the whole park below you. Jump to get out early.
 - **🎠 Carousel**: three times round on a horse that goes up and down. Jump to get off any time.
 - **🚗 Bumper Cars**: drive with the stick and bump the park's cars and your friends. **✋** to get out.
-- **🌊 Water Slides**: the lift pad takes you up the tower; then pick the **Red Rocket** (straight and steep) or the **Blue Twister** (twice round), and splash into the pool.
+- **🌊 Water Slides**: the lift pad takes you up the tower; then pick the **Red Rocket** (straight and steep) or the **Blue Twister** (twice round), and splash into the pool. On every water slide (here and in the water park) you lie back, feet first, with your arms up.
 - The big wheel and the carousel turn the same on every tablet. Each ride's first go pays 500 coins, and riding all five wins the **Fun Park Champion** trophy (+5000 coins).
 - Nothing can hurt you while you ride, and **Menu → Go to Hero HQ** (or going to a friend) takes you off the ride.
+
+## The Humongous Water Park
+A whole island of water fun, just south of Brick City's harbour: walk over the sandy causeway from the lighthouse beach (on the big map under 🎮 Fun, or **What's new → Show me the way**). It is open from the start. Everything is real water you can swim in.
+- **🗼 The Humongous Tower**: 45 metres tall, the tallest thing in Blocktopia. The lift pad at its foot takes you to the top, where you pick a slide:
+  - **The Humongous Drop**: almost straight down, the fastest ride in the game, into the landing pool.
+  - **🌪️ The Tornado**: four times round its own pole in a blue half-pipe.
+  - **🌈 The Rainbow Ribbon**: a long rainbow slide once round over the park, into the wave pool.
+- **🏁 The Racer**: four slides side by side. Take the lift up, tap **Race!**, and after the count-down race your friends (and racing kids in the empty lanes) to the pool. The first four places all win coins.
+- **🌊 Wave Pool**: a sandy beach at one end and a deep end with a wave machine. Every 50 seconds a bell rings and the waves come for 18 seconds: swimmers bob up and down and drift to the beach.
+- **🦆 The Giant Duck**: a rubber duck as big as a house floats in the wave pool. Swim up to it and slide down its back.
+- **🛟 The Lazy River**: a river all the way round the island. It carries swimmers along, and rubber rings float round it: hop in a ring and float round the whole park (jump to get out). Bridges go over it.
+- **🏴‍☠️ Pirate Splash Ship**: walk up the steps onto the deck, fire the water cannons at your friends, and stand under the giant bucket on the mast: every 30 seconds it tips over and soaks everyone below.
+- **🏖️ Splash Beach**: the whole west side of the island is a sandy beach that slopes into the sea, with umbrellas, towels, sandcastles, a lifeguard tower, a snack shack and beach balls that fly when you run into them.
+- **Rides to ride together** (when friends are online, everyone who hops on before the count-down ends rides in the same boat):
+  - **🪵 Splash Mountain**: log boats for 4. Up the lift hill, round the top of the rocky mountain, then the big drop into the splash pool (everyone close by gets wet).
+  - **🛟 The Family Raft**: a round raft for 4. Take the lift up the raft tower on the beach and swirl down the wide yellow slide into the lagoon.
+  - **🍌 The Banana Boat**: a speedboat pulls a banana for 4 from the pier at the south end of the beach, out to sea, round a big loop and back.
+  - **🚤 Bumper Boats**: everybody drives their own little boat; bump each other and press Power to squirt water.
+  - The lazy river's rings are **double rings**, so a friend can float right next to you, and friends standing on top of the Racer race each other when anyone presses **Race!**
+- The waves, the rings, the bucket and the shared boats move the same on every tablet. Each ride's first go pays 500 coins, and trying all twelve wins the **Water Park Champion** trophy (+5000 coins) and a new pet: **Ducky the Rubber Duck** 🦆.
 
 ## Pets that grow
 - Tap **🐾** (next to the other buttons when you have a pet, or **Menu → 🐾 My pet**) to look after your pet. The camera turns to your pet while the panel is open.
@@ -118,7 +138,7 @@ A theme park on **Sunset Bay**, just north of the town (on the big map under �
 - A hungry pet shows a little 🍖 bubble.
 
 ## Moving around
-- **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool, or the Fun Park's splash pool) to swim, and jump again to climb out.
+- **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool, the Fun Park's splash pool or any pool in the Humongous Water Park) to swim, and jump again to climb out.
 - **Flying**: flying heroes (like Omar and Ruby) hold jump to go up and hold **⬇ Down** (**Shift** on a keyboard) to fly down. With the Jet Wings gadget, the other heroes can glide. Tap **🦸 Land** (or press **L**) for a fast super hero landing.
 - **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 

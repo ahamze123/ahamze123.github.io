@@ -7677,8 +7677,10 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:46,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:47,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🌊',t:'The Humongous Water Park!',s:'A whole island of water fun south of Brick City: the 45 metre tower with the Drop, the Tornado and the Rainbow Ribbon, the Racer, a wave pool with a giant duck, the lazy river, a pirate ship, Splash Beach, Splash Mountain, the Family Raft, the Banana Boat and bumper boats. Ride together with your friends!',go:()=>typeof WP!=='undefined'&&WP.ok?dd({x:WP.cw.x,z:WP.cw.z0-2,label:tr('Humongous Water Park'),icon:'🌊',col:'#46c0ee'}):null},
+  {ic:'🛝',t:'A new way down the slides',s:'On every water slide you now lie back, feet first, with your arms up, and the camera shows you sliding down'},
   {ic:'🐾',t:'Pets grow up!',s:'Tap 🐾 to look after your pet: feed it, give it a bath, play fetch and teach it tricks. Pets grow from Baby to Super and get bigger. Bigger pets help more: they fetch coins from further away, sniff out treasure and pounce on baddies. Dress them up and give them a name!'},
   {ic:'🔭',t:'Stargazer fixed',s:'On Frosty Peaks, the observatory telescope can be fixed now from the slope below it or from the top of the dome'},
   {ic:'🎡',t:'Safe rides',s:'Menu, Go to Hero HQ works while you are on a Fun Park ride, and nothing can hurt you while you ride'},
@@ -10397,7 +10399,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.0';window.BB_VER=BB_VER;
+const BB_VER='27.1';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -12806,6 +12808,559 @@ MV('Coins fall from the sky for one minute. Catch 60 together!','تتساقط ا
 MV('Play online with a friend to unlock Twin Buttons.','العب على الإنترنت مع صديق لتفتح لعبة الزرّين.');
 MV('Team games: play together','ألعاب الفريق: العبوا معًا');MV('Menu, Mini-games: Star Hunt, Coin Rain and Twin Buttons. Whoever starts one brings everyone online into it, and you win together','القائمة، الألعاب المصغرة: صيد النجوم ومطر العملات والزرّان التوأم. من يبدأ لعبة يأخذ كل من على الإنترنت معه، وتفوزون معًا');
 MV('There is not enough room here. Try a more open place!','لا يوجد مكان كافٍ هنا. جرّب مكانًا أوسع!');
+// ================= v27.1: 🌊 The Humongous Water Park (Splash Island) =================
+// The kids asked for a humongous water park, so here is a whole island of it, just south of Brick City's harbour (walk
+// over the causeway): the Humongous Tower (45 m!) with three slides (the Humongous Drop, the Tornado tube round the
+// tower and the long Rainbow Ribbon), a wave pool with a giant rubber duck you can climb and slide off, a lazy river
+// all the way round the island with rubber rings to float in, a pirate ship with a giant tipping bucket and water
+// cannons, and the Racer: four slides side by side to race your friends. Everything is real water you can swim in.
+const WP={x0:184,z0:368,x1:302,z1:452,y:3.6,ok:false,
+  rv:{x0:212,z0:370,x1:300,z1:450,w:4},// the lazy river: a ring channel 4 m wide just inside the edge
+  plaza:{x:227,z:380},gate:{x:226,z:367},cw:{x:226,z0:349,z1:369},
+  wave:{x0:218,z0:392,x1:252,z1:444,beach:401},duck:{x:236,z:432},
+  tw:{x:266,z:404,top:45,hw:4},land:{x0:254,z0:424,x1:282,z1:444},
+  ship:{x0:268,z0:376,x1:295,z1:398,x:281.5,z:387},
+  rc:{x0:282,x1:295,z0:400,top:16,zEnd:432,pool:{x0:281,z0:434,x1:296,z1:444}},
+  // v2 (the kids asked for bigger, a beach and rides to ride together): the island grows to the west
+  beach:{dry:7,wet:5},// the west beach: 7 m of dry sand from the deck down to the sea, then shallow water
+  bb:{x0:188,z0:374,x1:208,z1:392},// bumper boats
+  lf:{pool:{x0:186,z0:402,x1:194,z1:417},mt:{x0:192,z0:426,x1:208,z1:450,h:11}},// Splash Mountain: the splash pool and the mountain
+  rf:{x:181,z:371,top:17,pool:{x0:174,z0:432,x1:186,z1:447}},// the family raft: its tower on the beach and the lagoon it lands in
+  ban:{pier:{x:183,z:451},dock:{x:176,z:458}}};// the banana boat pier
+const WPC=['#ff5d73','#ff9a3c','#ffcf3a','#7ed957','#46b0ff','#b28dff'];
+function wpIn(x,z){return x>=WP.x0&&x<WP.x1&&z>=WP.z0&&z<WP.z1;}
+// ---------- the island, the pools and the river (before the world is meshed) ----------
+function wpGround(){const {x0,z0,x1,z1}=WP,gy=WP.y,B2=6,BD=WP.beach.dry,BW=WP.beach.dry+WP.beach.wet,BB=BW+6;
+  const tile=(x,z,a,b)=>pal(((x+z)&1)?a:b);
+  for(let z=z0-B2;z<z1+B2;z++)for(let x=x0-BB;x<x1+B2;x++){if(!inMap(x,z))continue;const i=cid(x,z);
+    // v2: the west side is a long sandy beach that slopes gently into the sea (round at the corners)
+    if(x<x0){const u=Math.hypot(x0-x,Math.max(z0-z,0,z-(z1-1)));if(u>=BB)continue;let h;
+      if(u<=BD)h=gy-.05+(WL+.25-(gy-.05))*(u/BD);else if(u<=BW)h=WL+.25+(WL-1.8-(WL+.25))*((u-BD)/(BW-BD));else{const k=(u-BW)/(BB-BW);h=WL-1.8+(H[i]-(WL-1.8))*k*k*(3-2*k);}
+      if(u<=BW||h>H[i]){H[i]=Math.max(u<=BD?-99:H[i],h);CH[i]=H[i];}if(u<=BW+1){BIO[i]=B.BEACH;TM[i]=T.SAND;TC[i]=tile(x,z,'#f3d692','#eecf88');}if(u<=BD){OCC[i]=1;NRD[i]=1;}continue;}
+    const dx=Math.max(x0-x,0,x-(x1-1)),dz=Math.max(z0-z,0,z-(z1-1)),d=Math.hypot(dx,dz);if(d>=B2)continue;
+    if(d<=0){H[i]=gy;CH[i]=gy;OCC[i]=1;BIO[i]=B.PARK;NRD[i]=1;TM[i]=T.PLATE;TC[i]=tile(x,z,'#f6efe2','#ece3d2');continue;}
+    if(H[i]>gy-.3)continue;const k=1-d/B2,t=k*k*(3-2*k);const h=H[i]+(gy-.15-H[i])*t;if(h>H[i]){H[i]=h;CH[i]=h;}
+    if(H[i]>WL-1.2){BIO[i]=B.BEACH;TM[i]=T.SAND;TC[i]=tile(x,z,'#f3dfae','#efd8a2');}}
+  // the causeway from Brick City's shore (a sandy path 8 m wide)
+  const C=WP.cw;for(let z=C.z0-4;z<C.z1;z++)for(let x=C.x-6;x<=C.x+6;x++){if(!inMap(x,z))continue;const i=cid(x,z);const w=Math.abs(x-C.x);if(w>6)continue;
+    const top=w<=4?gy-.05:gy-.05-(w-4)*.9;if(H[i]<top){H[i]=top;CH[i]=top;}if(w<=4){BIO[i]=B.BEACH;TM[i]=T.PLATE;TC[i]=tile(x,z,'#e8d3a8','#e0c999');NRD[i]=1;OCC[i]=1;}}
+  // grass and palms corners, paths
+  const paint=(ax,az,bx,bz,a,b)=>{for(let z=az;z<bz;z++)for(let x=ax;x<bx;x++){if(!inMap(x,z))continue;const i=cid(x,z);TM[i]=T.GRASS;TC[i]=tile(x,z,a,b);}};
+  paint(216,374,218,446,'#7fd06a','#77c862');paint(294,374,296,446,'#7fd06a','#77c862');paint(216,386,236,390,'#7fd06a','#77c862');paint(254,374,268,398,'#7fd06a','#77c862');
+  // v2: the west side: grass, with a sandy promenade along the beach and paths to the new rides
+  paint(184,368,212,452,'#7fd06a','#77c862');{const sandp=(ax,az,bx,bz)=>{for(let z=az;z<bz;z++)for(let x=ax;x<bx;x++){if(!inMap(x,z))continue;const i=cid(x,z);TM[i]=T.PLATE;TC[i]=tile(x,z,'#efe0bd','#e8d7b0');}};
+    sandp(184,368,188,452);sandp(184,393,212,397);sandp(208,368,212,452);sandp(184,418,192,424);}
+  // pools: dig the hole, remember the water (real water: see POOLS)
+  const pool=(P,wl,fl,a,b,tag)=>{for(let z=P.z0;z<P.z1;z++)for(let x=P.x0;x<P.x1;x++){const i=cid(x,z);H[i]=fl;CH[i]=fl;TM[i]=T.STONE;TC[i]=tile(x,z,a,b);}POOLS.push({x0:P.x0,z0:P.z0,x1:P.x1,z1:P.z1,wl,fl,wp:tag});};
+  const R=WP.rv,wlR=gy-.35,flR=gy-1.75,rw=R.w;
+  // the river ring: four straight pieces
+  pool({x0:R.x0,z0:R.z0,x1:R.x1,z1:R.z0+rw},wlR,flR,'#7fd3f2','#74cbee','river');pool({x0:R.x0,z0:R.z1-rw,x1:R.x1,z1:R.z1},wlR,flR,'#7fd3f2','#74cbee','river');
+  pool({x0:R.x0,z0:R.z0+rw,x1:R.x0+rw,z1:R.z1-rw},wlR,flR,'#7fd3f2','#74cbee','river');pool({x0:R.x1-rw,z0:R.z0+rw,x1:R.x1,z1:R.z1-rw},wlR,flR,'#7fd3f2','#74cbee','river');
+  // the wave pool: a sandy beach at the north end that slopes down to the deep end
+  {const W=WP.wave,wl=gy-.3,fl=gy-2.4;for(let z=W.z0;z<W.z1;z++)for(let x=W.x0;x<W.x1;x++){const i=cid(x,z);const t=clamp((z-W.z0)/(W.beach+6-W.z0),0,1);const h=lerp(gy-.05,fl,t*t*(3-2*t));H[i]=h;CH[i]=h;
+      if(t<.55){TM[i]=T.SAND;TC[i]=tile(x,z,'#f3dfae','#efd8a2');}else{TM[i]=T.STONE;TC[i]=tile(x,z,'#5ec4ee','#53bbe8');}}POOLS.push({x0:W.x0,z0:W.z0,x1:W.x1,z1:W.z1,wl,fl,wp:'wave'});}
+  pool(WP.land,gy-.3,gy-2.6,'#4fb9ea','#46b0e5','land');
+  pool({x0:WP.ship.x0,z0:WP.ship.z0,x1:WP.ship.x1,z1:WP.ship.z1},gy-.3,gy-.95,'#9fe0f7','#93d8f3','ship');
+  pool(WP.rc.pool,gy-.3,gy-1.6,'#7fd3f2','#74cbee','racer');
+  // v2: the bumper boat pond, Splash Mountain's splash pool and the raft lagoon on the beach
+  pool(WP.bb,gy-.35,gy-1.3,'#6fcdf0','#64c4ec','bb');pool(WP.lf.pool,gy-.3,gy-2.2,'#4fb9ea','#46b0e5','lf');
+  {const L=WP.rf.pool;for(let z=L.z0;z<L.z1;z++)for(let x=L.x0;x<L.x1;x++){if(!inMap(x,z))continue;const i=cid(x,z);const e=Math.min(1,Math.min(x-L.x0,L.x1-1-x,z-L.z0,L.z1-1-z)/2.5);const h=WL-.2-1.6*e;H[i]=Math.min(H[i],h);CH[i]=H[i];OCC[i]=1;TM[i]=T.SAND;TC[i]=tile(x,z,'#e9d29a','#e2ca90');}}// the lagoon is sea water (it opens to the sea on the beach)
+  WP.ok=true;}
+{const _rs=regionScatter;regionScatter=function(){try{wpGround();}catch(e){console.error('waterpark ground',e);}return _rs();};}
+// the island is open from the start (the story keeps far places closed; this one is right next to Brick City)
+{const _an=areaNeed;areaNeed=function(x,z,y){if(WP.ok&&x>=WP.x0-14&&x<WP.x1+14&&z>=WP.cw.z0-4&&z<WP.z1+14)return 0;return _an(x,z,y);};}
+// (the Hero challenge brick that waited at the bottom of the sea here finds another deep spot by itself: the island is land now)
+// ---------- slide paths: points with a frame (forward, up, right) and their length ----------
+function wpPath(pts){const P=[];for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];let F=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];const l=Math.hypot(...F)||1;F=F.map(v=>v/l);
+    let U=[-F[1]*F[0],1-F[1]*F[1],-F[1]*F[2]];const ul=Math.hypot(...U)||1;U=U.map(v=>v/ul);const Rv=[U[1]*F[2]-U[2]*F[1],U[2]*F[0]-U[0]*F[2],U[0]*F[1]-U[1]*F[0]];P.push({x:pts[i][0],y:pts[i][1],z:pts[i][2],F,U,R:Rv});}
+  let L=0;for(let i=1;i<P.length;i++)L+=Math.hypot(P[i].x-P[i-1].x,P[i].y-P[i-1].y,P[i].z-P[i-1].z);return {P,L};}
+// a smooth line through control points [x,z] (Catmull-Rom), about every 0.5 m, with heights from y0 to y1 by distance
+function wpSpline(C,y0,y1,ease){const raw=[];for(let i=0;i<C.length-1;i++){const p0=C[Math.max(0,i-1)],p1=C[i],p2=C[i+1],p3=C[Math.min(C.length-1,i+2)];const seg=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]);const n=Math.max(2,Math.ceil(seg/.5));
+    for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;const f=(a,b,c,d)=>.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);raw.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1])]);}}
+  raw.push(C[C.length-1]);let L=0;const d=[0];for(let i=1;i<raw.length;i++){L+=Math.hypot(raw[i][0]-raw[i-1][0],raw[i][1]-raw[i-1][1]);d.push(L);}
+  return raw.map((q,i)=>{const u=d[i]/L;return [q[0],y0+(y1-y0)*(ease?ease(u):u),q[1]];});}
+function wpSlides(){const gy=WP.y,T=WP.tw,top=gy+T.top,wl=gy-.3,out=[];
+  // 1. the Humongous Drop: off the south side of the top, almost straight down, into the landing pool
+  {const pts=[];const z0=T.z+5.2;for(let z=z0;z<=z0+1.6;z+=.4)pts.push([T.x,top+.2,z]);
+    const ang=72*Math.PI/180;let x=T.x,y=top+.2,z=z0+1.6,a=0;while(a<ang){a=Math.min(ang,a+.08);z+=.4*Math.cos(a);y-=.4*Math.sin(a);pts.push([x,y,z]);}
+    while(y>gy+4.2){z+=.4*Math.cos(ang);y-=.4*Math.sin(ang);pts.push([x,y,z]);}
+    while(a>0){a=Math.max(0,a-.045);z+=.4*Math.cos(a);y=Math.max(wl+.05,y-.4*Math.sin(a));pts.push([x,y,z]);}
+    while(z<WP.land.z1-3){z+=.4;y=Math.max(wl+.05,y-.02);pts.push([x,y,z]);}
+    out.push({id:'drop',name:'The Humongous Drop',col:'#e8343f',col2:'#ff8f8f',style:'open',vmax:26,...wpPath(pts)});}
+  // 2. the Tornado: a closed tube that spins round its own pole four times
+  {const pc={x:T.x-10.4,z:T.z+4},R0=4.2,turns=4;T.pole=pc;const pts=[];const sx=T.x-5.2,sz=T.z+2;pts.push([sx,top+.2,sz]);pts.push([sx-.8,top+.1,sz+.5]);
+    const a0=Math.atan2(sz+1.2-pc.z,sx-1.6-pc.x),n=Math.round(turns*2*Math.PI*R0/.45);for(let k=0;k<=n;k++){const t=k/n,a=a0+t*turns*2*Math.PI;pts.push([pc.x+Math.cos(a)*R0,top-.6-(top-gy-3.6)*t,pc.z+Math.sin(a)*R0]);}
+    const e=pts[pts.length-1];const ex=WP.land.x0+3.2,ez=WP.land.z0+7;for(let k=1;k<=30;k++){const t=k/30;pts.push([e[0]+(ex-e[0])*t,e[1]+((wl+.05)-e[1])*Math.min(1,t*1.15),e[2]+(ez-e[2])*t]);}
+    out.push({id:'tornado',name:'The Tornado',col:'#2f8fff',col2:'#8fd2ff',style:'tube',vmax:16,...wpPath(pts)});}
+  // 3. the Rainbow Ribbon: a long family slide, once round over the park and into the wave pool
+  {const cx=T.x-2,cz=T.z-16,R1=11;const C=[];C.push([T.x-2,T.z-5.4]);for(let k=0;k<=14;k++){const a=Math.PI/2+k/14*2.2*Math.PI;C.push([cx+Math.cos(a)*R1,cz+Math.sin(a)*R1]);}
+    C.push([249,393.2]);C.push([243.2,396.5]);C.push([240.6,404]);C.push([240,412.5]);C.push([239.6,419.5]);
+    const pts=wpSpline(C,top+.2,wl+.05,u=>u<.92?u/.92:1);for(let i=pts.length-1;i>=0&&pts[i][1]<=wl+.06;i--)pts[i][1]=wl+.05;
+    out.push({id:'ribbon',name:'The Rainbow Ribbon',col:'#ff5fa8',col2:'#ffd0e8',style:'rainbow',vmax:14,...wpPath(pts)});}
+  // 4. the Racer: four lanes side by side, with two bumps, into the racer pool
+  {const R=WP.rc,rt=gy+R.top;for(let l=0;l<4;l++){const x=R.x0+1.7+l*3.2;const pts=[];for(let z=R.z0+4;z<=R.pool.z1-3;z+=.45){const u=clamp((z-(R.z0+4))/(R.zEnd-(R.z0+4)),0,1);
+      let y=rt-(rt-(wl+.05))*(u<1?(u*u*(3-2*u)*.6+u*.4):1)+Math.sin(u*Math.PI*3)*1.1*(1-u)*u*2;if(z>R.zEnd)y=wl+.05;pts.push([x,Math.max(wl+.05,y),z]);}
+    out.push({id:'racer'+l,lane:l,name:'The Racer',col:WPC[[0,2,4,5][l]],col2:'#ffffff',style:'mat',vmax:15,...wpPath(pts)});}}
+  // 5. the duck slide: from the duck's head, down its front into the wave pool
+  {const D=WP.duck;const prof=[[-3.4,10.7],[-2,10.6],[-.5,10],[.8,8.7],[1.8,7.1],[3,6.2],[4.5,5.8],[6,5.1],[7.5,3.7],[9,1.7],[10.5,.05]];const pts=[];for(let k=0;k<prof.length-1;k++){const [a,ya]=prof[k],[b,yb]=prof[k+1];for(let q=0;q<4;q++){const t=q/4;pts.push([D.x,wl+ya+(yb-ya)*t,D.z+a+(b-a)*t]);}}pts.push([D.x,wl+.05,D.z+10.5]);
+    out.push({id:'duck',name:'The Duck Slide',col:'#ffcf3a',col2:'#fff3a0',style:'open',vmax:13,...wpPath(pts)});}
+  WP.sl=out;WP.slBy={};for(const s of out)WP.slBy[s.id]=s;}
+// ---------- building the island (static parts, baked into the world) ----------
+function wpBuild(){if(!WP.ok)return;const gy=WP.y,T=WP.tw,top=gy+T.top,wl=gy-.3,R=WP.rv,rw=R.w;
+  const box=(x,y,z,w,h,d,c,mat,e)=>sbox(x,y,z,w,h,d,c,mat||1,e);
+  // the river: two blues, a white edge on both sides, and bridges you can walk over (swim and float under them)
+  const wlR=gy-.35;const rseg=[[R.x0,R.z0,R.x1-R.x0,rw],[R.x0,R.z1-rw,R.x1-R.x0,rw],[R.x0,R.z0+rw,rw,R.z1-R.z0-2*rw],[R.x1-rw,R.z0+rw,rw,R.z1-R.z0-2*rw]];
+  for(const [x,z,w,d] of rseg){box(x,wlR-.3,z,w,.3,d,'#46c0ee',8,.16);}
+  for(const [x,z,w,d] of [[R.x0-.5,R.z0-.5,R.x1-R.x0+1,.5],[R.x0-.5,R.z1,R.x1-R.x0+1,.5],[R.x0-.5,R.z0,.5,R.z1-R.z0],[R.x1,R.z0,.5,R.z1-R.z0],
+    [R.x0+rw,R.z0+rw,R.x1-R.x0-2*rw,.4],[R.x0+rw,R.z1-rw-.4,R.x1-R.x0-2*rw,.4],[R.x0+rw,R.z0+rw,.4,R.z1-R.z0-2*rw],[R.x1-rw-.4,R.z0+rw,.4,R.z1-R.z0-2*rw]])box(x,gy-.02,z,w,.22,d,'#ffffff',1);
+  WP.bridges=[];const bridge=(x0,z0,x1,z1,alongX)=>{const deck=gy+1.75;WP.bridges.push({x0,z0,x1,z1});
+    for(let z=Math.floor(z0);z<Math.ceil(z1);z++)for(let x=Math.floor(x0);x<Math.ceil(x1);x++){if(!inMap(x,z))continue;const i=cid(x,z);gapSet(x,z,[[H[i]-20,H[i]],[deck-.3,deck]]);}
+    box(x0,deck-.3,z0,x1-x0,.3,z1-z0,'#c98a4a',6);for(const s of [0,1]){if(alongX)box(x0,deck,s?z1-.2:z0,x1-x0,.9,.2,'#ffffff',1);else box(s?x1-.2:x0,deck,z0,.2,.9,z1-z0,'#ffffff',1);}
+    // ramps up from both banks
+    for(let k=1;k<=3;k++){const h=gy+(4-k)*.45;if(alongX){box(x0-k,gy,z0,1,h-gy,z1-z0,'#e0b07a',6);solid(x0-k,z0,x0-k+1,z1,h);box(x1+k-1,gy,z0,1,h-gy,z1-z0,'#e0b07a',6);solid(x1+k-1,z0,x1+k,z1,h);}
+      else{box(x0,gy,z0-k,x1-x0,h-gy,1,'#e0b07a',6);solid(x0,z0-k,x1,z0-k+1,h);box(x0,gy,z1+k-1,x1-x0,h-gy,1,'#e0b07a',6);solid(x0,z1+k-1,x1,z1+k,h);}}};
+  bridge(WP.gate.x-4,R.z0-.5,WP.gate.x+4,R.z0+rw+.5,false);bridge(R.x0-.5,412,R.x0+rw+.5,418,true);bridge(R.x1-rw-.5,412,R.x1+.5,418,true);bridge(262,R.z1-rw-.5,268,R.z1+.5,false);
+  // the entrance: a big wavy arch with the park's name
+  {const E=WP.gate;for(const s of [-1,1]){box(E.x+s*7-.8,gy,E.z-.8,1.6,9,1.6,'#2f8fff',1);solid(E.x+s*7-.8,E.z-.8,E.x+s*7+.8,E.z+.8,gy+9);for(let k=0;k<3;k++)sput('sph',mat4At(E.x+s*7,gy+9.6+k*1.1,E.z),0,0,0,1.5-k*.35,1.1,1.5-k*.35,WPC[(k+(s>0?3:0))%6],8,.2);}
+    box(E.x-7.8,gy+7,E.z-.6,15.6,2,1.2,'#ffffff',1);for(let k=0;k<12;k++){const m=mat4At(E.x-6.9+k*1.25,gy+9.1,E.z);sput('sph',m,0,0,0,1.2,1.1,1.2,k%2?'#46c0ee':'#8fe0ff',8,.15);}
+    for(let k=0;k<6;k++)box(E.x-6.4+k*2.2,gy+7.3,E.z+.62,1.8,1.4,.08,WPC[k],1,.3);}
+  // the plaza: an ice cream stand, a towel hut, benches, sun beds and umbrellas, palms
+  {const P=WP.plaza;const m=mat4At(P.x,gy,P.z);sput('cyl',m,0,.3,0,5.4,.6,5.4,'#e8f7ff',1);sput('cyl',m,0,.56,0,4.7,.14,4.7,'#46b0ff',8,.15);sput('sph',m,0,1.6,0,1.3,1.6,1.3,'#ffcf3a',3,.3);solid(P.x-2.4,P.z-2.4,P.x+2.4,P.z+2.4,gy+.6);
+    // ice cream stand
+    const ix=P.x-7,iz=P.z+1;box(ix-1.5,gy,iz-1.2,3,2.2,2.4,'#ff9ec0',1);solid(ix-1.5,iz-1.2,ix+1.5,iz+1.2,gy+2.2);const im=mat4At(ix,gy+2.2,iz);sput('cyl',im,0,.4,0,3.6,.2,3,'#ffffff',1);for(let k=0;k<6;k++)sput('box',im,-1.5+k*.6,.65,0,.6,.3,3.1,k%2?'#ff5d73':'#ffffff',1);
+    sput('cone',mat4At(ix,gy+3.2,iz),0,.6,0,.9,1.4,.9,'#e0a860',1);sput('sph',mat4At(ix,gy+4.5,iz),0,0,0,1.2,1,1.2,'#ffb3d1',1);
+    // towel hut
+    const tx=P.x+7.5,tz=P.z-1;box(tx-1.6,gy,tz-1.4,3.2,2.4,2.8,'#46e6b0',1);solid(tx-1.6,tz-1.4,tx+1.6,tz+1.4,gy+2.4);sput('wedge',mat4At(tx,gy+2.4,tz),0,.4,0,3.6,.8,3.2,'#ffcf3a',1);
+    for(let k=0;k<3;k++)box(tx-1.2+k*.9,gy+.7,tz+1.42,.7,1.2,.06,WPC[k*2],1);}
+  // sun beds and umbrellas along the wave pool beach, and palms all round
+  {const W=WP.wave;for(let k=0;k<8;k++){const x=W.x0+2+k*4.1,z=W.z0-2.6;const m=mat4At(x,gy,z);sput('box',m,0,.18,0,.9,.3,2,WPC[k%6],1);if(k%2===0)beachUmbrella(x+1.6,z-.6);}}
+  const palms=[[218.5,376.5],[244,376.5],[252.5,384],[256.5,394.5],[218.5,443.5],[293.5,443.5],[293.5,376.5],[283,375.5],[253.6,401.5],[262,395]];for(const [x,z] of palms)if(typeof palm==='function')palm(x,z);
+  // the wave pool: edges, the wave machine at the deep end, the lifeguard chair
+  {const W=WP.wave;for(const [x,z,w,d] of [[W.x0-.6,W.z0,.6,W.z1-W.z0],[W.x1,W.z0,.6,W.z1-W.z0],[W.x0-.6,W.z1,W.x1-W.x0+1.2,.6]])box(x,gy-.05,z,w,.25,d,'#ffffff',1);
+    box(W.x0,wl-.32,W.beach,W.x1-W.x0,.3,W.z1-W.beach,'#2fa8e8',8,.16);box(W.x0,wl-.32,W.z0+3,W.x1-W.x0,.3,W.beach-W.z0-3,'#7fd8f6',8,.2);
+    box(W.x0,gy,W.z1+.6,W.x1-W.x0,2.6,1.4,'#2f6bff',1);solid(W.x0,W.z1+.6,W.x1,W.z1+2,gy+2.6);for(let k=0;k<8;k++)box(W.x0+1+k*4.2,gy+.9,W.z1+.55,2.4,.9,.08,'#ffffff',1,.2);
+    const lx=W.x1+1.6,lz=W.z0+12;for(const [a,b] of [[-.6,-.6],[.6,-.6],[-.6,.6],[.6,.6]])box(lx+a-.08,gy,lz+b-.08,.16,2.6,.16,'#ffffff',1);box(lx-.8,gy+2.6,lz-.8,1.6,.2,1.6,'#e8343f',1);box(lx-.7,gy+2.8,lz-.7,1.4,1.1,.12,'#e8343f',1);solid(lx-.8,lz-.8,lx+.8,lz+.8,gy+2.8);}
+  // the giant rubber duck in the wave pool (you can slide off its back)
+  {const D=WP.duck;const m=mat4At(D.x,wl,D.z);sput('sph',m,0,1.6,1.2,6.2,4.2,7.6,'#ffd21f',8,.12);sput('sph',m,0,3.9,6.2,2.6,3.2,2.2,'#ffd21f',8,.12);// body and tail
+    sput('sph',m,0,7.6,-2.6,3.4,3.3,3.3,'#ffd21f',8,.12);sput('sph',m,0,6.9,-5.8,1.7,.75,1.4,'#ff8a1f',8,.15);// head and beak
+    for(const s of [-1,1]){sput('sph',m,s*1.6,8.5,-4.9,.75,.85,.4,'#ffffff',1);sput('sph',m,s*1.62,8.5,-5.2,.4,.45,.2,'#23232f',1);sput('sph',m,s*5.6,2.6,1.6,1.3,2.2,3.6,'#ffc400',8,.1);}
+    solid(D.x-4.6,D.z-2.4,D.x+4.6,D.z+6,wl+4.4);solid(D.x-2.2,D.z-5,D.x+2.2,D.z-.6,wl+10.4);}
+  // the Humongous Tower: 45 m of stripes, a lift pad at its foot and a big platform on top
+  {const hw=T.hw;for(let k=0;k<15;k++){box(T.x-hw,gy+k*3,T.z-hw,hw*2,3,hw*2,WPC[k%6],1);box(T.x-hw-.1,gy+k*3+2.6,T.z-hw-.1,hw*2+.2,.4,hw*2+.2,'#ffffff',1);}
+    solid(T.x-hw,T.z-hw,T.x+hw,T.z+hw,top);box(T.x-5,top,T.z-5,10,.4,10,'#ffffff',1);solid(T.x-5,T.z-5,T.x+5,T.z+5,top+.4);
+    for(const [a,b,c,d] of [[-5,-5,1.8,.2],[-.8,-5,5.8,.2],[-5,4.8,3.8,.2],[1.2,4.8,3.8,.2],[-5,-5,.2,5.8],[-5,3.2,.2,1.8],[4.8,-5,.2,10]])box(T.x+a,top+.4,T.z+b,c,1.1,d,'#ffcf3a',1);
+    // a giant bucket on top (it is just for show) and a flag
+    {const m=mat4At(T.x+3,top+.4,T.z-3);sput('cyl',m,0,1.5,0,2.6,3,2.6,'#ff5d73',1);sput('cyl',m,0,3.05,0,2.8,.2,2.8,'#ffffff',1);}
+    box(T.x-3.6,top+.4,T.z-3.6,.25,7,.25,'#ffffff',1);box(T.x-3.35,top+5.4,T.z-3.6,3.2,1.6,.08,'#2f8fff',1);
+    WP.lift={x:T.x,z:T.z-hw-1.4,y:gy};WP.topSpot={x:T.x,z:T.z,y:top+.4};box(T.x-1.4,gy,T.z-hw-2.8,2.8,.15,2.8,'#ffcf3a',1);
+    for(let k=0;k<12;k++)box(T.x-.9,gy+1+k*3.6,T.z-hw-.12,1.8,1.8,.12,'#cfe8ff',1,.4);}
+  // the Racer: a tall platform with four start gates and a big scoreboard
+  {const Rc=WP.rc,rt=gy+Rc.top;box(Rc.x0,gy,Rc.z0,Rc.x1-Rc.x0,Rc.top,4,'#46c0ee',1);solid(Rc.x0,Rc.z0,Rc.x1,Rc.z0+4,rt);box(Rc.x0-.2,rt,Rc.z0-.2,Rc.x1-Rc.x0+.4,.3,4.4,'#ffffff',1);
+    for(let k=0;k<5;k++)box(Rc.x0+k*3.2+.1,rt+.3,Rc.z0+3.4,.25,1.2,.25,'#ffcf3a',1);box(Rc.x0,rt+.3,Rc.z0,Rc.x1-Rc.x0,1,.2,'#ffcf3a',1);
+    for(let k=0;k<5;k++)box(Rc.x0+.3,gy+1.5+k*3,Rc.z0-.12,Rc.x1-Rc.x0-.6,1.4,.12,WPC[k],1);WP.rcPad={x:(Rc.x0+Rc.x1)/2,z:Rc.z0-1.6,y:gy};WP.rcTop={x:(Rc.x0+Rc.x1)/2,z:Rc.z0+2,y:rt+.3};
+    box((Rc.x0+Rc.x1)/2-1.4,gy,Rc.z0-3,2.8,.15,2.8,'#ffcf3a',1);
+    const sb=mat4At(Rc.x1+.6,gy,Rc.pool.z0-2);sput('box',sb,0,3,0,.3,6,.3,'#ffffff',1);box(Rc.x1-.5,gy+5,Rc.pool.z0-2.6,.2,2.4,4,'#23232f',1);}
+  // the pirate ship in the splash lagoon: walk up the plank, pull the cannons, and the big bucket on the mast tips over
+  {const S=WP.ship,dy=gy+2.1;const L=19,Wd=6.4;box(S.x-L/2,gy-.9,S.z-Wd/2,L,3,Wd,'#8a5a3a',6);box(S.x-L/2-.1,dy,S.z-Wd/2-.1,L+.2,.25,Wd+.2,'#c98a4a',6);solid(S.x-L/2,S.z-Wd/2,S.x+L/2,S.z+Wd/2,dy+.25);
+    box(S.x+L/2,gy-.9,S.z-Wd/2+.8,2.6,3.2,Wd-1.6,'#8a5a3a',6);solid(S.x+L/2,S.z-Wd/2+.8,S.x+L/2+2.6,S.z+Wd/2-.8,dy+.4);// the bow
+    box(S.x-L/2,dy+.25,S.z-Wd/2,4.2,2.4,Wd,'#a86c3c',6);solid(S.x-L/2,S.z-Wd/2,S.x-L/2+4.2,S.z+Wd/2,dy+2.65);box(S.x-L/2-.1,dy+2.65,S.z-Wd/2-.1,4.4,.25,Wd+.2,'#ffcf3a',1);// the cabin
+    for(const s of [-1,1])box(S.x-L/2+4.2,dy+.25,S.z+s*(Wd/2-.1)-.1,L-4.2,.9,.2,'#5a3a24',6);
+    for(const [mx,h] of [[S.x+1,10.5],[S.x+6.5,7]]){box(mx-.25,dy,S.z-.25,.5,h,.5,'#5a3a24',6);solid(mx-.25,S.z-.25,mx+.25,S.z+.25,dy+h);box(mx-.08,dy+h*.55,S.z-3,.16,h*.4,6,'#ffffff',1,.1);}
+    box(S.x+1-1.2,dy+10.2,S.z-1.2,2.4,.3,2.4,'#5a3a24',6);WP.bucket={x:S.x+1,z:S.z,y:dy+10.5,fx:S.x+1,fz:S.z+3.2};
+    for(let k=0;k<4;k++){const ry=gy+.2+k*.55,z0=S.z+Wd/2+(3-k)*.9;box(S.x-3,gy-.95,z0,3,ry-(gy-.95),.9,'#a86c3c',6);solid(S.x-3,z0,S.x,z0+.9,ry);}// steps up to the deck
+    WP.cannons=[];for(const [cx,s] of [[S.x-2,-1],[S.x+4,-1],[S.x-2,1],[S.x+4,1]]){const cz=S.z+s*(Wd/2+.2);const m=mat4At(cx,dy+.25,cz);sput('cyl',m,0,.35,0,.7,.7,.7,'#3a3f4d',3);WP.cannons.push({x:cx,z:cz,y:dy+.25,dz:s});}
+    {const fm=mat4At(S.x+1,dy+10.8,S.z);sput('box',fm,0,1.2,0,.08,2,2.8,'#23232f',1);}}
+  // the slides themselves, with poles down to the ground
+  wpSlides();for(const sl of WP.sl){const P=sl.P;for(let i=0;i<P.length-1;i++){const a=P[i],b=P[i+1];const f={x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2,F:a.F,U:a.U,R:a.R};const m=frameM(f);const L2=Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z)+.08;
+      if(sl.style==='tube'){// a deep half-pipe with a hoop every few metres (you can see who is inside)
+        sput('box',m,0,-.12,0,1.3,.14,L2,sl.col2,8,.08);for(const sd of [-1,1]){sput('box',m,sd*.78,.3,0,.18,.9,L2,sl.col,8);sput('box',m,sd*.55,-.02,0,.4,.2,L2,sl.col,8);}if(i%5===0)for(let k=0;k<10;k++){const an=k/10*Math.PI;sput('box',m,Math.cos(an)*.95,.75+Math.sin(an)*.95,0,.36,.18,.18,'#ffffff',1);}}
+      else{const c2=sl.style==='rainbow'?WPC[Math.floor(i/6)%6]:sl.col2;sput('box',m,0,-.1,0,1.4,.14,L2,c2,8,.08);sput('box',m,-.72,.16,0,.18,.56,L2,sl.col,8);sput('box',m,.72,.16,0,.18,.56,L2,sl.col,8);
+        sput('box',m,0,-.25,0,1.62,.14,L2,sl.col,8);}
+      if(i%(sl.id==='ribbon'?14:sl.id.startsWith('racer')?10:9)===0&&sl.id!=='tornado'&&sl.id!=='duck'&&!WP.sl.some(o=>o.P.some(q=>q!==a&&Math.abs(q.x-a.x)<1.4&&Math.abs(q.z-a.z)<1.4&&q.y<a.y-1.5))){const g=hAt(a.x,a.z);const pl=poolAt(a.x,a.z);const base=pl?pl.fl:g;const hh=a.y-base-.4;if(hh>1.2){const pm=mat4At(a.x,base,a.z);sput('cyl',pm,0,hh/2,0,hh>12?.5:.34,hh,hh>12?.5:.34,'#f4f4f4',3);}}}}
+  {const pc=T.pole;const pm=mat4At(pc.x,gy,pc.z);sput('cyl',pm,0,(T.top+.5)/2,0,1.1,T.top+.5,1.1,'#ffffff',3);sput('sph',pm,0,T.top+.8,0,1.4,1.4,1.4,'#2f8fff',3);solid(pc.x-.6,pc.z-.6,pc.x+.6,pc.z+.6,gy+T.top);}
+  // the landing pool and the racer pool: edges
+  for(const Q of [WP.land,WP.rc.pool,WP.ship]){for(const [x,z,w,d] of [[Q.x0-.5,Q.z0-.5,Q.x1-Q.x0+1,.5],[Q.x0-.5,Q.z1,Q.x1-Q.x0+1,.5],[Q.x0-.5,Q.z0,.5,Q.z1-Q.z0],[Q.x1,Q.z0,.5,Q.z1-Q.z0]])box(x,gy-.05,z,w,.22,d,'#ffffff',1);
+    box(Q.x0,wl-.32,Q.z0,Q.x1-Q.x0,.3,Q.z1-Q.z0,Q===WP.ship?'#7fd8f6':'#2fa8e8',8,.16);}}
+{const _bq=buildQuests;buildQuests=function(){try{wpBuild();}catch(e){console.error('waterpark',e);noteErr('waterpark',e);}try{if(WP.ok)wpBuild2();}catch(e){console.error('waterpark2',e);noteErr('waterpark2',e);}_bq();};}
+// ---------- the moving parts: one shared clock, so every tablet sees the same waves, rings and bucket ----------
+const WPS={me:null,ridden:new Set(),waveWas:0,bucketWas:0,spray:null,race:null,splashT:0};
+function wpNow(){return typeof fpNow==='function'?fpNow():Date.now()/1000;}
+// the wave pool: a 50-second cycle, waves for 18 seconds of it (a bell rings first)
+const WAVE={per:50,on:24,len:18,A:.55,k:TAU/9,w:TAU/3.2};
+function wpWaveEnv(t){const c=((t%WAVE.per)+WAVE.per)%WAVE.per;if(c<WAVE.on||c>WAVE.on+WAVE.len)return 0;const u=(c-WAVE.on)/WAVE.len;return Math.min(1,u*5,(1-u)*5);}
+function wpWaveH(x,z,t){const W=WP.wave,e=wpWaveEnv(t);if(e<=0||x<W.x0||x>=W.x1||z<W.z0||z>=W.z1)return 0;const deep=clamp((z-W.beach)/12,0,1);return WAVE.A*e*(.35+.65*deep)*Math.sin(WAVE.k*z+WAVE.w*t);}
+// the lazy river: a loop just inside the island's edge (the middle of the channel, with round corners)
+function wpRiverPath(){if(WP.rvP)return WP.rvP;const R=WP.rv,h=R.w/2,x0=R.x0+h,x1=R.x1-h,z0=R.z0+h,z1=R.z1-h,rc=1.6;const pts=[];
+  const arc=(cx,cz,a0)=>{for(let k=0;k<=6;k++){const a=a0+k/6*Math.PI/2;pts.push([cx+Math.cos(a)*rc,cz+Math.sin(a)*rc]);}};
+  // clockwise on the map: east along the north side, south along the east side, west along the south, north along the west
+  arc(x0+rc,z0+rc,Math.PI);for(let x=x0+rc;x<=x1-rc;x+=.5)pts.push([x,z0]);arc(x1-rc,z0+rc,-Math.PI/2);for(let z=z0+rc;z<=z1-rc;z+=.5)pts.push([x1,z]);
+  arc(x1-rc,z1-rc,0);for(let x=x1-rc;x>=x0+rc;x-=.5)pts.push([x,z1]);arc(x0+rc,z1-rc,Math.PI/2);for(let z=z1-rc;z>=z0+rc;z-=.5)pts.push([x0,z]);
+  const d=[0];for(let i=1;i<pts.length;i++)d.push(d[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));const L=d[d.length-1]+Math.hypot(pts[0][0]-pts[pts.length-1][0],pts[0][1]-pts[pts.length-1][1]);
+  WP.rvP={pts,d,L};return WP.rvP;}
+function wpRiverAt(s){const P=wpRiverPath();s=((s%P.L)+P.L)%P.L;let a=0,b=P.d.length-1;while(b-a>1){const m=(a+b)>>1;if(P.d[m]<=s)a=m;else b=m;}
+  const i=a,j=(a+1)%P.pts.length,seg=(j===0?P.L:P.d[j])-P.d[i]||1,t=(s-P.d[i])/seg;const p=P.pts[i],q=P.pts[j];return {x:p[0]+(q[0]-p[0])*t,z:p[1]+(q[1]-p[1])*t,face:Math.atan2(q[0]-p[0],q[1]-p[1])};}
+function wpRiverDir(x,z){const R=WP.rv,cx=(R.x0+R.x1)/2,cz=(R.z0+R.z1)/2,hx=(R.x1-R.x0)/2,hz=(R.z1-R.z0)/2;const u=(x-cx)/hx,v=(z-cz)/hz;
+  // the long sides flow along the side; near a corner the flow turns
+  const a=Math.abs(u),b=Math.abs(v);const side=b>a?(v<0?[1,0]:[-1,0]):(u>0?[0,1]:[0,-1]);const k=clamp((Math.min(a,b)-.86)/.1,0,1);if(k<=0)return side;
+  const other=b>a?(u>0?[0,1]:[0,-1]):(v<0?[1,0]:[-1,0]);const dx=side[0]*(1-k*.5)+other[0]*k*.5,dz=side[1]*(1-k*.5)+other[1]*k*.5,l=Math.hypot(dx,dz)||1;return [dx/l,dz/l];}
+const RINGS=10,RING_V=1.5;
+function wpRing(k,t){const P=wpRiverPath();return wpRiverAt(t*RING_V+k*P.L/RINGS);}
+// the pirate bucket: fills up for 30 seconds, then tips over (everyone under it gets soaked)
+const BUCKET={per:30,tip:26.5,dump:28};
+function wpBucket(t){const c=((t%BUCKET.per)+BUCKET.per)%BUCKET.per;return {c,tilt:c<BUCKET.tip?Math.sin(c*1.3)*.03*(c/BUCKET.tip):c<BUCKET.dump?(c-BUCKET.tip)/(BUCKET.dump-BUCKET.tip)*1.9:c<BUCKET.dump+1.5?1.9:1.9*(1-Math.min(1,(c-BUCKET.dump-1.5)/1)),fill:c<BUCKET.dump?Math.min(1,c/BUCKET.tip):0,pour:c>=BUCKET.dump-.2&&c<BUCKET.dump+1.6};}
+// ---------- swimming: waves lift you and push you to the beach; the river carries you round ----------
+{const _sw=swimMe;swimMe=function(p,dt){const r=_sw.apply(this,arguments);try{const q=poolAt(p.x,p.z);if(!q||!q.wp)return r;const t=wpNow();
+  if(q.wp==='wave'){const h=wpWaveH(p.x,p.z,t);const top=q.wl-1.05+h;if(p.y<top){p.y=top;if(p.vy<0)p.vy=0;}if(wpWaveEnv(t)>.3){p.z-=1.1*dt;if(p===ME&&h>.25&&!WPS.ridden.has('waves'))wpReward('waves');}}
+  else if(q.wp==='river'){const d=wpRiverDir(p.x,p.z);p.x+=d[0]*1.5*dt;p.z+=d[1]*1.5*dt;}}catch(e){}return r;};}
+// ---------- drawing the moving parts ----------
+function drawRing(m,x,y,z,a,col,t){MS.reset();M4.tr(m,x,y,z);M4.ry(m,a);for(const s of [-1,1])for(let k=0;k<10;k++){const b=k/10*TAU;sp(m,s*.62+Math.cos(b)*.55,0,Math.sin(b)*.55,.32,.28,.32,k%2?col:'#ffffff',1,.1);}bx(m,0,.05,0,.3,.12,.5,'#ffffff',1);}
+function drawWaterPark(t){if(!WP.ok||camRealm()!=='earth')return;const cx=(WP.x0+WP.x1)/2,cz=(WP.z0+WP.z1)/2;if(Math.abs(cx-CAM.tx)>220||Math.abs(cz-CAM.tz)>220)return;OUT=DYN;const m=MS.cur;const gy=WP.y,wl=gy-.3,T=wpNow();
+  // waves: strips of moving water over the deep part of the pool, with white tops
+  const W=WP.wave,e=wpWaveEnv(T);if(e>.02&&Math.abs((W.x0+W.x1)/2-CAM.tx)<120&&Math.abs((W.z0+W.z1)/2-CAM.tz)<120){for(let z=W.beach-2;z<W.z1;z+=1.5){const h=wpWaveH((W.x0+W.x1)/2,z+.75,T);if(h<.03)continue;
+      MS.reset();M4.tr(m,(W.x0+W.x1)/2,wl+h/2-.02,z+.75);bx(m,0,0,0,W.x1-W.x0-.2,h+.04,1.5,h>WAVE.A*.5*e?'#9fe6ff':'#4cc3f0',8,.16);if(h>WAVE.A*.62*e)bx(m,0,h/2+.02,0,W.x1-W.x0-.4,.06,.5,'#ffffff',1,.5);}}
+  // the rubber rings floating round the river (and you in one of them)
+  const near=Math.abs(cx-CAM.tx)<150&&Math.abs(cz-CAM.tz)<150;if(near)for(let k=0;k<RINGS;k++){const q=wpRing(k,T);if(!inView(q.x,q.z))continue;drawRing(m,q.x,wl+.05+Math.sin(T*2+k)*.05,q.z,q.face,WPC[k%6],t);}
+  // the pirate bucket on the main mast: it fills, wobbles, tips and pours
+  {const B=WP.bucket;if(B&&inView(B.x,B.z)){const s=wpBucket(T);MS.reset();M4.tr(m,B.x,B.y,B.z);M4.rx(m,s.tilt);cy(m,0,.9,0,2.8,1.8,2.8,'#e8343f',3);cy(m,0,1.82,0,3,.16,3,'#ffcf3a',3);for(let k=0;k<4;k++){MS.push();M4.ry(m,k*Math.PI/2);bx(m,1.42,.9,0,.06,1.8,.3,'#ffcf3a',3);MS.pop();}
+      if(s.fill>0)cy(m,0,.2+s.fill*1.5,0,2.5,.08,2.5,'#46c0ee',8,.2);
+      if(s.pour){const top=B.y+1;for(let k=0;k<7;k++){MS.reset();M4.tr(m,B.fx,top-k*1.45-((T*9)%1.45),B.fz);cy(m,0,0,0,2.2-k*.08,1.5,2.2-k*.08,k%2?'#8fe0ff':'#46c0ee',8,.25);}}}}
+  // the racer: the other racers (bots) on their mats
+  const RC=WPS.race;if(RC)for(const b of RC.bots){if(b.done&&b.out)continue;const sl=WP.slBy['racer'+b.lane];const f=wpSlideAt(sl,b.i||0);OUT=MOB;const bd={x:f.x,y:f.y,z:f.z,face:Math.atan2(f.F[0],f.F[2]),anim:{wave:0,cheer:b.done?1:.6,punch:0,walk:0,amp:0},hy:0};
+    if(!b.done&&typeof slideDrawOn==='function')slideDrawOn(bd,t,slideRiderM(f,t,b.lane*1.7),(dd,tt)=>drawPerson(dd,tt,b.look));else drawPerson(bd,t,b.look);OUT=DYN;
+    MS.reset();const mm=frameM(f);m.set(mm);bx(m,0,.05,b.done?.1:-.7,.9,.08,b.done?1.5:2.4,WPC[[0,2,4,5][b.lane]],1);}
+  // the spray of the water cannons
+  OUT=DYN;}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{drawWaterPark(t);}catch(e){noteErr('waterpark draw',e);}};}
+// a point on a slide (i: index with a fraction)
+function wpSlideAt(sl,fi){const P=sl.P;const i=Math.max(0,Math.min(P.length-2,Math.floor(fi))),k=Math.min(1,fi-i),A=P[i],B2=P[i+1];const L2=(u,v)=>u+(v-u)*k;return {x:L2(A.x,B2.x),y:L2(A.y,B2.y),z:L2(A.z,B2.z),F:A.F,U:A.U,R:A.R};}
+// ---------- riding: WPS.me is the ride you are on (your normal moving pauses, like on the Fun Park rides) ----------
+const WPR={drop:{ic:'🗼',n:'The Humongous Drop'},tornado:{ic:'🌪️',n:'The Tornado'},ribbon:{ic:'🌈',n:'The Rainbow Ribbon'},racer:{ic:'🏁',n:'The Racer'},
+  duck:{ic:'🦆',n:'The Duck Slide'},tube:{ic:'🛟',n:'The Lazy River'},bucket:{ic:'🪣',n:'The Big Bucket'},waves:{ic:'🌊',n:'The Wave Pool'}};
+function wpStart(k,o){const p=ME;if(p.veh&&typeof exitVeh==='function')exitVeh(p);if(p.carry&&typeof dropCarry==='function')dropCarry(p);if(p.carryF&&typeof dropFriend==='function')dropFriend();
+  if(typeof FPS!=='undefined'&&FPS.me&&typeof fpAbort==='function')fpAbort();p.fly=false;p.vx=p.vy=p.vz=0;p.chute=false;p.dive=false;WPS.me={k,t0:wpNow(),...o};if(k==='tube')p.drive=true;G.ia=null;SFX.whoosh&&SFX.whoosh();}
+function wpStop(x,y,z,vy=0){const p=ME,R=WPS.me;WPS.me=null;p.drive=false;CAM.up=null;if(x!==undefined){p.x=x;p.y=y;p.z=z;}p.vx=p.vz=0;p.vy=vy;p.ground=vy===0;p.safe={x:p.x,y:Math.max(p.y,WP.y),z:p.z};if(R&&R.reward)wpReward(R.reward);}
+function wpAbort(){if(!WPS.me)return;WPS.me=null;ME.drive=false;if(WPS.race)WPS.race.me=null;}
+function wpReward(k){if(WPS.ridden.has(k))return;WPS.ridden.add(k);addCoins(500);SFX.coin&&SFX.coin(1000);const R=WPR[k];if(R)toast(R.ic+' '+trf('First time on {0}! +500 coins',tr(R.n)));try{stInc('wpride');}catch(e){}
+  if(WPS.ridden.size>=Object.keys(WPR).length&&!(G.trophies&&G.trophies.has('waterpark'))){(G.trophies=G.trophies||new Set()).add('waterpark');addCoins(5000);let c=null;try{c=giveReward({t:'pet',id:'ducky'});}catch(e){}
+    setTimeout(()=>{banner('🌊 '+tr('Water Park Champion!'),tr('You tried everything in the Humongous Water Park! +5000 coins, a trophy and Ducky the rubber duck'),'#46c0ee');SFX.win&&SFX.win();if(c)rewardCard(c);if(typeof fwCelebrate==='function')fwCelebrate(WP.plaza.x,WP.plaza.z,WP.y);},900);}
+  saveSoon();}
+function wpLift(S,msg){const p=ME;if(p.veh&&typeof exitVeh==='function')exitVeh(p);p.x=S.x;p.z=S.z;p.y=S.y;p.vx=p.vz=p.vy=0;p.safe={x:S.x,y:S.y,z:S.z};SFX.whoosh&&SFX.whoosh();burst(S.x,S.y+.5,S.z,['#46c0ee','#ffffff','#ffcf3a'],18,4,.14,.6);if(msg)toast(msg);}
+function wpSlide(id){const sl=WP.slBy[id];if(!sl)return;const f=sl.P[0];wpStart('sl',{id,i:0,v:id==='drop'?4:2.5,reward:id.startsWith('racer')?'racer':id});ME.x=f.x;ME.y=f.y;ME.z=f.z;
+  if(id==='drop')banner('🗼 '+tr('The Humongous Drop!'),tr('45 metres straight down. Hold on!'),'#e8343f');}
+function wpTube(k){let seat=0;for(const rp of netFriends())if(rp.wpRide&&rp.wpRide[0]==='tube'&&rp.wpRide[1]===k&&rp.wpRide[2]===0)seat=1;wpStart('tube',{ring:k,seat,reward:null});toast('🛟 '+tr('Float round the island! Jump to get out'));}
+// the Racer: you and three racers start together after a count-down; the first one into the pool wins
+const RACERS=[{shirt:'#ff5d73',pants:'#2b2d42',skin:'#f2c29b',hair:'#6b4226',hs:1},{shirt:'#7ed957',pants:'#2b2d42',skin:'#c68a5a',hair:'#221b25',hs:2},{shirt:'#b28dff',pants:'#2b2d42',skin:'#8d5a3b',hair:'#221b25',hs:0},{shirt:'#ffcf3a',pants:'#2b2d42',skin:'#e0a67a',hair:'#c8462d',hs:3}];
+// friends race too: whoever presses Race starts the count-down for everybody standing at the top; each racer takes a free
+// lane, and racing robots fill the lanes nobody is in
+function wpRace(t0in){if(WPS.race&&!WPS.race.over)return;const used=new Set();for(const rp of netFriends()){const r=rp.wpRide;if(r&&r[0]==='sl'&&typeof r[1]==='string'&&r[1].startsWith('racer'))used.add(+r[1].slice(5));}
+  let lane=[1,2,0,3].find(l=>!used.has(l));if(lane===undefined)lane=1;const free=[0,1,2,3].filter(l=>l!==lane&&!used.has(l));const bots=free.map((l,j)=>({lane:l,i:0,v:2.5,k:.9+Math.random()*.16,look:RACERS[(j+1)%4],done:0}));
+  const t0=t0in||wpNow()+3.2;if(!t0in)netEvent('wp',['race',+t0.toFixed(2)]);WPS.race={t0,bots,me:lane,place:0,over:false,cd:4};const sl=WP.slBy['racer'+lane];const f=sl.P[0];wpStart('sl',{id:'racer'+lane,i:0,v:2.5,reward:'racer',race:1,wait:1});ME.x=f.x;ME.y=f.y;ME.z=f.z;
+  banner('🏁 '+tr('The Racer!'),tr('Ready... steady...'),'#46c0ee');}
+function wpSlideStep(R,sl,dt,k){const P=sl.P;let i=Math.min(P.length-2,Math.floor(R.i));const a=P[i],b=P[i+1];const seg=Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z)||.01;const slope=(a.y-b.y)/seg;
+  R.v=Math.max(2.5,Math.min((sl.vmax||14)*(k||1),R.v+(9.8*slope*(k||1)-.5-R.v*.035)*dt));let adv=R.v*dt,f=R.i%1;
+  while(adv>0&&i<P.length-1){const A2=P[i],B2=P[i+1];const L=Math.hypot(B2.x-A2.x,B2.y-A2.y,B2.z-A2.z)||.01;const left=(1-f)*L;if(adv<left){f+=adv/L;adv=0;}else{adv-=left;i++;f=0;}}R.i=i+f;return i>=P.length-1;}
+function wpRideUpdate(dt,inp){const p=ME,R=WPS.me,A=p.anim;p.vx=p.vz=p.vy=0;p.ground=true;G.ia=null;A.cheer=Math.max(0,(A.cheer||0)-dt);const wl=WP.y-.3;
+  if(R.k==='sl'){const sl=WP.slBy[R.id];if(!sl){wpAbort();return;}
+    if(R.wait){const RC=WPS.race;const left=RC?RC.t0-wpNow():0;if(left>0){const n=Math.ceil(left);if(n!==RC.cd){RC.cd=n;banner('🏁 '+n,tr('Ready... steady...'),'#46c0ee');SFX.click&&SFX.click();}animSprings(p,dt);return;}R.wait=0;banner('🏁 '+tr('GO!'),'','#7ed957');SFX.whoosh&&SFX.whoosh();}
+    const end=wpSlideStep(R,sl,dt,1);if(end){const e=sl.P[sl.P.length-1];SFX.splash&&SFX.splash();burst(e.x,wl,e.z,['#bfe9ff','#ffffff','#46b0ff'],R.id==='drop'?70:40,R.id==='drop'?9:7,.2,.9);shake(R.id==='drop'?.45:.2);
+      if(R.race&&WPS.race&&!WPS.race.over){const RC=WPS.race;RC.place=1+RC.bots.filter(b=>b.done).length;wpRaceEnd(RC.place);}
+      wpStop(e.x+e.F[0]*1.4,wl-.6,e.z+e.F[2]*1.4,1);return;}
+    const f=wpSlideAt(sl,R.i);p.x=f.x;p.y=f.y+.05;p.z=f.z;p.face=Math.atan2(f.F[0],f.F[2]);R.f=f;A.cheer=.6;
+    if(Math.random()<.6)PARTS.push({x:p.x+Rr(-.4,.4),y:p.y+.1,z:p.z+Rr(-.4,.4),vx:-f.F[0]*2+Rr(-1,1),vy:Rr(.5,2),vz:-f.F[2]*2+Rr(-1,1),life:.5,s:.12,c:hex(Math.random()<.5?'#bfe9ff':'#ffffff'),e:.3,g:7,k:'deb',rot:0});
+    if(R.id==='drop'&&f.F[1]<-.8&&!R.wh){R.wh=1;SFX.whoosh&&SFX.whoosh();}animSprings(p,dt);return;}
+  if(R.k==='tube'){const q=wpRing(R.ring,wpNow());const off=R.seat?.62:-.62;p.x=q.x+Math.cos(q.face)*off;p.z=q.z-Math.sin(q.face)*off;p.y=wl+.15+Math.sin(wpNow()*2+R.ring)*.05;p.face=q.face;
+    if(!R.got&&wpNow()-R.t0>15){R.got=1;wpReward('tube');}if(inp.jumpP){wpStop(p.x,wl-.6,p.z,5);return;}animSprings(p,dt);return;}
+  if(R.k==='wv'){wvRide(R,dt,inp);return;}if(R.k==='bb'){wpBbRide(R,dt,inp);return;}
+  wpAbort();}
+function wpRaceEnd(place){const RC=WPS.race;if(!RC)return;RC.over=true;const prize=[0,1000,600,400,300][place]||300;addCoins(prize);
+  banner(place===1?'🥇 '+tr('You won the race!'):place===2?'🥈 '+tr('Second place!'):place===3?'🥉 '+tr('Third place!'):'🏁 '+tr('Fourth place!'),trf('+{0} coins',fmt(prize)),place===1?'#ffcf3a':'#46c0ee');if(place===1)SFX.win&&SFX.win();}
+function wpRaceTick(dt){const RC=WPS.race;if(!RC)return;const T=wpNow();if(T<RC.t0)return;let all=true;
+  for(const b of RC.bots){if(b.done){b.outT=(b.outT||0)+dt;if(b.outT>3)b.out=1;continue;}all=false;const sl=WP.slBy['racer'+b.lane];if(wpSlideStep(b,sl,dt,b.k)){b.done=1;b.order=1+RC.bots.filter(q=>q.done&&q!==b).length;}}
+  if(all&&(!WPS.me||!WPS.me.race)){RC.endT=(RC.endT||0)+dt;if(RC.endT>4)WPS.race=null;}if(T-RC.t0>60)WPS.race=null;}
+{const _um=updateMe;updateMe=function(dt,inp){if(!WPS.me)return _um(dt,inp);try{wpRideUpdate(dt,inp);}catch(e){noteErr('wpride',e);wpAbort();}};}
+// ---------- every frame: the bucket splash, the waves bell, the racers, the water cannon ----------
+function wpTick(dt){if(!WP.ok||!ME)return;const T=wpNow();const near=d2(ME.x,ME.z,(WP.x0+WP.x1)/2,(WP.z0+WP.z1)/2)<110;if(!near&&!WPS.race)return;
+  const e=wpWaveEnv(T);if(e>0&&WPS.waveWas<=0&&d2(ME.x,ME.z,(WP.wave.x0+WP.wave.x1)/2,(WP.wave.z0+WP.wave.z1)/2)<45){toast('🌊 '+tr('Here come the waves!'));try{SFX.bell?SFX.bell():SFX.click&&SFX.click();}catch(err){}}WPS.waveWas=e;
+  const B=WP.bucket,s=wpBucket(T);if(B&&s.c>=BUCKET.dump&&WPS.bucketWas<BUCKET.dump){burst(B.fx,WP.y+2.4,B.fz,['#bfe9ff','#ffffff','#46b0ff'],50,7,.22,1);if(d2(ME.x,ME.z,B.fx,B.fz)<9)try{SFX.splash&&SFX.splash();}catch(err){}
+    if(d2(ME.x,ME.z,B.fx,B.fz)<3.2&&ME.y<B.y){banner('💦 '+tr('SPLASH!'),tr('The big bucket got you!'),'#46c0ee');ME.anim.cheer=1.2;wpReward('bucket');}
+    for(const rp of netFriends())if(d2(rp.x,rp.z,B.fx,B.fz)<3.2)floatText(rp.x,rp.y+2.2,rp.z,tr('Splash!'),'blue');}WPS.bucketWas=s.c;
+  wpRaceTick(dt);
+  const S=WPS.spray;if(S){S.t+=dt;const c=S.c;const a=S.dir;for(let k=0;k<3;k++){const sp2=Rr(9,12);PARTS.push({x:c.x+Math.sin(a)*.8,y:c.y+.6,z:c.z+Math.cos(a)*.8,vx:Math.sin(a)*sp2+Rr(-.6,.6),vy:Rr(3.5,5),vz:Math.cos(a)*sp2+Rr(-.6,.6),life:1.1,s:.16,c:hex(Math.random()<.5?'#8fe0ff':'#ffffff'),e:.3,g:9,k:'deb',rot:0});}
+    if(!S.hit){for(const rp of netFriends()){const dx=rp.x-c.x,dz=rp.z-c.z;const al=dx*Math.sin(a)+dz*Math.cos(a),sd=Math.abs(dx*Math.cos(a)-dz*Math.sin(a));if(al>2&&al<12&&sd<1.6){S.hit=1;floatText(rp.x,rp.y+2.2,rp.z,tr('Splash!'),'blue');}}}if(S.t>1.6)WPS.spray=null;}}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{wpTick(dt);}catch(e){noteErr('waterpark',e);}};}
+function wpCannon(c){if(WPS.spray)return;WPS.spray={c,t:0,dir:c.dz>0?0:Math.PI,hit:0};SFX.whoosh&&SFX.whoosh();netEvent('wp',['can',WP.cannons.indexOf(c)]);}
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='wp'){try{if(a[0]==='can'){const c=WP.cannons[num(a[1],-1)];if(c&&!WPS.spray)WPS.spray={c,t:0,dir:c.dz>0?0:Math.PI,hit:1};}}catch(e){}return;}return _ae(type,a,rp);};}
+// ---------- ✋ Use next to things ----------
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(!WP.ok||WPS.me||p.veh)return;if(p.x<WP.x0-24||p.x>WP.x1+8||p.z<WP.z0-8||p.z>WP.z1+14)return;
+  const T=WP.tw,gy=WP.y,top=gy+T.top,wl=gy-.3;
+  if(WP.lift)cand({x:WP.lift.x,z:WP.lift.z,y:gy},'wplift','🗼 '+tr('Up the Humongous Tower!'),2.6,7,{fn:()=>wpLift(WP.topSpot,'🗼 '+tr('45 metres up! Pick a slide'))});
+  if(p.y>top-1&&d2(p.x,p.z,T.x,T.z)<8){for(const id of ['drop','tornado','ribbon']){const sl=WP.slBy[id];if(!sl)continue;const f=sl.P[0];const R=WPR[id];cand({x:f.x,z:f.z,y:top+.4},'wpsl',R.ic+' '+trf('Slide: {0}',tr(R.n)),3.6,7,{fn:()=>wpSlide(id)});}
+    cand({x:T.x,z:T.z,y:top+.4},'wpdown','⬇️ '+tr('Take the lift down'),1.8,6,{fn:()=>wpLift({x:WP.lift.x,z:WP.lift.z-1,y:gy},null)});}
+  if(WP.rcPad)cand({x:WP.rcPad.x,z:WP.rcPad.z,y:gy},'wprcup','🏁 '+tr('Up to the Racer'),2.6,7,{fn:()=>wpLift(WP.rcTop,'🏁 '+tr('Four slides side by side: race!'))});
+  if(WP.rcTop&&p.y>WP.rcTop.y-1&&d2(p.x,p.z,WP.rcTop.x,WP.rcTop.z)<8){cand({x:p.x,z:p.z,y:WP.rcTop.y},'wprace','🏁 '+tr('Race!'),3,8,{fn:()=>wpRace()});cand({x:WP.rcTop.x,z:WP.rcTop.z-1.5,y:WP.rcTop.y},'wpdown2','⬇️ '+tr('Take the lift down'),1.6,5,{fn:()=>wpLift({x:WP.rcPad.x,z:WP.rcPad.z-1,y:gy},null)});}
+  const D=WP.duck;if(d2(p.x,p.z,D.x,D.z)<10.5&&p.y<wl+3)cand({x:p.x,z:p.z,y:p.y},'wpduck','🦆 '+tr('Slide down the giant duck!'),11,5,{fn:()=>wpSlide('duck')});
+  const T0=wpNow();for(let k=0;k<RINGS;k++){const q=wpRing(k,T0);if(Math.abs(q.x-p.x)>3||Math.abs(q.z-p.z)>3)continue;if(p.y>gy+1)continue;cand({x:q.x,z:q.z,y:p.y},'wptube','🛟 '+tr('Hop in the ring!'),2.6,7,{fn:()=>wpTube(k)});}
+  for(const c of WP.cannons||[])cand({x:c.x,z:c.z,y:c.y},'wpcan','💦 '+tr('Fire the water cannon!'),2,6,{fn:()=>wpCannon(c)});};}
+// ---------- the camera on a slide: behind you and a little above (straight down the Humongous Drop!) ----------
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);const R=WPS.me;if(LOOK.nf0===undefined)LOOK.nf0=LOOK.nf;if(!R){if(WPS.camOn){WPS.camOn=0;LOOK.nf=LOOK.nf0;}return;}
+  if(R.k==='sl'&&R.f){const sl=WP.slBy[R.id];const back=wpSlideAt(sl,Math.max(0,R.i-(R.id==='drop'?12:16)));const f=R.f;WPS.camOn=1;LOOK.nf=0;
+    CAM.eye=[back.x,back.y+(R.id==='drop'?2.2:2.8),back.z];CAM.tx=f.x+f.F[0]*3;CAM.ty=f.y+.6+f.F[1]*3;CAM.tz=f.z+f.F[2]*3;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=null;}};}
+// ---------- safe riding: anything that moves you away ends the ride, and nothing hurts you while you ride ----------
+{const _tp=teleport;teleport=function(){wpAbort();return _tp.apply(this,arguments);};}
+{const _gi=goInside;goInside=function(){wpAbort();return _gi.apply(this,arguments);};}
+{const _hm=hurtMe;hurtMe=function(){if(WPS.me)return;return _hm.apply(this,arguments);};}
+{const _um=updateMe;updateMe=function(dt,inp){const R=WPS.me;if(R&&R.lx!==undefined&&(Math.abs(ME.x-R.lx)>8||Math.abs(ME.z-R.lz)>8||(ME.realm&&ME.realm!=='earth')))wpAbort();const r=_um(dt,inp);if(WPS.me){WPS.me.lx=ME.x;WPS.me.lz=ME.z;}return r;};}
+// friends see you sit in your ring (and the racers start together)
+{const _ne=typeof netExtra==='function'?netExtra:null;netExtra=function(o){if(_ne)_ne(o);const R=WPS.me;if(R)o.wpr=wpPresence(R);};}
+{const _orp=onRemotePresence;onRemotePresence=function(peer){const r=_orp.apply(this,arguments);try{const o=peer&&peer.presence;if(!o||o.v!==3)return r;const id=typeof o.id==='string'&&o.id?o.id.slice(0,16):'p'+String(peer.peer).slice(0,20);
+  const rp=NET.peers[id];if(!rp)return r;rp.wpRide=wpParseRide(o.wpr);if(rp.wpRide&&(rp.wpRide[0]==='tube'||rp.wpRide[0]==='wv'||rp.wpRide[0]==='bb'))rp.drive=true;}catch(e){}return r;};}
+// ---------- signs ----------
+{const _ul=updateLabels;updateLabels=function(dt){_ul(dt);try{if(!WP.ok||G.mode==='title'||camRealm()!=='earth')return;const cx=(WP.x0+WP.x1)/2,cz=(WP.z0+WP.z1)/2;if(Math.abs(cx-CAM.tx)>170||Math.abs(cz-CAM.tz)>170)return;const gy=WP.y;
+  label('wp_gate',WP.gate.x,gy+12.6,WP.gate.z,'🌊 '+tr('Humongous Water Park'),'sign');const T=WP.tw;label('wp_tw',WP.lift.x,gy+4,WP.lift.z-1,'🗼 '+tr('Humongous Tower'),'sign');
+  if(T.pole)label('wp_tor',T.pole.x,gy+T.top+3,T.pole.z,'🌪️ '+tr('The Tornado'),'sign');label('wp_rc',WP.rcPad.x,gy+3.6,WP.rcPad.z,'🏁 '+tr('The Racer'),'sign');
+  label('wp_ship',WP.ship.x,gy+14.5,WP.ship.z,'🏴‍☠️ '+tr('Pirate Splash Ship'),'sign');label('wp_duck',WP.duck.x,gy+12.5,WP.duck.z,'🦆 '+tr('Giant Duck'),'sign');
+  label('wp_wave',WP.wave.x0+4,gy+3,WP.wave.z0-1,'🌊 '+tr('Wave Pool'),'sign');label('wp_river',WP.gate.x+6,gy+2.6,WP.rv.z0+2,'🛟 '+tr('Lazy River'),'sign');}catch(e){}};}
+// ---------- remember what you tried; the trophy; Ducky the rubber duck ----------
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.wpr=[...WPS.ridden];return o;};extraLoad=function(x){_el(x);WPS.ridden=new Set(x&&Array.isArray(x.wpr)?x.wpr.filter(k=>typeof k==='string'&&WPR[k]):[]);};}
+if(typeof TROPHIES!=='undefined')TROPHIES.waterpark=TROPHIES.waterpark||{n:'Water Park Champion',ic:'🌊',d:'Tried everything in the Humongous Water Park'};
+PETS.push({id:'ducky',n:MV('Ducky the Rubber Duck','دَكي البطة المطاطية'),p:-1,i:'🦆',d:MV('A squeaky rubber duck that waddles after you and floats in water','بطة مطاطية تصفر وتمشي خلفك وتطفو على الماء')});
+{const _dp=drawPet;drawPet=function(o,t){if(!o||o.kind!=='ducky')return _dp(o,t);const m=MS.cur;MS.reset();M4.tr(m,o.x,o.y,o.z);M4.ry(m,o.face||0);const w=Math.sin(o.walk||0)*(o.amp||0);M4.rz(m,w*.18);const Y='#ffd21f';
+  sp(m,0,.32,0,.42,.32,.5,Y,8,.12);sp(m,0,.5,-.34,.2,.22,.14,Y,8,.12);sp(m,0,.68,.26,.26,.26,.26,Y,8,.12);sp(m,0,.62,.52,.15,.06,.13,'#ff8a1f',8,.15);
+  for(const s of [-1,1]){sp(m,s*.12,.74,.44,.06,.07,.03,'#ffffff',1);sp(m,s*.125,.74,.465,.03,.04,.02,'#23232f',1);sp(m,s*.36,.34,0,.1,.2,.32,'#ffc400',8,.1);}
+  if(o.happy>0&&Math.random()<.04)floatText(o.x,o.y+1.1,o.z,'Squeak!','blue');};}
+// ---------- the map, What's new ----------
+if(typeof MAPX!=='undefined'&&MAPX.prov)MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!WP.ok)return;add({id:'waterpark',cat:'fun',x:WP.gate.x,z:WP.gate.z,ic:'🌊',col:'#46c0ee',t:tr('Humongous Water Park'),s:tr('Slides, waves, a lazy river and a giant duck'),pr:8});});
+// ---------- words (Arabic) ----------
+MV('Humongous Water Park','حديقة الماء العملاقة');MV('Humongous Tower','البرج العملاق');MV('The Humongous Drop','السقطة العملاقة');MV('The Tornado','الإعصار');MV('The Rainbow Ribbon','شريط قوس قزح');MV('The Racer','السباق');
+MV('The Duck Slide','زحليقة البطة');MV('The Lazy River','النهر الكسول');MV('The Big Bucket','الدلو الكبير');MV('The Wave Pool','بركة الأمواج');MV('Wave Pool','بركة الأمواج');MV('Lazy River','النهر الكسول');
+MV('Pirate Splash Ship','سفينة القراصنة المائية');MV('Giant Duck','البطة العملاقة');MV('First time on {0}! +500 coins','أول مرة على {0}! +500 قطعة نقدية');MV('Water Park Champion!','بطل حديقة الماء!');MV('Water Park Champion','بطل حديقة الماء');
+MV('You tried everything in the Humongous Water Park! +5000 coins, a trophy and Ducky the rubber duck','جرّبت كل شيء في حديقة الماء العملاقة! +5000 قطعة نقدية وكأس ودَكي البطة المطاطية');MV('Tried everything in the Humongous Water Park','جرّب كل شيء في حديقة الماء العملاقة');
+MV('The Humongous Drop!','السقطة العملاقة!');MV('45 metres straight down. Hold on!','45 مترًا إلى الأسفل مباشرة. تمسّك!');MV('Float round the island! Jump to get out','اطفُ حول الجزيرة! اقفز لتخرج');MV('The Racer!','السباق!');MV('Ready... steady...','استعد... انتبه...');MV('GO!','انطلق!');
+MV('You won the race!','فزت بالسباق!');MV('Second place!','المركز الثاني!');MV('Third place!','المركز الثالث!');MV('Fourth place!','المركز الرابع!');MV('+{0} coins','+{0} قطعة نقدية');
+MV('Here come the waves!','الأمواج قادمة!');MV('SPLASH!','طرطشة!');MV('The big bucket got you!','الدلو الكبير بلّلك!');MV('Splash!','طرطشة!');MV('Up the Humongous Tower!','اصعد البرج العملاق!');MV('45 metres up! Pick a slide','45 مترًا إلى الأعلى! اختر زحليقة');
+MV('Slide: {0}','انزلق: {0}');MV('Take the lift down','انزل بالمصعد');MV('Up to the Racer','اصعد إلى السباق');MV('Four slides side by side: race!','أربع زحاليق جنبًا إلى جنب: تسابقوا!');MV('Race!','سباق!');MV('Slide down the giant duck!','انزلق على البطة العملاقة!');
+MV('Hop in the ring!','اقفز في العوامة!');MV('Fire the water cannon!','أطلق مدفع الماء!');MV('Slides, waves, a lazy river and a giant duck','زحاليق وأمواج ونهر كسول وبطة عملاقة');
+// ================= v2: rides to ride TOGETHER =================
+// A shared ride is a boat or a raft with seats that runs along a path on the park clock (the same clock on every tablet).
+// The first rider starts a 6-second count-down; friends who hop on before it leaves ride in the same boat with you.
+const WV={};
+function wpSpline3(C,step=.4){const out=[];for(let i=0;i<C.length-1;i++){const p0=C[Math.max(0,i-1)],p1=C[i],p2=C[i+1],p3=C[Math.min(C.length-1,i+2)];const seg=Math.hypot(p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]);const n=Math.max(2,Math.ceil(seg/step));
+  for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;const f=(a,b,c,d)=>.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);out.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1]),f(p0[2],p1[2],p2[2],p3[2])]);}}
+  out.push(C[C.length-1]);return out;}
+// o: {n, ic, col, pts:[[x,y,z]...], seats:[[side,up,fwd]...], off:{x,y,z} where you get off, v0, vmin, vmax, drag, lift:[i0,i1], water:[i0,i1], vlift, wait, hold}
+function wvMake(id,o){const pts=wpSpline3(o.ctl,o.step||.4);const W=wpPath(pts),P=W.P,n=P.length;const cum=[0];for(let i=1;i<n;i++){const a=P[i-1],b=P[i];cum.push(cum[i-1]+Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z));}
+  // the time table: steady up the lifts (anything going uphill rides a conveyor); elsewhere gravity, a little drag,
+  // and a strong brake when it lands in the water
+  const T=[0];let v=o.v0||3;for(let i=1;i<n;i++){const a=P[i-1],b=P[i];const L=(cum[i]-cum[i-1])||.01;
+    if(b.y>a.y+.004)v=o.vlift||3;else{const dh=a.y-b.y;v=Math.sqrt(Math.max(.01,v*v+2*9.8*dh));v-=(o.drag||.012)*v*v*L;if(o.wy!==undefined&&a.y<=o.wy+.08)v*=Math.exp(-(o.wdrag||.22)*L);v=clamp(v,o.vmin||3,o.vmax||16);}
+    T.push(T[i-1]+L/v);}
+  const V={id,...o,P,cum,n,L:cum[n-1],T,TT:T[n-1]+(o.hold||1.5),dep:0};WV[id]=V;return V;}
+function wvPt(V,i,k){const P=V.P,A=P[i],B=P[Math.min(V.n-1,i+1)];const L=(u,w)=>u+(w-u)*k;const nz=v=>{const l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l];};
+  return {x:L(A.x,B.x),y:L(A.y,B.y),z:L(A.z,B.z),F:nz([L(A.F[0],B.F[0]),L(A.F[1],B.F[1]),L(A.F[2],B.F[2])]),U:nz([L(A.U[0],B.U[0]),L(A.U[1],B.U[1]),L(A.U[2],B.U[2])]),R:nz([L(A.R[0],B.R[0]),L(A.R[1],B.R[1]),L(A.R[2],B.R[2])]),i};}
+function wvAt(V,t){const T=V.T,n=V.n;if(t<=0)return wvPt(V,0,0);if(t>=T[n-1])return wvPt(V,n-2,1);let a=0,b=n-1;while(b-a>1){const m=(a+b)>>1;if(T[m]<=t)a=m;else b=m;}return wvPt(V,a,(t-T[a])/((T[b]-T[a])||1));}
+function wvState(V){const d=V.dep,now=wpNow();if(!d)return 'idle';if(now<d)return 'boarding';if(now<d+V.TT)return 'riding';return 'idle';}
+function wvT(V){const d=V.dep;if(!d)return 0;const t=wpNow()-d;return t<0||t>V.TT?0:t;}// 0 = waiting at the station
+function wvSeatM(V,f,s){const o=V.seats[s]||V.seats[0];return frameM(f,o[0],o[1],o[2]);}
+function wvSeat(V,f,s){const o=V.seats[s]||V.seats[0];return {x:f.x+f.R[0]*o[0]+f.U[0]*o[1]+f.F[0]*o[2],y:f.y+f.R[1]*o[0]+f.U[1]*o[1]+f.F[1]*o[2],z:f.z+f.R[2]*o[0]+f.U[2]*o[1]+f.F[2]*o[2]};}
+function wvBoard(id){const V=WV[id];if(!V)return;const st=wvState(V);
+  if(st==='riding'){toast(V.ic+' '+trf('It is out on the ride. Back in {0} s',Math.ceil(V.dep+V.TT-wpNow())));SFX.nope&&SFX.nope();return;}
+  if(st==='idle'){V.dep=Math.ceil(wpNow())+(V.wait||6);netEvent('wp',['dep',id,V.dep]);}
+  const used=new Set();for(const rp of netFriends())if(rp.wpRide&&rp.wpRide[0]==='wv'&&rp.wpRide[1]===id&&Math.abs(rp.wpRide[2]-V.dep)<.5)used.add(rp.wpRide[3]|0);
+  let seat=0;while(used.has(seat)&&seat<V.seats.length-1)seat++;wpStart('wv',{id,seat,dep:V.dep,reward:id});ME.drive=true;
+  toast(V.ic+' '+tr(V.hop||'Hold on tight! Friends can hop in too'));}
+function wvRide(R,dt,inp){const V=WV[R.id],p=ME,A=p.anim;if(!V){wpAbort();return;}if(V.dep!==R.dep&&wpNow()<R.dep)R.dep=V.dep;// a friend's count-down started first
+  const t=wpNow()-R.dep;const f=wvAt(V,Math.max(0,t));R.f=f;const q=wvSeat(V,f,R.seat);p.x=q.x;p.y=q.y;p.z=q.z;p.face=Math.atan2(f.F[0],f.F[2]);p.drive=true;
+  if(t<0){const n=Math.ceil(-t);if(n!==R.cd){R.cd=n;if(n<=6)banner(V.ic+' '+n,tr('Hold on tight!'),V.col);SFX.click&&SFX.click();}
+    if(inp.jumpP){const o=V.off;wpStop(o.x,o.y,o.z);R.left=1;}animSprings(p,dt);return;}
+  if(t>=V.TT-.05){const o=V.off;wpStop(o.x,o.y,o.z);return;}
+  if(V.fx)V.fx(R,f,t,dt);A.cheer=Math.max(A.cheer||0,R.cheer||0);R.cheer=Math.max(0,(R.cheer||0)-dt);animSprings(p,dt);}
+// ---------- Splash Mountain: log boats for 4 up a lift hill, round the mountain top and down the big drop ----------
+function wpLogFlume(){const g=WP.y,c=WP.y+.5,top=g+11.6,wl=g-.3;
+  const ctl=[[193,c,399],[197,c,399],[201,c,399],[204,c,400.6],[205.4,c,403.4],[205.6,g+1.1,406],[205.6,g+5,413],[205.6,g+9.6,420.5],[205.6,top,425.5],
+    [206.2,top+.1,431],[205.4,top+.1,437],[202.5,top,442.4],[197.5,top-.1,444.2],[193.4,top-.1,441.4],[191.6,top-.2,436.6],[190.4,top-.3,432],[190.2,top-.6,429.2],
+    [190.2,g+7.6,425.4],[190.2,g+3.4,421.4],[190.2,wl+.6,418.4],[190.2,wl,415.6],[190.2,wl,411],[190.2,wl,407],[190.4,wl+.1,404.4],[190.9,c-.2,401.6],[192,c,399.6],[193,c,399]];
+  const V=wvMake('log',{n:'Splash Mountain',ic:'🪵',col:'#c98a4a',ctl,seats:[[-.32,.42,.55],[.32,.42,.55],[-.32,.42,-.55],[.32,.42,-.55]],off:{x:196,y:c+.35,z:401.8},
+    v0:2.6,vmin:2.6,vmax:15,vlift:3.4,drag:.006,wdrag:.32,wy:wl,hold:1,hop:'Hop in the log! Friends can sit with you',
+    fx:(R,f,t,dt)=>{const i=f.i/V.n;if(i>.62&&i<.75)R.cheer=.8;if(i>.73&&!R.splash){R.splash=1;wpBigSplash(f.x,wl,f.z,1);}if(i>.75&&i<.8&&Math.random()<.5)burst(f.x,wl+.4,f.z,['#bfe9ff','#ffffff'],3,4,.16,.6);}});
+  V.mt=WP.lf.mt;return V;}
+// ---------- the Family Raft: a round raft for 4, from the raft tower on the beach, S-bends down into the lagoon ----------
+function wpRaftRide(){const g=WP.y,R=WP.rf,top=g+R.top;
+  const ctl=[[R.x,top,R.z+2.6],[R.x-.6,top-.4,R.z+6],[179,top-1.6,379],[175.6,top-3.4,384.2],[174.2,top-5.2,390],[175.6,top-7,396],[178.2,top-8.6,402],[177.2,top-10.2,408],[174.6,top-11.8,414],
+    [174.6,top-13.4,420],[177,top-14.8,426],[179,WL+.9,431],[180,WL+.12,435.4],[180.2,WL+.05,440],[180.2,WL+.05,443]];
+  return wvMake('raft',{n:'The Family Raft',ic:'🛟',col:'#ffcf3a',ctl,seats:[[-.62,.3,.62],[.62,.3,.62],[-.62,.3,-.62],[.62,.3,-.62]],off:{x:181,y:WL-.6,z:443},
+    v0:3,vmin:3,vmax:13,drag:.01,wdrag:.5,wy:WL+.05,hold:1.6,hop:'Everybody in the raft! Friends can hop in too',
+    fx:(R2,f,t,dt)=>{R2.cheer=.7;if(f.i/WV.raft.n>.9&&!R2.splash){R2.splash=1;wpBigSplash(f.x,WL,f.z,.8);}}});}
+// ---------- the Banana Boat: a speedboat pulls a banana for 4 out to sea, round a big loop and back ----------
+function wpBananaRide(){const y=WL+.08;let ctl=[[180,y,461],[172,y,461.6],[160,y,462.4],[140,y,463],[118,y,462.4],[96,y,461],[80,y,457],[66,y,451],[52,y,454],[44,y,466],[48,y,479],[62,y,486],[77,y,481],[85,y,470],
+    [100,y,467],[124,y,468],[148,y,468.4],[168,y,467],[180,y,466],[186,y,463.6],[184.4,y,460.6],[180,y,460.8]];
+  // keep it in deep enough water (move a point away from the shore if needed)
+  ctl=ctl.map(([x,yy,z])=>{let q=z;for(let k=0;k<12&&inMap(x|0,q|0)&&H[cid(x|0,q|0)]>WL-.8;k++)q+=(z<464?-1:1);return [x,yy,q];});
+  const V=wvMake('banana',{n:'The Banana Boat',ic:'🍌',col:'#ffd21f',ctl,step:.8,seats:[[0,.62,1.5],[0,.62,.5],[0,.62,-.5],[0,.62,-1.5]],off:{x:181,y:WP.y,z:449.5},
+    v0:3,vmin:3,vmax:13,drag:0,vlift:12.5,hold:1,hop:'Climb on the banana! Friends can ride too',
+    fx:(R,f,t,dt)=>{R.cheer=.6;if(Math.random()<.5)PARTS.push({x:f.x-f.F[0]*2.4+Rr(-.4,.4),y:WL+.2,z:f.z-f.F[2]*2.4+Rr(-.4,.4),vx:Rr(-1,1),vy:Rr(1,2.5),vz:Rr(-1,1),life:.6,s:.16,c:hex('#ffffff'),e:.3,g:8,k:'deb',rot:0});}});wpBananaEase(V);return V;}
+// the banana boat starts slowly and slows down at the end (its time table: gentle at both ends)
+function wpBananaEase(V){const T=V.T,n=V.n,L=V.L;const acc=3;for(let i=0;i<n;i++){const s=V.cum[i];const vs=Math.min(V.vlift,Math.sqrt(2*acc*s+9),Math.sqrt(2*acc*(L-s)+9));if(i>0)T[i]=T[i-1]+(V.cum[i]-V.cum[i-1])/vs;}V.TT=T[n-1]+(V.hold||1);}
+// a big splash: a wave of water and a soaking for everyone close by
+function wpBigSplash(x,y,z,k){burst(x,y+.6,z,['#bfe9ff','#ffffff','#46b0ff'],Math.round(60*k),9*k,.24,1.1);SFX.splash&&SFX.splash();shake(.25*k);
+  for(let a=0;a<18;a++){const b=a/18*TAU;PARTS.push({x:x+Math.cos(b)*1.2,y:y+.2,z:z+Math.sin(b)*1.2,vx:Math.cos(b)*Rr(3,6),vy:Rr(4,8)*k,vz:Math.sin(b)*Rr(3,6),life:1,s:.22,c:hex(a%2?'#8fe0ff':'#ffffff'),e:.3,g:12,k:'deb',rot:0});}
+  if(d2(ME.x,ME.z,x,z)<7&&!(WPS.me&&WPS.me.k==='wv')){floatText(ME.x,ME.y+2.2,ME.z,tr('Splash!'),'blue');ME.anim.cheer=1;}}
+// ---------- bumper boats: everybody in their own boat; bump each other and squirt water ----------
+WPS.bots=[];
+function wpBbBoard(){const B=WP.bb;wpStart('bb',{x:(B.x0+B.x1)/2,z:B.z0+2.4,h:0,v:0,me:1,sq:0});ME.drive=true;toast('🚤 '+tr('Bump the other boats! Power squirts water. ✋ to get out'));}
+function wpBbWalls(b){const B=WP.bb,r=1.3;let hit=false;if(b.x<B.x0+r){b.x=B.x0+r;b.h=-b.h;hit=true;}if(b.x>B.x1-r){b.x=B.x1-r;b.h=-b.h;hit=true;}
+  if(b.z<B.z0+r){b.z=B.z0+r;b.h=Math.PI-b.h;hit=true;}if(b.z>B.z1-r){b.z=B.z1-r;b.h=Math.PI-b.h;hit=true;}if(hit)b.v*=.5;return hit;}
+function wpBbPair(a,b){const dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d>2.6||d<.01)return;const nx=dx/d,nz=dz/d,o=(2.6-d)/2;
+  if(!a.fixed){a.x-=nx*o;a.z-=nz*o;a.h=Math.atan2(-nx,-nz)+Rr(-.4,.4);a.v=Math.max(a.v,3);a.spin=(a.spin||0)+Rr(-3,3);}if(!b.fixed){b.x+=nx*o;b.z+=nz*o;b.h=Math.atan2(nx,nz)+Rr(-.4,.4);b.v=Math.max(b.v,3);b.spin=(b.spin||0)+Rr(-3,3);}
+  if(a.me||b.me){if((WPS.bonkT||0)<=0){WPS.bonkT=.35;SFX.boing&&SFX.boing();shake(.1);burst((a.x+b.x)/2,WP.y,(a.z+b.z)/2,['#bfe9ff','#ffffff'],10,3,.14,.5);}}}
+function wpBbOthers(){const L=[];if(WPS.me&&WPS.me.k==='bb')L.push(WPS.me);for(const rp of netFriends())if(rp.wpRide&&rp.wpRide[0]==='bb')L.push({x:rp.x,z:rp.z,h:rp.face,v:0,fixed:true});return L;}
+function wpBbTick(dt){const B=WP.bb;if(!B||!WP.ok)return;if(!WPS.bots.length){const cols=['#ff5d73','#46b0ff','#7ed957','#b28dff'];for(let k=0;k<4;k++)WPS.bots.push({x:B.x0+3+k*4.5,z:B.z0+6+(k%2)*6,h:k*1.4,v:2.5,turn:0,tt:Math.random()*2,col:cols[k],look:RACERS[k]});}
+  const all=WPS.bots.concat(wpBbOthers());for(const b of WPS.bots){b.tt-=dt;if(b.tt<=0){b.tt=Rr(.8,2.5);b.turn=Rr(-1.6,1.6);}b.h+=(b.turn+(b.spin||0))*dt;b.spin=(b.spin||0)*Math.pow(.2,dt);b.v=lerp(b.v,3.2,dt);
+    b.x+=Math.sin(b.h)*b.v*dt;b.z+=Math.cos(b.h)*b.v*dt;wpBbWalls(b);if(b.wet>0)b.wet-=dt;}
+  for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++)wpBbPair(all[i],all[j]);if(WPS.bonkT>0)WPS.bonkT-=dt;}
+function wpBbRide(R,dt,inp){const p=ME;const [fx,fz]=camForward(),rx=-fz,rz=fx;let mx=inp.mx,mz=inp.mz;const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}const wx=rx*mx+fx*(-mz),wz=rz*mx+fz*(-mz),wl2=Math.hypot(wx,wz);
+  if(wl2>.15){const want=Math.atan2(wx,wz);let d=want-R.h;d=Math.atan2(Math.sin(d),Math.cos(d));R.h+=clamp(d,-3*dt,3*dt);R.v=lerp(R.v,5.5*Math.min(1,wl2),Math.min(1,dt*2));}else R.v=lerp(R.v,0,Math.min(1,dt*1.2));
+  R.h+=(R.spin||0)*dt;R.spin=(R.spin||0)*Math.pow(.2,dt);R.x+=Math.sin(R.h)*R.v*dt;R.z+=Math.cos(R.h)*R.v*dt;if(wpBbWalls(R)&&(WPS.bonkT||0)<=0){WPS.bonkT=.3;SFX.boing&&SFX.boing();}
+  const bob=Math.sin(wpNow()*3+R.x)*.06;p.x=R.x;p.z=R.z;p.y=WP.y-.35+.12+bob;p.face=R.h;p.drive=true;R.sq=Math.max(0,(R.sq||0)-dt);
+  if((inp.powerP||inp.punchP)&&R.sq<=0){R.sq=.7;wpSquirt(R.x,p.y+.6,R.z,R.h);netEvent('wp',['sq',+R.x.toFixed(1),+R.z.toFixed(1),+R.h.toFixed(2)]);}
+  if(!R.got&&wpNow()-R.t0>12){R.got=1;wpReward('bb');}
+  if(inp.interactP){const B=WP.bb;wpStop((B.x0+B.x1)/2,WP.y+.05,B.z0-1.2);return;}animSprings(p,dt);}
+// a squirt of water: soaks bots and friends in front of the boat
+function wpSquirt(x,y,z,h,silent){for(let k=0;k<14;k++){const sp=Rr(8,11);PARTS.push({x:x+Math.sin(h)*.9,y,z:z+Math.cos(h)*.9,vx:Math.sin(h)*sp+Rr(-.8,.8),vy:Rr(2,3.5),vz:Math.cos(h)*sp+Rr(-.8,.8),life:.8,s:.14,c:hex(k%2?'#8fe0ff':'#ffffff'),e:.3,g:9,k:'deb',rot:0});}
+  if(!silent)SFX.whoosh&&SFX.whoosh();const hit=(o)=>{const dx=o.x-x,dz=o.z-z;const al=dx*Math.sin(h)+dz*Math.cos(h),sd=Math.abs(dx*Math.cos(h)-dz*Math.sin(h));return al>1&&al<8&&sd<1.8;};
+  for(const b of WPS.bots)if(hit(b)){b.wet=1.5;b.v=Math.max(b.v,3);floatText(b.x,WP.y+1.8,b.z,tr('Splash!'),'blue');}
+  for(const rp of netFriends())if(hit(rp))floatText(rp.x,rp.y+2.2,rp.z,tr('Splash!'),'blue');}
+// ---------- building the new west side (static parts, baked into the world) ----------
+function wpTrough(V,o){// a channel or slide along a shared ride's path, with poles down to the ground
+  const P=V.P;for(let i=0;i<P.length-1;i+=1){const a=P[i],b=P[i+1];if(o.until!==undefined&&a.y<o.until)break;const f={x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2,F:a.F,U:a.U,R:a.R};const m=frameM(f);const L2=Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z)+.08;
+    if(o.kind==='log'){sput('box',m,0,-.18,0,o.w+.5,.2,L2,'#8a5a3a',6);for(const sd of [-1,1])sput('box',m,sd*(o.w/2+.15),.28,0,.24,.9,L2,'#a86c3c',6);if(!o.dry||a.y>o.dry)sput('box',m,0,.12,0,o.w,.06,L2,'#46c0ee',8,.25);}
+    else{const c2=o.rainbow?WPC[Math.floor(i/5)%6]:o.col2;sput('box',m,0,-.1,0,o.w,.16,L2,c2,8,.08);for(const sd of [-1,1])sput('box',m,sd*(o.w/2+.1),.32,0,.2,.84,L2,o.col,8);sput('box',m,0,-.26,0,o.w+.3,.14,L2,o.col,8);}
+    if(i%(o.every||8)===0){const pl=poolAt(a.x,a.z);const base=pl?pl.fl:Math.max(hAt(a.x,a.z),WL-3);const hh=a.y-base-.3;if(hh>1){const pm=mat4At(a.x,base,a.z);sput('cyl',pm,0,hh/2,0,.3,hh,.3,o.pole||'#f4f4f4',3);}}}}
+function wpBuild2(){const gy=WP.y,box=(x,y,z,w,h,d,c,mat,e)=>sbox(x,y,z,w,h,d,c,mat||1,e);
+  // Splash Mountain: a rocky mountain with grass on top and a waterfall, the log channel round it, and the station
+  {const M=WP.lf.mt,cx=(M.x0+M.x1)/2,cz=(M.z0+M.z1)/2;const rk=['#d2a878','#c49a6c','#dcb488','#b88c62'];
+    for(let k=0;k<4;k++){const s=1-k*.2,h=M.h*(k+1)/4;const m=mat4At(cx+(k%2?.6:-.4),gy,cz+(k%2?-.5:.4));sput('rbox',m,0,h-M.h/8,0,(M.x1-M.x0)*s,M.h/4+.6,(M.z1-M.z0)*s,rk[k],6);}
+    for(let k=0;k<9;k++){const a=k/9*TAU;const m=mat4At(cx+Math.cos(a)*6.5,gy,cz+Math.sin(a)*9);sput('sph',m,0,2.5+(k%3),0,4.5,5+(k%3)*1.5,4.5,rk[k%4],6);}
+    sput('sph',mat4At(cx,gy+M.h-1.1,cz+1),0,0,0,9,2.2,13,'#6fbf55',6);for(const [x,z] of [[197.5,434],[200,432],[199,436.5]]){sput('cyl',mat4At(x,gy+M.h-.4,z),0,.6,0,.3,1.2,.3,'#8a5a3a',6);sput('cone',mat4At(x,gy+M.h+.6,z),0,1.2,0,1.6,2.6,1.6,'#3f9a4a',6);}
+    solid(M.x0+1,M.z0+1,M.x1-1,M.z1-1,gy+M.h-.6);// the mountain is solid (you can see it from far away)
+    // the waterfall on its north face, into the splash pool
+    for(let k=0;k<6;k++)box(195+k*.5,gy-.3,M.z0-.4,.45,M.h-1.2,.25,k%2?'#8fe0ff':'#bfefff',8,.3);sput('cyl',mat4At(196.5,gy,M.z0-1.6),0,.02,0,4.4,.06,2.6,'#46c0ee',8,.25);
+    // the log channel and its station (a wooden platform with a stripy roof)
+    const V=wpLogFlume();wpTrough(V,{kind:'log',w:1.5,every:7,pole:'#8a5a3a',dry:-99});
+    box(192,gy,400.6,10,.55,2.6,'#c98a4a',6);solid(192,400.6,202,403.2,gy+.55);for(let k=0;k<5;k++)box(192.2+k*2.4,gy+.55,402.9,.2,3.2,.2,'#ffffff',1);
+    for(let k=0;k<5;k++)box(192+k*2,gy+3.75,400.2,2,.3,3.2,k%2?'#ffffff':'#e8343f',1);WP.lfBoard={x:197,z:401.8,y:gy+.55};
+    // the splash pool edge and a bridge for watchers who want to get wet
+    const L=WP.lf.pool;for(const [x,z,w,d] of [[L.x0-.5,L.z0-.5,L.x1-L.x0+1,.5],[L.x0-.5,L.z1,L.x1-L.x0+1,.5],[L.x1,L.z0,.5,L.z1-L.z0]])box(x,gy-.05,z,w,.25,d,'#ffffff',1);box(L.x0,gy-.62,L.z0,L.x1-L.x0,.3,L.z1-L.z0,'#2fa8e8',8,.16);}
+  // the Family Raft: a tall tower on the beach and a wide yellow slide down to the lagoon
+  {const R=WP.rf,top=gy+R.top,hy=hAt(R.x,R.z);for(let k=0;k<6;k++)box(R.x-2.6,hy+k*(top-hy)/6,R.z-2.6,5.2,(top-hy)/6,5.2,k%2?'#46b0ff':'#ffcf3a',1);solid(R.x-2.6,R.z-2.6,R.x+2.6,R.z+2.6,top);
+    box(R.x-3,top,R.z-3,6,.3,6,'#ffffff',1);for(const [a,b,c,d] of [[-3,-3,6,.2],[-3,-3,.2,6],[2.8,-3,.2,6],[-3,2.8,1.8,.2],[1.2,2.8,1.8,.2]])box(R.x+a,top+.3,R.z+b,c,1,d,'#e8343f',1);
+    WP.rfLift={x:R.x+3.6,z:R.z,y:hy};WP.rfTop={x:R.x,z:R.z,y:top+.3};box(R.x+2.8,hy,R.z-1.4,2.8,.15,2.8,'#ffcf3a',1);
+    const V=wpRaftRide();wpTrough(V,{kind:'slide',w:3,col:'#ff9a3c',col2:'#ffd23f',every:9,until:WL+.3});}
+  // the bumper boat pond: an edge, a dock and a sign board
+  {const B=WP.bb;for(const [x,z,w,d] of [[B.x0-.5,B.z0-.5,B.x1-B.x0+1,.5],[B.x0-.5,B.z1,B.x1-B.x0+1,.5],[B.x0-.5,B.z0,.5,B.z1-B.z0],[B.x1,B.z0,.5,B.z1-B.z0]])box(x,gy-.05,z,w,.35,d,'#ffcf3a',1);
+    box(B.x0,gy-.67,B.z0,B.x1-B.x0,.3,B.z1-B.z0,'#46c0ee',8,.18);box((B.x0+B.x1)/2-2.5,gy,B.z0-1.8,5,.25,1.8,'#c98a4a',6);WP.bbBoard={x:(B.x0+B.x1)/2,z:B.z0-.8,y:gy};
+    const sm=mat4At(B.x0-1.2,gy,B.z0-1.2);sput('box',sm,0,1.6,0,.25,3.2,.25,'#ffffff',1);sput('box',sm,0,3.4,0,3.4,1.2,.2,'#2f8fff',1);}
+  // the banana boat pier at the south-west corner of the beach
+  {const P=WP.ban.pier;const hy=WL+.7;for(let k=0;k<6;k++){box(P.x-1.2,hy,P.z+k*1.6,2.4,.25,1.6,'#c98a4a',6);for(const s of [-1,1])box(P.x+s*1.1-.12,WL-2.5,P.z+k*1.6+.6,.24,3.3,.24,'#8a5a3a',6);}
+    for(let k=0;k<6;k++){const z0=P.z+k*1.6;for(let x=Math.floor(P.x-1.2);x<Math.ceil(P.x+1.2);x++)for(let z=Math.floor(z0);z<Math.ceil(z0+1.6);z++){if(!inMap(x,z))continue;const i=cid(x,z);if(H[i]<hy+.25)gapSet(x,z,[[H[i]-20,H[i]],[hy,hy+.25]]);}}
+    WP.banBoard={x:P.x,z:P.z+8,y:hy+.25};const V=wpBananaRide();V.off={x:P.x,y:hy+.3,z:P.z+6.4};}
+  // the beach: umbrellas, towels, sandcastles, a lifeguard and a snack shack
+  {const x0=WP.x0;const spots=[[381],[388],[399],[410],[421],[447]];for(const [z] of spots){const x=x0-2.6;if(typeof beachUmbrella==='function')beachUmbrella(x+.6,z);const m=mat4At(x-.4,hAt(x-.4,z+1.6),z+1.6);sput('box',m,0,.03,0,1,.05,2,WPC[(z|0)%6],1);}
+    const castle=(x,z)=>{const y=hAt(x,z),m=mat4At(x,y,z);sput('cyl',m,0,.3,0,1.4,.6,1.4,'#e8cf8f',6);sput('cyl',m,0,.75,0,.9,.4,.9,'#e8cf8f',6);for(let k=0;k<4;k++){const a=k/4*TAU+.4;sput('cyl',m,Math.cos(a)*.75,.55,Math.sin(a)*.75,.34,.9,.34,'#efd89c',6);sput('cone',m,Math.cos(a)*.75,1.1,Math.sin(a)*.75,.36,.3,.36,'#e8cf8f',6);}sput('box',m,0,1.25,0,.04,.5,.04,'#ffffff',1);sput('box',m,.15,1.42,0,.3,.18,.02,'#e8343f',1);};
+    castle(x0-4.4,393.5);castle(x0-5.2,416.5);castle(x0-3.8,428.5);
+    // the lifeguard tower
+    {const x=x0-3.2,z=405,y=hAt(x,z);for(const [a,b] of [[-.6,-.6],[.6,-.6],[-.6,.6],[.6,.6]])box(x+a-.08,y,z+b-.08,.16,2.8,.16,'#ffffff',1);box(x-.8,y+2.8,z-.8,1.6,.2,1.6,'#e8343f',1);box(x-.7,y+3,z-.7,1.4,1.2,.12,'#e8343f',1);sput('cone',mat4At(x,y+4.4,z),0,.5,0,1.6,1,1.6,'#ffcf3a',1);solid(x-.8,z-.8,x+.8,z+.8,y+3);}
+    // the snack shack
+    {const x=x0+5.5,z=446,y=gy;box(x-2,y,z-1.6,4,2.6,3.2,'#46e6b0',1);solid(x-2,z-1.6,x+2,z+1.6,y+2.6);sput('wedge',mat4At(x,y+2.6,z),0,.45,0,4.6,.9,3.8,'#ff9a3c',1);for(let k=0;k<4;k++)box(x-1.6+k*.85,y+1.2,z-1.62,.6,.6,.06,WPC[k],1,.3);}
+    const palms=[[186,384],[186,413.5],[186,430],[187,450.5],[209,399.5],[210.5,371.5]];for(const [x,z] of palms)if(typeof palm==='function')palm(x,z);}
+  // one more bridge over the lazy river, to the new west side in the north
+  {const R=WP.rv,rw=R.w,deck=gy+1.75,x0=R.x0-.5,x1=R.x0+rw+.5,z0=380,z1=386;WP.bridges.push({x0,z0,x1,z1});
+    for(let z=z0;z<z1;z++)for(let x=Math.floor(x0);x<Math.ceil(x1);x++){if(!inMap(x,z))continue;const i=cid(x,z);gapSet(x,z,[[H[i]-20,H[i]],[deck-.3,deck]]);}
+    box(x0,deck-.3,z0,x1-x0,.3,z1-z0,'#c98a4a',6);for(const s of [0,1])box(x0,deck,s?z1-.2:z0,x1-x0,.9,.2,'#ffffff',1);
+    for(let k=1;k<=3;k++){const h=gy+(4-k)*.45;box(x0-k,gy,z0,1,h-gy,z1-z0,'#e0b07a',6);solid(x0-k,z0,x0-k+1,z1,h);box(x1+k-1,gy,z0,1,h-gy,z1-z0,'#e0b07a',6);solid(x1+k-1,z0,x1+k,z1,h);}}
+  WP.ok2=true;}
+// ---------- drawing the shared rides (and who sits in them) ----------
+function wvS(V,f){const i=Math.min(V.n-2,f.i);return V.cum[i];}
+function wvAtS(V,s){const c=V.cum;s=clamp(s,0,V.L);let a=0,b=V.n-1;while(b-a>1){const m=(a+b)>>1;if(c[m]<=s)a=m;else b=m;}return wvPt(V,a,(s-c[a])/((c[b]-c[a])||1));}
+function drawLog(m,t,wet){rb(m,0,.35,0,1.5,.7,4.2,'#9a6234',6);rb(m,0,.52,0,1.18,.5,3.8,'#6b4226',6);for(const z of [-2.05,2.05])cy(m,0,.38,z,.74,.08,.74,'#c98a4a',6);
+  for(const z of [-.55,.55])bx(m,0,.5,z,1.1,.12,.5,'#c98a4a',6);for(let k=0;k<6;k++)bx(m,(k%2?.5:-.5),.72,-1.8+k*.72,.12,.06,.3,'#5a3a24',6);}
+function drawRaft(m,t){for(let k=0;k<14;k++){const a=k/14*TAU;sp(m,Math.cos(a)*1.25,.32,Math.sin(a)*1.25,.48,.42,.48,k%2?'#ffcf3a':'#2f8fff',1,.1);}cy(m,0,.12,0,2.2,.12,2.2,'#2f8fff',1);
+  for(let k=0;k<4;k++){const a=k/4*TAU+Math.PI/4;bx(m,Math.cos(a)*1.25,.72,Math.sin(a)*1.25,.3,.08,.08,'#ffffff',1);}}
+function drawBanana(m,t){const Y='#ffd21f';for(let k=0;k<6;k++){const z=-2.2+k*.9,y=.42+Math.pow((k-2.5)/2.5,2)*.25;sp(m,0,y,z,.62,.58,.66,Y,8,.12);}sp(m,0,.75,2.75,.3,.3,.36,'#7a5a1a',1);
+  for(let k=0;k<4;k++){const z=1.5-k;bx(m,0,1.02,z+.25,.5,.06,.06,'#3a3d4a',1);for(const s of [-1,1])bx(m,s*.55,.25,z,.14,.06,.3,'#3a3d4a',1);}
+  for(const s of [-1,1])sp(m,s*.85,.32,-.2,.32,.3,2.4,'#ffe066',8,.12);}
+function drawSpeedboat(m,t){rb(m,0,.45,0,1.9,.9,4.8,'#ffffff',3);rb(m,0,.32,0,1.95,.24,4.85,'#e8343f',3);bx(m,0,1.05,.9,1.6,.6,.08,'#cfe8ff',1,.4);bx(m,0,.95,-1.4,1.5,.5,1.4,'#2f8fff',3);
+  cy(m,0,.65,-2.55,.42,.9,.42,'#3a3d4a',3);}
+function wvDrawAll(t){for(const id in WV){const V=WV[id];const tt=wvT(V);const f=wvAt(V,tt);if(Math.abs(f.x-CAM.tx)>170||Math.abs(f.z-CAM.tz)>170)continue;const m=MS.cur;MS.reset();m.set(frameM(f));
+    if(id==='log')drawLog(m,t);else if(id==='raft'){M4.ry(m,tt*1.8);drawRaft(m,t);}else if(id==='banana'){const bob=Math.sin(t*5)*.05;M4.tr(m,0,bob,0);drawBanana(m,t);
+      const s=wvS(V,f)+10.5,g=wvAtS(V,s);MS.reset();m.set(frameM(g));drawSpeedboat(m,t);OUT=MOB;drawPerson({x:g.x-g.F[0]*1.2,y:g.y+.3,z:g.z-g.F[2]*1.2,face:Math.atan2(g.F[0],g.F[2]),anim:{wave:0,cheer:0,punch:0,walk:0,amp:0},hy:0},t,{shirt:'#ff9a3c',pants:'#2b2d42',skin:'#c68a5a',hair:'#221b25',hs:1,hat:'cap'});OUT=DYN;
+      // the tow rope
+      const a={x:f.x+f.F[0]*2.9,y:f.y+.7,z:f.z+f.F[2]*2.9},b={x:g.x-g.F[0]*2.4,y:g.y+.9,z:g.z-g.F[2]*2.4};for(let k=0;k<8;k++){const u=(k+.5)/8;MS.reset();M4.tr(m,lerp(a.x,b.x,u),lerp(a.y,b.y,u)-Math.sin(u*Math.PI)*.25,lerp(a.z,b.z,u));sp(m,0,0,0,.06,.06,.06,'#3a3d4a',1);}
+      if(tt>0&&Math.random()<.8)PARTS.push({x:g.x-g.F[0]*2.6+Rr(-.5,.5),y:WL+.2,z:g.z-g.F[2]*2.6+Rr(-.5,.5),vx:-g.F[0]*3+Rr(-1,1),vy:Rr(1,3),vz:-g.F[2]*3+Rr(-1,1),life:.7,s:.2,c:hex('#ffffff'),e:.3,g:7,k:'deb',rot:0});}}}
+// riders: on a shared ride you lean with the boat (drawn in its frame); friends sit in their seats on my copy of the ride
+WPS.riders=[];
+{const _dh=drawHero;drawHero=function(d,t){try{let id=null,seat=0;if(d===ME&&WPS.me&&WPS.me.k==='wv'){id=WPS.me.id;seat=WPS.me.seat;}
+    else if(d!==ME&&WPS.riders.length){for(const r of WPS.riders)if(Math.abs(r.x-d.x)<.01&&Math.abs(r.z-d.z)<.01){id=r.id;seat=r.seat;break;}}
+    if(id&&WV[id]&&typeof fpDrawOnFrame==='function'){const V=WV[id];const f=d===ME&&WPS.me.f?WPS.me.f:wvAt(V,Math.max(0,wpNow()-(d===ME?WPS.me.dep:(WPS.riders.find(r=>r.id===id&&r.seat===seat)||{dep:V.dep}).dep)));
+      const M=wvSeatM(V,f,seat);fpDrawOnFrame(d,t,M,_dh,.9);return;}}catch(e){noteErr('wvrider',e);}return _dh(d,t);};}
+function wpFriendsTick(){WPS.riders.length=0;for(const rp of netFriends()){const r=rp.wpRide;if(!r)continue;
+    if(r[0]==='wv'){const V=WV[r[1]];if(!V)continue;const dep=r[2];if(!V.dep||Math.abs(V.dep-dep)>.5){if(wvState(V)==='idle'||dep<V.dep)V.dep=dep;}const f=wvAt(V,Math.max(0,wpNow()-dep));const q=wvSeat(V,f,r[3]|0);
+      rp.x=q.x;rp.y=q.y;rp.z=q.z;rp.face=Math.atan2(f.F[0],f.F[2]);rp.drive=true;WPS.riders.push({x:rp.x,z:rp.z,id:r[1],seat:r[3]|0,dep});}
+    else if(r[0]==='tube'){const q=wpRing(r[1]|0,wpNow());const off=(r[2]|0)?.62:-.62;rp.x=q.x+Math.cos(q.face)*off;rp.z=q.z-Math.sin(q.face)*off;rp.y=WP.y-.3+.15;rp.face=q.face;rp.drive=true;}
+    else if(r[0]==='bb'){rp.drive=true;}}}
+// bumper boats: an inflatable ring with a seat, a wheel, a squirt nozzle and a little motor
+function drawBumperBoat(m,x,z,h,col,t,wet){MS.reset();M4.tr(m,x,WP.y-.35+Math.sin(t*3+x)*.06,z);M4.ry(m,h);for(let k=0;k<12;k++){const a=k/12*TAU;sp(m,Math.cos(a)*1.05,.2,Math.sin(a)*1.05,.44,.4,.44,k%2?col:'#ffffff',1,.1);}
+  cy(m,0,.12,0,1.5,.14,1.5,'#3a3d4a',3);bx(m,0,.42,-.25,.6,.4,.5,'#23232f',3);cy(m,0,.7,.45,.4,.06,.4,'#3a3d4a',3);MS.push();M4.tr(m,0,.5,1.25);M4.rx(m,Math.PI/2);cy(m,0,.2,0,.14,.4,.14,'#46c0ee',3);MS.pop();bx(m,0,.35,-1.3,.5,.5,.4,'#e8343f',3);
+  if(wet>0&&Math.random()<.3)PARTS.push({x,y:WP.y+.6,z,vx:Rr(-1,1),vy:Rr(1,2),vz:Rr(-1,1),life:.5,s:.12,c:hex('#8fe0ff'),e:.3,g:8,k:'deb',rot:0});}
+function wpBbDraw(t){const B=WP.bb;if(!B||Math.abs((B.x0+B.x1)/2-CAM.tx)>110||Math.abs((B.z0+B.z1)/2-CAM.tz)>110)return;const m=MS.cur;
+  for(const b of WPS.bots){drawBumperBoat(m,b.x,b.z,b.h,b.col,t,b.wet);OUT=MOB;drawPerson({x:b.x,y:WP.y-.8,z:b.z,face:b.h,anim:{wave:0,cheer:b.wet>0?1:0,punch:0,walk:0,amp:0},hy:0},t,b.look);OUT=DYN;}
+  const R=WPS.me;if(R&&R.k==='bb')drawBumperBoat(m,R.x,R.z,R.h,'#ffcf3a',t,0);for(const rp of netFriends())if(rp.wpRide&&rp.wpRide[0]==='bb')drawBumperBoat(m,rp.x,rp.z,rp.face||0,'#46e6b0',t,0);}
+// beach balls: walk or run into one and it flies
+WPS.balls=[];
+function wpBallsInit(){if(WPS.balls.length||!WP.ok)return;const x0=WP.x0;for(const [x,z] of [[x0-3,386],[x0-4,409],[x0-2.5,436]])WPS.balls.push({x,z,y:hAt(x,z)+.5,vx:0,vy:0,vz:0,c:[WPC[(x|0)%6],'#ffffff',WPC[((x|0)+2)%6]],spin:0});}
+function wpBallsTick(dt){wpBallsInit();const kickers=[ME,...netFriends()];for(const b of WPS.balls){b.vy-=14*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.spin+=Math.hypot(b.vx,b.vz)*dt;
+    const g=Math.max(chAt(b.x,b.z),WL-.1)+.5;if(b.y<g){b.y=g;if(b.vy<-1.5)b.vy=-b.vy*.55;else b.vy=0;const fr=chAt(b.x,b.z)<WL-.2?.8:.4;b.vx*=Math.pow(fr,dt*4);b.vz*=Math.pow(fr,dt*4);}
+    for(const p of kickers){const d=Math.hypot(p.x-b.x,p.z-b.z);if(d<1.15&&Math.abs(p.y+.6-b.y)<1.4){const nx=(b.x-p.x)/(d||1),nz=(b.z-p.z)/(d||1);const sp=Math.max(5,Math.hypot(p.vx||0,p.vz||0)*1.4);b.vx=nx*sp;b.vz=nz*sp;b.vy=Math.max(b.vy,5.5);b.x=p.x+nx*1.2;b.z=p.z+nz*1.2;if(p===ME){SFX.boing&&SFX.boing();}}}
+    // stay near the beach
+    if(b.x<WP.x0-14||b.x>WP.x0+8||b.z<WP.z0||b.z>WP.z1){b.vx+=(WP.x0-3-b.x)*dt;b.vz+=(clamp(b.z,WP.z0+4,WP.z1-4)-b.z)*dt;}}}
+function wpBallsDraw(t){const m=MS.cur;for(const b of WPS.balls){if(Math.abs(b.x-CAM.tx)>90||Math.abs(b.z-CAM.tz)>90)continue;MS.reset();M4.tr(m,b.x,b.y,b.z);M4.ry(m,b.spin*.7);M4.rx(m,b.spin);
+  for(let k=0;k<6;k++){MS.push();M4.ry(m,k/6*TAU);sp(m,.12,0,0,.38,.5,.3,b.c[k%3],1,.1);MS.pop();}sp(m,0,.47,0,.1,.06,.1,'#ffffff',1);}}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{if(WP.ok&&camRealm()==='earth'&&Math.abs((WP.x0+WP.x1)/2-CAM.tx)<260&&Math.abs((WP.z0+WP.z1)/2-CAM.tz)<260){OUT=DYN;wvDrawAll(t);wpBbDraw(t);wpBallsDraw(t);OUT=DYN;}}catch(e){noteErr('waterpark2 draw',e);}};}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{if(WP.ok&&ME&&d2(ME.x,ME.z,(WP.x0+WP.x1)/2,(WP.z0+WP.z1)/2)<160){wpBbTick(dt);wpBallsTick(dt);}wpFriendsTick();}catch(e){noteErr('waterpark2',e);}};}
+// ---------- ✋ Use next to the new rides ----------
+function wvLabel(id,go){const V=WV[id];if(!V)return '';const st=wvState(V);if(st==='riding')return V.ic+' '+trf('Back in {0} s',Math.ceil(V.dep+V.TT-wpNow()));
+  if(st==='boarding')return V.ic+' '+trf('Hop in! Leaving in {0}',Math.max(0,Math.ceil(V.dep-wpNow())));return V.ic+' '+tr(go);}
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(!WP.ok2||WPS.me||p.veh)return;if(p.x<WP.x0-24||p.x>WP.x0+30||p.z<WP.z0-6||p.z>WP.z1+14)return;const gy=WP.y;
+  const L=WP.lfBoard;if(L&&d2(p.x,p.z,L.x,L.z)<4.5&&Math.abs(p.y-L.y)<1.6)cand({x:p.x,z:p.z,y:p.y},'wplog',wvLabel('log','Ride Splash Mountain!'),5,8,{fn:()=>wvBoard('log')});
+  const R=WP.rfLift;if(R)cand({x:R.x,z:R.z,y:R.y},'wprfup','🛟 '+tr('Up the raft tower'),2.6,7,{fn:()=>wpLift(WP.rfTop,'🛟 '+tr('Everybody in the raft!'))});
+  const T=WP.rfTop;if(T&&p.y>T.y-1&&d2(p.x,p.z,T.x,T.z)<4.5){cand({x:p.x,z:p.z,y:p.y},'wpraft',wvLabel('raft','Ride the Family Raft!'),4,8,{fn:()=>wvBoard('raft')});cand({x:T.x+2,z:T.z,y:T.y},'wprfdown','⬇️ '+tr('Take the lift down'),1.4,5,{fn:()=>wpLift({x:WP.rfLift.x+1,z:WP.rfLift.z,y:WP.rfLift.y},null)});}
+  const Bn=WP.banBoard;if(Bn&&d2(p.x,p.z,Bn.x,Bn.z)<3.6&&Math.abs(p.y-Bn.y)<2)cand({x:p.x,z:p.z,y:p.y},'wpban',wvLabel('banana','Ride the Banana Boat!'),4,8,{fn:()=>wvBoard('banana')});
+  const B=WP.bbBoard;if(B)cand({x:B.x,z:B.z,y:B.y},'wpbb','🚤 '+tr('Drive a bumper boat'),3,7,{fn:()=>wpBbBoard()});};}
+// ---------- the camera on a shared ride: behind the boat, a little above ----------
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);const R=WPS.me;if(!R||R.k!=='wv'||!R.f)return;const V=WV[R.id];if(!V)return;const f=R.f;const back=R.id==='banana'?8.5:R.id==='raft'?6.5:6,up=R.id==='banana'?4.2:3.3;
+  WPS.camOn=1;LOOK.nf=0;let F=f.F;if(R.id==='raft'){const fl=Math.hypot(F[0],F[2])||1;F=[F[0]/fl,0,F[2]/fl];}const ex=f.x-F[0]*back,ez=f.z-F[2]*back;const ey=Math.max(f.y-(F[1]||0)*back,WL+.6)+up;
+  CAM.eye=[ex,ey,ez];CAM.tx=f.x+F[0]*6;CAM.ty=f.y+.8+(F[1]||0)*6;CAM.tz=f.z+F[2]*6;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=null;};}
+// ---------- friends: which ride I am on (and where), so their tablets show me there ----------
+function wpPresence(R){if(!R)return null;if(R.k==='tube')return ['tube',R.ring,R.seat|0];if(R.k==='wv')return ['wv',R.id,R.dep,R.seat|0];if(R.k==='bb')return ['bb'];return ['sl',R.id||'',+(R.i||0).toFixed(1)];}
+function wpParseRide(f){if(!Array.isArray(f)||typeof f[0]!=='string')return null;if(f[0]==='tube')return ['tube',num(f[1],0)|0,num(f[2],0)|0];
+  if(f[0]==='wv'&&typeof f[1]==='string'&&WV[f[1]])return ['wv',f[1],num(f[2],0),clamp(num(f[3],0)|0,0,7)];if(f[0]==='sl')return ['sl',typeof f[1]==='string'?f[1].slice(0,10):'',num(f[2],0)];if(f[0]==='bb')return ['bb'];return null;}
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='wp'&&Array.isArray(a)){try{if(a[0]==='dep'){const V=WV[a[1]];const d=num(a[2],0);if(V&&d>0&&(wvState(V)==='idle'||(wvState(V)==='boarding'&&d<V.dep)))V.dep=d;return;}
+    if(a[0]==='sq'){wpSquirt(num(a[1],0),WP.y+.3,num(a[2],0),num(a[3],0),true);return;}
+    // a friend pressed Race: if I am up on the Racer too, I race with them
+    if(a[0]==='race'){const t0=num(a[1],0);const T=WP.rcTop;if(t0>wpNow()&&T&&!WPS.me&&ME.y>T.y-1.2&&d2(ME.x,ME.z,T.x,T.z)<9)wpRace(t0);return;}}catch(e){return;}}return _ae(type,a,rp);};}
+// ---------- signs ----------
+{const _ul=updateLabels;updateLabels=function(dt){_ul(dt);try{if(!WP.ok2||G.mode==='title'||camRealm()!=='earth')return;if(Math.abs(WP.x0+10-CAM.tx)>160||Math.abs((WP.z0+WP.z1)/2-CAM.tz)>160)return;const gy=WP.y;
+  label('wp_lf',WP.lfBoard.x,gy+5.2,WP.lfBoard.z-1,'🪵 '+tr('Splash Mountain'),'sign');label('wp_rf',WP.rf.x,gy+WP.rf.top+3,WP.rf.z,'🛟 '+tr('The Family Raft'),'sign');
+  label('wp_ban',WP.banBoard.x,WP.banBoard.y+2.6,WP.banBoard.z,'🍌 '+tr('The Banana Boat'),'sign');label('wp_bb',WP.bbBoard.x,gy+4.4,WP.bbBoard.z-.6,'🚤 '+tr('Bumper Boats'),'sign');
+  label('wp_beach',WP.x0-3,gy+2.6,397,'🏖️ '+tr('Splash Beach'),'sign');}catch(e){}};}
+// ---------- prizes for trying the new rides ----------
+Object.assign(WPR,{log:{ic:'🪵',n:'Splash Mountain'},raft:{ic:'🛟',n:'The Family Raft'},banana:{ic:'🍌',n:'The Banana Boat'},bb:{ic:'🚤',n:'Bumper Boats'}});
+// ---------- words (Arabic) ----------
+MV('Splash Mountain','جبل الرذاذ');MV('The Family Raft','عوامة العائلة');MV('The Banana Boat','قارب الموزة');MV('Bumper Boats','القوارب المتصادمة');MV('Splash Beach','شاطئ الرذاذ');
+MV('Ride Splash Mountain!','اركب جبل الرذاذ!');MV('Ride the Family Raft!','اركب عوامة العائلة!');MV('Ride the Banana Boat!','اركب قارب الموزة!');MV('Drive a bumper boat','قُد قاربًا متصادمًا');MV('Up the raft tower','اصعد برج العوامة');
+MV('Everybody in the raft!','الجميع إلى العوامة!');MV('Hop in the log! Friends can sit with you','اقفز في جذع الشجرة! يمكن لأصدقائك الجلوس معك');MV('Everybody in the raft! Friends can hop in too','الجميع إلى العوامة! يمكن لأصدقائك الركوب أيضًا');
+MV('Climb on the banana! Friends can ride too','اصعد على الموزة! يمكن لأصدقائك الركوب أيضًا');MV('Hold on tight! Friends can hop in too','تمسّك جيدًا! يمكن لأصدقائك الركوب أيضًا');MV('Hold on tight!','تمسّك جيدًا!');
+MV('It is out on the ride. Back in {0} s','إنه في جولة الآن. يعود بعد {0} ث');MV('Back in {0} s','يعود بعد {0} ث');MV('Hop in! Leaving in {0}','اقفز إلى الداخل! ينطلق بعد {0}');
+MV('Bump the other boats! Power squirts water. ✋ to get out','اصطدم بالقوارب الأخرى! زر القوة يرشّ الماء. ✋ للخروج');
 // ================= v26.8 fixes from the family and from the check-up =================
 // ---------- a quest thing right next to a person ----------
 // The ✋ Use button always picked "Talk to ..." when a person stood within 2.6 m, so a quest thing next to them (a fossil at
@@ -12873,6 +13428,32 @@ MV('Stargazer fixed','تم إصلاح مهمة مراقب النجوم');
 MV('On Frosty Peaks, the observatory telescope can be fixed now from the slope below it or from the top of the dome','في القمم الجليدية يمكنك الآن إصلاح تلسكوب المرصد من المنحدر تحته أو من فوق القبة');
 MV('Safe rides','ألعاب آمنة');
 MV('Menu, Go to Hero HQ works while you are on a Fun Park ride, and nothing can hurt you while you ride','القائمة، «اذهب إلى مقر الأبطال» يعمل وأنت على لعبة في مدينة الملاهي، ولا شيء يؤذيك وأنت تركب');
+// ================= v27.1 fixes =================
+// Riding a water slide: you lie back, feet first, arms up over your head, and wobble a little on the way down (the kids
+// did not like sitting up straight like in a car). For every water slide: the Fun Park's two slides and the water park's.
+const SLCAP={list:[],fake:null};
+function slideDrawOn(d,t,M,dh){if(!SLCAP.fake){SLCAP.fake={};for(const k of ['box','rbox','cyl','sph','cone','wedge'])SLCAP.fake[k]={put:(m,cx,cy,cz,sx,sy,sz,c,a)=>{SLCAP.list.push([k,Float32Array.from(m),cx,cy,cz,sx,sy,sz,c,a]);}};}
+  const keep=OUT;SLCAP.list.length=0;const g3=typeof G3D!=='undefined'&&G3D.on;OUT=SLCAP.fake;const A=d.anim||{};
+  try{if(g3)G3D.on=false;dh({...d,x:0,y:0,z:0,face:0,drive:false,swim:false,fly:false,ground:true,vx:0,vz:0,anim:{...A,cheer:1,walk:0,amp:0,punch:0,spin:0,slam:0}},t);}finally{if(g3)G3D.on=true;OUT=keep;}
+  const mm=new Float32Array(16);for(const q of SLCAP.list){M4.mul(mm,M,q[1]);keep[q[0]].put(mm,q[2],q[3],q[4],q[5],q[6],q[7],q[8],q[9]);}}
+// lying back on the slide: the feet go first, the head is up the slide behind you
+function slideRiderM(f,t,seed){const M=frameM(f,0,.2,.2);M4.rz(M,Math.sin(t*6+(seed||0))*.09);M4.rx(M,-1.32);return M;}
+// the slide I am on (or a friend is on): where it goes at that point, or null
+function slideFrameOf(d){
+  if(d===ME){if(typeof WPS!=='undefined'&&WPS.me&&WPS.me.k==='sl'&&WPS.me.f){const sl=typeof WP!=='undefined'&&WP.slBy&&WP.slBy[WPS.me.id];return sl&&sl.style==='mat'?{...WPS.me.f,mat:sl.col}:WPS.me.f;}if(typeof FPS!=='undefined'&&FPS.me&&FPS.me.k==='ws'&&FPS.me.f)return FPS.me.f;return null;}
+  if(typeof WPS!=='undefined'&&d.wpRide&&d.wpRide[0]==='sl'&&typeof WP!=='undefined'&&WP.slBy){const sl=WP.slBy[d.wpRide[1]];if(sl){const f=wpSlideAt(sl,d.wpRide[2]||0);return {x:d.x,y:d.y,z:d.z,F:f.F,U:f.U,R:f.R,mat:sl.style==='mat'?sl.col:null};}}
+  if(typeof FPS!=='undefined'&&d.fpRide&&d.fpRide[0]==='ws'&&FP.ws&&FP.ws.sl){const S=FP.ws.sl[d.fpRide[1]|0];if(S){let bi=0,bd=1e9;for(let i=0;i<S.P.length;i+=2){const q=S.P[i];const dd=(q.x-d.x)**2+(q.y-d.y)**2+(q.z-d.z)**2;if(dd<bd){bd=dd;bi=i;}}
+      if(bd<9){const q=S.P[bi];return {x:d.x,y:d.y,z:d.z,F:q.F,U:q.U,R:q.R};}}}
+  return null;}
+{const _dh=drawHero;drawHero=function(d,t){try{const f=slideFrameOf(d);if(f){slideDrawOn(d,t,slideRiderM(f,t,d===ME?0:1.3),_dh);if(f.mat){const m=MS.cur;MS.reset();m.set(frameM(f));bx(m,0,.05,-.7,.9,.08,2.4,f.mat,1);}return;}}catch(e){noteErr('sliderider',e);}return _dh(d,t);};}
+// the camera on a slide: higher up behind you, looking down, so you see yourself lying on the slide and where it goes
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);try{let f=null,q=null,up=4.3;
+  if(typeof FPS!=='undefined'&&FPS.me&&FPS.me.k==='ws'&&FPS.me.f&&typeof FP!=='undefined'){const R=FPS.me,P=FP.ws.sl[R.sl].P;q=P[Math.max(0,Math.floor(R.i||0)-8)];f=R.f;}
+  else if(typeof WPS!=='undefined'&&WPS.me&&WPS.me.k==='sl'&&WPS.me.f&&typeof WP!=='undefined'&&WP.slBy){const R=WPS.me,sl=WP.slBy[R.id];if(sl){q=wpSlideAt(sl,Math.max(0,R.i-(R.id==='drop'?11:14)));f=R.f;if(R.id==='drop')up=3.4;}}
+  if(!f||!q)return;CAM.eye=[q.x,Math.max(q.y,f.y)+up,q.z];CAM.tx=f.x+f.F[0]*1.6;CAM.ty=f.y+.2+f.F[1]*1.6;CAM.tz=f.z+f.F[2]*1.6;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=null;}catch(e){noteErr('slidecam',e);}};}
+// ---------- what's new (Arabic) ----------
+MV('The Humongous Water Park!','حديقة الماء العملاقة!');MV('A whole island of water fun south of Brick City: the 45 metre tower with the Drop, the Tornado and the Rainbow Ribbon, the Racer, a wave pool with a giant duck, the lazy river, a pirate ship, Splash Beach, Splash Mountain, the Family Raft, the Banana Boat and bumper boats. Ride together with your friends!','جزيرة كاملة من المرح المائي جنوب مدينة الطوب: البرج بطول 45 مترًا مع المنحدر الكبير والإعصار وشريط قوس قزح، والسباق، ومسبح الأمواج مع بطة عملاقة، والنهر الكسول، وسفينة القراصنة، وشاطئ الرذاذ، وجبل الرذاذ، وطوف العائلة، وقارب الموز، وقوارب التصادم. اركبوا معًا مع أصدقائكم!');
+MV('A new way down the slides','طريقة جديدة للتزحلق');MV('On every water slide you now lie back, feet first, with your arms up, and the camera shows you sliding down','على كل منزلقات الماء تستلقي الآن على ظهرك، وقدماك إلى الأمام، وذراعاك إلى الأعلى، والكاميرا تُريك وأنت تنزلق');
 // ================= v25.6: one broken thing never stops the whole game =================
 // The moving things of the world (heroes, pets, cars, enemies, quest markers, the glowing trail...) were drawn in one big
 // step. If one of them could not be drawn, the whole picture stopped, and after a few seconds the game said "Oops! The game
