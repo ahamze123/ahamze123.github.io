@@ -4113,6 +4113,11 @@
    "status": "SUCCEEDED"
   },
   "p_sandcastle": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_sandcastle.png"
+   ],
    "id": "01a0fee1-834e-7670-b77a-e586cc0e8df6",
    "kind": "text-to-image",
    "made": "2026-10-02 23:09",
@@ -4123,7 +4128,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute sandcastle for a children's 3D game: golden sand towers with little pink flags, a small arched door and seashells pressed into the walls. The whole sandcastle seen from the front at a slight angle, standing on a small patch of sand. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_shell": {
    "credits": 9,
