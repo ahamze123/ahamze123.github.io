@@ -1,21 +1,87 @@
 {
-  "run": 13,
-  "heroes": [],
-  "refetch": [],
-  "refetch_max": 2048,
-  "refetch_quality": 92,
-  "max_credits": 30,
-  "parallel": 4,
-  "model": {"ai_model": "latest", "target_polycount": 20000, "pose_mode": "a-pose"},
-  "rig": {"height_meters": 1.2},
-  "anims": {"heroes": [], "action_ids": []},
-  "extra": {},
-  "per": {},
-  "redo": [],
-  "images": {
-    "p_castle": {"ai_model": "nano-banana-pro", "aspect_ratio": "1:1", "prompt": "A cute fairy-tale princess castle for a children's 3D game. Pink and white walls, round towers with lavender and pink cone roofs, golden trims, a big arched door, small arched windows, little flags on the tower tops. Glossy 3D animated-movie style, soft even light. The whole castle in view, seen from the front at a slight angle, standing on a small flat base. Plain pure white background, no shadow, no people, no text."},
-    "p_cottage": {"ai_model": "nano-banana-pro", "aspect_ratio": "1:1", "prompt": "A cute small storybook cottage for a children's 3D game. Cream walls, a rounded coral pink roof, a round wooden door, two windows with flower boxes full of pink flowers, a little chimney. Glossy 3D animated-movie style, soft even light. The whole cottage in view, seen from the front at a slight angle, standing on a small flat base. Plain pure white background, no shadow, no people, no text."},
-    "p_appletree": {"ai_model": "nano-banana-pro", "aspect_ratio": "1:1", "prompt": "A cute round apple tree for a children's 3D game: a short curvy brown trunk and a big fluffy round green top full of shiny red apples. Glossy 3D animated-movie style, soft even light. The whole tree in view from the side, standing on a small flat base. Plain pure white background, no shadow, no text."}
+ "run": 14,
+ "heroes": [
+  "p_luna",
+  "p_mimi",
+  "p_pip",
+  "p_bunny",
+  "p_dot",
+  "p_stardust",
+  "p_castle",
+  "p_cottage",
+  "p_appletree"
+ ],
+ "refetch": [
+  "p_luna"
+ ],
+ "refetch_max": 2048,
+ "refetch_quality": 92,
+ "max_credits": 300,
+ "parallel": 5,
+ "model": {
+  "ai_model": "latest",
+  "target_polycount": 20000,
+  "pose_mode": "a-pose"
+ },
+ "rig": {
+  "height_meters": 1.1
+ },
+ "anims": {
+  "heroes": [
+   "p_luna"
+  ],
+  "action_ids": [
+   243,
+   415,
+   460,
+   44,
+   28,
+   298,
+   405,
+   118
+  ]
+ },
+ "extra": {},
+ "per": {
+  "p_luna": {
+   "target_polycount": 30000
   },
-  "redo_images": []
+  "p_mimi": {
+   "rig": false,
+   "pose_mode": ""
+  },
+  "p_pip": {
+   "rig": false,
+   "pose_mode": ""
+  },
+  "p_bunny": {
+   "rig": false,
+   "pose_mode": ""
+  },
+  "p_dot": {
+   "rig": false,
+   "pose_mode": ""
+  },
+  "p_stardust": {
+   "rig": false,
+   "pose_mode": ""
+  },
+  "p_castle": {
+   "rig": false,
+   "pose_mode": "",
+   "target_polycount": 40000,
+   "shrink": 2048
+  },
+  "p_cottage": {
+   "rig": false,
+   "pose_mode": ""
+  },
+  "p_appletree": {
+   "rig": false,
+   "pose_mode": ""
+  }
+ },
+ "redo": [],
+ "images": {},
+ "redo_images": []
 }
