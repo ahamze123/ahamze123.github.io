@@ -4031,6 +4031,19 @@
   }
  },
  "images": {
+  "color_page1": {
+   "id": "01a0feec-5ef9-76fc-97e8-17c1e8d5ef18",
+   "kind": "text-to-image",
+   "made": "2026-10-02 23:21",
+   "refs": [],
+   "run": 17,
+   "settings": {
+    "ai_model": "nano-banana",
+    "aspect_ratio": "4:3",
+    "prompt": "A coloring page for a 5 year old: a cute unicorn standing in a meadow in front of a little castle, with a rainbow, a smiling sun and two flowers. Very thick clean black outlines, big simple shapes, pure white inside every shape, no shading, no gray, no color, no text."
+   },
+   "status": "PENDING"
+  },
   "dress_items": {
    "credits": 9,
    "error": null,
@@ -4052,7 +4065,9 @@
   "luna_room": {
    "credits": 9,
    "error": null,
-   "files": [],
+   "files": [
+    "images/luna_room.png"
+   ],
    "id": "01a0feeb-f876-74e6-885d-a7c3acd8ece8",
    "kind": "text-to-image",
    "made": "2026-10-02 23:21",
@@ -4286,7 +4301,9 @@
   "p_penguin": {
    "credits": 9,
    "error": null,
-   "files": [],
+   "files": [
+    "images/p_penguin.png"
+   ],
    "id": "01a0feeb-f87a-710a-b493-1d38f1e85cd6",
    "kind": "image-to-image",
    "made": "2026-10-02 23:21",
