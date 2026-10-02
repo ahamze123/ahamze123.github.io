@@ -4044,6 +4044,19 @@
    },
    "status": "PENDING"
   },
+  "luna_room": {
+   "id": "01a0feeb-f876-74e6-885d-a7c3acd8ece8",
+   "kind": "text-to-image",
+   "made": "2026-10-02 23:21",
+   "refs": [],
+   "run": 17,
+   "settings": {
+    "ai_model": "nano-banana-pro",
+    "aspect_ratio": "4:3",
+    "prompt": "Inside a little princess's bedroom in a fairy-tale castle, for a children's game, seen straight from the front like a cozy stage. Pink, lavender and white with gold details. From left to right: a tall pink wardrobe with open doors showing dresses; a white vanity table with a big round mirror and a jewelry box; a small white piano; a big arched window with a sunny sky; a canopy bed with pink curtains, fluffy pillows and a teddy bear; a painting easel with a blank canvas; a small white bathtub full of bubbles with a rubber duck. A soft round rug on the floor and fairy lights. Every piece of furniture clearly separated and fully visible, nothing cut off. Glossy 3D animated-movie style, soft warm light, bright cheerful colors. No people, no animals, no text."
+   },
+   "status": "PENDING"
+  },
   "p_apple": {
    "credits": 9,
    "error": null,
@@ -4079,6 +4092,21 @@
     "prompt": "A cute round apple tree for a children's 3D game: a short curvy brown trunk and a big fluffy round green top full of shiny red apples. Glossy 3D animated-movie style, soft even light. The whole tree in view from the side, standing on a small flat base. Plain pure white background, no shadow, no text."
    },
    "status": "SUCCEEDED"
+  },
+  "p_bear": {
+   "id": "01a0feeb-f87a-7228-a7e8-15bdade28001",
+   "kind": "image-to-image",
+   "made": "2026-10-02 23:21",
+   "refs": [
+    "tools/meshy/pics/p_bear_src.jpg"
+   ],
+   "run": 17,
+   "settings": {
+    "ai_model": "nano-banana-pro",
+    "aspect_ratio": "1:1",
+    "prompt": "Show the bear chef from this picture alone on a plain pure white background: exactly the same bear, same fur colour and face, the same white chef's hat and pink apron with the cupcake, holding the wooden spoon, standing and facing the camera. The whole body from the top of the hat to the feet inside the picture, nothing cut off. Nothing else in the picture: no candy, no trees, no ground, no shadow, no text. Same glossy 3D animated-movie style, soft even light."
+   },
+   "status": "PENDING"
   },
   "p_blossom": {
    "credits": 9,
@@ -4241,6 +4269,21 @@
     "prompt": "A cute palm tree for a children's 3D game: a gently curved light brown trunk with soft rings and a bushy crown of big bright green leaves with three coconuts. The whole tree seen from the side, no ground, no base. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
    "status": "SUCCEEDED"
+  },
+  "p_penguin": {
+   "id": "01a0feeb-f87a-710a-b493-1d38f1e85cd6",
+   "kind": "image-to-image",
+   "made": "2026-10-02 23:21",
+   "refs": [
+    "tools/meshy/pics/p_penguin_src.jpg"
+   ],
+   "run": 17,
+   "settings": {
+    "ai_model": "nano-banana-pro",
+    "aspect_ratio": "1:1",
+    "prompt": "Show the penguin from this picture alone on a plain pure white background: exactly the same little penguin with the red knitted scarf and white fluffy earmuffs, standing and facing the camera with flippers out. The whole body from head to feet inside the picture, nothing cut off. Nothing else in the picture: no snow, no trees, no ground, no shadow, no text. Same 3D animated-movie style, soft even light."
+   },
+   "status": "PENDING"
   },
   "p_rock": {
    "credits": 9,
