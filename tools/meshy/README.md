@@ -14,6 +14,7 @@ then put into the game's `models/` folder.
 - `heroes`: the heroes to make (a hero that is already done is skipped).
 - `max_credits`: the most this run may spend (about 30 credits a model, 5 a skeleton, 3 an animation).
 - `model`, `rig`: Meshy settings. `per`: settings for one hero (for example `{"aya": {"target_polycount": 25000}}`).
+  `{"name": {"rig": false, "pose_mode": ""}}` makes a model with no skeleton (animals, buildings, trees): `<name>/model.glb` is the textured model as Meshy made it.
 - `anims`: `heroes` that get animations, and the library `action_ids` (up to 10).
 - `redo`: heroes whose model should be made again (costs credits again).
 - `images`: pictures to make first (text to image, or image to image with 1-5 reference pictures), saved as `images/<name>.png` in `meshy-out`; `redo_images` makes one again.

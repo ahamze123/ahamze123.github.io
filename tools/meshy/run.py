@@ -293,6 +293,17 @@ def do_hero(h, cfg):
         # ---------- 2. rigging ----------
         if cfg.get('rig') is False:
             return
+        if M.get('rig') is False:
+            # an animal or a thing with no skeleton ('per': {"name": {"rig": false}}): keep the textured model as it is
+            if not os.path.exists(os.path.join(folder, 'model.glb')):
+                t = api('GET', '/openapi/v1/image-to-3d/%s' % m['id'])
+                url = (t.get('model_urls') or {}).get('glb')
+                if not url:
+                    log(who, 'no model file in the finished task'); return
+                m['file'] = keep_glb(url, os.path.join(folder, 'model.glb'), shrink=int(M.get('shrink', 1024)))
+                log(who, 'model saved (no skeleton):', json.dumps(m['file']))
+                save(True, '%s: model saved' % h)
+            return
         R = cfg.get('rig') or {}
         g = S.get('rig')
         if g and g.get('model') != m['id']:
