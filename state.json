@@ -4126,6 +4126,11 @@
    "status": "PENDING"
   },
   "p_shell": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_shell.png"
+   ],
    "id": "01a0fee1-8351-7352-a959-e1dd8d71194e",
    "kind": "text-to-image",
    "made": "2026-10-02 23:09",
@@ -4136,7 +4141,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute big scallop seashell for a children's 3D game, pearly white with soft ridges, standing on its edge facing the camera, chunky and rounded. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_star": {
    "credits": 9,
