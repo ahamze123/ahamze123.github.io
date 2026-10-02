@@ -4198,6 +4198,11 @@
    "status": "SUCCEEDED"
   },
   "p_umbrella": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_umbrella.png"
+   ],
    "id": "01a0fee1-834d-77a8-b435-722890fd2866",
    "kind": "text-to-image",
    "made": "2026-10-02 23:09",
@@ -4208,7 +4213,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute beach umbrella with pink and white stripes standing in the sand, with a folded yellow beach towel and a little bucket and spade next to it, for a children's 3D game. The whole set seen from the side, small patch of sand under it. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "prism_card_a": {
    "credits": 12,
