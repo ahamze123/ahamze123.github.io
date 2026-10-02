@@ -136,11 +136,18 @@ def budget(n):
         return True
 
 
+def pic_path(h):
+    """the picture a model is made from: tools/meshy/pics/<h>.jpg or .png, else a picture made in this or an earlier run (images/<h>)"""
+    for p in (os.path.join(HERE, 'pics', h + '.jpg'), os.path.join(HERE, 'pics', h + '.png'),
+              os.path.join(OUT, 'images', h + '.png'), os.path.join(OUT, 'images', h + '.jpg')):
+        if os.path.exists(p):
+            return p
+    return None
+
+
 def pic_uri(h):
-    p = os.path.join(HERE, 'pics', h + '.jpg')
-    if not os.path.exists(p):
-        p = os.path.join(HERE, 'pics', h + '.png')
-    mime = 'image/png' if p.endswith('.png') else 'image/jpeg'
+    p = pic_path(h)
+    mime = 'image/png' if open(p, 'rb').read(4) == b'\x89PNG' else 'image/jpeg'
     return 'data:%s;base64,%s' % (mime, base64.b64encode(open(p, 'rb').read()).decode())
 
 
@@ -262,8 +269,8 @@ def do_hero(h, cfg):
             S.setdefault('old', []).append({k: S.get(k) for k in ('model', 'rig', 'anim') if S.get(k)})
             S.pop('model', None); S.pop('rig', None); S.pop('anim', None); m = None
         if not m or m.get('status') in ('FAILED', 'CANCELED', 'EXPIRED'):
-            if not os.path.exists(os.path.join(HERE, 'pics', h + '.jpg')) and not os.path.exists(os.path.join(HERE, 'pics', h + '.png')):
-                log(who, 'no picture in tools/meshy/pics'); return
+            if not pic_path(h):
+                log(who, 'no picture in tools/meshy/pics or images/'); return
             if not budget(COST['model']):
                 log(who, 'skipped: this run may not spend more credits'); return
             body = {'image_url': pic_uri(h), 'ai_model': M.get('ai_model', 'latest'), 'should_texture': True,
