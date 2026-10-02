@@ -2185,6 +2185,7 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9c-1be1-76ee-bac9-5e388c437f7b/output/preview.png?Expires=1791237314&Signature=iIAvqktf9Q2PFpKKTxn~H24fTFe2BFrZfrWhUrxUUYKYXfwY3xQX3qS8FoZuEbi9NeufZu5g657DIWR-j2D7ggFyoxy8EdrELYQtMBXfieTV9fENV2-bIxCg3-mtHeETlj5rfVgRZh51~xi3Z~j9g31IK35V~QCUQqhFyTNxq6iA-OQstvYD-0PC3gtBWKrv7S0073kgR-OZI4f96ADmpiATZ3KlZkaWecO59NCjgjoHsO4GHdR238C1lIhK6fJLy4Xegjn0xhS5M26Kb60Cn7sd2xJ5NrXonsNsdvu5016uzggmmzmp-r7pmdK~KEL1oBjuvAKgBLxIo~R5s~qfpQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
+  "p_lantern": {},
   "p_luna": {
    "anim": {
     "action_ids": [
@@ -2305,7 +2306,23 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe95-14ae-76c2-9770-6509911ead5c/output/preview.png?Expires=1791236894&Signature=LkPvCOkWUflkrmq26MwGOemlohVWUUKTTOhB3KoEzhl7mct8BnGTfZDstbiD3Iyw4IszriSakWWLgUSsAZ0NK1YmTNtQRzB9COAeiQcGqfL2xrkE2iCWrGGND-un80t3ef9h9C37Yo~qlBiArLQQTm07-YzJozyiQtjlSh1h~YIAXrkZZAh1j~6mxZa2k7sTSAqPcX4fg29yz2QE31sqGvXbVbELN5haZmxHcllmN0pMyQrzr7SQO9T85RduZQlbMJ2B2SM1CEAxDAku5DwSUdU7C1YEis7bqCWE2GjUfjnhjONcDxzS0efckLU~AxJvUnmQ9fShTGxhhFhS0c-nQg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
-  "p_mushroom": {},
+  "p_mushroom": {
+   "model": {
+    "id": "01a0fe9d-5deb-70f5-9758-eefeb0353722",
+    "made": "2026-10-02 21:55",
+    "run": 15,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 2500,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_pip": {
    "model": {
     "credits": 30,
