@@ -1076,3 +1076,7 @@
 2026-10-02 23:24:25 [p_penguin] image-to-3d IN_PROGRESS 33%
 2026-10-02 23:24:25 [p_mermaid] image-to-3d IN_PROGRESS 33%
 2026-10-02 23:24:26 [p_luna] animations moves2 ['Chair_Sit_Idle_F', 'Female_Crouch_Pick_Up_Place_Side', 'Swim_Forward', 'Swim_Idle']
+2026-10-02 23:24:56 [p_turtle] image-to-3d IN_PROGRESS 59%
+2026-10-02 23:25:17 [p_turtle] image-to-3d IN_PROGRESS 84%
+2026-10-02 23:25:37 [p_penguin] image-to-3d IN_PROGRESS 59%
+2026-10-02 23:25:37 [p_turtle] image-to-3d SUCCEEDED 100%
