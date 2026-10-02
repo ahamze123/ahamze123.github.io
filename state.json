@@ -1997,6 +1997,8 @@
   },
   "p_apple": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a0fe9e-21a8-751c-9973-d123937999cd",
     "made": "2026-10-02 21:56",
     "run": 15,
@@ -2009,7 +2011,8 @@
      "target_polycount": 1500,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9e-21a8-751c-9973-d123937999cd/output/preview.png?Expires=1791237452&Signature=nVLty-hCCppNf42ebWI8Fnarz9lsYfE0Ohh8T1UE8~E9hnNBQ0pPqlXSXL0Lbe4h-O5oJEXeK0UGEdjThyS5~i01tJCpNQk2kszA6k1jONYdAYuBKuJAi~nHrtbvmRfF49S5s1Jn1oY-svKUxMj67Le78AZeQa8DpeUOwW0nam6jbdHbkOAhcqix6-KWeZOLh14GSAK1FkV5gbLciQkJwDRtarTawZ~vQSBU8fBEsKf3xup1LRm5uBq07X1ZLk-Y7ANGKsbxy1mmzNK9OBcRcSkmGZQL7A5feIlmh6Dba3eU4JoxSRZaNcwW3wRTC8izc6OFOyQloR-WUkSDnmsHbg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "p_appletree": {
