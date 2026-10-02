@@ -4498,6 +4498,18 @@
    "limit": 400,
    "run": 15,
    "spent_estimate": 390
+  },
+  {
+   "at": "2026-10-02 23:09",
+   "heroes": [
+    "p_palm",
+    "p_shell",
+    "p_sandcastle",
+    "p_umbrella",
+    "p_starfish"
+   ],
+   "limit": 200,
+   "run": 16
   }
  ]
 }

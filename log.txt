@@ -977,3 +977,4 @@
 2026-10-02 21:57:35 [p_apple] image-to-3d SUCCEEDED 100%
 2026-10-02 21:57:37 [p_apple] model saved (no skeleton): {"bytes": 100988, "triangles": 1572, "joints": 0, "clips": []}
 2026-10-02 21:57:38 run finished; credits used by new tasks (estimate): 390
+2026-10-02 23:09:44 run 16 heroes ['p_palm', 'p_shell', 'p_sandcastle', 'p_umbrella', 'p_starfish'] max credits 200
