@@ -3760,7 +3760,9 @@
   "p_tree": {
    "credits": 9,
    "error": null,
-   "files": [],
+   "files": [
+    "images/p_tree.png"
+   ],
    "id": "01a0fe9a-cba7-73c3-b765-01dd2e11eff3",
    "kind": "text-to-image",
    "made": "2026-10-02 21:52",
