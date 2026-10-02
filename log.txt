@@ -757,3 +757,4 @@
 2026-10-02 20:31:17 [img prism_pic_a] saved ['images/prism_pic_a.png']
 2026-10-02 20:31:18 [img prism_pic_c] saved ['images/prism_pic_c.png']
 2026-10-02 20:31:21 run finished; credits used by new tasks (estimate): 33
+2026-10-02 20:45:50 run 12 heroes ['prism'] max credits 70

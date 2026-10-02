@@ -3548,6 +3548,14 @@
    "limit": 40,
    "run": 11,
    "spent_estimate": 33
+  },
+  {
+   "at": "2026-10-02 20:45",
+   "heroes": [
+    "prism"
+   ],
+   "limit": 70,
+   "run": 12
   }
  ]
 }
