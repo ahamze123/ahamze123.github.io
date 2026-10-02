@@ -940,3 +940,15 @@
 2026-10-02 21:55:25 [p_bush] image-to-3d SUCCEEDED 100%
 2026-10-02 21:55:27 [p_bush] model saved (no skeleton): {"bytes": 227152, "triangles": 2599, "joints": 0, "clips": []}
 2026-10-02 21:55:29 [p_carrot] model task made 01a0fe9d-7c28-772c-82e6-7d82980728d5
+2026-10-02 21:55:30 [p_carrot] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:55:35 [p_rock] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:55:44 [p_mushroom] image-to-3d IN_PROGRESS 27%
+2026-10-02 21:55:44 [p_lantern] image-to-3d IN_PROGRESS 27%
+2026-10-02 21:55:45 [p_blossom] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:55:50 [p_carrot] image-to-3d IN_PROGRESS 27%
+2026-10-02 21:55:55 [p_rock] image-to-3d IN_PROGRESS 99%
+2026-10-02 21:55:55 [p_blossom] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:56:04 [p_mushroom] image-to-3d IN_PROGRESS 50%
+2026-10-02 21:56:04 [p_lantern] image-to-3d IN_PROGRESS 74%
+2026-10-02 21:56:05 [p_rock] image-to-3d SUCCEEDED 100%
+2026-10-02 21:56:05 [p_blossom] image-to-3d SUCCEEDED 100%
