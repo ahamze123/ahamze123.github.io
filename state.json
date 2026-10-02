@@ -3277,6 +3277,24 @@
    }
   }
  },
+ "images": {
+  "prism_pic_b": {
+   "id": "01a0fe4f-e0a8-75af-a5f1-bbe0fce92df7",
+   "kind": "image-to-image",
+   "made": "2026-10-02 20:30",
+   "refs": [
+    "tools/meshy/pics/kira.jpg",
+    "tools/meshy/pics/sara.jpg"
+   ],
+   "run": 11,
+   "settings": {
+    "ai_model": "nano-banana-pro",
+    "aspect_ratio": "3:4",
+    "prompt": "Use the reference pictures ONLY for the art style: glossy 3D toy action-figure style like a premium kids' superhero figure, whole body from head to feet on a plain pure white background, standing straight and facing the viewer, arms held a little away from the body (relaxed A-pose), feet slightly apart, soft studio light. Do NOT copy the characters in the references. Make ONE new character: Captain Prism, a cheerful girl superhero about 9 years old, light tan skin, big friendly brown eyes, a happy smile, and a long high blond ponytail. She wears a white superhero bodysuit with purple side panels and purple shoulder pads, a sparkling rainbow prism gem emblem on her chest, a gold belt with a small purple gem buckle, white gloves with purple cuffs, purple leggings, tall white boots with gold tops, and a flowing rainbow cape with red, orange, yellow, green, blue and purple stripes that hangs behind her to her knees. No wings, no mask, no hat, nothing in her hands, no text, no logo."
+   },
+   "status": "PENDING"
+  }
+ },
  "runs": [
   {
    "at": "2026-10-01 12:18",
