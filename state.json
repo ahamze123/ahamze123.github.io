@@ -3709,6 +3709,11 @@
    "status": "SUCCEEDED"
   },
   "p_carrot": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_carrot.png"
+   ],
    "id": "01a0fe9b-579e-70ff-82bb-6a5a943ca15e",
    "kind": "text-to-image",
    "made": "2026-10-02 21:53",
@@ -3719,7 +3724,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute big orange carrot for a children's 3D game, standing upright with fresh green leaves on top, chunky and rounded. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_castle": {
    "credits": 9,
