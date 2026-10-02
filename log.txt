@@ -778,3 +778,4 @@
 2026-10-02 20:49:00 [prism] rigging SUCCEEDED 100%
 2026-10-02 20:49:00 [prism] rigged: {"model": {"bytes": 1985300, "triangles": 20755, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58016, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47392, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-02 20:49:02 [prism] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 2940140}
+2026-10-02 20:49:04 run finished; credits used by new tasks (estimate): 56

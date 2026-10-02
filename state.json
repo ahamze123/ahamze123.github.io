@@ -1996,6 +1996,7 @@
    }
   },
   "prism": {
+   "extra": {},
    "full": {
     "bytes": 2940140,
     "pictures": [
@@ -3657,7 +3658,8 @@
     "prism"
    ],
    "limit": 70,
-   "run": 12
+   "run": 12,
+   "spent_estimate": 56
   }
  ]
 }
