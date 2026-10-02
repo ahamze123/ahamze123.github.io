@@ -1630,6 +1630,7 @@
    }
   },
   "mluna": {
+   "extra": {},
    "full": {
     "bytes": 3401852,
     "pictures": [
@@ -3403,7 +3404,8 @@
     "mluna"
    ],
    "limit": 40,
-   "run": 9
+   "run": 9,
+   "spent_estimate": 35
   }
  ]
 }
