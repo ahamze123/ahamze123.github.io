@@ -201,6 +201,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fc13-2c88-769f-8720-7cc7f2b43dc9/output/preview.png?Expires=1791194822&Signature=p0lo83TkuvWRvtoyvd36izi~QBNdlNHGbEDdSPtemxrP8CP0cfDXlVv9r2nyPTEsCuBNQF2Z8ELDnldCweUx7IfeWwXbIwa1Vb1bXHzAdxojDs9ukVbLat9264Nhn7prS4mykxdagZUVgDAI1bXgoYx3K3W5kqL7egQp3q3Odfz~k68zu9TtcMBNlcLRAsBNMz6VQ6h8OpJ-CEfnhMIsLeMDlBHDojZwAKFMLiRPSe2i~nHv2eEln0Ly8BbuZq8VEIpwyrMLtvEi7m2PL5H8iY1FNCf0cBikiOAWLV6arSsur8rzUQ6pjXH~qFt8KVQGVf5nvfVE4s59xxxtxxtbjg__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a0fc14-f1dc-70d9-bec0-9251329667b3",
+    "made": "2026-10-02 10:07",
+    "model": "01a0fc13-2c88-769f-8720-7cc7f2b43dc9",
+    "status": "PENDING"
    }
   },
   "bella": {
