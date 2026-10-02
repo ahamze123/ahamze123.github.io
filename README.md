@@ -109,6 +109,19 @@ A theme park on **Sunset Bay**, just north of the town (on the big map under �
 - The big wheel and the carousel turn the same on every tablet. Each ride's first go pays 500 coins, and riding all five wins the **Fun Park Champion** trophy (+5000 coins).
 - Nothing can hurt you while you ride, and **Menu → Go to Hero HQ** (or going to a friend) takes you off the ride.
 
+## The Ocean
+The whole sea around the islands is alive now.
+- **Sea animals everywhere**: schools of rainbow fish, clownfish hiding in their anemones, pufferfish (they puff up when you come close), seahorses in the seaweed, starfish, crabs, lobsters, octopuses (they squirt ink), jellyfish (touch one and boing!), sea turtles, dolphins, friendly sharks and manta rays. In the cold sea by Frostpeak live seals on the ice and narwhals, and the big whale still swims between the islands.
+- **Every hero can dive**: in the sea, hold **⬇** (on a keyboard **Shift**) to go under, let go to swim up. The camera dives with you. Watch the **air bubbles**: when they run out you float back up to breathe. Divers (Noor, Finn, Saif, Lulu) and anyone wearing the **Diving Helmet** never run out, and the **Snorkel Mask** doubles your air.
+- **The Sea Album** (**Menu → 🌊 Sea Album**, or the 🐠 chip while you swim): swim close to an animal to add it. 16 animals to find, with presents at 4 (a **clownfish** pet), 8 (a **pufferfish** pet), 12 (the **Snorkel Mask**) and all 16 (a **baby shark** pet and the **Ocean Explorer** trophy).
+- **Ride sea animals**: swim next to a sea turtle, a dolphin or a manta ray and press **Use**. Steer with the joystick; turtles and manta rays dive with **⬇** and come up with jump, dolphins **leap out of the water** when you press jump. Press **Use** again to let go. Friends see what you ride.
+- **Sea missions** all around the world:
+  - **Captain Gill** on the Sunset pier: **The Treasure Map** (find 4 torn map pieces on the sea floor, follow the map to the X and open the chest; a **little octopus** joins you) and **The Dolphin Race** (ride a dolphin through 8 rings; a **baby dolphin** pet).
+  - **Dr. Pearl** on the beach east of Star Harbor: **Turtle Rescue** (free 4 baby turtles from old nets; a **seahorse** pet), **Ocean Clean-up** (the **Ocean Cleaner** trophy) and **The Shark's Sore Tooth** (the **Shark Buddy** trophy).
+  - **Iris the Ice Diver** on the west shore of Frostpeak: **The Lost Seal Pups** (the **Seal Friend** trophy).
+- **Sea pets**: the clownfish, pufferfish, seahorse, little octopus, baby dolphin and baby shark swim next to you in the sea, even deep down, and float in a bubble of water on land. They grow, learn tricks and dress up like every pet.
+- **Sunken treasure**: two shipwrecks and more treasure chests on the sea floor around the islands, and clams that open to show a pearl. Swim to one and press **Use**.
+
 ## The Humongous Water Park
 A whole island of water fun, just south of Brick City's harbour: walk over the sandy causeway from the lighthouse beach (on the big map under 🎮 Fun, or **What's new → Show me the way**). It is open from the start. Everything is real water you can swim in.
 - **🗼 The Humongous Tower**: 45 metres tall, the tallest thing in Blocktopia. The lift pad at its foot takes you to the top, where you pick a slide:
@@ -138,7 +151,7 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 - A hungry pet shows a little 🍖 bubble.
 
 ## Moving around
-- **Swimming**: every hero can swim. Jump into the sea (or the Sunset Bay pool, the Fun Park's splash pool or any pool in the Humongous Water Park) to swim, and jump again to climb out.
+- **Swimming**: every hero can swim, and dive in the sea (hold ⬇ or Shift). Jump into the sea (or the Sunset Bay pool, the Fun Park's splash pool or any pool in the Humongous Water Park) to swim, and jump again to climb out.
 - **Flying**: flying heroes (like Omar and Ruby) hold jump to go up and hold **⬇ Down** (**Shift** on a keyboard) to fly down. With the Jet Wings gadget, the other heroes can glide. Tap **🦸 Land** (or press **L**) for a fast super hero landing.
 - **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 

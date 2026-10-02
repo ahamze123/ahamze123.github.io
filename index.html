@@ -2493,7 +2493,7 @@ function updateMe(dt,inp){const p=ME,A=p.anim,pr=prof();
   if(!p.fly&&inWater(p.x,p.z,p.y)&&!(typeof CRS!=='undefined'&&CRS.act)){swimMe(p,dt);}
   else if(!p.fly&&inWater(p.x,p.z,p.y)){p.tossed=false;A.spin=0;SFX.splash();burst(p.x,WL,p.z,'#bff4ff',18,3,.18,.5);p.x=p.safe.x;p.y=p.safe.y+.3;p.z=p.safe.z;p.vx=p.vz=p.vy=0;p.invT=1;floatText(p.x,p.y+2.2,p.z,'Splash!','blue');}
   else if(p.ground&&chAt(p.x,p.z)>=WL){p.swim=false;p.safeT-=dt;if(p.safeT<=0){p.safe={x:p.x,y:p.y,z:p.z};p.safeT=.5;}}
-  if(p.y<-2&&!p.fly&&!(typeof MINE!=='undefined'&&MINE.cell[cid(clamp(Math.floor(p.x),0,N-1),clamp(Math.floor(p.z),0,N-1))])){p.x=p.safe.x;p.y=p.safe.y+.3;p.z=p.safe.z;p.vy=0;}
+  if(p.y<-2&&!p.fly&&!p.swim&&!(typeof OC!=='undefined'&&OC.ride)&&!(typeof MINE!=='undefined'&&MINE.cell[cid(clamp(Math.floor(p.x),0,N-1),clamp(Math.floor(p.z),0,N-1))])){p.x=p.safe.x;p.y=p.safe.y+.3;p.z=p.safe.z;p.vy=0;}
   animSprings(p,dt);}
 function animSprings(p,dt){const A=p.anim;const hs=Math.hypot(p.vx,p.vz);A.walk+=hs*dt*2.2;A.amp=lerp(A.amp,p.ground?Math.min(1,hs/6):.3,Math.min(1,10*dt));A.bob=p.ground?Math.abs(Math.sin(A.walk))*.07*A.amp:0;
   spring(A.lean,p.ground?hs*.025:-.06,120,10,dt);spring(A.tilt,0,120,6,dt);spring(A.sq,1,260,9,dt);spring(A.hx,-p.vy*.01+hs*.015,90,5,dt);spring(A.hz,Math.sin(A.walk)*.05*A.amp,90,5,dt);
@@ -7677,8 +7677,13 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:47,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:48,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🐠',t:'The sea is alive!',s:'Fish, clownfish, pufferfish, seahorses, crabs, octopuses, jellyfish, sea turtles, dolphins, friendly sharks and manta rays live all around the islands, and seals and narwhals in the cold sea by Frostpeak. Swim close to them to fill your Sea Album (Menu, Sea Album)'},
+  {ic:'🤿',t:'Every hero can dive',s:'In the sea, hold ⬇ (or Shift) to swim down and let go to swim up. Watch your air bubbles! Divers and the Diving Helmet never run out of air'},
+  {ic:'🐬',t:'Ride sea animals',s:'Swim next to a sea turtle, a dolphin or a manta ray and press Use to ride it. A dolphin leaps out of the water when you press jump!'},
+  {ic:'⚓',t:'Sea missions',s:'Captain Gill on the Sunset pier, Dr. Pearl on the beach east of Star Harbor and Iris the Ice Diver at Frostpeak need your help in the sea. They give sea pets: a clownfish, a pufferfish, a seahorse, a little octopus, a baby dolphin and a baby shark!',go:()=>{const g=NPCS.find(n=>n.id==='gill');return g?dd({x:g.x,z:g.z,label:tr('Captain Gill'),icon:'⚓',col:'#46b0ff'}):null;}},
+  {ic:'💰',t:'Sunken treasure',s:'Treasure chests, pearl clams and two shipwrecks are hidden on the sea floor'},
   {ic:'🌊',t:'The Humongous Water Park!',s:'A whole island of water fun south of Brick City: the 45 metre tower with the Drop, the Tornado and the Rainbow Ribbon, the Racer, a wave pool with a giant duck, the lazy river, a pirate ship, Splash Beach, Splash Mountain, the Family Raft, the Banana Boat and bumper boats. Ride together with your friends!',go:()=>typeof WP!=='undefined'&&WP.ok?dd({x:WP.cw.x,z:WP.cw.z0-2,label:tr('Humongous Water Park'),icon:'🌊',col:'#46c0ee'}):null},
   {ic:'🛝',t:'A new way down the slides',s:'On every water slide you now lie back, feet first, with your arms up, and the camera shows you sliding down'},
   {ic:'🐾',t:'Pets grow up!',s:'Tap 🐾 to look after your pet: feed it, give it a bath, play fetch and teach it tricks. Pets grow from Baby to Super and get bigger. Bigger pets help more: they fetch coins from further away, sniff out treasure and pounce on baddies. Dress them up and give them a name!'},
@@ -7981,7 +7986,7 @@ function heroLand(p){p.anim.slam=1;p.powT=Math.max(p.powT||0,.5);SFX.slam&&SFX.s
   const d=document.createElement('button');d.className='tb down';d.hidden=true;d.innerHTML=`<span class="ic">⬇</span><span class="lb">${esc(tr('Down'))}</span>`;
   tbWire(d,'down');tbs.appendChild(d);};}
 const LANDTIP={t:0,shown:false};
-{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&(ME.fly||ME.chute)&&!ME.veh&&G.mode==='play');const dv=!!(ME&&!ME.veh&&ME.swim&&G.mode==='play'&&typeof abOf==='function'&&abOf(ME)==='dive');for(const b of document.querySelectorAll('#touch .tb.land,#touch .tb.down')){const want=b.classList.contains('down')?(on||dv):on;if(b.hidden===want){b.hidden=!want;if(!want&&b.classList.contains('down')){TOUCH.b.down=false;b.classList.remove('on');}}}
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);const on=!!(ME&&(ME.fly||ME.chute)&&!ME.veh&&G.mode==='play');const dv=!!(ME&&!ME.veh&&G.mode==='play'&&((ME.swim&&typeof abOf==='function'&&(abOf(ME)==='dive'||(typeof OC!=='undefined'&&!(typeof poolAt==='function'&&poolAt(ME.x,ME.z)))))||(typeof OC!=='undefined'&&OC.ride&&OC.ride.sp!=='dolphin')));for(const b of document.querySelectorAll('#touch .tb.land,#touch .tb.down')){const want=b.classList.contains('down')?(on||dv):on;if(b.hidden===want){b.hidden=!want;if(!want&&b.classList.contains('down')){TOUCH.b.down=false;b.classList.remove('on');}}}
   if(on&&!LANDTIP.shown){LANDTIP.t+=dt;if(LANDTIP.t>2.6){LANDTIP.shown=true;toast(tr(TOUCH.on?'Hold ⬇ to fly down. Tap 🦸 to land fast':'Hold Shift to fly down. Press L to land fast'));}}};}
 // the touch buttons always match what you are doing: on foot, in a car, on a ride, building (even after a crash throws you out)
 const TLS={k:null};
@@ -10399,7 +10404,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.1';window.BB_VER=BB_VER;
+const BB_VER='27.2';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -12516,6 +12521,21 @@ MV('Get out of the car first','انزل من السيارة أولًا');MV('Spi
 MV('Super Star','النجم الخارق');MV('Captain Sparkle','كابتن لمعة');MV('Thunder Kid','فتى الرعد');MV('Rainbow Rocket','صاروخ قوس قزح');MV('Night Ninja','نينجا الليل');MV('Sky Dancer','راقصة السماء');MV('Lightning Lily','ليلى البرق');
 MV('Blaze Boy','فتى اللهب');MV('Crystal Queen','ملكة الكريستال');MV('Turbo Tiger','النمر السريع');MV('Moon Hopper','قافز القمر');MV('Coral Kid','فتى المرجان');MV('Flash Fox','الثعلب البرق');MV('Bubble Hero','بطل الفقاعات');MV('Storm Pal','صديق العاصفة');MV('Sunny Jet','نفاثة الشمس');
 MV('Hero Maker: make your own heroes','صانع الأبطال: اصنع أبطالك');MV('Menu, 🎨 Hero Maker: pick hair, colours, wings or a mermaid tail, a hat, attacks and a special move, give your hero a name, and play as them. Friends online see them too','القائمة، 🎨 صانع الأبطال: اختر الشعر والألوان والأجنحة أو ذيل الحورية والقبعة والهجمات والحركة الخاصة، وسمِّ بطلك والعب به. الأصدقاء على الإنترنت يرونه أيضًا');
+// ================= v27.2: 🐠 sea pets =================
+// Pets from the sea: a clownfish, a pufferfish, a seahorse, a little octopus, a baby dolphin and a baby shark. You win them
+// from the Sea Album and the sea missions (90_ocean.js). In the water they swim next to you, even deep down, and on land
+// they float in a bubble of water. This file comes before 88_pets.js so they grow, learn tricks and dress up like every pet.
+PETS.push({id:'clownfish',n:'Clownfish',p:-1,i:'🐠',d:'A stripy little fish from the reef'},{id:'pufferfish',n:'Pufferfish',p:-1,i:'🐡',d:'Puffs up when it is happy'},
+  {id:'seahorse',n:'Seahorse',p:-1,i:'🌊',d:'A tiny seahorse with a curly tail'},{id:'octopus',n:'Little Octopus',p:-1,i:'🐙',d:'Eight arms for eight hugs'},
+  {id:'babydolphin',n:'Baby Dolphin',p:-1,i:'🐬',d:'Squeaks and does flips'},{id:'babyshark',n:'Baby Shark',p:-1,i:'🦈',d:'Small, friendly and always smiling'});
+const OCPET={clownfish:1,pufferfish:1,seahorse:1,octopus:1,babydolphin:1,babyshark:1};
+{const _dp=drawPet;drawPet=function(o,t){if(!OCPET[o.kind])return _dp(o,t);try{ocSeaPetDraw(o,t);}catch(e){noteErr('seapet',e);}};}
+{const _up=updatePet;updatePet=function(pet,o,dt,mine){if(!OCPET[pet.kind])return _up(pet,o,dt,mine);try{ocSeaPetMove(pet,o,dt,mine);}catch(e){noteErr('seapet move',e);}};}
+{const _ps=petSound;petSound=function(k){if(!OCPET[k])return _ps(k);
+  if(k==='babydolphin'){AU.tone(1500,.07,'sine',.04,1.4);AU.tone(1900,.07,'sine',.04,1.3,.09);AU.tone(1700,.08,'sine',.04,1.5,.18);}
+  else if(k==='babyshark'){AU.tone(220,.16,'triangle',.05,.8);AU.tone(260,.12,'triangle',.04,1,.15);}
+  else if(k==='pufferfish'){AU.tone(300,.18,'sine',.05,2.2);}
+  else{AU.tone(700,.07,'sine',.04,1.6);AU.tone(950,.07,'sine',.035,1.6,.1);}};}
 // ================= v27.0: 🐾 pets that grow =================
 // Every pet grows up as you look after it and take it on adventures: Baby → Little → Big → Grown-up → Super.
 // Tap 🐾 (next to the other buttons at the top) to feed it, play fetch, give it a bath, dress it up and give it a name.
@@ -13502,6 +13522,584 @@ MV('Copied! Paste it in your message.','تم النسخ! الصقه في رسا�
 // look's name, or with no look, now gets the right look.
 {const _dp=drawPerson;drawPerson=function(o,t,look){if(typeof look==='string')look=NPC_LOOKS[look]||null;if(!look||typeof look!=='object')look=(o&&o.look&&typeof o.look==='object'&&o.look)||NPC_LOOKS.kid;
   if(o&&o.anim){const A=o.anim;if(!isFinite(A.walk))A.walk=0;if(!isFinite(A.amp))A.amp=0;}return _dp(o,t,look);};}
+// ================= v27.2: 🌊 the Ocean: the whole sea comes alive =================
+// Sea animals live everywhere in the deep water around the islands: fish schools, clownfish in their anemones, pufferfish,
+// seahorses, starfish, crabs, lobsters, octopuses, jellyfish, sea turtles, dolphins, friendly sharks, manta rays, and in the
+// cold sea by Frostpeak seals and narwhals (plus the big whale). Every hero can dive now (hold ⬇ or Shift): watch the air
+// bubbles (divers and the diving helmet never run out). Swim close to an animal to put it in your Sea Album. Ride turtles,
+// dolphins and manta rays. The album and the sea missions give sea pets that swim next to you (and float in a bubble on land).
+const OC={cells:new Map(),air:1,deep:false,vy:0,outTold:0,ride:null,hide:new Map(),chk:0,startle:new Map(),puff:new Map(),boing:0,shark:null,alb:false,lastF:0};
+const OCSVG={
+  clown:'<svg viewBox="0 0 64 64"><path d="M16 32L3 20v24z" fill="#ff7a1a" stroke="#2a2233" stroke-width="2.5" stroke-linejoin="round"/><path d="M27 18l7-9 7 9" fill="#ff7a1a" stroke="#2a2233" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="35" cy="32" rx="23" ry="15" fill="#ff7a1a" stroke="#2a2233" stroke-width="2.5"/><path d="M26 18c-4 9-4 19 0 28M41 17c-3 10-3 20 0 30" stroke="#fff" stroke-width="6" fill="none"/><circle cx="50" cy="28" r="4.5" fill="#fff"/><circle cx="51" cy="28" r="2.4" fill="#2a2233"/></svg>',
+  seahorse:'<svg viewBox="0 0 64 64"><path d="M31 12c8-3 14 3 12 10-1 4-5 6-5 10 0 6 6 9 6 15 0 8-7 12-13 10-5-2-5-8-1-9 3-1 5 1 4 3" fill="none" stroke="#ffb02e" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M42 15l13-2-1 6-11 0z" fill="#ffb02e"/><path d="M27 27c-6 1-7 7-3 10" fill="none" stroke="#ff7ac8" stroke-width="4" stroke-linecap="round"/><circle cx="37" cy="15" r="3.2" fill="#fff"/><circle cx="37.6" cy="15" r="1.7" fill="#2a2233"/></svg>',
+  star:'<svg viewBox="0 0 64 64"><path d="M32 5l7 17 18 2-14 11 5 18-16-10-16 10 5-18L7 24l18-2z" fill="#ff8a3c" stroke="#d9572a" stroke-width="3" stroke-linejoin="round"/><g fill="#ffd08a"><circle cx="32" cy="31" r="3.2"/><circle cx="32" cy="18" r="2"/><circle cx="44" cy="27" r="2"/><circle cx="20" cy="27" r="2"/><circle cx="39" cy="41" r="2"/><circle cx="25" cy="41" r="2"/></g></svg>',
+  jelly:'<svg viewBox="0 0 64 64"><path d="M18 36c-3 8 3 12 0 22M28 36c-3 8 3 12 0 22M38 36c-3 8 3 12 0 22M48 36c-3 8 3 12 0 22" stroke="#c070ff" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M10 34a22 22 0 0 1 44 0c-4 3-8 3-11 0-4 3-8 3-11 0-4 3-8 3-11 0-4 3-8 3-11 0z" fill="#ff9ec0" stroke="#e0609a" stroke-width="2.5" stroke-linejoin="round"/><circle cx="25" cy="22" r="3" fill="#2a2233"/><circle cx="39" cy="22" r="3" fill="#2a2233"/><path d="M28 28q4 3 8 0" stroke="#2a2233" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+  manta:'<svg viewBox="0 0 64 64"><path d="M32 44l3 16" stroke="#22304d" stroke-width="2.5" stroke-linecap="round"/><path d="M32 18c8 0 14 6 29 12-13 4-21 8-29 14-8-6-16-10-29-14 15-6 21-12 29-12z" fill="#3a4f7a" stroke="#22304d" stroke-width="2.5" stroke-linejoin="round"/><path d="M27 19l-3-7M37 19l3-7" stroke="#22304d" stroke-width="3.5" stroke-linecap="round"/><circle cx="27" cy="25" r="2.4" fill="#fff"/><circle cx="37" cy="25" r="2.4" fill="#fff"/></svg>',
+  narwhal:'<svg viewBox="0 0 64 64"><path d="M49 27L62 11" stroke="#efe2c0" stroke-width="3.5" stroke-linecap="round"/><path d="M14 33c10-12 30-13 38-3 4 5 2 12-4 14-11 4-25 3-34-4l-8 8c-4-3-4-9 0-12-4-3-4-9 0-12z" fill="#b8c7d6" stroke="#6f8399" stroke-width="2.5" stroke-linejoin="round"/><circle cx="43" cy="31" r="2.6" fill="#2a2233"/><g fill="#7f93a8"><circle cx="25" cy="32" r="1.8"/><circle cx="32" cy="38" r="1.8"/><circle cx="21" cy="39" r="1.5"/><circle cx="35" cy="30" r="1.4"/></g></svg>'};
+// the 16 animals of the Sea Album (where tells kids where to look)
+const OCSP=[
+  {id:'fish',n:'Rainbow Fish',ic:'🐟',d:'Swims in big shiny schools',w:'Everywhere in the sea',r:5.5},
+  {id:'clown',n:'Clownfish',ic:'clown',d:'Hides in a wavy anemone',w:'Near the shore, where the water is not deep',r:4.5},
+  {id:'puffer',n:'Pufferfish',ic:'🐡',d:'Puffs up into a spiky ball when you come close',w:'In warm water',r:5},
+  {id:'seahorse',n:'Seahorse',ic:'seahorse',d:'Holds on to seaweed with its curly tail',w:'In the seaweed near the shore',r:4.5},
+  {id:'star',n:'Starfish',ic:'star',d:'Has five arms and lives on the sand',w:'On the sand under the water',r:4.5},
+  {id:'crab',n:'Crab',ic:'🦀',d:'Walks sideways and snaps its claws',w:'On the sand near the shore',r:4.5},
+  {id:'lobster',n:'Lobster',ic:'🦞',d:'Waves its long feelers',w:'On the sea floor near the shore',r:4.5},
+  {id:'octo',n:'Octopus',ic:'🐙',d:'Squirts ink when you surprise it',w:'On the sea floor',r:4.5},
+  {id:'jelly',n:'Jellyfish',ic:'jelly',d:'Bouncy! Touch it and boing!',w:'Floating in deep water',r:5},
+  {id:'turtle',n:'Sea Turtle',ic:'🐢',d:'Swims slowly. You can ride it!',w:'In the sea everywhere',r:6},
+  {id:'dolphin',n:'Dolphin',ic:'🐬',d:'Ride it and press jump to leap!',w:'Jumping in deep water',r:8},
+  {id:'manta',n:'Manta Ray',ic:'manta',d:'Glides like a bird. You can ride it!',w:'Gliding in deep water',r:8},
+  {id:'shark',n:'Friendly Shark',ic:'🦈',d:'Big smile, kind heart. Likes to swim with you',w:'In deep water',r:8},
+  {id:'seal',n:'Seal',ic:'🦭',d:'Claps its flippers on the ice',w:'In the cold sea by Frostpeak',r:8},
+  {id:'narwhal',n:'Narwhal',ic:'narwhal',d:'The unicorn of the sea!',w:'In the deep cold sea by Frostpeak',r:10},
+  {id:'whale',n:'Whale',ic:'🐳',d:'The biggest friend in the sea. Watch it blow!',w:'In the open sea between the islands',r:30}];
+const OCBY={};OCSP.forEach((s,i)=>{s.i=i;OCBY[s.id]=s;});
+function ocIcon(id,big){const s=OCBY[id];if(!s)return '';const sz=big?54:30;return OCSVG[s.ic]?`<span class="ocsvg" style="width:${sz}px;height:${sz}px">${OCSVG[s.ic]}</span>`:`<span class="ocemo" style="font-size:${Math.round(sz*.86)}px">${s.ic}</span>`;}
+function ocEmo(id){const s=OCBY[id];return s?(OCSVG[s.ic]?({clown:'🐠',seahorse:'🌊',star:'⭐',jelly:'🫧',manta:'🌊',narwhal:'🐋'}[s.ic]||'🌊'):s.ic):'🌊';}
+function ocSea(){if(!G.sea||typeof G.sea!=='object')G.sea={f:{},ride:{},tip:{},ch:[],pl:[],jumps:0};const S=G.sea;S.f=S.f||{};S.ride=S.ride||{};S.tip=S.tip||{};S.ch=S.ch||[];S.pl=S.pl||[];return S;}
+const ocN=()=>Object.keys(ocSea().f).filter(k=>OCBY[k]).length;
+// ---------- where the sea is ----------
+const ocNow=()=>(Date.now()/1000)%86400;
+function ocDepth(x,z){const xi=Math.floor(x),zi=Math.floor(z);if(xi<1||zi<1||xi>=N-1||zi>=N-1||inInBox(x,z)||inMoonBox(x,z))return 0;return Math.max(0,WL-H[cid(xi,zi)]);}
+function ocCold(x,z){const F=REG.find(r=>r.id==='frost');return !!F&&Math.hypot(x-F.x,z-F.z)<F.r+80;}
+function ocSkip(x,z){if(typeof WP!=='undefined'&&WP.ok&&x>WP.x0-26&&x<WP.x1+10&&z>WP.z0-10&&z<WP.z1+16)return true;if(typeof poolAt==='function'&&poolAt(x,z))return true;return false;}
+// ---------- the animals: groups in 32 m cells, made the same way every time (friends see them in the same places) ----------
+const OCC_=32;
+function ocPick(g,d,cold){const sh=d<4.4;let T;
+  if(cold)T=sh?[['seal',d<3.4?34:0],['star',10],['crab',8],['fish',12],['jelly',6]]:[['narwhal',16],['fish',16],['jelly',10],['shark',5],['dolphin',6],['seal',0]];
+  else T=sh?[['clown',14],['seahorse',10],['star',12],['crab',10],['lobster',8],['puffer',10],['octo',8],['fish',14],['turtle',5]]:[['fish',22],['jelly',12],['turtle',10],['dolphin',8],['shark',7],['manta',7],['puffer',5],['octo',3]];
+  let s=0;for(const q of T)s+=q[1];let r=g()*s;for(const q of T){r-=q[1];if(r<=0)return q[0];}return 'fish';}
+function ocPickShallow(g,d,cold){const T=cold?[['seal',d<3.4?30:0],['star',10],['crab',9]]:[['clown',14],['seahorse',11],['star',12],['crab',12],['lobster',11],['puffer',7],['octo',8]];
+  let s=0;for(const q of T)s+=q[1];let r=g()*s;for(const q of T){r-=q[1];if(r<=0)return q[0];}return 'star';}
+// a swimming circle has to stay in water at least this deep
+function ocRingOK(x,z,r,dmin){for(let a=0;a<12;a++){const X=x+Math.cos(a/12*TAU)*r,Z=z+Math.sin(a/12*TAU)*r;if(ocDepth(X,Z)<dmin||ocSkip(X,Z))return false;}return true;}
+function ocMake(sp,x,z,g,key){const fl=H[cid(Math.floor(x),Math.floor(z))],d=WL-fl;const o={sp,x,z,fl,d,key,ph:g()*TAU,dir:g()<.5?-1:1,r:0,n:1,y:fl,c:g()*4|0,s:.85+g()*.35};
+  const swim=(dm,r0,r1)=>{for(let t=0;t<4;t++){o.r=r1-(r1-r0)*t/3;if(ocRingOK(x,z,o.r,dm))return true;}return false;};
+  switch(sp){
+    case 'fish':o.n=6+(g()*6|0);if(!swim(1.6,2,6))return null;o.y=fl+Math.max(.9,Math.min(d-1.4,1.2+g()*(d-2)));break;
+    case 'clown':o.n=2+(g()*2|0);break;
+    case 'seahorse':o.n=1+(g()*2|0);break;
+    case 'star':o.n=1+(g()*3|0);break;
+    case 'crab':o.n=1+(g()*2|0);break;
+    case 'lobster':case 'octo':break;
+    case 'puffer':if(!swim(1.8,1.5,3.5))return null;o.y=fl+Math.max(.9,Math.min(d-1.5,1+g()*1.5));break;
+    case 'jelly':o.n=1+(g()*3|0);o.y=fl+Math.max(1.4,d*.55);if(d<2.6)return null;break;
+    case 'turtle':if(!swim(2.6,5,13))return null;o.y=fl+Math.max(1.3,d*.45);break;
+    case 'dolphin':o.n=2+(g()*2|0);if(!swim(3.2,7,15))return null;break;
+    case 'shark':if(!swim(3.4,8,16))return null;o.y=fl+Math.max(1.6,d*.42);break;
+    case 'manta':if(!swim(3.2,7,13))return null;o.y=fl+Math.max(1.7,d*.5);break;
+    case 'seal':o.n=1+(g()*2|0);if(d<.6||d>3.4)return null;break;
+    case 'narwhal':o.n=1+(g()*2|0);if(!swim(3.4,8,14))return null;break;}
+  return o;}
+function ocCell(cx,cz){const key=cx*1000+cz;let L=OC.cells.get(key);if(L)return L;L=[];const g=qrng((cx*7919+cz*31337+4242)>>>0);const tries=3;
+  for(let k=0;k<tries;k++){const x=cx*OCC_+2+g()*(OCC_-4),z=cz*OCC_+2+g()*(OCC_-4);const d=ocDepth(x,z);const go=g();if(d<.7||ocSkip(x,z)||go<.22)continue;
+    const cold=ocCold(x,z);if(d<1.4&&!(cold&&d>.6)){continue;}const sp=ocPick(g,d,cold);const o=ocMake(sp,x,z,g,key*16+k);if(o)L.push(o);}
+  // near the shore a few more: clownfish, seahorses, starfish, crabs and lobsters live where the water is not deep
+  for(let k=0;k<6;k++){const x=cx*OCC_+1+g()*(OCC_-2),z=cz*OCC_+1+g()*(OCC_-2);const d=ocDepth(x,z);const go=g();const cold=ocCold(x,z);if(d>=4.4||ocSkip(x,z)||go<.3||(cold?d<.6:d<1.4))continue;
+    if(L.some(q=>Math.abs(q.x-x)<5&&Math.abs(q.z-z)<5))continue;const sp=ocPickShallow(g,d,cold);const o=ocMake(sp,x,z,g,key*16+8+k);if(o)L.push(o);}
+  if(OC.cells.size>900)OC.cells.clear();OC.cells.set(key,L);return L;}
+// every group in the cells around a spot
+function ocAround(x,z,rc,fn){const cx=Math.floor(x/OCC_),cz=Math.floor(z/OCC_);for(let a=cx-rc;a<=cx+rc;a++)for(let b=cz-rc;b<=cz+rc;b++){if(a<0||b<0||a*OCC_>=N||b*OCC_>=N)continue;for(const o of ocCell(a,b))fn(o);}}
+// where member k of a group is right now: P.x,y,z, facing P.f, nose up or down P.p, and a little extra P.a
+const OCP={x:0,y:0,z:0,f:0,p:0,a:0};
+function ocPos(o,k,T){const P=OCP;P.p=0;P.a=0;const st=OC.startle.get(o.key);let sx=0,sz=0;if(st){const u=Math.max(0,1-(G.t-st.t)/6);sx=st.dx*u;sz=st.dz*u;}
+  switch(o.sp){
+    case 'fish':{const a=o.ph+T*o.dir*.55+k*.42,r=o.r+Math.sin(k*1.7)*1.1;P.x=o.x+Math.cos(a)*r;P.z=o.z+Math.sin(a)*r;P.y=o.y+Math.sin(T*1.3+k)*.35+(k%3)*.35;P.f=o.dir>0?-a:Math.PI-a;break;}
+    case 'clown':{const a=o.ph+T*1.6*o.dir+k*2.2;const hide=OC.startle.has(o.key)?Math.max(0,1-(G.t-OC.startle.get(o.key).t)/4):0;P.x=o.x+Math.cos(a)*.55*(1-hide);P.z=o.z+Math.sin(a)*.55*(1-hide);P.y=o.fl+.75+Math.sin(T*2+k)*.15-hide*.5;P.f=o.dir>0?-a:Math.PI-a;P.a=hide;break;}
+    case 'seahorse':{const a=o.ph+k*2.4;P.x=o.x+Math.cos(a)*.9;P.z=o.z+Math.sin(a)*.9;P.y=o.fl+1.1+Math.sin(T*.9+k)*.35+k*.4;P.f=-a+Math.sin(T*.3+k)*.6;break;}
+    case 'star':{const a=o.ph+k*2.1;P.x=o.x+Math.cos(a)*1.4*k;P.z=o.z+Math.sin(a)*1.4*k;P.y=hAt(P.x,P.z)+.05;P.f=o.ph+k;break;}
+    case 'crab':{const a=o.ph+k*1.9,w=Math.sin(T*.45+k*2)*1.8;const fx=Math.cos(a),fz=Math.sin(a);P.x=o.x+fx*w+k*1.2;P.z=o.z+fz*w;P.y=hAt(P.x,P.z)+.02;P.f=Math.atan2(fz,-fx);P.a=Math.cos(T*.45+k*2);break;}
+    case 'lobster':{const a=o.ph+T*.18*o.dir;P.x=o.x+Math.cos(a)*1.6;P.z=o.z+Math.sin(a)*1.6;P.y=hAt(P.x,P.z)+.02;P.f=o.dir>0?-a:Math.PI-a;break;}
+    case 'octo':{P.x=o.x+sx;P.z=o.z+sz;P.y=Math.max(hAt(P.x,P.z)+.15,o.fl+.15)+(st?Math.max(0,1.5-(G.t-st.t)*.4):0);P.f=o.ph+Math.sin(T*.4)*.5;break;}
+    case 'puffer':{const a=o.ph+T*.32*o.dir;P.x=o.x+Math.cos(a)*o.r;P.z=o.z+Math.sin(a)*o.r;P.y=o.y+Math.sin(T*.8)*.3;P.f=o.dir>0?-a:Math.PI-a;break;}
+    case 'jelly':{const a=o.ph+k*2.1+T*.05;P.x=o.x+Math.cos(a)*(1+k*1.3);P.z=o.z+Math.sin(a)*(1+k*1.3);P.y=o.y+Math.sin(T*.7+k*1.7)*.8+k*.5;P.f=0;P.a=Math.sin(T*2.2+k);break;}
+    case 'turtle':{const a=o.ph+T*o.dir*.55/o.r*3;P.x=o.x+Math.cos(a)*o.r;P.z=o.z+Math.sin(a)*o.r;P.y=o.y+Math.sin(T*.35+o.ph)*.6;P.f=o.dir>0?-a:Math.PI-a;break;}
+    case 'shark':{const a=o.ph+T*o.dir*1.6/o.r;P.x=o.x+Math.cos(a)*o.r;P.z=o.z+Math.sin(a)*o.r;P.y=o.y+Math.sin(T*.3)*.5;P.f=o.dir>0?-a:Math.PI-a;break;}
+    case 'manta':{const a=o.ph+T*o.dir*2/o.r;P.x=o.x+Math.cos(a)*o.r;P.z=o.z+Math.sin(a)*o.r;P.y=o.y+Math.sin(T*.5)*.8;P.f=o.dir>0?-a:Math.PI-a;P.a=Math.sin(T*2.2);break;}
+    case 'dolphin':case 'narwhal':{const nar=o.sp==='narwhal';const a=o.ph+T*o.dir*(nar?1.8:3.4)/o.r+k*.55,r=o.r+k*1.6;P.x=o.x+Math.cos(a)*r;P.z=o.z+Math.sin(a)*r;P.f=o.dir>0?-a:Math.PI-a;
+      if(nar){P.y=WL-1.1+Math.sin(T*.6+k)*.25;break;}const cyc=(T*.35+k*.37+o.ph)%3,j=cyc<1.15?Math.sin(cyc/1.15*Math.PI):0;P.y=WL-.95+j*3.2;P.p=cyc<1.15?-Math.cos(cyc/1.15*Math.PI)*.85:0;P.a=cyc<1.15?1:0;break;}
+    case 'seal':{const a=o.ph+k*2.6;P.x=o.x+Math.cos(a)*1.3*k;P.z=o.z+Math.sin(a)*1.3*k;P.y=WL+.05;P.f=o.ph+k*1.4+Math.sin(T*.4+k)*.4;break;}}
+  return P;}
+// ---------- the animals' looks (each one drawn at the middle of its own spot, facing +z) ----------
+const OCFC=[['#ffcf3a','#2f6bff'],['#ff8a4f','#ffffff'],['#46e6ff','#ffffff'],['#ff5fa8','#ffcf3a'],['#b28dff','#7ef9ff'],['#7ed957','#ffcf3a'],['#ff4f6d','#ffffff']];
+function ocEyes(m,x,y,z,s,k){for(const q of [-1,1]){sp(m,q*x,y,z,.05*s,.15*s,.14*s,'#ffffff',1);sp(m,q*(x+.02*s),y,z+.02*s,.04*s,.09*s,.08*s,DARK,1);}}
+function ocFishM(m,t,k,z,c0,c1){const w=Math.sin(t*12+k)*.35;sp(m,0,0,0,.16*z,.38*z,.62*z,c0,6,.1);MS.push();M4.tr(m,0,0,-.34*z);M4.ry(m,w);co(m,0,0,-.12*z,.05*z,.3*z,.26*z,c1,6);MS.pop();
+  for(const s of [-1,1])sp(m,s*.07*z,.07*z,.2*z,.03,.06,.05,DARK,1);}
+function ocClownM(m,t,k,s){const w=Math.sin(t*10+k)*.4,o='#ff7a1a';sp(m,0,0,0,.2*s,.32*s,.56*s,o,6,.06);for(const z of [.14,-.03,-.19])sp(m,0,0,z*s,.215*s,.3*s*(1-Math.abs(z)*1.5),.06*s,'#ffffff',6,.1);
+  MS.push();M4.tr(m,0,0,-.3*s);M4.ry(m,w);co(m,0,0,-.08*s,.04*s,.26*s,.2*s,o,6);MS.pop();co(m,0,.17*s,0,.03*s,.12*s,.2*s,o,6);
+  for(const q of [-1,1]){sp(m,q*.08*s,.05*s,.17*s,.03*s,.08*s,.08*s,'#ffffff',1);sp(m,q*.095*s,.05*s,.185*s,.02*s,.045*s,.045*s,DARK,1);}}
+function ocAnemoneM(m,t,c){const C=[['#ff7ac8','#ffd1ef'],['#b28dff','#e8d8ff'],['#46e6b0','#d8fff0'],['#ff9a3c','#ffe0b0']][c%4];cy(m,0,.15,0,.8,.3,.8,C[0],6);
+  for(let q=0;q<14;q++){const a=q/14*TAU,r=q%2?.26:.12;MS.push();M4.tr(m,Math.cos(a)*r,.28,Math.sin(a)*r);M4.rz(m,Math.sin(t*1.8+q)*.25-Math.cos(a)*.35);M4.rx(m,Math.sin(t*1.5+q*.7)*.25+Math.sin(a)*.35);cy(m,0,.3,0,.08,.6,.08,C[0],6);sp(m,0,.62,0,.12,.12,.12,C[1],6,.35);MS.pop();}}
+function ocSeahorseM(m,t,k,c){const C=['#ffb02e','#ff7ac8','#9be22d','#7ef9ff'][c%4];const fin=Math.sin(t*14+k)*.5;
+  for(const q of [[.55,.05,.2],[.42,0,.22],[.28,-.04,.2],[.14,-.04,.17],[.02,0,.14],[-.08,.06,.11],[-.14,.12,.09],[-.12,.18,.07],[-.06,.19,.06]])sp(m,0,q[0],q[1],q[2]*.85,q[2],q[2],C,6);
+  sp(m,0,.67,.1,.16,.17,.21,C,6);MS.push();M4.tr(m,0,.65,.2);M4.rx(m,Math.PI/2+.3);cy(m,0,.1,0,.06,.22,.06,C,6);MS.pop();co(m,0,.79,.06,.06,.12,.06,C,6);
+  MS.push();M4.tr(m,0,.32,-.12);M4.ry(m,fin);bx(m,0,0,-.05,.02,.2,.12,shade(C,1.2),6);MS.pop();
+  for(const q of [-1,1]){sp(m,q*.07,.7,.13,.03,.06,.06,'#ffffff',1);sp(m,q*.08,.7,.14,.02,.035,.035,DARK,1);}}
+function ocKelpM(m,t,h,seed){for(let q=0;q<3;q++){const ox=(q-1)*.4,oz=((q*7+seed)%3-1)*.3;let y=0;for(let s=0;s<6;s++){const sw=Math.sin(t*1.1+q+s*.6+seed)*.1*s;MS.push();M4.tr(m,ox+sw,y,oz);cy(m,0,h/12,0,.09,h/6,.09,'#3f9a4a',6);sp(m,.12,h/12,0,.09,.34,.22,q%2?'#56c05a':'#7ed957',6);MS.pop();y+=h/6;}}}
+function ocStarM(m,c){const C=['#ff8a3c','#ff4f6d','#b28dff','#ffcf3a'][c%4],D=shade(C,1.35);for(let q=0;q<5;q++){MS.push();M4.ry(m,q*TAU/5);rb(m,0,.05,.25,.18,.09,.46,C,6);sp(m,0,.1,.2,.05,.04,.05,D,6);sp(m,0,.09,.36,.04,.03,.04,D,6);MS.pop();}sp(m,0,.07,0,.32,.14,.32,C,6);}
+function ocCrabM(m,t,k,snap){const c='#ff5a3c',d='#e2432a';sp(m,0,.28,0,.72,.32,.56,c,6);
+  for(const s of [-1,1]){cy(m,s*.12,.48,.2,.04,.2,.04,c,6);sp(m,s*.12,.6,.2,.11,.11,.11,'#ffffff',1);sp(m,s*.12,.61,.25,.06,.06,.04,DARK,1);
+    MS.push();M4.tr(m,s*.34,.3,.26);M4.ry(m,-s*.5);MS.push();M4.rx(m,Math.PI/2);cy(m,0,.12,0,.07,.24,.07,c,6);MS.pop();sp(m,0,.02,.3,.2,.16,.24,d,6);MS.push();M4.tr(m,0,.07,.36);M4.rx(m,-snap*.7);bx(m,0,0,.08,.08,.05,.18,d,6);MS.pop();MS.pop();
+    for(let q=0;q<3;q++){MS.push();M4.tr(m,s*.3,.24,-.14+q*.12);M4.rz(m,s*(1+Math.sin(t*10+q+k)*.15));cy(m,0,-.18,0,.04,.36,.04,d,6);MS.pop();}}}
+function ocLobsterM(m,t){const c='#c8312a',d='#a8231e';sp(m,0,.22,.25,.34,.3,.55,c,6);for(let q=0;q<4;q++)sp(m,0,.2,-.12-q*.17,.3-q*.04,.22-q*.03,.2,q%2?c:d,6);
+  for(const s of [-1,1]){MS.push();M4.tr(m,s*.1,.12,-.82);M4.ry(m,s*.5);bx(m,0,0,-.1,.14,.03,.2,d,6);MS.pop();
+    MS.push();M4.tr(m,s*.18,.25,.45);M4.ry(m,-s*.35);M4.rx(m,Math.PI/2);cy(m,0,.15,0,.06,.3,.06,c,6);MS.pop();sp(m,s*.3,.25,.78,.22,.18,.36,c,6);
+    MS.push();M4.tr(m,s*.07,.33,.48);M4.rx(m,1.2+Math.sin(t*2+s)*.2);M4.rz(m,s*.3);cy(m,0,.5,0,.025,1,.025,d,6);MS.pop();sp(m,s*.08,.38,.45,.06,.06,.06,DARK,1);
+    for(let q=0;q<3;q++){MS.push();M4.tr(m,s*.15,.16,.15+q*.12);M4.rz(m,s*1.1);cy(m,0,-.12,0,.03,.24,.03,d,6);MS.pop();}}}
+function ocOctoM(m,t,c,s){s=s||1;const C=['#b25cd8','#ff7a5c'][c%2],L=shade(C,1.3);sp(m,0,.72*s,-.05*s,.8*s,.85*s,.8*s,C,6);for(let q=0;q<5;q++){const a=q*1.3;sp(m,Math.cos(a)*.3*s,(.88+Math.sin(q)*.1)*s,(-.05+Math.sin(a)*.3)*s,.1*s,.1*s,.1*s,L,6);}
+  for(const q of [-1,1]){sp(m,q*.17*s,.6*s,.28*s,.2*s,.24*s,.12*s,'#ffffff',1);sp(m,q*.18*s,.58*s,.33*s,.1*s,.14*s,.07*s,DARK,1);}
+  for(let q=0;q<8;q++){const a=q/8*TAU;for(let j=0;j<4;j++){const r=.22+j*.2,w=Math.sin(t*3+q+j*.8)*.08*j;sp(m,(Math.cos(a)*r+w)*s,(.35-j*.08+Math.sin(t*2+q*1.3+j)*.05)*s,Math.sin(a)*r*s,(.2-j*.035)*s,(.16-j*.03)*s,(.2-j*.035)*s,C,6);}}}
+function ocPufferM(m,t,puff,s){s=(s||1)*(1+puff*.75);const c='#e8c86a',d='#b8913a';sp(m,0,0,0,.7*s,.62*s,.78*s,c,6);sp(m,0,-.12*s,.06*s,.56*s,.36*s,.6*s,'#fff5d8',6);
+  for(let q=0;q<6;q++)sp(m,Math.cos(q*1.1)*.24*s,.22*s,Math.sin(q*1.7)*.24*s,.06*s,.05*s,.06*s,d,6);
+  if(puff>.15)for(let q=0;q<16;q++){const a=q*2.4,b=Math.acos(1-2*((q+.5)/16));const x=Math.sin(b)*Math.cos(a),y=Math.cos(b),z=Math.sin(b)*Math.sin(a);MS.push();M4.tr(m,x*.34*s,y*.3*s,z*.38*s);M4.ry(m,Math.atan2(x,z));M4.rx(m,Math.acos(clamp(y,-1,1)));co(m,0,.05*s,0,.05*s,.12*s*puff,.05*s,d,6);MS.pop();}
+  ocEyes(m,.2*s,.1*s,.27*s,s*.9);sp(m,0,-.02*s,.39*s,.08*s,.06*s,.04*s,'#d0705a',1);
+  MS.push();M4.tr(m,0,0,-.38*s);M4.ry(m,Math.sin(t*8)*.4);co(m,0,0,-.08*s,.04*s,.24*s,.18*s,c,6);MS.pop();for(const q of [-1,1]){MS.push();M4.tr(m,q*.33*s,-.02*s,.05*s);M4.ry(m,q*(.4+Math.sin(t*12)*.3));bx(m,q*.06*s,0,0,.12*s,.12*s,.03*s,c,6);MS.pop();}}
+function ocJellyM(m,t,k,c,pulse){const C=['#ff9ec0','#c8a8ff','#7ef9ff'][c%3];const pu=1+pulse*.12;sp(m,0,.12,0,.95*pu,.62/pu,.95*pu,C,8,.35);sp(m,0,.08,0,.62*pu,.4/pu,.62*pu,shade(C,1.15),1,.7);
+  for(const q of [-1,1])sp(m,q*.15,.2,.4*pu,.06,.08,.04,DARK,1);MS.push();M4.tr(m,0,.06,.42*pu);bx(m,0,0,0,.12,.025,.02,DARK,1);MS.pop();
+  for(let q=0;q<6;q++){const a=q/6*TAU;MS.push();M4.tr(m,Math.cos(a)*.26,-.12,Math.sin(a)*.26);M4.rz(m,Math.sin(t*2+q+k)*.25);M4.rx(m,Math.cos(t*1.7+q)*.2);cy(m,0,-.45,0,.035,.9,.035,C,1,.5);MS.pop();}}
+function ocTurtleM(m,t,s){const f=Math.sin(t*2.4)*.5;sp(m,0,0,0,1.3*s,.5*s,1.5*s,'#2f8f5a',6);sp(m,0,.08*s,0,1.1*s,.42*s,1.3*s,'#56c07a',6);
+  for(const [a,b] of [[0,0],[-.28,-.26],[.28,-.26],[-.28,.26],[.28,.26],[0,.48],[0,-.48]])cy(m,a*s,.27*s,b*s,.3*s,.04*s,.28*s,'#3fae6a',6);
+  sp(m,0,.02*s,.95*s,.42*s,.36*s,.5*s,'#8fd8a0',6);for(const q of [-1,1]){sp(m,q*.13*s,.1*s,1.12*s,.06*s,.08*s,.07*s,'#ffffff',1);sp(m,q*.14*s,.1*s,1.14*s,.04*s,.05*s,.05*s,DARK,1);}
+  for(const q of [-1,1])for(const zz of [.4,-.5]){MS.push();M4.tr(m,q*.62*s,0,zz*s);M4.ry(m,q*(.4+f*(zz>0?1:-1)));sp(m,q*.3*s,0,0,.66*s,.1*s,.3*s,'#8fd8a0',6);MS.pop();}}
+function ocDolphinM(m,t,s,col){const c=col||'#6f9fd0',b='#e8f2fb';sp(m,0,0,0,.72*s,.7*s,2.3*s,c,6);sp(m,0,-.12*s,.15*s,.55*s,.42*s,1.7*s,b,6);
+  MS.push();M4.tr(m,0,-.06*s,1.1*s);M4.rx(m,Math.PI/2);cy(m,0,.14*s,0,.22*s,.42*s,.2*s,c,6);MS.pop();MS.push();M4.tr(m,0,.3*s,-.15*s);M4.rx(m,-.55);co(m,0,.2*s,0,.1*s,.52*s,.36*s,c,6);MS.pop();
+  for(const q of [-1,1]){MS.push();M4.tr(m,q*.3*s,-.18*s,.35*s);M4.rz(m,q*.6);M4.ry(m,q*.35);bx(m,q*.18*s,0,0,.42*s,.06*s,.22*s,c,6);MS.pop();}
+  MS.push();M4.tr(m,0,0,-1.12*s);M4.rx(m,Math.sin(t*6)*.25);bx(m,0,0,-.22*s,.95*s,.07*s,.42*s,c,6);MS.pop();ocEyes(m,.25*s,.13*s,.72*s,s*.8);
+  MS.push();M4.tr(m,0,-.12*s,1.2*s);bx(m,0,0,0,.2*s,.02*s,.04*s,'#3a4a6a',1);MS.pop();}
+function ocSharkM(m,t,s){const c='#7f98b2',b='#eef3f8',w=Math.sin(t*3)*.2;sp(m,0,0,0,.95*s,.9*s,3.1*s,c,6);sp(m,0,-.2*s,.25*s,.75*s,.5*s,2.5*s,b,6);sp(m,0,-.02*s,1.3*s,.72*s,.64*s,.76*s,c,6);
+  MS.push();M4.tr(m,0,.38*s,.1*s);M4.rx(m,-.55);co(m,0,.32*s,0,.1*s,.8*s,.62*s,c,6);MS.pop();
+  for(const q of [-1,1]){MS.push();M4.tr(m,q*.4*s,-.25*s,.45*s);M4.rz(m,q*.7);M4.ry(m,q*.4);bx(m,q*.3*s,0,0,.7*s,.07*s,.32*s,c,6);MS.pop();}
+  MS.push();M4.tr(m,0,0,-1.45*s);M4.ry(m,w);MS.push();M4.rx(m,-.75);co(m,0,.36*s,0,.07*s,.85*s,.42*s,c,6);MS.pop();MS.push();M4.rx(m,-2.35);co(m,0,.26*s,0,.07*s,.55*s,.32*s,c,6);MS.pop();MS.pop();
+  for(const q of [-1,1]){sp(m,q*.3*s,.16*s,1.12*s,.06*s,.22*s,.2*s,'#ffffff',1);sp(m,q*.33*s,.16*s,1.15*s,.04*s,.13*s,.11*s,DARK,1);sp(m,q*.34*s,.21*s,1.17*s,.02*s,.04*s,.04*s,'#ffffff',1,1);}
+  MS.push();M4.tr(m,0,-.2*s,1.52*s);bx(m,0,0,0,.2*s,.05*s,.06*s,'#3a2a3a',1);for(const q of [-1,1]){MS.push();M4.tr(m,q*.13*s,.03*s,-.02*s);M4.rz(m,q*.5);bx(m,0,0,0,.12*s,.05*s,.06*s,'#3a2a3a',1);MS.pop();}MS.pop();}
+function ocMantaM(m,t,s,flap){const c='#34496e',b='#f0f4f8';const f=flap*.42;sp(m,0,0,0,1.5*s,.34*s,1.8*s,c,6);sp(m,0,-.08*s,.05*s,1.3*s,.2*s,1.5*s,b,6);
+  for(const q of [-1,1]){MS.push();M4.tr(m,q*.6*s,0,0);M4.rz(m,q*f);sp(m,q*.85*s,0,-.12*s,1.9*s,.16*s,1.25*s,c,6);MS.pop();MS.push();M4.tr(m,q*.42*s,0,.85*s);M4.rx(m,.3);bx(m,0,0,.14*s,.13*s,.08*s,.46*s,c,6);MS.pop();
+    sp(m,q*.45*s,.1*s,.62*s,.1*s,.13*s,.11*s,'#ffffff',1);sp(m,q*.47*s,.1*s,.64*s,.06*s,.08*s,.07*s,DARK,1);}
+  MS.push();M4.tr(m,0,0,-.9*s);M4.rx(m,Math.PI/2+Math.sin(t*2)*.15);cy(m,0,.75*s,0,.06*s,1.5*s,.06*s,c,6);MS.pop();}
+function ocSealM(m,t,k,clap){const c='#8d939e',d='#6c727c';MS.push();M4.rx(m,-.22);sp(m,0,.38,0,.82,.7,1.45,c,6);MS.pop();sp(m,0,.85,.45,.56,.52,.56,c,6);sp(m,0,.76,.72,.26,.2,.2,'#a7adb7',6);sp(m,0,.81,.83,.09,.06,.05,DARK,1);
+  for(const s of [-1,1]){sp(m,s*.15,.95,.66,.1,.12,.06,DARK,1);sp(m,s*.13,.98,.69,.03,.04,.02,'#ffffff',1,1);for(let q=0;q<2;q++){MS.push();M4.tr(m,s*.12,.74+q*.04,.78);M4.ry(m,s*.6);bx(m,s*.12,0,0,.24,.012,.012,'#ffffff',1);MS.pop();}
+    MS.push();M4.tr(m,s*.32,.35,.35);M4.rz(m,s*(.5+clap*1.1));M4.ry(m,s*.3);bx(m,s*.15,0,0,.32,.06,.18,d,6);MS.pop();}MS.push();M4.tr(m,0,.12,-.72);bx(m,0,0,-.12,.5,.05,.3,d,6);MS.pop();}
+function ocNarwhalM(m,t,s){const c='#b8c7d6',d='#7f93a8',w=Math.sin(t*2)*.2;sp(m,0,0,0,1.1*s,1*s,3.4*s,c,6);sp(m,0,-.2*s,.2*s,.9*s,.58*s,2.6*s,'#e8eef4',6);
+  for(let q=0;q<7;q++)sp(m,Math.sin(q*2.1)*.38*s,(.3+Math.cos(q*1.3)*.1)*s,(-1+q*.33)*s,.14*s,.08*s,.14*s,d,6);
+  MS.push();M4.tr(m,0,.05*s,1.55*s);M4.rx(m,Math.PI/2-.12);co(m,0,1.1*s,0,.14*s,2.2*s,.14*s,'#f2e6c6',8,.1);for(let q=0;q<6;q++)cy(m,0,(.25+q*.33)*s,0,.13*s*(1-q*.13),.04*s,.13*s*(1-q*.13),'#d8c8a0',6);MS.pop();
+  ocEyes(m,.4*s,.12*s,1.2*s,s*.9);for(const q of [-1,1]){MS.push();M4.tr(m,q*.45*s,-.25*s,.7*s);M4.rz(m,q*.6);bx(m,q*.25*s,0,0,.55*s,.07*s,.3*s,c,6);MS.pop();}
+  MS.push();M4.tr(m,0,0,-1.65*s);M4.rx(m,w);bx(m,0,0,-.3*s,1.3*s,.08*s,.55*s,c,6);MS.pop();}
+// one animal of a group (props like the anemone, the seaweed and the ice are drawn with the first one)
+function ocModel(o,k,t,P,s){const m=MS.cur;s=s||o.s;switch(o.sp){
+  case 'fish':{const FC=OCFC[(o.c+k)%OCFC.length];ocFishM(m,t,k,s*(.85+(k%3)*.15),FC[0],FC[1]);break;}
+  case 'clown':ocClownM(m,t,k,s*.95);break;
+  case 'seahorse':ocSeahorseM(m,t,k,o.c+k);break;
+  case 'star':ocStarM(m,o.c+k);break;
+  case 'crab':{const st=OC.startle.get(o.key);const sn=st&&G.t-st.t<1.8?Math.abs(Math.sin((G.t-st.t)*14)):0;ocCrabM(m,t,k,sn);break;}
+  case 'lobster':ocLobsterM(m,t);break;
+  case 'octo':ocOctoM(m,t,o.c,s*.9);break;
+  case 'puffer':{const pt=OC.puff.get(o.key);const pf=pt?clamp(Math.min((G.t-pt)*4,(pt+4-G.t)*1.2),0,1):0;ocPufferM(m,t,pf,s*.9);break;}
+  case 'jelly':ocJellyM(m,t,k,o.c,P.a);break;
+  case 'turtle':ocTurtleM(m,t,s);break;
+  case 'dolphin':ocDolphinM(m,t,s*1.05);break;
+  case 'shark':ocSharkM(m,t,s);break;
+  case 'manta':ocMantaM(m,t,s*1.1,P.a);break;
+  case 'seal':{const st=OC.startle.get(o.key);const cl=st&&G.t-st.t<2.5?Math.abs(Math.sin((G.t-st.t)*9)):0;ocSealM(m,t,k,cl);break;}
+  case 'narwhal':ocNarwhalM(m,t,s);break;}}
+function ocProp(o,t){const m=MS.cur;MS.reset();M4.tr(m,o.x,o.fl,o.z);M4.ry(m,o.ph);
+  if(o.sp==='clown')ocAnemoneM(m,t,o.c);else if(o.sp==='seahorse')ocKelpM(m,t,Math.min(3.2,o.d-.6),o.c);
+  else if(o.sp==='seal'){MS.reset();M4.tr(m,o.x+.4,WL-.12,o.z+.3);M4.ry(m,o.ph);rb(m,0,0,0,3.2,.34,2.6,'#eef8ff',1);rb(m,.4,.06,-.3,2.2,.3,1.6,'#ffffff',1);}
+  else if(o.sp==='octo'){MS.reset();M4.tr(m,o.x-1,o.fl,o.z-.6);sp(m,0,.3,0,1.6,1.1,1.4,'#8a8f9a',6);sp(m,.7,.2,.5,.9,.6,.8,'#9aa0aa',6);}}
+// ---------- drawing the sea animals near the camera ----------
+function ocDraw(t){if(camRealm()!=='earth'||G.mode==='title')return;const T=ocNow(),m=MS.cur;const cx=CAM.tx,cz=CAM.tz,under=typeof UW!=='undefined'&&UW.on;OUT=MOB;
+  ocAround(cx,cz,3,o=>{const big=o.sp==='dolphin'||o.sp==='shark'||o.sp==='manta'||o.sp==='narwhal'||o.sp==='turtle'||o.sp==='seal';const R0=(big?95:under?60:42)+(o.r||0);if(Math.abs(o.x-cx)>R0||Math.abs(o.z-cz)>R0)return;
+    if(o.sp==='clown'||o.sp==='seahorse'||o.sp==='seal'||o.sp==='octo'){if(inView(o.x,o.z))ocProp(o,t);}
+    for(let k=0;k<o.n;k++){const key=o.key*16+k;if(OC.ride&&OC.ride.key===key)continue;const hid=OC.hide.get(key);if(hid&&hid>G.t)continue;const P=ocPos(o,k,T);if(!inView(P.x,P.z))continue;
+      MS.reset();M4.tr(m,P.x,P.y,P.z);M4.ry(m,P.f);if(P.p)M4.rx(m,P.p);ocModel(o,k,t,P);
+      if(o.sp==='dolphin'&&P.a&&P.y<WL+.4&&R()<.2)burst(P.x,WL+.1,P.z,['#ffffff','#bff4ff'],2,2,.14,.3);}});
+  OUT=DYN;}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{ocDraw(t);}catch(e){noteErr('ocean draw',e);}};}
+// ---------- meeting the animals: the album, and what they do when you come close ----------
+function ocTick(dt){if(!ME||G.mode!=='play'||camRealm()!=='earth')return;for(const [k,v] of OC.hide)if(v<G.t)OC.hide.delete(k);OC.chk-=dt;if(OC.chk>0)return;OC.chk=.15;
+  const T=ocNow(),p=ME,S=ocSea();const py=p.y+.9;
+  ocAround(p.x,p.z,1,o=>{const D=OCBY[o.sp];if(Math.abs(o.x-p.x)>40+(o.r||0)||Math.abs(o.z-p.z)>40+(o.r||0))return;for(let k=0;k<o.n;k++){const P=ocPos(o,k,T);const dx=P.x-p.x,dz=P.z-p.z,dy=P.y-py;const d=Math.hypot(dx,dz,dy*1.15);
+      if(d<D.r&&!S.f[o.sp])ocFound(o.sp);if(d>9)continue;const st=OC.startle.get(o.key),old=!st||G.t-st.t>5;
+      if(o.sp==='clown'&&d<2.6&&old)OC.startle.set(o.key,{t:G.t,dx:0,dz:0});
+      else if(o.sp==='crab'&&d<3&&old){OC.startle.set(o.key,{t:G.t,dx:0,dz:0});AU.tone(1800,.04,'square',.03,1.1);AU.tone(1700,.04,'square',.03,1,.09);}
+      else if(o.sp==='seal'&&d<7&&old){OC.startle.set(o.key,{t:G.t,dx:0,dz:0});AU.tone(520,.14,'sawtooth',.04,.7);AU.tone(500,.14,'sawtooth',.04,.7,.2);}
+      else if(o.sp==='octo'&&d<2.9&&old){const l=Math.hypot(dx,dz)||1;OC.startle.set(o.key,{t:G.t,dx:dx/l*7,dz:dz/l*7});burst(P.x,P.y+.7,P.z,['#2a2233','#4a3a5a','#3a3050'],28,2.6,.42,1.4);SFX.whoosh&&SFX.whoosh();
+        if(!S.tip.ink){S.tip.ink=1;toast('🐙 '+tr('Squirt! The octopus hid in a cloud of ink'));}}
+      else if(o.sp==='puffer'&&d<2.7){const pt=OC.puff.get(o.key);if(!pt||G.t-pt>5){OC.puff.set(o.key,G.t);AU.tone(300,.18,'sine',.05,2.2);if(!S.tip.puff){S.tip.puff=1;toast('🐡 '+tr('Poof! The pufferfish puffed up'));}}}
+      else if(o.sp==='jelly'&&d<1.5&&G.t>OC.boing){OC.boing=G.t+1;if(OC.deep){OC.vy=9;OC.boingT=G.t+.7;}else{p.vy=11;p.ground=false;}AU.tone(260,.25,'sine',.06,2.6);burst(P.x,P.y,P.z,['#ff9ec0','#ffffff','#c8a8ff'],12,3,.16,.5);floatText(p.x,p.y+2.2,p.z,tr('Boing!'),'white');}}});
+  // the big whale and the dolphins by Sunset Bay count too
+  const Wh=FX&&FX.whale;if(Wh&&!S.f.whale){const a=G.t*.035;if(d2(Wh.x+Math.cos(a)*16,Wh.z+Math.sin(a)*16,p.x,p.z)<30)ocFound('whale');}
+  const Pd=FX&&FX.pod;if(Pd&&!S.f.dolphin&&d2(Pd.x,Pd.z,p.x,p.z)<22)ocFound('dolphin');}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{ocTick(dt);}catch(e){noteErr('ocean tick',e);}};}
+// clearer, brighter sea water under the surface, so you can see the animals and the sea floor
+{const _ae=applyEnv;applyEnv=function(){_ae();if(typeof UW==='undefined'||!UW.on||!CAM.eye)return;const d=clamp((WL-CAM.eye[1])/7,0,1);const sh=[.2,.66,.78],dp=[.08,.4,.6];const c=dp.map((v,i)=>lerp(sh[i],v,d));
+  ENV.fog=c;ENV.hor=c;ENV.top=[c[0]*.8,c[1]*.95,c[2]*1.05];const k=1-d*.3;ENV.sun=[.86*k,.9*k,.93*k];ENV.gnd=[.3,.37,.42];ENV.sky=[.46,.6,.68];};}
+{const _fd=fogDen;fogDen=function(){return typeof UW!=='undefined'&&UW.on?1/85:_fd();};}
+{const st=document.createElement('style');st.textContent='#uw{opacity:.62}';document.head.appendChild(st);}
+// from under the water the surface looks like a bright shimmering ceiling (you do not see the beaches through it)
+function ocCeiling(t){if(typeof UW==='undefined'||!UW.on||camRealm()!=='earth'||!CAM.eye)return;const m=MS.cur;MS.reset();M4.tr(m,Math.round(CAM.eye[0]),WL-.07,Math.round(CAM.eye[2]));
+  TRN.box.put(m,0,0,0,420,.03,420,hex('#93e4f4'),PK(1,.55));TRN.sph.put(m,0,-60,0,.001,.001,.001,hex('#93e4f4'),PK(1,0));}// (the see-through things are only drawn when there is at least one see-through ball)
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{ocCeiling(t);}catch(e){}};}
+// ---------- finding a new animal ----------
+const OCMILE=[[4,{t:'pet',id:'clownfish'}],[8,{t:'pet',id:'pufferfish'}],[12,{t:'hat',id:'snorkel'}],[16,{t:'pet',id:'babyshark'}],[16,{t:'trophy',id:'ocean'}]];
+function ocNext(n){for(const [k,r] of OCMILE)if(n<k)return [k,r];return null;}
+function ocFound(id){const S=ocSea();if(S.f[id]||!OCBY[id])return;S.f[id]=1;const n=ocN();OC.lastF=G.t;SFX.gold&&SFX.gold();ocPop(id,n);
+  let gave=false;for(const [k,r] of OCMILE)if(n>=k){const c=giveReward(r);if(c){gave=true;setTimeout(()=>rewardCard(c),2200);}}
+  if(gave)setTimeout(()=>toast('🌊 '+trf('{0} sea friends found! A present for you',n)),1900);saveSoon();if(typeof stickerCheck==='function')stickerCheck();}
+function ocPopUI(){let el=$('ocpop');if(el)return el;el=document.createElement('div');el.id='ocpop';el.hidden=true;document.body.appendChild(el);
+  const st=document.createElement('style');st.textContent=`
+#ocpop{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:26;background:rgba(14,40,86,.94);color:#fff;border-radius:18px;padding:8px 16px 8px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);border:3px solid #7ef9ff;font-family:var(--body,system-ui,sans-serif);cursor:pointer;animation:ocpopin .35s ease-out}
+#ocpop .t{font-size:12px;font-weight:900;color:#7ef9ff;letter-spacing:.05em;text-transform:uppercase}#ocpop b{display:block;font-size:19px}#ocpop small{font-size:13px;opacity:.9}
+@keyframes ocpopin{from{transform:translate(-50%,-30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.ocsvg{display:inline-block;vertical-align:middle}.ocsvg svg{width:100%;height:100%;display:block}.ocemo{display:inline-block;line-height:1;vertical-align:middle}
+#ocair{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:22;display:flex;gap:4px;padding:6px 10px;border-radius:20px;background:rgba(10,40,80,.45);pointer-events:none}
+#ocair i{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffffff 0 18%,#bff4ff 30%,#46c0ee 100%);box-shadow:0 0 4px #bff4ff;transition:transform .2s,opacity .2s}#ocair i.off{transform:scale(.3);opacity:.25}
+#ocair.low i{background:radial-gradient(circle at 35% 30%,#fff 0 18%,#ffd0d6 30%,#ff5d73 100%);animation:ocairb .5s infinite alternate}@keyframes ocairb{to{transform:scale(1.18)}}
+#occhip{position:fixed;right:calc(10px + env(safe-area-inset-right,0px));top:calc(150px + env(safe-area-inset-top,0px));z-index:21;border:0;border-radius:16px;padding:6px 10px;background:rgba(14,40,86,.85);color:#fff;font-weight:900;font-size:15px;display:flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(0,0,0,.3)}`;
+  document.head.appendChild(st);el.onclick=()=>{el.hidden=true;ocAlbumOpen();};return el;}
+function ocPop(id,n){const el=ocPopUI(),D=OCBY[id];el.innerHTML=`${ocIcon(id,true)}<div><span class="t">${esc(tr('New sea friend!'))}</span><b>${esc(tr(D.n))}</b><small>${esc(trf('{0} of {1} in your Sea Album',n,OCSP.length))}</small></div>`;
+  el.hidden=false;el.style.animation='none';void el.offsetWidth;el.style.animation='';clearTimeout(ocPop.t);ocPop.t=setTimeout(()=>{el.hidden=true;},4200);}
+// ---------- diving: every hero can go under the water now ----------
+function ocDiver(){return typeof abOf==='function'&&abOf(ME)==='dive';}
+function ocHat(){try{return prof().looks.hat;}catch(e){return '';}}
+function ocAirMax(){return ocHat()==='snorkel'?30:16;}
+function ocEndless(){return ocDiver()||ocHat()==='diving'||!!OC.ride;}
+{const _sw=swimMe;swimMe=function(p,dt){if(p!==ME||OC.ride)return _sw(p,dt);const a=typeof abOf==='function'?abOf(p):'';
+  if(a==='dash'&&MOV.sprint&&Math.hypot(p.vx,p.vz)>9){OC.deep=false;return _sw(p,dt);}
+  if(typeof poolAt==='function'&&poolAt(p.x,p.z)){OC.deep=false;MOV.deep=false;return _sw(p,dt);}
+  const inp=MOV.inp||{},wl=waterAt(p.x,p.z),top=wl-1.05;const gnd=groundAt(p.x,p.z,p.y-.5);const boing=G.t<(OC.boingT||0);const down=!!inp.down&&OC.air>0&&!OC.outTold&&!boing&&(OC.deep||wl-gnd>2.3);
+  if(!down&&!OC.deep){MOV.deep=false;OC.vy=0;return _sw(p,dt);}
+  if(!p.swim)_sw(p,dt);p.swim=true;p.swimT=G.t;p.tossed=false;p.anim.spin=0;p.jumps=0;
+  const vt=boing?7:down?(a==='dive'?-6:-4.2):(inp.jump||OC.air<=0)?5.5:2.4;OC.vy=lerp(OC.vy||0,vt,Math.min(1,dt*(down?5:3)));OC.deep=true;
+  if(p.y>=top&&!down&&OC.vy>=0){OC.deep=false;MOV.deep=false;OC.vy=0;p.y=top;p.vy=0;p.ground=true;p.coyote=.12;return;}
+  const floor=gnd+.35;if(p.y<floor){p.y=floor;if(OC.vy<0)OC.vy=0;}
+  p.vy=OC.vy+30*dt;p.ground=false;p.coyote=0;MOV.deep=true;if(R()<.22)burst(p.x,p.y+1.6,p.z,['#dff6ff','#ffffff'],1,.6,.1,.3);
+  const S=ocSea();if(!S.tip.deep){S.tip.deep=1;toast('🫧 '+tr(ocEndless()?'Divers never run out of air!':'Watch your air bubbles! Let go of ⬇ to swim up'));}};}
+// air: it runs out slowly while your head is under water, and fills up again at the top
+function ocAirTick(dt){const p=ME;if(!p||G.mode!=='play'){return;}const el=ocAirUI();if(p.swim&&!p.veh&&!OC.ride){const S=ocSea();if(!S.tip.d0&&!(typeof poolAt==='function'&&poolAt(p.x,p.z))){S.tip.d0=1;setTimeout(()=>toast('🫧 '+tr(TOUCH.on?'New! Hold ⬇ to dive under the water':'New! Hold Shift to dive under the water')),900);}}const under=p.swim&&!p.veh&&p.y+1.45<waterAt(p.x,p.z)-.05;
+  if(under&&!ocEndless()){OC.air=Math.max(0,OC.air-dt/ocAirMax());if(OC.air<=0&&!OC.outTold){OC.outTold=1;SFX.nope&&SFX.nope();toast('🫧 '+tr('Out of air! Up you go'));}}
+  else if(!under){OC.air=Math.min(1,OC.air+dt*.75);if(OC.air>.6)OC.outTold=0;}
+  const show=under&&!ocEndless()||OC.air<.999&&!ocEndless()&&p.swim;if(el.hidden===show)el.hidden=!show;if(show){const n=Math.ceil(OC.air*8-.001);el.classList.toggle('low',OC.air<.3);
+    const b=el.children;for(let i=0;i<b.length;i++){const on=i<n;if(b[i].classList.contains('off')===on)b[i].classList.toggle('off',!on);}}}
+function ocAirUI(){let el=$('ocair');if(el)return el;ocPopUI();el=document.createElement('div');el.id='ocair';el.hidden=true;for(let i=0;i<8;i++)el.appendChild(document.createElement('i'));document.body.appendChild(el);return el;}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{ocAirTick(dt);ocChip();}catch(e){noteErr('ocean air',e);}};}
+// the 🐠 chip shows how many sea friends you found while you swim (tap it for the Sea Album)
+function ocChip(){let el=$('occhip');const want=!!ME&&G.mode==='play'&&(ME.swim||!!OC.ride)&&!OC.alb;if(!el){if(!want)return;ocPopUI();el=document.createElement('button');el.id='occhip';el.onclick=()=>ocAlbumOpen();document.body.appendChild(el);el.addEventListener('pointerdown',e=>e.stopPropagation());}
+  if(el.hidden===want)el.hidden=!want;if(want){const t='🐠 '+ocN()+'/'+OCSP.length;if(el.textContent!==t)el.textContent=t;}}
+// ---------- riding turtles, dolphins and manta rays ----------
+const OCRIDE={turtle:{v:7,seat:.38,turn:2.4,s:1.45,dmin:1.5},dolphin:{v:13.5,seat:.42,turn:2.8,s:1.3,dmin:2.2},manta:{v:10.5,seat:.21,turn:2.6,s:1.25,dmin:2.4}};
+function ocRideStart(o,k,P){if(OC.ride||ME.veh||ME.carry)return;const S0=OCRIDE[o.sp];if(!S0)return;OC.ride={sp:o.sp,key:o.key*16+k,x:P.x,y:Math.min(P.y,WL-.9),z:P.z,f:P.f,v:S0.v*.4,vy:0,air:0,pitch:0,roll:0,t:0,bump:0};
+  const p=ME;p.drive=true;p.swim=false;p.vx=p.vz=p.vy=0;ocFound(o.sp);const S=ocSea();S.ride[o.sp]=(S.ride[o.sp]||0)+1;SFX.splash&&SFX.splash();burst(P.x,WL+.1,P.z,['#ffffff','#bff4ff'],16,3,.16,.5);
+  toast((o.sp==='dolphin'?'🐬 ':o.sp==='turtle'?'🐢 ':'🌊 ')+tr(o.sp==='dolphin'?'Steer with the joystick. Press jump to leap!':'Steer with the joystick. Hold ⬇ to dive, jump to go up'));saveSoon();}
+function ocRideEnd(){const R0=OC.ride;if(!R0)return;OC.hide.set(R0.key,G.t+15);OC.ride=null;const p=ME;p.drive=false;p.vx=p.vz=0;p.vy=0;p.y=Math.min(p.y-.4,WL-1.05);p.swim=true;p.swimT=G.t;OC.deep=p.y<WL-1.2;OC.vy=0;}
+function ocRideUpdate(dt,inp){const R0=OC.ride,S0=OCRIDE[R0.sp],p=ME;R0.t+=dt;const [fx,fz]=camForward();const rx=-fz,rz=fx;let mx=inp.mx||0,mz=inp.mz||0;const ml=Math.min(1,Math.hypot(mx,mz));
+  const wx=rx*mx+fx*(-mz),wz=rz*mx+fz*(-mz);let turn=0;if(ml>.15){const want=Math.atan2(wx,wz);const f0=R0.f;R0.f=angLerp(R0.f,want,Math.min(1,dt*S0.turn));turn=clamp(angDiff(f0,R0.f)/Math.max(dt,1e-3),-2,2);}
+  R0.v=lerp(R0.v,S0.v*(ml>.15?Math.max(.35,ml):.3),Math.min(1,dt*1.6));let nx=R0.x+Math.sin(R0.f)*R0.v*dt,nz=R0.z+Math.cos(R0.f)*R0.v*dt;
+  if(ocDepth(nx,nz)<S0.dmin||ocSkip(nx,nz)){R0.v*=.5;nx=R0.x;nz=R0.z;R0.f+=dt*2.5;if(G.t>R0.bump){R0.bump=G.t+4;toast(tr('Too shallow here! Turn around'));}}
+  R0.x=nx;R0.z=nz;const fl=hAt(R0.x,R0.z);
+  if(R0.sp==='dolphin'){if(R0.air){R0.vy-=24*dt;R0.y+=R0.vy*dt;if(R0.y<=WL-.85&&R0.vy<0){R0.y=WL-.85;R0.air=0;R0.vy=0;SFX.splash&&SFX.splash();burst(R0.x,WL+.1,R0.z,['#ffffff','#bff4ff'],22,4,.18,.6);}}
+    else{R0.y=lerp(R0.y,WL-.85,Math.min(1,dt*4));if(inp.jumpP){R0.air=1;R0.vy=11.5;SFX.jump&&SFX.jump();burst(R0.x,WL+.1,R0.z,['#ffffff','#bff4ff'],16,3,.16,.5);const S=ocSea();S.jumps=(S.jumps||0)+1;}}
+    R0.pitch=R0.air?clamp(-R0.vy*.075,-.95,.95):0;}
+  else{const top=WL-.95,bot=fl+.75;const want=inp.down?-3.6:inp.jump?3.6:0;R0.vy=lerp(R0.vy,want,Math.min(1,dt*3));R0.y=clamp(R0.y+R0.vy*dt,bot,top);R0.pitch=clamp(-R0.vy*.11,-.4,.4);}
+  R0.roll=lerp(R0.roll,-turn*.22,Math.min(1,dt*4));if(R0.sp!=='dolphin'||!R0.air){if(R()<.3)burst(R0.x-Math.sin(R0.f)*1.2,R0.y+.4,R0.z-Math.cos(R0.f)*1.2,['#dff6ff','#ffffff'],1,.6,.1,.4);}
+  p.x=R0.x;p.z=R0.z;p.y=R0.y+S0.seat*S0.s/1.3;p.face=R0.f;p.vx=Math.sin(R0.f)*R0.v;p.vz=Math.cos(R0.f)*R0.v;p.vy=0;p.ground=true;p.swim=false;p.drive=true;p.fly=false;p.swimT=G.t;
+  handleInteract(dt,inp);animSprings(p,dt);}
+function angDiff(a,b){let d=b-a;while(d>Math.PI)d-=TAU;while(d<-Math.PI)d+=TAU;return d;}
+{const _um=updateMe;updateMe=function(dt,inp){if(OC.ride){if(ME.veh||ME.ko>0||G.mode!=='play'&&G.mode!=='menu'){ocRideEnd();return _um(dt,inp);}if(G.mode!=='play')return;try{ocRideUpdate(dt,inp);}catch(e){noteErr('ocride',e);ocRideEnd();}return;}return _um(dt,inp);};}
+{const _tp=teleport;teleport=function(){if(OC.ride){OC.ride=null;ME.drive=false;}return _tp.apply(this,arguments);};}
+{const _gi=goInside;goInside=function(){if(OC.ride){OC.ride=null;ME.drive=false;}return _gi.apply(this,arguments);};}
+{const _hm=hurtMe;hurtMe=function(){if(OC.ride)return;return _hm.apply(this,arguments);};}
+// the Use button: ride an animal you are swimming next to, or let go
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(camRealm()!=='earth')return;
+  if(OC.ride){const R0=OC.ride;cand({x:p.x,z:p.z,y:p.y},'ocoff',(R0.sp==='dolphin'?'🐬 ':R0.sp==='turtle'?'🐢 ':'🌊 ')+tr('Let go'),9,30,{fn:()=>ocRideEnd()});return;}
+  if(!p.swim||p.veh)return;const T=ocNow();let best=null,bd=3.4;
+  ocAround(p.x,p.z,1,o=>{if(!OCRIDE[o.sp])return;for(let k=0;k<o.n;k++){const key=o.key*16+k;const h=OC.hide.get(key);if(h&&h>G.t)continue;const P=ocPos(o,k,T);if(o.sp==='dolphin'&&P.y>WL-.5)continue;const d=Math.hypot(P.x-p.x,P.z-p.z);
+      if(d<bd&&Math.abs(P.y-p.y)<4.5){bd=d;best={o,k,P:{...P}};}}});
+  if(best){const sp0=best.o.sp;cand({x:best.P.x,z:best.P.z,y:p.y},'ocride',(sp0==='dolphin'?'🐬 ':sp0==='turtle'?'🐢 ':'🌊 ')+tr(sp0==='dolphin'?'Ride the dolphin':sp0==='turtle'?'Ride the turtle':'Ride the manta ray'),3.4,8,{fn:()=>ocRideStart(best.o,best.k,best.P)});}};}
+// the animal under a rider (me, or a friend who is riding one)
+function ocRideDraw(d,t){const sp0=d===ME?OC.ride&&OC.ride.sp:d.seaRide;if(!sp0||!OCRIDE[sp0])return;const S0=OCRIDE[sp0],R0=d===ME?OC.ride:null;const m=MS.cur;const prev=OUT;OUT=MOB;
+  MS.reset();M4.tr(m,d.x,d.y-S0.seat*S0.s/1.3,d.z);M4.ry(m,R0?R0.f:d.face||0);if(R0){M4.rx(m,R0.pitch);M4.rz(m,R0.roll);}
+  if(sp0==='turtle')ocTurtleM(m,t,S0.s);else if(sp0==='dolphin')ocDolphinM(m,t,S0.s);else ocMantaM(m,t,S0.s,Math.sin(t*2.2));OUT=prev;}
+{const _dh=drawHero;drawHero=function(d,t){try{if((d===ME&&OC.ride)||(d!==ME&&d.seaRide))ocRideDraw(d,t);}catch(e){noteErr('ocride draw',e);}return _dh(d,t);};}
+{const _ne=netExtra;netExtra=function(o){_ne(o);if(OC.ride)o.sr=OCBY[OC.ride.sp].i;};}
+{const _orp=onRemotePresence;onRemotePresence=function(peer){const r=_orp.apply(this,arguments);try{const o=peer&&peer.presence;if(!o||o.v!==3)return r;const id=typeof o.id==='string'&&o.id?o.id.slice(0,16):'p'+String(peer.peer).slice(0,20);
+  const rp=NET.peers[id];if(rp){const s=typeof o.sr==='number'&&OCSP[o.sr|0]?OCSP[o.sr|0].id:null;rp.seaRide=s&&OCRIDE[s]?s:null;}}catch(e){}return r;};}
+// the Sea Album, the rides, the chests and pearls are saved with the game
+{const _es=extraSave,_el=extraLoad;extraSave=function(){const o=_es();o.sea=ocSea();return o;};
+  extraLoad=function(x){_el(x);G.sea=null;const s=x&&x.sea;if(!s||typeof s!=='object')return;const S=ocSea();S.jumps=s.jumps|0;
+    if(s.f&&typeof s.f==='object')for(const k in s.f)if(OCBY[k])S.f[k]=1;if(s.ride&&typeof s.ride==='object')for(const k in s.ride)if(OCRIDE[k])S.ride[k]=s.ride[k]|0;
+    if(s.tip&&typeof s.tip==='object')for(const k in s.tip)if(/^[a-z0-9]{1,8}$/.test(k))S.tip[k]=1;S.ch=Array.isArray(s.ch)?s.ch.filter(v=>typeof v==='string'&&v.length<8).slice(0,64):[];S.pl=Array.isArray(s.pl)?s.pl.filter(v=>typeof v==='string'&&v.length<8).slice(0,64):[];};}
+// under the water the camera dives with you (lower and closer), so you see the sea from the inside
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);try{const p=ME;if(!p||camRealm()!=='earth'||G.mode==='title'){OC.camK=0;return;}
+  const deep=(p.swim&&(OC.deep||MOV.deep)&&p.y<WL-1.5)||(OC.ride&&OC.ride.y<WL-1.4&&!(OC.ride.sp==='dolphin'));OC.camK=clamp((OC.camK||0)+(deep?dt*2.2:-dt*3),0,1);if(OC.camK<=0)return;
+  const e=CAM.eye;if(!e)return;if(ocDepth(e[0],e[2])<1.3){for(let k=1;k<=10;k++){const u=k/10,x=lerp(e[0],p.x,u),z=lerp(e[2],p.z,u);if(ocDepth(x,z)>=1.3){e[0]=lerp(e[0],x,OC.camK);e[2]=lerp(e[2],z,OC.camK);break;}}}const fl=hAt(e[0],e[2])+.8;const want=Math.max(Math.min(e[1],p.y+2.3,WL-.45),fl);e[1]=lerp(e[1],want,OC.camK*OC.camK*(3-2*OC.camK));}catch(e){}};}
+// ---------- the Sea Album ----------
+function ocAlbumUI(){let el=$('ocalb');if(el)return el;ocPopUI();el=document.createElement('div');el.id='ocalb';el.hidden=true;document.body.appendChild(el);
+  const st=document.createElement('style');st.textContent=`
+#ocalb{position:fixed;inset:0;z-index:40;background:rgba(6,24,52,.55);display:flex;align-items:center;justify-content:center;font-family:var(--ui,system-ui,sans-serif);padding:10px;box-sizing:border-box}
+#ocalb[hidden]{display:none}
+#ocalb .ocb{width:min(780px,100%);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:linear-gradient(#11468a,#0b2a55);border-radius:22px;padding:12px 14px 16px;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.45);border:3px solid #7ef9ff;box-sizing:border-box}
+#ocalb .och{display:flex;align-items:center;gap:10px}#ocalb .och b{font-family:var(--display);font-weight:400;font-size:26px;flex:1}
+#ocalb .ocx{flex:0 0 auto;width:44px;height:44px;border-radius:12px;border:0;background:var(--red,#ff4f6d);color:#fff;font-size:22px;font-weight:900;box-shadow:0 4px 0 #b3223b;display:grid;place-items:center;padding:0}
+#ocalb .ocbar{height:14px;border-radius:9px;background:rgba(255,255,255,.15);overflow:hidden;margin:8px 0 4px}#ocalb .ocbar i{display:block;height:100%;background:linear-gradient(90deg,#46e6b0,#7ef9ff);border-radius:9px}
+#ocalb .ocs{font-weight:800;font-size:14px;opacity:.92}
+#ocalb .ocm{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}#ocalb .ocm span{background:rgba(255,255,255,.12);border-radius:12px;padding:5px 10px;font-size:13.5px;font-weight:900}#ocalb .ocm span.ok{background:#46e6b0;color:#0b2a55}
+#ocalb .ocg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
+#ocalb .occ{background:rgba(255,255,255,.12);border-radius:16px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;min-height:128px}
+#ocalb .occ.no{background:rgba(0,0,0,.25)}#ocalb .occ.no .ocsvg,#ocalb .occ.no .ocemo{filter:brightness(0) opacity(.5)}
+#ocalb .occ b{font-size:15px;font-weight:900}#ocalb .occ small{font-size:12px;font-weight:700;opacity:.9;line-height:1.3}
+#ocalb .ocr{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;font-weight:800;font-size:13px;opacity:.95}
+body.ar #ocalb .ocb{direction:rtl}`;document.head.appendChild(st);
+  el.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===el)ocAlbumClose();});return el;}
+function ocAlbumOpen(){const el=ocAlbumUI();if(G.mode!=='play'&&G.mode!=='menu')return;for(const k of ['pause','roster','shop','travel','bigmap'])if($(k))$(k).hidden=true;if(typeof PG!=='undefined'&&PG.open)petClose();
+  OC.alb=true;G.mode='menu';G.uiT=performance.now();el.hidden=false;ocAlbumRender();SFX.click&&SFX.click();}
+function ocAlbumClose(){OC.alb=false;const el=$('ocalb');if(el)el.hidden=true;if(G.mode==='menu')G.mode='play';}
+function ocAlbumRender(){const el=$('ocalb');if(!el)return;const S=ocSea(),n=ocN();
+  const miles=OCMILE.map(([k,r])=>{const c=rewardInfo(r);return `<span class="${n>=k?'ok':''}">${n>=k?'✓':k} ${c.ic} ${esc(tr(c.n))}</span>`;}).join('');
+  const rides=Object.keys(S.ride).filter(k=>OCRIDE[k]);
+  el.innerHTML=`<div class="ocb"><div class="och"><span style="font-size:34px">🌊</span><b>${esc(tr('Sea Album'))}</b><button class="ocx" id="ocx" aria-label="${esc(tr('Close'))}">✕</button></div>
+    <div class="ocbar"><i style="width:${Math.round(n/OCSP.length*100)}%"></i></div><div class="ocs">${esc(trf('{0} of {1} sea friends found. Swim close to an animal to add it!',n,OCSP.length))}</div>
+    <div class="ocm">${miles}</div>
+    <div class="ocg">${OCSP.map(D=>{const got=!!S.f[D.id];return `<div class="occ ${got?'':'no'}">${ocIcon(D.id,true)}<b>${got?esc(tr(D.n)):'???'}</b><small>${esc(tr(got?D.d:D.w))}</small></div>`;}).join('')}</div>
+    <div class="ocr">${rides.length?'🏄 '+esc(tr('You rode:'))+' '+rides.map(k=>esc(tr(OCBY[k].n))).join(' · '):'🏄 '+esc(tr('Swim next to a sea turtle, a dolphin or a manta ray and press Use to ride it!'))}</div></div>`;
+  const x=el.querySelector('#ocx');if(x)x.onclick=ocAlbumClose;}
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='main'||$('pm_sea'))return r;const h=$('pm_pet')||$('pm_heroes');if(!h)return r;const b=document.createElement('button');b.className='mb';b.id='pm_sea';b.textContent='🌊 '+tr('Sea Album')+' · '+ocN()+'/'+OCSP.length;
+  b.onclick=()=>{$('pause').hidden=true;G.mode='play';ocAlbumOpen();};h.parentNode.insertBefore(b,h.nextSibling);}catch(e){}return r;};}
+addEventListener('keydown',e=>{if(OC.alb&&(e.key==='Escape'||e.key==='Enter')){e.preventDefault();e.stopPropagation();ocAlbumClose();}},true);
+// ---------- sea pets: how they swim (the pets list, looks and sounds are in 88_oceanpets.js) ----------
+function ocSeaPetMove(pet,o,dt,mine){pet.happy=Math.max(0,pet.happy-dt);const inCar=!!o.veh;pet.hidden=inCar;if(inCar){pet.x=o.x;pet.y=o.y;pet.z=o.z;return;}
+  if(pet.seed===undefined)pet.seed=R()*6;let [tx,tz]=petTarget(o);
+  if(mine&&!pet.coin&&R()<.15){let best=null,bd=9;for(const k of PICK){if(k.type!=='coin'||k.dead||k.t<.6)continue;const d=d2(k.x,k.z,o.x,o.z);if(d<bd&&d2(k.x,k.z,pet.x,pet.z)<12){bd=d;best=k;}}pet.coin=best;}
+  if(pet.coin){const c=pet.coin;if(c.dead||c.got)pet.coin=null;else{tx=c.x;tz=c.z;if(d2(pet.x,pet.z,c.x,c.z)<1){if(c.type==='coin')c.dead=true;else c.got=true;addCoins(c.v);SFX.coin(c.v);burst(c.x,c.y,c.z,(COINV[c.v]||COINV[10]).c,5,2,.1,1);pet.coin=null;pet.happy=.6;}}}
+  const dx=tx-pet.x,dz=tz-pet.z,l=Math.hypot(dx,dz);
+  if(l>26){pet.x=tx;pet.z=tz;}else if(l>.3){const k=Math.min(l,(l>6?13:7.5)*dt);pet.x+=dx/l*k;pet.z+=dz/l*k;pet.face=angLerp(pet.face,Math.atan2(dx,dz),Math.min(1,dt*6));}
+  else if(d2(pet.x,pet.z,o.x,o.z)<5)pet.face=angLerp(pet.face,Math.atan2(o.x-pet.x,o.z-pet.z),Math.min(1,dt*3));
+  const wl=waterAt(pet.x,pet.z),g=chAt(pet.x,pet.z),wet=g<wl-.55;pet.wet=wet;const ownIn=o.y<wl+.2&&chAt(o.x,o.z)<wl-.2;
+  const ty=wet?clamp(ownIn?o.y+.6:wl-.65,g+.3,wl-.42)+Math.sin(G.t*1.6+pet.seed)*.08:Math.max(g,ownIn?wl:g)+.6+Math.sin(G.t*2.2+pet.seed)*.1;
+  if(!isFinite(pet.y))pet.y=ty;pet.y=lerp(pet.y,ty,Math.min(1,dt*5));pet.vy=0;pet.hop=0;
+  pet.amp=lerp(pet.amp||0,l>.3?1:.35,Math.min(1,dt*6));pet.walk=(pet.walk||0)+dt*(l>.3?10:3);
+  if(mine){pet.barkT-=dt;if(pet.barkT<=0){pet.barkT=Rr(9,18);if(l<14)petSound(pet.kind);}}}
+function ocSeaPetDraw(o,t){const m=MS.cur;MS.reset();M4.tr(m,o.x,o.y,o.z);M4.ry(m,o.face||0);const k=o.kind,w=(o.walk||0);
+  if(k==='clownfish'){M4.tr(m,0,.32,0);M4.rz(m,Math.sin(w*.5)*.08);ocClownM(m,t,1,1.55);}
+  else if(k==='pufferfish'){M4.tr(m,0,.36,0);ocPufferM(m,t,o.happy>0?1:0,.72);}
+  else if(k==='seahorse'){M4.tr(m,0,.12+Math.sin(t*2)*.04,0);M4.sc(m,.85,.85,.85);ocSeahorseM(m,t,0,0);}
+  else if(k==='octopus'){M4.tr(m,0,-.05,0);ocOctoM(m,t,0,.62);}
+  else if(k==='babydolphin'){M4.tr(m,0,.34,0);M4.rx(m,Math.sin(w*.4)*.1);ocDolphinM(m,t,.42,'#8fb8e8');}
+  else if(k==='babyshark'){M4.tr(m,0,.32,0);ocSharkM(m,t,.3);}}
+// on land a sea pet floats in a bubble of water (it follows the pet's tricks)
+{const _dp=drawPet;drawPet=function(o,t){_dp(o,t);try{if(!OCPET[o.kind]||o.wet||o.hidden)return;let lv=2;try{const L=petLookOf(o);if(L)lv=L.lv;}catch(e){}const s=PG.scale[lv]||1;const M=petTrickM(o,s);const m=MS.cur;MS.reset();m.set(M);M4.tr(m,o.x,o.y+.42,o.z);
+  const w=Math.sin(t*3)*.03;TRN.sph.put(m,0,0,0,1.5+w,1.36-w,1.5+w,hex('#bff4ff'),PK(1,0));MS.reset();m.set(M);M4.tr(m,o.x-.25,o.y+.78,o.z+.3);sp(m,0,0,0,.14,.1,.06,'#ffffff',1,1);}catch(e){}};}
+// ---------- the sea floor: coral gardens, sea grass and rocks near every shore, two shipwrecks, treasure chests and pearl clams ----------
+const OCB={wrecks:[],chests:[],clams:[],built:false};
+function ocSeaSpot(x0,z0,rmax,dmin,dmax,seed,avoid){const g=qrng(seed>>>0);for(let t=0;t<900;t++){const a=g()*TAU,r=Math.sqrt(g())*rmax;const x=x0+Math.cos(a)*r,z=z0+Math.sin(a)*r;const d=ocDepth(x,z);
+    if(d<dmin||d>dmax||ocSkip(x,z)||ocNearCove(x,z,10))continue;if(avoid&&avoid.some(q=>Math.hypot(q[0]-x,q[1]-z)<(q[2]||8)))continue;return {x,z,y:hAt(x,z),d};}return null;}
+function ocNearCove(x,z,m){return typeof COVE!=='undefined'&&Math.hypot(x-COVE.x,z-COVE.z)<COVE.reef+(m||0);}
+// a sandy spot on the beach next to the sea (for the people who give the sea missions)
+function ocShore(x0,z0,rmax){for(let r=0;r<=rmax;r+=1.5){const n=Math.max(1,Math.round(r*TAU/1.5));for(let k=0;k<n;k++){const a=k/n*TAU;const x=Math.floor(x0+Math.cos(a)*r)+.5,z=Math.floor(z0+Math.sin(a)*r)+.5;
+      if(!inMap(x|0,z|0)||inInBox(x,z)||inMoonBox(x,z)||ocSkip(x,z))continue;const i=cid(x|0,z|0);const h=H[i];if(h<WL+.25||h>WL+2.2||CH[i]>h+.05||OCC[i]||RD[i])continue;
+      let flat=true;for(let a2=-1;a2<=1&&flat;a2++)for(let c=-1;c<=1;c++){const j=cid((x|0)+a2,(z|0)+c);if(Math.abs(H[j]-h)>.5||CH[j]>H[j]+.05){flat=false;break;}}if(!flat)continue;
+      for(let q=0;q<16;q++){const b=q/16*TAU;const sx=x+Math.cos(b)*5,sz=z+Math.sin(b)*5;if(ocDepth(sx,sz)>1.2)return {x,z,y:h,face:Math.atan2(Math.cos(b),Math.sin(b))};}}}return null;}
+function ocBuildFloor(){if(OCB.built)return;OCB.built=true;const keepR=rnd;srand(27207);try{ocBuildFloor2();}finally{rnd=keepR;}}
+function ocBuildFloor2(){const CC=['#ff5fa8','#ff8a4f','#ffcf3a','#b28dff','#46e6b0','#ff4f6d','#7ef9ff'];let n=0;
+  for(let z=6;z<N-6;z+=6)for(let x=6;x<N-6;x+=6){const px=x+rr(-2.5,2.5),pz=z+rr(-2.5,2.5);const d=ocDepth(px,pz);if(d<1.7||d>7.6||ocSkip(px,pz)||ocNearCove(px,pz,4))continue;if(d>6.6&&((x/6+z/6)&1))continue;
+    const garden=fbm(px*.045,pz*.045,2721,3);if(garden<.5&&rnd()>.18)continue;const cold=ocCold(px,pz);const y=hAt(px,pz);const m=mat4At(px,y,pz,rr(0,6));const c=CC[(n*5+(x>>3))%CC.length];const kind=cold?(rnd()<.6?5:4):Math.floor(rnd()*7);n++;
+    if(kind===0){for(let q=0;q<5;q++){const b=mat4At(px,y,pz,q*1.26);sput('cyl',b,.28,.55,0,.17,1.2,.17,c,1,.15);sput('sph',b,.32,1.18,0,.32,.32,.32,c,1,.25);}}
+    else if(kind===1){sput('sph',m,0,.35,0,1.4,.85,1.25,c,6);sput('sph',m,0,.58,0,.95,.42,.85,shade(c,.85),6);}
+    else if(kind===2){sput('box',m,0,1,0,.08,1.9,1.7,c,1,.2);sput('box',m,0,1.55,.4,.09,.85,.75,shade(c,.8),1,.2);}
+    else if(kind===3){for(let q=0;q<3;q++)sput('cyl',m,(q-1)*.32,.5+q*.22,q%2*.2,.26,1+q*.42,.26,c,6);}
+    else if(kind===4){const kh=Math.min(d-.6,2.2+rnd()*1.6);for(let q=0;q<4;q++){const h2=kh*(.75+q*.08);sput('cyl',m,(q-1.5)*.35,h2/2,0,.07,h2,.07,'#3f9a4a',6);for(let l=0;l<3;l++)sput('sph',m,(q-1.5)*.35+(l%2?.12:-.12),h2*(.35+l*.25),0,.1,.4,.26,q%2?'#56c05a':'#7ed957',6,.05);}}
+    else if(kind===5){sput('sph',m,0,.4,0,1.7,1.15,1.5,'#8a8f9a',6);sput('sph',m,.65,.25,.55,.85,.62,.72,'#9aa0aa',6);if(rnd()<.5)sput('sph',m,-.6,.2,-.4,.6,.4,.5,'#7a808a',6);}
+    else{for(let q=0;q<7;q++){const b=mat4At(px+rr(-.6,.6),y,pz+rr(-.6,.6),rr(0,6));sput('box',b,0,.3,0,.06,.6+rnd()*.4,.18,q%2?'#5fbf5a':'#7ed957',6);}}}
+  // two shipwrecks in deep water, each with a treasure chest
+  const wk=[[640,420,91],[120,560,92]];for(const [wx,wz,s] of wk){const P=ocSeaSpot(wx,wz,90,5.2,7.5,s*31);if(!P)continue;const rot=rr(0,6);OCB.wrecks.push({x:P.x,z:P.z,y:P.y,rot});const sm=mat4At(P.x,P.y-.2,P.z,rot);
+    sput('box',sm,0,.9,0,2.8,1.8,8,'#6b4a2e',6);sput('box',sm,0,1.9,-.2,3,.2,7.4,'#8a6a3a',6);sput('box',sm,0,2.4,-3.2,2.6,1.2,1.6,'#6b4a2e',6);sput('wedge',sm,0,.9,4.6,2.8,1.8,1.4,'#5a3a22',6);
+    {const mm=mat4At(P.x,P.y+1.4,P.z,rot);sput('cyl',mm,.4,1.5,0,.3,3,.3,'#5a3a22',6);sput('box',mm,.6,2.2,.1,.06,1.4,1.6,'#d8d0b8',1);}
+    for(const q of [-1,1])sput('cyl',mat4At(P.x+Math.cos(rot)*q*.9,P.y+.8,P.z-Math.sin(rot)*q*.9),0,0,0,.34,.2,.34,'#23232f',3);
+    OCB.chests.push({id:'w'+OCB.wrecks.length,x:P.x+Math.sin(rot)*2.4+Math.cos(rot)*2,z:P.z+Math.cos(rot)*2.4-Math.sin(rot)*2,y:0,rot:rot+.6,big:1});}
+  // more treasure chests around the islands, and clams with pearls
+  const CH0=[[380,250],[700,250],[470,560],[300,820],[820,600],[60,300],[520,860],[30,820],[420,40],[860,420]];
+  CH0.forEach((q,i)=>{const P=ocSeaSpot(q[0],q[1],70,3.5,7.5,4400+i*17,OCB.chests.map(c=>[c.x,c.z,20]));if(P)OCB.chests.push({id:'c'+i,x:P.x,z:P.z,y:0,rot:i*1.7});});
+  for(let i=0;i<18;i++){const a=i/18*TAU,R0=310+((i*53)%90);const P=ocSeaSpot(432+Math.cos(a)*R0,432+Math.sin(a)*R0,60,1.8,6.5,5500+i*23,[...OCB.clams.map(c=>[c.x,c.z,25]),...OCB.chests.map(c=>[c.x,c.z,12])]);if(P)OCB.clams.push({id:'p'+i,x:P.x,z:P.z,y:0,ph:i*.7});}
+  for(const c of [...OCB.chests,...OCB.clams])c.y=hAt(c.x,c.z);}
+{const _bq=buildQuests;buildQuests=function(){_bq();try{ocBuildFloor();ocQuests();}catch(e){console.error('ocean build',e);}};}
+// chests and clams: drawn near you, opened with the Use button
+function ocDrawFloor(t){if(camRealm()!=='earth')return;const m=MS.cur,S=ocSea(),cx=CAM.tx,cz=CAM.tz;OUT=DYN;
+  for(const c of OCB.chests){if(Math.abs(c.x-cx)>70||Math.abs(c.z-cz)>70||!inView(c.x,c.z))continue;const open=S.ch.includes(c.id);MS.reset();M4.tr(m,c.x,c.y,c.z);M4.ry(m,c.rot);const s=c.big?1.25:1;
+    rb(m,0,.4*s,0,1.4*s,.8*s,.95*s,'#8a5a2e',6);bx(m,0,.4*s,0,1.46*s,.14*s,1.01*s,'#ffcf3a',3,.2);for(const q of [-1,1])bx(m,q*.5*s,.4*s,0,.12*s,.84*s,1.01*s,'#ffcf3a',3,.2);
+    MS.push();M4.tr(m,0,.8*s,-.47*s);M4.rx(m,open?-1.9:-.05-Math.max(0,Math.sin(t*2+c.rot))*.12);rb(m,0,.16*s,.47*s,1.4*s,.32*s,.95*s,'#9a6a3a',6);bx(m,0,.16*s,.47*s,1.46*s,.08*s,1.01*s,'#ffcf3a',3,.2);MS.pop();
+    if(!open){sp(m,0,.85*s,0,.5*s,.18*s,.4*s,'#ffcf3a',3,.6);if(R()<.04)burst(c.x,c.y+1.2,c.z,['#ffcf3a','#ffffff'],1,.8,.12,.6);}}
+  for(const c of OCB.clams){if(Math.abs(c.x-cx)>50||Math.abs(c.z-cz)>50||!inView(c.x,c.z))continue;const got=S.pl.includes(c.id);const o=got?.15:.25+Math.max(0,Math.sin(t*.8+c.ph))*.55;MS.reset();M4.tr(m,c.x,c.y+.12,c.z);M4.ry(m,c.ph);
+    co(m,0,-.1,0,1.1,.3,1,'#e8c8d8',6);MS.push();M4.tr(m,0,0,-.42);M4.rx(m,-o);co(m,0,.12,.42,1.1,.3,1,'#d8a8c8',6);MS.pop();if(!got){sp(m,0,.08,.05,.3,.3,.3,'#ffffff',8,.5);}}}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{ocDrawFloor(t);}catch(e){noteErr('ocean floor',e);}};}
+function ocOpenChest(c){const S=ocSea();if(S.ch.includes(c.id))return;S.ch.push(c.id);const n=c.big?900:500;addCoins(n);addXP(30);SFX.chest&&SFX.chest();burst(c.x,c.y+1,c.z,['#ffcf3a','#ffffff','#7ef9ff'],26,4,.16,1);
+  floatText(c.x,c.y+2.2,c.z,'+'+fmt(n));toast('💰 '+trf('Sunken treasure! +{0} coins',fmt(n))+' · '+trf('{0} of {1} sea chests',S.ch.length,OCB.chests.length));saveSoon();}
+function ocTakePearl(c){const S=ocSea();if(S.pl.includes(c.id))return;S.pl.push(c.id);addCoins(150);SFX.coin&&SFX.coin(100);burst(c.x,c.y+.6,c.z,['#ffffff','#ffd1ef'],14,2,.12,.8);
+  toast('🦪 '+trf('A shiny pearl! +{0} coins',150)+' · '+trf('{0} of {1} pearls',S.pl.length,OCB.clams.length));saveSoon();}
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(camRealm()!=='earth'||OC.ride||!p.swim)return;const S=ocSea();
+  for(const c of OCB.chests)if(!S.ch.includes(c.id)&&Math.abs(c.x-p.x)<4&&Math.abs(c.z-p.z)<4)cand({x:c.x,z:c.z,y:c.y+.4},'occhest',tr('Open chest'),2.6,6,{fn:()=>ocOpenChest(c)});
+  const T=G.t;for(const c of OCB.clams)if(!S.pl.includes(c.id)&&Math.abs(c.x-p.x)<3&&Math.abs(c.z-p.z)<3)cand({x:c.x,z:c.z,y:c.y+.3},'ocpearl',tr('Take the pearl'),2.2,6,{fn:()=>ocTakePearl(c)});};}
+// ---------- sea missions all around the world ----------
+// Captain Gill on the Sunset pier: the Treasure Map and the Dolphin Race. Dr. Pearl on the beach east of Star Harbor:
+// Turtle Rescue, Ocean Clean-up and the Shark's Sore Tooth. Iris the Ice Diver on the west shore of Frostpeak: the Lost Seal Pups.
+NPC_LOOKS.captain={shirt:'#ffffff',coat:'#1f3a8a',pants:'#23232f',skin:'#e0a67a',hair:'#f4f4f4',hs:2,hat:'captain',beard:1};
+NPC_LOOKS.marine={shirt:'#46c0ee',coat:'#ffffff',pants:'#2b2d42',skin:'#8d5a3b',hair:'#221b25',hs:3,goggles:1,dress:1};
+NPC_LOOKS.icediver={shirt:'#9fdcff',coat:'#1f3a8a',pants:'#1f2a44',skin:'#f7d6bf',hair:'#f2c14e',hs:3,goggles:1};
+const OCQ={extra:[],x:null};
+function ocSpots(n,x0,z0,r,dmin,dmax,seed,gap,avoid){const out=[];const av=(avoid||[]).slice();for(let k=0;k<n*6&&out.length<n;k++){const P=ocSeaSpot(x0,z0,r,dmin,dmax,seed+k*101,av);if(!P)continue;out.push([P.x,P.z,P.y]);av.push([P.x,P.z,gap]);}return out;}
+function ocQuests(){const W=WORLD;const pier=W.pier||{x:566,z:380};const S0=REG.find(r=>r.id==='star'),F0=REG.find(r=>r.id==='frost');
+  // the people
+  const gill={x:pier.x-1.6,z:pier.z-24};W.npcs.push({id:'gill',name:'Captain Gill',x:gill.x,z:gill.z,look:'captain'});
+  const pe=ocShore((S0?S0.x+S0.r:510)+4,(S0?S0.z:422)+12,60)||ocShore(512,470,80);if(pe)W.npcs.push({id:'pearl',name:'Dr. Pearl',x:pe.x,z:pe.z,look:'marine'});
+  const ir=ocShore(F0?F0.x-F0.r+12:48,F0?F0.z:628,70);if(ir)W.npcs.push({id:'iris',name:'Iris the Ice Diver',x:ir.x,z:ir.z,look:'icediver'});
+  const Q=[];
+  // Captain Gill: the Treasure Map, then the Dolphin Race
+  const pcs=ocSpots(4,pier.x,pier.z+34,70,2.5,7.5,7101,20);const X=ocSeaSpot(pier.x+35,pier.z+55,60,4.5,7.5,7201,pcs.map(q=>[q[0],q[1],14]));
+  if(pcs.length===4&&X){OCQ.x=X;Q.push({id:'o_map',town:'sea',giver:'gill',title:'The Treasure Map',col:'#ffcf3a',coins:10000,xp:800,rw:[{t:'pet',id:'octopus'},{t:'coins',n:3000}],
+    intro:['Ahoy, matey! An old treasure map washed up in a bottle, but it is torn into 4 pieces!','The pieces sank around the bay. Dive down and find them, then we follow the map to the treasure!'],
+    steps:[{k:'collect',item:'mappiece',pts:pcs,text:'Find the 4 torn map pieces'},{k:'go',x:X.x,z:X.z,r:4,text:'Swim to the X on the sea floor'},{k:'fix',look:'seachest',verb:'Open the chest',pts:[[X.x,X.z,X.y+.5]],text:'Open the treasure chest'},{k:'talk',npc:'gill',text:'Tell Captain Gill'}],
+    done:['Gold, gold and more gold! And look who was guarding it: a little octopus!','It wants to come with you. Take good care of it, matey!']});}
+  let pod=null;for(let t=0;t<8&&!pod;t++){const P=ocSeaSpot(pier.x+26,pier.z+22,50,4.2,7.5,7301+t*37);if(!P)continue;const g=qrng(7400+t);const o=ocMake('dolphin',P.x,P.z,g,-1-t);if(o){o.n=3;o.key=-7;OCQ.extra.push(o);pod=P;}}
+  let rings=null;for(let t=0;t<10&&!rings;t++){const C=ocSeaSpot(pier.x+12,pier.z+85,70,5,7.5,7501+t*53);if(!C)continue;for(let R0=56;R0>=34&&!rings;R0-=6){const pts=[];let ok=true;const a0=Math.atan2(pier.z-C.z,pier.x-C.x);
+      for(let k=0;k<8&&ok;k++){const a=a0+k/8*TAU;const x=C.x+Math.cos(a)*R0,z=C.z+Math.sin(a)*R0;if(ocDepth(x,z)<3.4||ocSkip(x,z))ok=false;else pts.push([x,z,.01]);}
+      if(ok)for(let k=0;k<64&&ok;k++){const a=a0+k/64*TAU;if(ocDepth(C.x+Math.cos(a)*R0,C.z+Math.sin(a)*R0)<2.6)ok=false;}if(ok)rings=pts;}}
+  if(pod&&rings)Q.push({id:'o_race',town:'sea',giver:'gill',title:'The Dolphin Race',col:'#46b0ff',coins:8000,xp:600,rw:[{t:'pet',id:'babydolphin'}],
+    intro:['The dolphins out here love to race! Can you keep up with them?','Swim to the dolphins, hop on one with Use, and ride through all 8 rings before the time runs out!'],
+    steps:[{k:'go',x:pod.x,z:pod.z,r:12,text:'Swim to the dolphins'},{k:'rings',pts:rings,time:70,text:'Ride a dolphin through the rings!'}],
+    done:['What a race! The dolphins think you are one of them now.','This baby dolphin wants to swim with you every day!']});
+  // Dr. Pearl: Turtle Rescue, Ocean Clean-up and the Shark's Sore Tooth
+  if(pe){const nets=ocSpots(4,pe.x,pe.z,55,2.4,6.6,7601,14);const junk=ocSpots(8,pe.x,pe.z,70,1.8,7,7701,10,nets.map(q=>[q[0],q[1],6]));
+    let sh=null;for(let t=0;t<6&&!sh;t++){const P=ocSeaSpot(pe.x,pe.z,95,5,7.6,7801+t*41);if(P&&Math.hypot(P.x-pe.x,P.z-pe.z)>32)sh=P;}
+    if(nets.length===4)Q.push({id:'o_turtle',town:'sea',giver:'pearl',title:'Turtle Rescue',col:'#46e6b0',coins:7000,xp:500,rw:[{t:'pet',id:'seahorse'},{t:'coins',n:2000}],
+      intro:['Hello! I am Dr. Pearl. I look after the sea animals.','Oh no, 4 baby sea turtles are stuck in old fishing nets on the sea floor! Dive down and set them free!'],
+      steps:[{k:'rescue',kind:'seaturtle',pts:nets,text:'Free the baby turtles from the nets'},{k:'talk',npc:'pearl',text:'Tell Dr. Pearl'}],
+      done:['You did it! The baby turtles are swimming free again.','Look, a little seahorse followed you. It wants to be your friend!']});
+    if(junk.length>=6)Q.push({id:'o_clean',town:'sea',giver:'pearl',need:['o_turtle'],title:'Ocean Clean-up',col:'#7ed957',coins:8000,xp:600,rw:[{t:'trophy',id:'cleansea'}],
+      intro:['People dropped junk in the sea, and the fish are sad.','Can you collect all the junk from the sea floor? Bottles, cans, an old boot...'],
+      steps:[{k:'collect',item:'junk',pts:junk,text:'Collect the junk from the sea floor'},{k:'talk',npc:'pearl',text:'Bring the junk to Dr. Pearl'}],
+      done:['The sea is sparkling clean! The fish are dancing!']});
+    if(sh)Q.push({id:'o_shark',town:'sea',giver:'pearl',need:['o_clean'],title:'The Shark\'s Sore Tooth',col:'#9fb8d0',coins:9000,xp:700,rw:[{t:'trophy',id:'sharkbuddy'},{t:'boost',id:'speed'}],
+      intro:['A friendly shark came to see me. He has a wobbly tooth and it hurts!','He is waiting in the deep water. Please find him and help him. Do not worry, he is very gentle!'],
+      steps:[{k:'go',x:sh.x,z:sh.z,r:10,text:'Find the friendly shark'},{k:'fix',look:'tooth',verb:'Help the shark',pts:[[sh.x+1.6,sh.z,sh.y+1.5]],text:'Help the shark with his wobbly tooth'},{k:'talk',npc:'pearl',text:'Tell Dr. Pearl'}],
+      done:['The shark is smiling his biggest smile ever. You are a Shark Buddy now!']});
+    OCQ.shark=sh;}
+  // Iris the Ice Diver: the Lost Seal Pups
+  if(ir){const pups=[];const av=[];for(let k=0;k<20&&pups.length<3;k++){const P=ocSeaSpot(ir.x,ir.z,60,1.2,7,7901+k*67,av);if(P&&ocCold(P.x,P.z)){pups.push([P.x,P.z,WL+.05]);av.push([P.x,P.z,15]);}}
+    if(pups.length===3)Q.push({id:'o_seals',town:'sea',giver:'iris',title:'The Lost Seal Pups',col:'#9fdcff',coins:8000,xp:600,rw:[{t:'trophy',id:'sealfriend'},{t:'coins',n:3000}],
+      intro:['Brrr! Hello! I am Iris, I dive in the cold sea.','Three baby seals drifted away on little ice floes and they are scared. Swim out and calm them down!'],
+      steps:[{k:'rescue',kind:'sealpup',pts:pups,text:'Calm the lost seal pups'},{k:'talk',npc:'iris',text:'Tell Iris'}],
+      done:['Their mums are so happy! Ark ark! That means thank you in seal.']});}
+  QUESTS.push(...Q);}
+// the special dolphins for the race always swim in their spot
+{const _oc=ocCell;ocCell=function(cx,cz){const had=OC.cells.has(cx*1000+cz);const L=_oc(cx,cz);if(!had)for(const o of OCQ.extra)if(Math.floor(o.x/OCC_)===cx&&Math.floor(o.z/OCC_)===cz)L.push(o);return L;};}
+TROPHIES.ocean={ic:'🌊',n:'Ocean Explorer'};TROPHIES.cleansea={ic:'♻️',n:'Ocean Cleaner'};TROPHIES.sharkbuddy={ic:'🦈',n:'Shark Buddy'};TROPHIES.sealfriend={ic:'🦭',n:'Seal Friend'};
+HATS.push({id:'snorkel',n:'Snorkel Mask',p:-1});REWARD_HATS.add('snorkel');HAT_ICON.snorkel='🤿';
+{const _dh=drawHatX;drawHatX=function(m,hat,acc,hair,t){if(hat!=='snorkel')return _dh(m,hat,acc,hair,t);
+  MS.push();M4.tr(m,0,.18,.44);rb(m,0,0,0,.78,.3,.1,'#23232f',1);rb(m,0,0,.04,.64,.22,.04,'#9fe7ff',8,.3);MS.pop();bx(m,0,.18,0,.94,.08,.84,'#23232f',1);
+  MS.push();M4.tr(m,.42,.2,.18);cy(m,0,.3,0,.08,.9,.08,'#ffcf3a',1);sp(m,0,.76,0,.12,.12,.12,'#ff5d73',1);MS.pop();};}
+// the Missions list gets a sea section
+{const _pr=placeRows;placeRows=function(){const L=QUESTS.filter(q=>q.town==='sea');if(!L.length)return _pr();const nd=L.filter(q=>qDone(q.id)).length;
+  return _pr()+`<div class="small" style="margin:10px 2px 2px">🌊 ${esc(tr('Sea missions'))} · ${nd}/${L.length}</div>`+L.map(q=>{const done=qDone(q.id),act=QS.act===q.id,av=qAvailable(q);const st=act?q.steps[QS.step]:null;const g=NPCS.find(n=>n.id===q.giver);
+    return `<div class="mi ${done?'done':''}" style="--c:${q.col}"><span style="font-size:22px">${done?'⭐':act?'▶':av?'❗':'🔒'}</span><div><b>${esc(tr(q.title))}</b><small>${done?tr('Done!'):act?esc(tr(st?st.text:'')):av?trf('Talk to {0}',esc(tr(g?g.name:''))):tr('Finish other quests first')} · 🎁 ${rewardLine(q)}</small></div><span class="st">${done?'✓':''}</span></div>`;}).join('');};}
+// puzzles for the rescues, the chest and the shark
+PZRESCUE.seaturtle=['🐢','Free the baby turtle','The baby turtle is stuck in a net. Solve the puzzle to untangle it!'];PZRESCUE.sealpup=['🦭','Calm the seal pup','The seal pup is scared. Repeat its song to calm it down!'];
+PZTHEME.seachest={ic:'🗝️',t:'Open the treasure chest',x:'Crack the code of the old pirate lock!',k:['math','order','pattern']};PZTHEME.tooth={ic:'🦷',t:'Help the shark',x:'Wiggle out the wobbly tooth: solve the puzzle!',k:['count','memory','pattern']};
+const OCRESC={seaturtle:'Free the turtle',sealpup:'Calm the seal pup'};
+{const _qi=questInteract;questInteract=function(cand,p){const st=qStepDef();if(!st||st.k!=='rescue'||!OCRESC[st.kind])return _qi(cand,p);return _qi((o,k,label,range,prio,extra)=>cand(o,k,k==='qpz'||k==='qrescue'?tr(OCRESC[st.kind]):label,range,prio,extra),p);};}
+{const _an=SFX.animal;SFX.animal=function(k){const st=typeof qStepDef==='function'?qStepDef():null;if(k==='cat'&&st&&st.k==='rescue'&&OCRESC[st.kind]){if(st.kind==='sealpup'){AU.tone(560,.14,'sawtooth',.04,.7);AU.tone(520,.16,'sawtooth',.04,.7,.2);}else{AU.tone(700,.1,'sine',.05,1.4);AU.tone(900,.1,'sine',.05,1.3,.12);}return;}return _an&&_an(k);};}
+// new things to find for the quests: torn map pieces and junk
+{const _dqi=drawQItem;drawQItem=function(it,i,m,t){if(it==='mappiece'){M4.rz(m,.25);cy(m,0,0,0,.42,1.1,.42,'#bfeaff',8,.25);cy(m,0,.62,0,.2,.2,.2,'#8a5a3a',6);MS.push();M4.tr(m,0,-.05,0);M4.ry(m,.4);bx(m,0,0,0,.04,.7,.5,'#f2e0b0',1,.2);MS.pop();return;}
+  if(it==='junk'){const k=i%4;if(k===0){cy(m,0,0,0,.34,.8,.34,'#4fbf6a',8,.15);cy(m,0,.52,0,.14,.26,.14,'#4fbf6a',8);}else if(k===1){cy(m,0,0,0,.4,.6,.4,'#c8323c',3,.1);cy(m,0,.31,0,.38,.04,.38,'#dfe3ea',3);}
+    else if(k===2){M4.rx(m,Math.PI/2);cy(m,0,0,0,1.1,.36,1.1,'#2b2d42',6);cy(m,0,0,0,.5,.38,.5,'#4a4d62',6);}else{rb(m,0,-.1,.12,.42,.36,.8,'#6b4a2e',6);rb(m,0,.22,-.16,.4,.6,.36,'#6b4a2e',6);}return;}
+  return _dqi(it,i,m,t);};}
+// drawing the rescues, the X, the chest and the shark
+function ocDrawQuest(st,t){const m=MS.cur;const nr=(x,z,r)=>Math.abs(x-CAM.tx)<r&&Math.abs(z-CAM.tz)<r&&inView(x,z);
+  if(st.k==='rescue'&&st.kind==='seaturtle')st.pts.forEach((q,i)=>{if(QS.bits&(1<<i)||!nr(q[0],q[1],90))return;OUT=MOB;MS.reset();M4.tr(m,q[0],q[2]+.35,q[1]);M4.ry(m,i*1.3+Math.sin(t*3+i)*.25);ocTurtleM(m,t*2.5,.55);OUT=DYN;
+    MS.reset();M4.tr(m,q[0],q[2]+.45,q[1]);for(let a=0;a<6;a++){MS.push();M4.ry(m,a/6*Math.PI);bx(m,0,0,0,1.6,.04,.04,'#e8dcc0',1);MS.pop();}for(let k=0;k<4;k++){MS.push();M4.rx(m,k*.5-.75);bx(m,0,.1,0,1.4,.03,1.3,'#d8c8a0',1);MS.pop();}
+    MS.reset();M4.tr(m,q[0],q[2]+1.8+Math.sin(t*3+i)*.2,q[1]);sp(m,0,0,0,.4,.4,.4,'#ff8fb0',1,1);});
+  else if(st.k==='rescue'&&st.kind==='sealpup')st.pts.forEach((q,i)=>{if(QS.bits&(1<<i)||!nr(q[0],q[1],100))return;MS.reset();M4.tr(m,q[0],WL-.12+Math.sin(t*1.2+i)*.05,q[1]);M4.ry(m,i*2.1);OUT=DYN;rb(m,0,0,0,2.4,.34,2,'#eef8ff',1);rb(m,.3,.06,-.2,1.6,.3,1.2,'#ffffff',1);
+    OUT=MOB;MS.reset();M4.tr(m,q[0],WL+.05,q[1]);M4.ry(m,i*2.1+Math.sin(t*2+i)*.3);M4.sc(m,.62,.62,.62);ocSealM(m,t,i,Math.abs(Math.sin(t*5+i))*.4);OUT=DYN;MS.reset();M4.tr(m,q[0],WL+1.9+Math.sin(t*3+i)*.2,q[1]);sp(m,0,0,0,.4,.4,.4,'#ff8fb0',1,1);});
+  else if(st.k==='go'&&QS.act==='o_map'){if(nr(st.x,st.z,120)){const y=hAt(st.x,st.z)+.06;MS.reset();M4.tr(m,st.x,y,st.z);for(const a of [.785,-.785]){MS.push();M4.ry(m,a);bx(m,0,0,0,3.4,.1,.6,'#ff4f6d',1,.8);MS.pop();}
+    if(R()<.3)burst(st.x+Rr(-1,1),y+.4,st.z+Rr(-1,1),['#ffffff','#ffcf3a'],1,1.2,.12,.8);MS.reset();M4.tr(m,st.x,Math.min(WL-.2,y+4+Math.sin(t*2)*.4),st.z);M4.ry(m,t);co(m,0,0,0,.6,1,.6,'#ffcf3a',1,.8);}}
+  else if(st.k==='fix'&&st.look==='seachest')st.pts.forEach((q,i)=>{if(!nr(q[0],q[1],90))return;const ok=QS.bits&(1<<i);MS.reset();M4.tr(m,q[0],q[2]-.5,q[1]);M4.ry(m,.4);OUT=DYN;
+    rb(m,0,.5,0,1.8,1,1.2,'#7a4a24',6);bx(m,0,.5,0,1.86,.16,1.26,'#ffcf3a',3,.3);MS.push();M4.tr(m,0,1,-.6);M4.rx(m,ok?-1.9:-.04);rb(m,0,.2,.6,1.8,.4,1.2,'#8a5a2e',6);MS.pop();bx(m,0,.62,.62,.3,.36,.1,'#c9923a',3,.4);
+    if(!ok&&R()<.15)burst(q[0],q[2]+.8,q[1],['#ffcf3a','#ffffff'],1,1,.12,.6);});
+  else if((st.k==='fix'&&st.look==='tooth')||(st.k==='go'&&QS.act==='o_shark')){const S=OCQ.shark;if(!S||!nr(S.x,S.z,110))return;const ok=st.k==='fix'&&(QS.bits&1);OUT=MOB;MS.reset();M4.tr(m,S.x,S.y+1.5+Math.sin(t*.8)*.2,S.z);M4.ry(m,Math.PI/2+Math.sin(t*.4)*.15);ocSharkM(m,t*.5,1.1);
+    if(!ok){MS.reset();M4.tr(m,S.x+1.75,S.y+1.15,S.z);sp(m,0,0,0,.14,.2,.12,'#ffffff',1,.4);MS.reset();M4.tr(m,S.x,S.y+3.4+Math.sin(t*3)*.15,S.z);sp(m,0,0,0,.5,.5,.5,'#ff8fb0',1,1);}OUT=DYN;}}
+{const _dq=drawQuest;drawQuest=function(t){const st=qStepDef();if(st&&((st.k==='rescue'&&OCRESC[st.kind])||(st.k==='fix'&&(st.look==='seachest'||st.look==='tooth')))){try{ocDrawQuest(st,t);}catch(e){noteErr('ocean quest',e);}if(st.k==='rescue')return;}
+  _dq(t);if(st&&st.k==='go'&&(QS.act==='o_map'||QS.act==='o_shark')){try{ocDrawQuest(st,t);}catch(e){}}};}
+// the race dolphins wait for you, and a tip when you get to them
+{const _qn=qNext;qNext=function(){const was=QS.act,step=QS.step;_qn();if(was==='o_race'&&step===0&&QS.act==='o_race')setTimeout(()=>toast('🐬 '+tr('Swim next to a dolphin and press Use to ride it!')),1200);};}
+// ---------- Arabic for everything in the sea ----------
+MV('Rainbow Fish','سمكة قوس قزح');MV('Swims in big shiny schools','تسبح في أسراب كبيرة لامعة');MV('Everywhere in the sea','في كل مكان في البحر');
+MV('Clownfish','سمكة المهرج');MV('Hides in a wavy anemone','تختبئ بين أذرع شقائق النعمان البحرية');MV('Near the shore, where the water is not deep','قرب الشاطئ، حيث الماء غير عميق');
+MV('Pufferfish','السمكة المنتفخة');MV('Puffs up into a spiky ball when you come close','تنتفخ وتصير كرة شائكة عندما تقترب منها');MV('In warm water','في الماء الدافئ');
+MV('Seahorse','حصان البحر');MV('Holds on to seaweed with its curly tail','يمسك بالأعشاب البحرية بذيله الملتف');MV('In the seaweed near the shore','بين الأعشاب البحرية قرب الشاطئ');
+MV('Starfish','نجم البحر');MV('Has five arms and lives on the sand','له خمس أذرع ويعيش على الرمل');MV('On the sand under the water','على الرمل تحت الماء');
+MV('Crab','السلطعون');MV('Walks sideways and snaps its claws','يمشي إلى الجانب ويطقطق بمخالبه');MV('On the sand near the shore','على الرمل قرب الشاطئ');
+MV('Lobster','جراد البحر');MV('Waves its long feelers','يحرّك قرنيه الطويلين');MV('On the sea floor near the shore','في قاع البحر قرب الشاطئ');
+MV('Octopus','الأخطبوط');MV('Squirts ink when you surprise it','يرشّ الحبر عندما تفاجئه');MV('On the sea floor','في قاع البحر');
+MV('Jellyfish','قنديل البحر');MV('Bouncy! Touch it and boing!','نطّاط! المسه... وبوينغ!');MV('Floating in deep water','يطفو في الماء العميق');
+MV('Sea Turtle','السلحفاة البحرية');MV('Swims slowly. You can ride it!','تسبح ببطء. يمكنك ركوبها!');MV('In the sea everywhere','في البحر في كل مكان');
+MV('Dolphin','الدلفين');MV('Ride it and press jump to leap!','اركبه واضغط القفز ليقفز من الماء!');MV('Jumping in deep water','يقفز في الماء العميق');
+MV('Manta Ray','سمكة المانتا');MV('Glides like a bird. You can ride it!','تنزلق في الماء كأنها طائر. يمكنك ركوبها!');MV('Gliding in deep water','تنزلق في الماء العميق');
+MV('Friendly Shark','القرش اللطيف');MV('Big smile, kind heart. Likes to swim with you','ابتسامة كبيرة وقلب طيب. يحب أن يسبح معك');MV('In deep water','في الماء العميق');
+MV('Seal','الفقمة');MV('Claps its flippers on the ice','تصفّق بزعانفها على الجليد');MV('In the cold sea by Frostpeak','في البحر البارد قرب قمة الصقيع');
+MV('Narwhal','الناروال');MV('The unicorn of the sea!','وحيد القرن في البحر!');MV('In the deep cold sea by Frostpeak','في البحر البارد العميق قرب قمة الصقيع');
+MV('Whale','الحوت');MV('The biggest friend in the sea. Watch it blow!','أكبر صديق في البحر. شاهده وهو ينفث الماء!');MV('In the open sea between the islands','في البحر المفتوح بين الجزر');
+MV('Squirt! The octopus hid in a cloud of ink','بخّ! اختبأ الأخطبوط في سحابة من الحبر');MV('Poof! The pufferfish puffed up','بوف! انتفخت السمكة المنتفخة');MV('Boing!','بوينغ!');
+MV('{0} sea friends found! A present for you','وجدت {0} من أصدقاء البحر! هذه هدية لك');MV('New sea friend!','صديق بحري جديد!');MV('{0} of {1} in your Sea Album','{0} من {1} في ألبوم البحر');
+MV('Divers never run out of air!','الغوّاصون لا ينفد هواؤهم أبدًا!');MV('Watch your air bubbles! Let go of ⬇ to swim up','انتبه لفقاعات الهواء! اترك ⬇ لتسبح إلى الأعلى');MV('Out of air! Up you go','نفد الهواء! إلى الأعلى');
+MV('Steer with the joystick. Press jump to leap!','وجّهه بعصا التحكم. اضغط القفز ليقفز!');MV('Steer with the joystick. Hold ⬇ to dive, jump to go up','وجّهها بعصا التحكم. اضغط مطولاً على ⬇ لتغوص، والقفز لتصعد');
+MV('Too shallow here! Turn around','الماء هنا ضحل جدًا! استدر');MV('Let go','انزل');MV('Ride the dolphin','اركب الدلفين');MV('Ride the turtle','اركب السلحفاة');MV('Ride the manta ray','اركب سمكة المانتا');
+MV('Sea Album','ألبوم البحر');MV('{0} of {1} sea friends found. Swim close to an animal to add it!','وجدت {0} من {1} من أصدقاء البحر. اسبح قرب حيوان لتضيفه!');MV('You rode:','ركبت:');
+MV('Swim next to a sea turtle, a dolphin or a manta ray and press Use to ride it!','اسبح بجانب سلحفاة بحرية أو دلفين أو سمكة مانتا واضغط «استخدم» لتركبها!');
+MV('A stripy little fish from the reef','سمكة صغيرة مخططة من الشعاب المرجانية');MV('Puffs up when it is happy','تنتفخ عندما تكون سعيدة');MV('A tiny seahorse with a curly tail','حصان بحر صغير بذيل ملتف');
+MV('Little Octopus','الأخطبوط الصغير');MV('Eight arms for eight hugs','ثماني أذرع لثمانية أحضان');MV('Baby Dolphin','الدلفين الصغير');MV('Squeaks and does flips','يصفر ويقوم بالشقلبات');
+MV('Baby Shark','القرش الصغير');MV('Small, friendly and always smiling','صغير ولطيف ويبتسم دائمًا');MV('Snorkel Mask','قناع الغطس');MV('Ocean Explorer','مستكشف المحيط');
+MV('Ocean Cleaner','منظّف المحيط');MV('Shark Buddy','صديق القرش');MV('Seal Friend','صديق الفقمة');
+MV('Take the pearl','خذ اللؤلؤة');MV('Sunken treasure! +{0} coins','كنز غارق! +{0} عملة');MV('{0} of {1} sea chests','{0} من {1} صناديق بحرية');MV('A shiny pearl! +{0} coins','لؤلؤة لامعة! +{0} عملة');MV('{0} of {1} pearls','{0} من {1} لآلئ');
+MV('Captain Gill','القبطان جِل');MV('Dr. Pearl','الدكتورة لؤلؤة');MV('Iris the Ice Diver','آيريس غوّاصة الجليد');MV('Sea missions','مهمات البحر');
+MV('The Treasure Map','خريطة الكنز');MV('Ahoy, matey! An old treasure map washed up in a bottle, but it is torn into 4 pieces!','أهلًا يا رفيقي! وصلت خريطة كنز قديمة في زجاجة، لكنها ممزقة إلى 4 قطع!');
+MV('The pieces sank around the bay. Dive down and find them, then we follow the map to the treasure!','غرقت القطع حول الخليج. اغطس وابحث عنها، ثم نتبع الخريطة إلى الكنز!');
+MV('Find the 4 torn map pieces','ابحث عن قطع الخريطة الأربع');MV('Swim to the X on the sea floor','اسبح إلى علامة X في قاع البحر');MV('Open the treasure chest','افتح صندوق الكنز');MV('Tell Captain Gill','أخبر القبطان جِل');
+MV('Gold, gold and more gold! And look who was guarding it: a little octopus!','ذهب وذهب ومزيد من الذهب! وانظر من كان يحرسه: أخطبوط صغير!');MV('It wants to come with you. Take good care of it, matey!','يريد أن يأتي معك. اعتنِ به جيدًا يا رفيقي!');
+MV('The Dolphin Race','سباق الدلافين');MV('The dolphins out here love to race! Can you keep up with them?','الدلافين هنا تحب السباق! هل تستطيع اللحاق بها؟');
+MV('Swim to the dolphins, hop on one with Use, and ride through all 8 rings before the time runs out!','اسبح إلى الدلافين، واركب واحدًا بزر «استخدم»، ومُرّ عبر الحلقات الثماني قبل أن ينتهي الوقت!');
+MV('Swim to the dolphins','اسبح إلى الدلافين');MV('Ride a dolphin through the rings!','اركب دلفينًا ومُرّ عبر الحلقات!');MV('What a race! The dolphins think you are one of them now.','يا له من سباق! الدلافين تظن الآن أنك واحد منها.');
+MV('This baby dolphin wants to swim with you every day!','هذا الدلفين الصغير يريد أن يسبح معك كل يوم!');MV('Swim next to a dolphin and press Use to ride it!','اسبح بجانب دلفين واضغط «استخدم» لتركبه!');
+MV('Turtle Rescue','إنقاذ السلاحف');MV('Hello! I am Dr. Pearl. I look after the sea animals.','مرحبًا! أنا الدكتورة لؤلؤة. أعتني بحيوانات البحر.');
+MV('Oh no, 4 baby sea turtles are stuck in old fishing nets on the sea floor! Dive down and set them free!','يا إلهي، 4 سلاحف بحرية صغيرة عالقة في شباك صيد قديمة في قاع البحر! اغطس وحرّرها!');
+MV('Free the baby turtles from the nets','حرّر السلاحف الصغيرة من الشباك');MV('Tell Dr. Pearl','أخبر الدكتورة لؤلؤة');MV('You did it! The baby turtles are swimming free again.','نجحت! السلاحف الصغيرة تسبح حرة من جديد.');
+MV('Look, a little seahorse followed you. It wants to be your friend!','انظر، حصان بحر صغير تبعك. يريد أن يكون صديقك!');
+MV('Ocean Clean-up','تنظيف المحيط');MV('People dropped junk in the sea, and the fish are sad.','رمى الناس النفايات في البحر، والأسماك حزينة.');
+MV('Can you collect all the junk from the sea floor? Bottles, cans, an old boot...','هل تستطيع جمع كل النفايات من قاع البحر؟ زجاجات وعلب وحذاء قديم...');MV('Collect the junk from the sea floor','اجمع النفايات من قاع البحر');
+MV('Bring the junk to Dr. Pearl','أحضر النفايات إلى الدكتورة لؤلؤة');MV('The sea is sparkling clean! The fish are dancing!','البحر نظيف ولامع! الأسماك ترقص!');
+MV('The Shark\'s Sore Tooth','سنّ القرش المؤلمة');MV('A friendly shark came to see me. He has a wobbly tooth and it hurts!','جاءني قرش لطيف. عنده سنّ تتأرجح وتؤلمه!');
+MV('He is waiting in the deep water. Please find him and help him. Do not worry, he is very gentle!','إنه ينتظر في الماء العميق. أرجوك جده وساعده. لا تقلق، إنه لطيف جدًا!');
+MV('Find the friendly shark','جد القرش اللطيف');MV('Help the shark with his wobbly tooth','ساعد القرش في سنّه المتأرجحة');MV('The shark is smiling his biggest smile ever. You are a Shark Buddy now!','القرش يبتسم أكبر ابتسامة في حياته. أنت الآن صديق القرش!');
+MV('The Lost Seal Pups','صغار الفقمة الضائعة');MV('Brrr! Hello! I am Iris, I dive in the cold sea.','برررر! مرحبًا! أنا آيريس، أغوص في البحر البارد.');
+MV('Three baby seals drifted away on little ice floes and they are scared. Swim out and calm them down!','ثلاث فقمات صغيرة ابتعدت على قطع جليد صغيرة وهي خائفة. اسبح إليها وهدّئها!');
+MV('Calm the lost seal pups','هدّئ صغار الفقمة الضائعة');MV('Tell Iris','أخبر آيريس');MV('Their mums are so happy! Ark ark! That means thank you in seal.','أمهاتها سعيدات جدًا! آرك آرك! هذا يعني شكرًا بلغة الفقمة.');
+MV('Free the baby turtle','حرّر السلحفاة الصغيرة');MV('The baby turtle is stuck in a net. Solve the puzzle to untangle it!','السلحفاة الصغيرة عالقة في شبكة. حلّ اللغز لتفكّها!');
+MV('Calm the seal pup','هدّئ صغير الفقمة');MV('The seal pup is scared. Repeat its song to calm it down!','صغير الفقمة خائف. كرّر أغنيته لتهدّئه!');MV('Free the turtle','حرّر السلحفاة');
+MV('Crack the code of the old pirate lock!','اكتشف رمز قفل القراصنة القديم!');MV('Help the shark','ساعد القرش');MV('Wiggle out the wobbly tooth: solve the puzzle!','أخرج السنّ المتأرجحة: حلّ اللغز!');MV('Open the chest','افتح الصندوق');
+MV('New! Hold ⬇ to dive under the water','جديد! اضغط مطولاً على ⬇ لتغوص تحت الماء');MV('New! Hold Shift to dive under the water','جديد! اضغط Shift مطولاً لتغوص تحت الماء');
+// ---------- swimming under the water like a diver: lie flat, arms out in front, when you swim along; head first when you dive ----------
+function ocDeepNow(d){if(!d||d.veh||d.drive||d.fly)return false;if(d===ME)return !!ME.swim&&(OC.deep||MOV.deep)&&ME.y<WL-1.5&&!OC.ride;
+  return !!d.swim&&d.y<WL-1.7&&ocDepth(d.x,d.z)>2.3;}
+function ocSwimPose(d,dt){let st=d===ME?OC:(d.ocsw||(d.ocsw={}));const deep=ocDeepNow(d);let want=0;
+  if(deep){if(d===ME){const hs=Math.hypot(ME.vx||0,ME.vz||0),vy=OC.vy||0;want=hs>1.2?1.3:vy<-1.5?1.9:vy>1.5?.35:.6;}
+    else{const px=st.px??d.x,pz=st.pz??d.z;const hs=Math.hypot(d.x-px,d.z-pz)/Math.max(dt,1e-3);st.px=d.x;st.pz=d.z;want=hs>1.2?1.3:.6;}}
+  st.swp=lerp(st.swp||0,want,Math.min(1,dt*4));st.swk=lerp(st.swk||0,deep?1:0,Math.min(1,dt*5));return st;}
+{const _dh=drawHero;drawHero=function(d,t){try{if(typeof slideDrawOn==='function'&&camRealm()==='earth'){const st=ocSwimPose(d,Math.min(.05,t-(d.ocswT||t)));d.ocswT=t;
+      if(st.swk>.05){const M=M4.id();M4.tr(M,d.x,d.y+1,d.z);M4.ry(M,d.face||0);M4.rx(M,st.swp*st.swk);M4.rz(M,Math.sin(t*5)*.08*st.swk);M4.tr(M,0,-1,0);slideDrawOn(d,t,M,_dh);return;}}}catch(e){noteErr('ocean swim pose',e);}
+  return _dh(d,t);};}
+// ---------- what's new (Arabic) ----------
+MV('The sea is alive!','البحر حيّ!');MV('Fish, clownfish, pufferfish, seahorses, crabs, octopuses, jellyfish, sea turtles, dolphins, friendly sharks and manta rays live all around the islands, and seals and narwhals in the cold sea by Frostpeak. Swim close to them to fill your Sea Album (Menu, Sea Album)','الأسماك وسمك المهرج والسمكة المنتفخة وأحصنة البحر والسلطعونات والأخطبوطات وقناديل البحر والسلاحف البحرية والدلافين والقروش اللطيفة وأسماك المانتا تعيش حول كل الجزر، والفقمات والناروال في البحر البارد قرب قمة الصقيع. اسبح قربها لتملأ ألبوم البحر (القائمة، ألبوم البحر)');
+MV('Every hero can dive','كل الأبطال يستطيعون الغوص');MV('In the sea, hold ⬇ (or Shift) to swim down and let go to swim up. Watch your air bubbles! Divers and the Diving Helmet never run out of air','في البحر، اضغط مطولاً على ⬇ (أو Shift) لتسبح إلى الأسفل، واتركه لتصعد. انتبه لفقاعات الهواء! الغوّاصون وخوذة الغوص لا ينفد هواؤهم أبدًا');
+MV('Ride sea animals','اركب حيوانات البحر');MV('Swim next to a sea turtle, a dolphin or a manta ray and press Use to ride it. A dolphin leaps out of the water when you press jump!','اسبح بجانب سلحفاة بحرية أو دلفين أو سمكة مانتا واضغط «استخدم» لتركبها. الدلفين يقفز من الماء عندما تضغط القفز!');
+MV('Sea missions','مهمات البحر');MV('Captain Gill on the Sunset pier, Dr. Pearl on the beach east of Star Harbor and Iris the Ice Diver at Frostpeak need your help in the sea. They give sea pets: a clownfish, a pufferfish, a seahorse, a little octopus, a baby dolphin and a baby shark!','القبطان جِل على رصيف الغروب، والدكتورة لؤلؤة على الشاطئ شرق ميناء النجوم، وآيريس غوّاصة الجليد عند قمة الصقيع يحتاجون مساعدتك في البحر. يعطونك حيوانات أليفة بحرية: سمكة مهرج، وسمكة منتفخة، وحصان بحر، وأخطبوطًا صغيرًا، ودلفينًا صغيرًا، وقرشًا صغيرًا!');
+MV('Sunken treasure','كنز غارق');MV('Treasure chests, pearl clams and two shipwrecks are hidden on the sea floor','صناديق كنز ومحارات لؤلؤ وسفينتان غارقتان مخبأة في قاع البحر');
 // ================= start =================
 boot();
 </script>
