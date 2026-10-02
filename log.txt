@@ -829,3 +829,7 @@
 2026-10-02 21:49:44 [p_stardust] image-to-3d SUCCEEDED 100%
 2026-10-02 21:49:46 [p_stardust] model saved (no skeleton): {"bytes": 1393312, "triangles": 20727, "joints": 0, "clips": []}
 2026-10-02 21:49:49 [p_cottage] model task made 01a0fe98-4a52-7405-b51a-118dd4c73f2d
+2026-10-02 21:49:50 [p_cottage] image-to-3d IN_PROGRESS 1%
+2026-10-02 21:49:54 [p_castle] image-to-3d IN_PROGRESS 99%
+2026-10-02 21:49:59 [p_bunny] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:50:04 [p_castle] image-to-3d SUCCEEDED 100%
