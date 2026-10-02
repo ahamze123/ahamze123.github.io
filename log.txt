@@ -732,3 +732,7 @@
 2026-10-02 09:35:59 run finished; credits used by new tasks (estimate): 35
 2026-10-02 10:05:07 run 10 heroes ['basma'] max credits 40
 2026-10-02 10:05:10 [basma] model task made 01a0fc13-2c88-769f-8720-7cc7f2b43dc9
+2026-10-02 10:05:12 [basma] image-to-3d IN_PROGRESS 1%
+2026-10-02 10:06:03 [basma] image-to-3d IN_PROGRESS 33%
+2026-10-02 10:06:44 [basma] image-to-3d IN_PROGRESS 59%
+2026-10-02 10:07:04 [basma] image-to-3d SUCCEEDED 100%
