@@ -4050,6 +4050,9 @@
    "status": "SUCCEEDED"
   },
   "luna_room": {
+   "credits": 9,
+   "error": null,
+   "files": [],
    "id": "01a0feeb-f876-74e6-885d-a7c3acd8ece8",
    "kind": "text-to-image",
    "made": "2026-10-02 23:21",
@@ -4060,7 +4063,7 @@
     "aspect_ratio": "4:3",
     "prompt": "Inside a little princess's bedroom in a fairy-tale castle, for a children's game, seen straight from the front like a cozy stage. Pink, lavender and white with gold details. From left to right: a tall pink wardrobe with open doors showing dresses; a white vanity table with a big round mirror and a jewelry box; a small white piano; a big arched window with a sunny sky; a canopy bed with pink curtains, fluffy pillows and a teddy bear; a painting easel with a blank canvas; a small white bathtub full of bubbles with a rubber duck. A soft round rug on the floor and fairy lights. Every piece of furniture clearly separated and fully visible, nothing cut off. Glossy 3D animated-movie style, soft warm light, bright cheerful colors. No people, no animals, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_apple": {
    "credits": 9,
@@ -4099,6 +4102,11 @@
    "status": "SUCCEEDED"
   },
   "p_bear": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_bear.png"
+   ],
    "id": "01a0feeb-f87a-7228-a7e8-15bdade28001",
    "kind": "image-to-image",
    "made": "2026-10-02 23:21",
@@ -4111,7 +4119,7 @@
     "aspect_ratio": "1:1",
     "prompt": "Show the bear chef from this picture alone on a plain pure white background: exactly the same bear, same fur colour and face, the same white chef's hat and pink apron with the cupcake, holding the wooden spoon, standing and facing the camera. The whole body from the top of the hat to the feet inside the picture, nothing cut off. Nothing else in the picture: no candy, no trees, no ground, no shadow, no text. Same glossy 3D animated-movie style, soft even light."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_blossom": {
    "credits": 9,
@@ -4276,6 +4284,9 @@
    "status": "SUCCEEDED"
   },
   "p_penguin": {
+   "credits": 9,
+   "error": null,
+   "files": [],
    "id": "01a0feeb-f87a-710a-b493-1d38f1e85cd6",
    "kind": "image-to-image",
    "made": "2026-10-02 23:21",
@@ -4288,7 +4299,7 @@
     "aspect_ratio": "1:1",
     "prompt": "Show the penguin from this picture alone on a plain pure white background: exactly the same little penguin with the red knitted scarf and white fluffy earmuffs, standing and facing the camera with flippers out. The whole body from head to feet inside the picture, nothing cut off. Nothing else in the picture: no snow, no trees, no ground, no shadow, no text. Same 3D animated-movie style, soft even light."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_rock": {
    "credits": 9,
