@@ -3840,6 +3840,11 @@
    "status": "SUCCEEDED"
   },
   "p_star": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_star.png"
+   ],
    "id": "01a0fe9b-9b0d-7619-9b47-239204770bbb",
    "kind": "text-to-image",
    "made": "2026-10-02 21:53",
@@ -3850,7 +3855,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute chubby five-pointed golden star for a children's 3D game, with soft rounded points, shiny smooth gold, standing upright facing the camera. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_tree": {
    "credits": 9,
