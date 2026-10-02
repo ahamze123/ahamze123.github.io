@@ -4238,7 +4238,9 @@
   "hair_bun": {
    "credits": 9,
    "error": null,
-   "files": [],
+   "files": [
+    "images/hair_bun.png"
+   ],
    "id": "01a0fef3-74a6-7508-9be7-63d45bba2e4d",
    "kind": "image-to-image",
    "made": "2026-10-02 23:29",
