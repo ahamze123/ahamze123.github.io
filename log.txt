@@ -840,3 +840,8 @@
 2026-10-02 21:50:19 [p_pip] image-to-3d IN_PROGRESS 50%
 2026-10-02 21:50:20 [p_cottage] image-to-3d IN_PROGRESS 39%
 2026-10-02 21:50:21 [p_bunny] model saved (no skeleton): {"bytes": 1674652, "triangles": 19812, "joints": 0, "clips": []}
+2026-10-02 21:50:29 [p_luna] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:50:30 [p_appletree] image-to-3d IN_PROGRESS 27%
+2026-10-02 21:50:39 [p_luna] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:50:41 [p_pip] image-to-3d IN_PROGRESS 99%
+2026-10-02 21:50:50 [p_luna] image-to-3d SUCCEEDED 100%
