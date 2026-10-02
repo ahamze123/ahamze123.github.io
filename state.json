@@ -3642,6 +3642,11 @@
  },
  "images": {
   "p_apple": {
+   "credits": 9,
+   "error": null,
+   "files": [
+    "images/p_apple.png"
+   ],
    "id": "01a0fe9b-8fcb-7293-bebb-04d001afbf9d",
    "kind": "text-to-image",
    "made": "2026-10-02 21:53",
@@ -3652,7 +3657,7 @@
     "aspect_ratio": "1:1",
     "prompt": "A cute shiny red apple for a children's 3D game, with a small brown stem and one green leaf, round and chubby. No ground. Glossy 3D animated-movie style, soft even light, bright cheerful colors. Plain pure white background, no shadow, no text."
    },
-   "status": "PENDING"
+   "status": "SUCCEEDED"
   },
   "p_appletree": {
    "credits": 9,
