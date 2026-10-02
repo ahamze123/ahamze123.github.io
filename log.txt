@@ -849,3 +849,10 @@
 2026-10-02 21:50:51 [p_cottage] image-to-3d IN_PROGRESS 67%
 2026-10-02 21:50:53 [p_pip] model saved (no skeleton): {"bytes": 1821560, "triangles": 19294, "joints": 0, "clips": []}
 2026-10-02 21:50:55 [p_luna] rig task made 01a0fe99-4228-7075-bd5c-986ab420563d
+2026-10-02 21:50:56 [p_luna] rigging IN_PROGRESS 10%
+2026-10-02 21:51:01 [p_appletree] image-to-3d IN_PROGRESS 67%
+2026-10-02 21:51:06 [p_luna] rigging IN_PROGRESS 36%
+2026-10-02 21:51:11 [p_appletree] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:51:12 [p_cottage] image-to-3d IN_PROGRESS 84%
+2026-10-02 21:51:17 [p_luna] rigging SUCCEEDED 100%
+2026-10-02 21:51:17 [p_luna] rigged: {"model": {"bytes": 4818688, "triangles": 30187, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57148, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46512, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
