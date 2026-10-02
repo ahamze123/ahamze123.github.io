@@ -2340,10 +2340,23 @@
       569,
       568
      ],
+     "credits": 12,
+     "error": null,
+     "file": {
+      "bytes": 371292,
+      "clips": [
+       "Chair_Sit_Idle_F",
+       "Female_Crouch_Pick_Up_Place_Side",
+       "Swim_Forward",
+       "Swim_Idle"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "id": "01a0feee-8538-716a-8a38-efe1c1c03087",
      "made": "2026-10-02 23:23",
      "rig": "01a0fe99-4228-7075-bd5c-986ab420563d",
-     "status": "PENDING"
+     "status": "SUCCEEDED"
     }
    },
    "full": {
