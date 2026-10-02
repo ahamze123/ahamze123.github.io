@@ -2427,7 +2427,23 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9d-5deb-70f5-9758-eefeb0353722/output/preview.png?Expires=1791237389&Signature=PfyaWyG5NytT~56ckT6hCt~743WZ7PdyGQB9R9-fPkLLnVvSN~71XK-~jlueoDrO7fsLZFXJJh09OpPbl4IUealaiE2t0ZcdISS6i04qpwzJarWglzwtR-cfGi1m3oA-MwCmqMVYQSkrdYvnS2kQPW89C5418W1H0oQ3~Qz6H9Jhy6OlLYhjjywJFS4wawOCBQ7lNdBhqwYXFBcdfj3~IRfCkO2dFEzCI1FCjvvnYG4JcJTZyQ5R1u5ofw4iiCFrH2KxA5QpN5vRzQ2ytbWbMpWWBcDXQS7Y99aliS8X0g2-nyzyZI1qowtr0cXDKnvm17SyhCpxv3RGh3MXgM2YIQ__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
-  "p_palm": {},
+  "p_palm": {
+   "model": {
+    "id": "01a0fee2-4799-7500-aaae-7e2e4986226a",
+    "made": "2026-10-02 23:10",
+    "run": 16,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 5000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_pip": {
    "model": {
     "credits": 30,
@@ -2480,8 +2496,40 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe9c-1bc5-7608-9808-455e5ffc36d7/output/preview.png?Expires=1791237358&Signature=oo~pC6VPSusnDNQh9QGGLFPqSp9ZobDKSMGFFY8klaupSZVpcHJFikpnPY28w~6UV5J0up76emck2Y~GQNDpqR74t0uY9cTg6WMyg70qY0kk~81YE0QjIxq9rwFQz~OQxe0EKdSyXxuJFSNyoPC8kuTXetJrYWWQyfUv~yoznyacbLMSeas3vt3twJpAjk7qdrBgC8xCh31nRm6OaawzeOiPZDCE7crpFjl~MFzLYxIuwmJ6KZN2nxL9Atqxmdr6PNL16LPMxCVvN22Za-OV-J~dLiDrJZ5Cw4lV74WP-ELNlCZWeyoHCLCjBRsSNSsRz5Qlkzl0nenQ46DOwVv3rg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
-  "p_sandcastle": {},
-  "p_shell": {},
+  "p_sandcastle": {
+   "model": {
+    "id": "01a0fee2-47a1-73b3-aaca-456e60bc97a5",
+    "made": "2026-10-02 23:10",
+    "run": 16,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 4000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
+  "p_shell": {
+   "model": {
+    "id": "01a0fee2-47a1-73b2-8e64-39f62416f334",
+    "made": "2026-10-02 23:10",
+    "run": 16,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 1500,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_star": {
    "model": {
     "credits": 30,
@@ -2534,7 +2582,23 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a0fe96-a317-75e8-b4a1-414b6a97705a/output/preview.png?Expires=1791236977&Signature=FQ4sGAbL142V3g5SbNhvJDl5z~covkM7nnNmX-PP7hkq6gnfVxi03eKstXEAsQowzVQBhYaP6rEJOP~hkR8LNbENxzzWEpM8iA343ECXDrrmwshBh-X59HxfDDFK4gdoDp097jJD71lo7o4ZQQhl~BjlH2huAdOF~PyPByUV8MAn-OwNPXdRvfgGgK4xbP1hUWRzfGKjmIpuUT2wKPW-sunCOdE6BNEA8KxVFmlEfUXxbV51dnIHsiuJsAgPwHc3Zvdfdds~-6nk8mC2F1M-yMm1j0wbg-azUilbwSKIaoImgkdME7fQYyAZJTyYXKI8kMLFN~zk9Z6Ixj9iRFVk4Q__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
-  "p_starfish": {},
+  "p_starfish": {
+   "model": {
+    "id": "01a0fee2-47a0-75fb-9fc0-9f2922b234a0",
+    "made": "2026-10-02 23:10",
+    "run": 16,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 1500,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_tree": {
    "model": {
     "credits": 30,
