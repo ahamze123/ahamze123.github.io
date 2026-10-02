@@ -859,3 +859,4 @@
 2026-10-02 21:51:20 [p_luna] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 5886296}
 2026-10-02 21:51:21 [p_appletree] image-to-3d SUCCEEDED 100%
 2026-10-02 21:51:22 [p_cottage] image-to-3d SUCCEEDED 100%
+2026-10-02 21:51:22 [p_luna] animation task made anim 01a0fe99-b9a6-7595-9ec7-baba865f1105 [243, 415, 460, 44, 28, 298, 405, 118]
