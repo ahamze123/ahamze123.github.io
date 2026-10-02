@@ -819,3 +819,4 @@
 2026-10-02 21:48:06 [p_mimi] image-to-3d IN_PROGRESS 84%
 2026-10-02 21:48:16 [p_mimi] image-to-3d SUCCEEDED 100%
 2026-10-02 21:48:18 [p_mimi] model saved (no skeleton): {"bytes": 1727812, "triangles": 20685, "joints": 0, "clips": []}
+2026-10-02 21:48:21 [p_castle] model task made 01a0fe96-f2d9-74ff-a88d-6b64ee9c9f24

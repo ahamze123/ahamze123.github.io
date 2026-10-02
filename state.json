@@ -2012,6 +2012,23 @@
     "status": "PENDING"
    }
   },
+  "p_castle": {
+   "model": {
+    "id": "01a0fe96-f2d9-74ff-a88d-6b64ee9c9f24",
+    "made": "2026-10-02 21:48",
+    "run": 14,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 40000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "p_dot": {
    "model": {
     "credits": 30,
