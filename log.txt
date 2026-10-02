@@ -1080,3 +1080,4 @@
 2026-10-02 23:25:17 [p_turtle] image-to-3d IN_PROGRESS 84%
 2026-10-02 23:25:37 [p_penguin] image-to-3d IN_PROGRESS 59%
 2026-10-02 23:25:37 [p_turtle] image-to-3d SUCCEEDED 100%
+2026-10-02 23:25:39 [p_turtle] model saved (no skeleton): {"bytes": 1249756, "triangles": 20689, "joints": 0, "clips": []}
