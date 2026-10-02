@@ -4496,7 +4496,8 @@
     "p_star"
    ],
    "limit": 400,
-   "run": 15
+   "run": 15,
+   "spent_estimate": 390
   }
  ]
 }
