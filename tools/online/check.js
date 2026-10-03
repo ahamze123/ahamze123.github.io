@@ -48,7 +48,8 @@ async function tablet(tag,block,extra){const args=ARGS.slice();if(block&&block.l
     const L=(...a)=>{if(window.__wslog.length<160)window.__wslog.push([Math.round((Date.now()-t0)/100)/10,tag,...a]);};L('new');ws.addEventListener('open',()=>L('open'));ws.addEventListener('close',e=>L('close',e.code,String(e.reason||'').slice(0,40)));
     if(/peerjs/.test(u)){ws.addEventListener('message',e=>{let m={};try{m=JSON.parse(e.data);}catch(x){}if(m.type!=='HEARTBEAT')L('msg',m.type||'?',m.payload&&m.payload.msg?String(m.payload.msg).slice(0,40):'');});const s=ws.send.bind(ws);ws.send=d=>{try{const m=JSON.parse(d);if(m.type!=='HEARTBEAT')L('send',m.type,m.dst&&String(m.dst).slice(-6));}catch(x){}return s(d);};}
     return ws;};window.WebSocket.prototype=W.prototype;Object.assign(window.WebSocket,{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3});});
-  p.errs=[];p.on('pageerror',e=>p.errs.push(e.message.slice(0,200)));await p.goto(BASE+(extra||''),{waitUntil:'commit'});await p.waitForFunction(()=>typeof G!=='undefined'&&G.mode==='title',null,{timeout:300000});
+  p.errs=[];p.on('pageerror',e=>p.errs.push(e.message.slice(0,200)));await p.goto(BASE+(extra||''),{waitUntil:'commit'});const ok=await p.waitForFunction(()=>typeof G!=='undefined'&&G.mode==='title',null,{timeout:150000}).then(()=>true).catch(()=>false);
+  if(!ok){const info=await p.evaluate(()=>({t:document.title,mode:typeof G!=='undefined'?G.mode:'noG',err:$&&$('err')?$('err').innerText.slice(0,200):''})).catch(e=>({e:String(e).slice(0,100)}));try{await p.screenshot({path:OUT+'/notitle_'+tag+'_'+Date.now()+'.png'});}catch(e){}await b.close();throw new Error('no title '+tag+' '+JSON.stringify(info)+' '+p.errs.slice(0,3).join(' | '));}
   await p.evaluate(()=>{window.__noAutoQ=true;G.quality='low';});return {b,p};}
 const st=p=>p.evaluate(()=>window.__peerRoom&&window.__peerRoom.status?window.__peerRoom.status():null).catch(()=>null);
 async function scenario(name,blockA,blockB,extra){const r={name,blockA,blockB};const t0=Date.now();let A,B;
@@ -59,7 +60,7 @@ async function scenario(name,blockA,blockB,extra){const r={name,blockA,blockB};c
     if(!r.aHost){r.result='A could not host';return r;}
     const t1=Date.now();B=await tablet('B',blockB,extra);await B.p.fill('#n0','Guesty');await B.p.click('#bonline');
     r.bLobby=await B.p.waitForFunction(()=>!document.getElementById('bhost').disabled,null,{timeout:60000}).then(()=>Math.round((Date.now()-t1)/1000)).catch(()=>-1);
-    const t2=Date.now();r.bSees=await B.p.waitForSelector('#games button',{timeout:75000}).then(()=>Math.round((Date.now()-t2)/1000)).catch(()=>-1);r.bStatus=await st(B.p);
+    const t2=Date.now();r.bSees=await B.p.waitForSelector('#games button',{timeout:60000}).then(()=>Math.round((Date.now()-t2)/1000)).catch(()=>-1);r.bStatus=await st(B.p);
     if(r.bSees<0){r.bWs=await B.p.evaluate(()=>window.__wslog.slice(0,60)).catch(()=>null);r.aWs=await A.p.evaluate(()=>window.__wslog.slice(0,40)).catch(()=>null);r.result='B did not see the game';return r;}
     await B.p.click('#games button');r.bJoin=await B.p.waitForFunction(()=>NET.role==='guest',null,{timeout:60000}).then(()=>true).catch(()=>false);
     await B.p.waitForTimeout(4000);r.bStatus2=await st(B.p);r.aPeers=await A.p.evaluate(()=>netFriends().length).catch(()=>-1);r.bPeers=await B.p.evaluate(()=>netFriends().length).catch(()=>-1);
@@ -71,7 +72,7 @@ async function scenario(name,blockA,blockB,extra){const r={name,blockA,blockB};c
   if(!ONLY||ONLY.includes('pjflap')){all.pjflap=await pjFlap();log('pjflap',all.pjflap);}
   if(!ONLY||ONLY.includes('turn')){const b=await chromium.launch({args:ARGS});all.turn=await turnCheck(b);await b.close();log('turn',all.turn);}
   const ODD=['emqx','hivemq','mosq'],MQALL=['eclipse','emqx','hivemq','shiftr','mosq'];
-  const S=[['open',[],[]],['both networks block the odd ports',ODD,ODD],['A blocks odd ports, B has no PeerJS',ODD,['pj']],['only ntfy',['pj',...MQALL],['pj',...MQALL]],
-    ['only PeerJS',[...MQALL,'ntfy'],[...MQALL,'ntfy']],['only shiftr',['pj','eclipse','emqx','hivemq','mosq','ntfy'],['pj','eclipse','emqx','hivemq','mosq','ntfy']],['A only PeerJS, B only ntfy (no shared route)',[...MQALL,'ntfy'],['pj',...MQALL]]];
-  all.scenarios=[];for(const [n,a,b] of S){if(ONLY&&!ONLY.includes(n)&&!ONLY.includes('scenarios'))continue;const r=await scenario(n,a,b);all.scenarios.push(r);log('scenario',r);}
+  const S=[['both networks block the odd ports',ODD,ODD],['A blocks odd ports, B has no PeerJS',ODD,['pj']],['only ntfy',['pj',...MQALL],['pj',...MQALL]],
+    ['only shiftr',['pj','eclipse','emqx','hivemq','mosq','ntfy'],['pj','eclipse','emqx','hivemq','mosq','ntfy']],['open',[],[]],['only PeerJS',[...MQALL,'ntfy'],[...MQALL,'ntfy']]];
+  all.scenarios=[];for(const [n,a,b] of S){if(ONLY&&!ONLY.includes(n)&&!ONLY.includes('scenarios'))continue;const r=await scenario(n,a,b);all.scenarios.push(r);log('scenario',r);fs.writeFileSync(OUT+'/result.json',JSON.stringify(all,null,1));}
   fs.writeFileSync(OUT+'/result.json',JSON.stringify(all,null,1));log('DONE');})();

@@ -15,7 +15,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,7 +34,15 @@ jobs:
           sleep 1
           BASE=$(python3 -c "import json;print(json.load(open('run.json')).get('base','https://ahamze123.github.io/'))")
           ONLY=$(python3 -c "import json;print(json.load(open('run.json')).get('only',''))")
-          timeout 4200 node check.js "$BASE" "$GITHUB_WORKSPACE/out" "$ONLY" || echo "check ended with $?" >> "$GITHUB_WORKSPACE/out/log.txt"
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          # save what we have every minute (branch online-out), so the results can be read while it runs
+          push(){ ( cd "$GITHUB_WORKSPACE/out" && rm -rf .git && git init -q && git checkout -q -b online-out && git add -A && git -c user.name=online-bot -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -qm "online check ${{ github.run_number }}" && git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" online-out ) > /dev/null 2>&1 || true; }
+          timeout 3000 node check.js "$BASE" "$GITHUB_WORKSPACE/out" "$ONLY" &
+          PID=$!
+          while kill -0 $PID 2>/dev/null; do sleep 60; push; done
+          wait $PID || echo "check ended with $?" >> "$GITHUB_WORKSPACE/out/log.txt"
+          echo "DONE run ${{ github.run_number }}" >> "$GITHUB_WORKSPACE/out/log.txt"
+          push
       - name: Save the results (branch online-out)
         if: always()
         run: |
