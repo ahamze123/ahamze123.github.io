@@ -123,6 +123,15 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 #cfYes.hold span { position: relative; }
 #cfYes.holding i { width: 100%; transition: width 1.7s linear; }
 .mission.bump { animation: mbump .9s ease-in-out 2; }
+/* a game controller: a yellow glow shows the button ✕ will press, and a little hand paints on pictures */
+body.pad-on .padfocus:not(.hot):not(canvas) { outline: 5px solid #ffd23f; outline-offset: 3px; box-shadow: inset 0 0 0 4px #ffd23f, 0 0 0 9px rgba(255,210,63,.45), 0 0 26px rgba(255,190,40,.95); }
+body.pad-on canvas.padfocus { outline: 6px solid #ffd23f; outline-offset: -6px; }
+body.pad-on .hot.padfocus .ring { border-color: #ffd23f; box-shadow: 0 0 0 9px rgba(255,210,63,.75), 0 0 36px #ffd23f, 0 0 26px rgba(255,255,255,.9) inset; }
+body.pad-on .hot.padfocus .lab { box-shadow: 0 0 0 4px #ffd23f, 0 4px 12px rgba(44,23,69,.25); }
+body.pad-on .padfocus.padpress:not(.hot) { transform: scale(.93); }
+#padHand { position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none; font-size: 50px; line-height: 1; filter: drop-shadow(0 3px 4px rgba(44,23,69,.5)); }
+#padSound { position: absolute; left: 50%; top: calc(84px + var(--st)); transform: translateX(-50%); z-index: 33; padding: 10px 18px; font-family: var(--font-display); font-weight: 900; font-size: 19px; pointer-events: none; white-space: nowrap; }
+#padNote { font-size: 17px; }
 @keyframes mbump { 0%, 100% { transform: translateX(-50%) scale(1); } 40% { transform: translateX(-50%) scale(1.14); } }
 
 /* menu */
@@ -371,6 +380,7 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
       <button class="round sticker" id="btnMenu" aria-label="Menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" stroke="#2c1745" stroke-width="2.8" stroke-linecap="round"/></svg></button>
     </div>
     <div class="menu sticker" id="menu" hidden>
+      <button id="mRoom"><span>🏰</span>My room</button>
       <button id="mFull"><span>⛶</span>Full screen</button>
       <button id="mMusic"><span>🎵</span><b id="mMusicTxt">Music: on</b></button>
       <button id="mPhoto"><span>📸</span>Take a photo</button>
@@ -439,6 +449,7 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
     <h1>Sparkle<br>Kingdom</h1>
     <p class="sub">Princess Luna's adventure</p>
     <button class="big" id="btnPlay">Start game</button>
+    <p class="sub" id="padNote" hidden>🎮 Press ✕ to play</p>
     <div class="row"><button class="small" id="btnFull2">Full screen</button><button class="small" id="btnNew" hidden>Start a new adventure</button></div>
   </div>
 
@@ -472,6 +483,7 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 <script src="lib/three.min.js"></script>
 <script src="lib/GLTFLoader.js"></script>
 <script>
+const VOICE_FILES = "00a22cf3,00f1283b,00fc5ec5,014dda19,01be5ec3,01f33e9a,020e07eb,02131897,02648617,02cd4148,0335d870,03d9e9e1,04511d8e,046819bb,04a1e4a5,04e2362d,050c205d,0520f05b,0663012e,0717a444,07da523d,07ffdd30,08e4df78,09733804,0a2c3026,0a32e40e,0b2f3e3b,0b66056b,0c23464d,0ce67d5f,0d48de92,0e3d0444,0e845bfb,0ea94fcb,0ed6cfa3,0fc0baee,0ffac111,103e4448,105aac16,106178f0,11324c99,115ee931,116db324,120b960e,1214b339,123e8d09,125e2eea,129a5e71,12b9258d,1382a3f9,149b75a1,14acb8b5,14f8d06d,1515b88b,15f0c9ed,16c08273,16ef015d,17213f32,17dfc931,18c8c925,19251e26,19282165,192beb66,1998cf90,1a33ff3d,1a604d87,1ad987fe,1b2e0cda,1b61219c,1b94a442,1b9b1494,1be734d4,1c02c49d,1d16e9eb,1da21ac4,1e990e1f,1ef8e144,1f3062eb,1f4f2f64,1fbfe8cf,200ad2cc,202d4534,21523b0a,216be980,2175b1ff,2190a347,21f4423e,22847719,22ba2076,2326d443,23ccfb8b,23e6d765,24bf43d7,25b46350,25c732a1,2603d7a1,26fa4fc9,27916e1d,289a9aa1,28b2ca4d,28e23d3e,2ac097e4,2acdebe8,2adcc6ac,2b08571c,2b2f9da6,2b7ff8f9,2c47f24c,2cc4395c,2ceb52e2,2e3a5211,2e86bb68,2eee22b9,2f43ae51,2f70c01d,2fcbcfbb,3031b1fe,30a91588,30b24255,30f88c4e,3192a169,31bdd84a,32024eee,32ceb357,3345844d,34698270,360018c0,36122426,36203878,36498dff,36678837,37178475,3766e2b9,38352d65,387ae355,38c4ca9b,39fe4f8f,3a2f7ac2,3a6f1eab,3a7661ac,3c7ac8e1,3cee0f2e,3da74f9b,3ded144c,3dfde938,3e0fb59a,3f8e08e5,412a4cfa,41faac08,42f52b55,43a7360c,43b833ac,43b9e3ba,43e131df,43f02814,44a59878,457f71d0,46006901,4602cd78,46318dfa,478faf63,488f62f4,48baaa70,48f22807,499893b4,4b04ceef,4b3e20f2,4c84f500,4d6a0674,4dc360c3,4ddc75d3,4df4b29d,4e759e6d,4e76c6f6,4e8c5492,4ecf7aa7,4eded1b0,505b0f0a,50c67d21,516773ef,522af139,5232bb9e,5237b886,53864a8e,53a9a772,5479f2ed,5550d559,55946541,562b97c3,5662e277,571256ed,5757d152,57acb6bf,58008dce,58086b5e,5941e512,59453f6d,5a052bcf,5a234d01,5ad0402d,5ba5f189,5cd993fe,5d06f6f1,5d19ffe5,5d808842,5e4cac88,5e59085f,5e5cccfc,5e9c366e,60810258,61109715,611a63ac,61c5659e,6261be36,627521af,63d7adb5,6480f9d4,65a2fc4e,663c87f2,6655450f,66f323b9,674d8c85,683037a3,68d81ce4,6904f69d,690931d6,69b93e5f,69f309de,6a4dab24,6aa1e8fa,6aa9bed1,6ab0642b,6ab9c5c5,6aea30d8,6afed0a7,6b0cec74,6b674133,6b7a0783,6c46c45a,6df5fa5f,6dfc885c,6e6c3dfd,6e7ee573,6e8efb72,6efc5130,6f634976,6ff1fa15,704002be,70c26913,70d619df,713a0aef,71911c6e,728e4611,72d4d968,73953c3d,73f7e036,7588c122,7591d38a,75a1229d,75e38cfd,76b97a7f,788d1319,78cadb14,7908053b,79f2a29f,7a018d48,7a81728c,7af6e2f8,7b91e6c1,7be06d16,7c4f9237,7ca812cf,7d2a0260,7e5d146b,7e79803c,7ed1e393,7f751f09,803f01eb,80ec1262,810212cf,814f48ed,8267ac97,826b1ae3,82d22e5b,8328349a,83dd35f7,8537726a,858c9cb7,860b183e,86722320,87d248d3,88436b10,8846c2fa,88b02f72,891dcee6,89d90d0a,8a3aed6c,8a6670f3,8a909aaf,8af26357,8b426480,8b96f635,8bf30896,8c55f0a9,8dcb962d,8e8be6dd,8ea77787,8ed95ea9,8f3f6d22,8f43385d,8f7924fb,8fbfb6b4,90c3c8fd,90e45e4b,9207605d,9210bc92,92859f1c,92e06e54,93ae480f,943f0f5d,94e9abdf,94f5bb99,95c8195d,96097a34,9635280d,97b4f7ae,985bddf7,98ad7bef,992b2675,9ab66708,9bcd4a16,9d3a86d2,9d582420,9d770961,9e0b5e28,9ee37635,9f722af1,9f929386,a00f5df5,a121c475,a1248bcb,a1fa0627,a27cacb0,a2ac8e15,a2e74f17,a3bb0bdd,a517eec4,a51a201a,a6141594,a6a2d973,a77d61f3,a7b14d72,a7c370a3,a82a91b2,a9633c3d,aa3078c6,aa67c59a,aacbf240,ac2b2698,ac9d2907,ad47d754,ad4bfdf2,ad566924,ad782d09,ae92ab61,aeba8ad2,b11bfb48,b12c4f8c,b20969e4,b318f98b,b31cca1a,b3802c45,b3ea4a84,b44ea963,b462238d,b5e417d6,b65bbd3f,b6922439,b7d71556,b81ecfcd,b84fb8d6,b9200fb4,b997ade5,ba0e652e,ba703036,bd843665,be414c06,bece9ce7,bef7117b,bfbd3dd4,c052dd53,c11377c8,c115d52a,c1a28911,c1c6721c,c25ce2b5,c2a26045,c2b6dcef,c42a2710,c43346c9,c4589fe1,c51c3f39,c69f0900,c8c75435,c8dcb7d0,ca6a5040,ca9312c4,cb7a9798,cbe88961,cc41c225,cc9259a4,cd0e6a50,cd54033b,cd80bfb0,cda541a8,cdfd7c2e,ce0a9655,cf82c6c3,cfb5574b,cfc93025,d0210508,d09619e4,d19ed04a,d1adf5d4,d1f4341e,d262e2d8,d2ea5e42,d38be5e8,d3c10c80,d3da0e97,d414f5c8,d4bf26f8,d4d4d12c,d4e01f2f,d532c0d5,d549ad8f,d5510939,d6707c2a,d6cb26cf,d73c33e6,d79fc2ae,d841f188,d89e1fef,d8cb933f,d8cc0aec,d8dc44ab,da120c2b,da577ca0,da805faa,dadcf493,db586fcb,db8efc4c,dc4ebbe2,dd96c01b,debf55b3,decad3dc,deee47bc,dfb19bdf,dfc42b96,e00e3fd5,e0c47d42,e13061cd,e140038b,e1ab9787,e1d233fb,e22f2732,e23a0726,e2af25a6,e2e0b121,e2ea8a64,e3c8956d,e3e6d147,e4272583,e4568fc4,e4aebf25,e515942c,e51cae8a,e55461c0,e55a5945,e57ac697,e5952cce,e5b8c350,e66b2229,e672f607,e690e142,e6ce29ec,e718bd2b,e777835f,e7d468e9,e7e9f0f9,e7f99180,e857ca06,e87d5055,e9456fef,e96a47fe,ea143563,ea39db41,eae24ad0,ebff4d2f,ec5eb6b5,ec6dfdb7,ec889921,ece4644e,ed20aa01,ed6e4c43,ed73203e,ee7d4314,eee7c6d3,eef3a24c,eef427f7,ef974d57,effd821e,f068733b,f1ef67df,f32e0f61,f3bb1011,f4650963,f4e5c5cb,f6c3934d,f80584d5,f82bd5ea,f8852872,f8cdee73,f8fe088b,f915bd2c,f9eb4fb0,fc1dd75b,fc596bde,fc82dc43,fd0aa93c,fd4801e8,fdcf9499,fe6fff2e,fe768032,ff11761d,ff266429,ff73031d,ff95a890,ffc95daa";
 /* ================= PICTURES (made by Luna's family) ================= */
 const PICS = {
   mom: "data:image/webp;base64,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",
@@ -1367,6 +1379,14 @@ function makeLunaFromGLB(gltf) {
     const b = model.getObjectByName(n); if (!b) continue;
     bones[n] = b; restInv[n] = b.matrixWorld.clone().invert(); restPos[n] = new THREE.Vector3().setFromMatrixPosition(b.matrixWorld);
   }
+  // from her model's own standing pose to the root's space (to put glasses, earrings and hair on the right spot)
+  // (a skinned point goes through the mesh, the bind matrix and a bone, exactly as the skinning on the graphics card does it)
+  let skinned = null, meshToRoot = null; model.traverse(o => { if (o.isSkinnedMesh && !skinned) skinned = o; });
+  if (skinned && skinned.skeleton) {
+    const sb = skinned.skeleton, hb = bones.Head || sb.bones[0], bi = Math.max(0, sb.bones.indexOf(hb));
+    const boneM = hb.matrixWorld.clone().multiply(sb.boneInverses[bi]);
+    meshToRoot = skinned.matrixWorld.clone().multiply(skinned.bindMatrixInverse).multiply(boneM).multiply(skinned.bindMatrix);
+  }
   const rp = { top: restPos.head_end || new THREE.Vector3(0, 1.75, 0), spine: restPos.Spine02 || new THREE.Vector3(0, 1.07, 0), rhand: restPos.RightHand || new THREE.Vector3(-0.43, 0.88, 0), neck: restPos.neck || new THREE.Vector3(0, 1.24, 0) };
   const mixer = new THREE.AnimationMixer(model), actions = {};
   for (const clip of gltf.animations) {
@@ -1389,7 +1409,7 @@ function makeLunaFromGLB(gltf) {
     if (cur) cur.crossFadeTo(a, fade, false); a.play(); cur = a; return true;
   }
   const L = {
-    root, glb: true, celebrate: 0, twirl: 0, airborne: false, bones, restInv, restPos: rp, model, sitting: false,
+    root, glb: true, celebrate: 0, twirl: 0, airborne: false, bones, restInv, restPos: rp, model, sitting: false, meshToRoot,
     has: n => !!actions[n],
     act(name, secs) { if (play(name, 0.2)) busy = secs || (actions[name].getClip().duration * 0.95); },
     update(dt, t, moveFrac) {
@@ -2521,6 +2541,7 @@ const Sound = (() => {
     splat() { if (!ok()) return; const t = ctx.currentTime; noise(t, 0.18, 0.18, 700, 0.8); tone(260, t, 0.16, "sine", 0.18, sfxBus, 140); },
     magic() { if (!ok()) return; const t = ctx.currentTime; for (let i = 0; i < 10; i++) tone(midi(84 + (i % 5) * 3), t + i * 0.04, 0.4, "sine", 0.09); },
     purr() { if (!ok()) return; const t = ctx.currentTime; for (let i = 0; i < 6; i++) noise(t + i * 0.11, 0.09, 0.12, 160, 3); },
+    tick() { if (!ok()) return; tone(1320, ctx.currentTime, 0.06, "sine", 0.07); },
   };
   /* a little piano for Luna's room: a soft toy-piano tone */
   function note(m) {
@@ -2568,36 +2589,94 @@ const Sound = (() => {
   function startMusic(name) { playSong(name); }
   function setMusic(on) {
     musicOn = on;
+    if (lullaby) { setLullaby(true); return; }
     if (ctx) musicBus.gain.setTargetAtTime(on && !songOk ? 0.13 : 0, ctx.currentTime, 0.1);
     if (audio) { if (on) audio.play().catch(() => {}); else audio.pause(); }
     if (on) playSong();
   }
+  let talking = false;
   function duck(on) {
+    talking = on;
+    if (lullaby) { if (lullSrc) lullGain.gain.setTargetAtTime(on ? LULL_LOW : LULL_VOL, ctx.currentTime, 0.35); return; }
     if (audio && musicOn) audio.volume = on ? 0.1 : 0.32;
     if (ctx && musicOn && !songOk) musicBus.gain.setTargetAtTime(on ? 0.05 : 0.13, ctx.currentTime, 0.15);
   }
+  /* bedtime: a soft recorded music box (audio/lullaby.mp3, Brahms' lullaby) played quietly through its own volume, and even
+     softer while the story is read; the little synth tune plays (very softly) only if the recording can't load */
+  const LULL_VOL = 0.3, LULL_LOW = 0.12;
+  let lullBuf = null, lullLoading = null, lullSrc = null, lullGain = null;
+  function lullLoad() {
+    if (lullBuf) return Promise.resolve(lullBuf);
+    if (!lullLoading) lullLoading = fetch("audio/lullaby.mp3").then(r => { if (!r.ok) throw new Error("lullaby " + r.status); return r.arrayBuffer(); })
+      .then(decode).then(b => (lullBuf = b)).catch(e => { lullLoading = null; throw e; });
+    return lullLoading;
+  }
+  function lullStop() {
+    if (!lullSrc) return; const s = lullSrc; lullSrc = null;
+    lullGain.gain.cancelScheduledValues(ctx.currentTime); lullGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.3);
+    setTimeout(() => { try { s.stop(); } catch (e) {} }, 1500);
+  }
   function setLullaby(on) {
     if (!ctx) return; lullaby = on; step = 0;
-    if (on) { if (audio) audio.pause(); musicBus.gain.setTargetAtTime(0.16, ctx.currentTime, 0.2); startSynth(); }
-    else { musicBus.gain.setTargetAtTime(musicOn && !songOk ? 0.13 : 0, ctx.currentTime, 0.2); if (musicOn) playSong(); }
+    if (on) {
+      if (audio) audio.pause();
+      musicBus.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
+      if (!musicOn) { lullStop(); return; }
+      if (!lullGain) { lullGain = ctx.createGain(); lullGain.gain.value = 0.0001; lullGain.connect(master); }
+      if (lullSrc) return;
+      lullLoad().then(buf => {
+        if (!lullaby || lullSrc || !musicOn) return;
+        const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(lullGain); s.start(); lullSrc = s;
+        lullGain.gain.cancelScheduledValues(ctx.currentTime); lullGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        lullGain.gain.setTargetAtTime(talking ? LULL_LOW : LULL_VOL, ctx.currentTime, 0.9);
+      }).catch(() => { if (lullaby && musicOn) { musicBus.gain.setTargetAtTime(0.05, ctx.currentTime, 0.3); startSynth(); } });
+    } else {
+      lullStop();
+      musicBus.gain.setTargetAtTime(musicOn && !songOk ? 0.13 : 0, ctx.currentTime, 0.2); if (musicOn) playSong();
+    }
   }
-  return { unlock, fx, note, startMusic, setMusic, duck, setLullaby, get musicOn() { return musicOn; }, get song() { return song; } };
+  // the recorded voices play through the same sound system (so they work on the iPad as soon as the first tap has unlocked sound)
+  let voiceBus = null;
+  function decode(buf) { if (!init()) return Promise.reject(new Error("no audio")); return new Promise((res, rej) => { try { const p = ctx.decodeAudioData(buf, res, rej); if (p && p.catch) p.catch(rej); } catch (e) { rej(e); } }); }
+  function playVoice(buffer, onEnd) {
+    if (!ok()) return null;
+    if (!voiceBus) { voiceBus = ctx.createGain(); voiceBus.gain.value = 1.0; voiceBus.connect(master); }
+    const src = ctx.createBufferSource(); src.buffer = buffer; src.connect(voiceBus);
+    let done = false; const end = () => { if (done) return; done = true; duck(false); onEnd && onEnd(); };
+    src.onended = end; duck(true); src.start();
+    return { stop() { try { src.onended = null; src.stop(); } catch (e) {} end(); } };
+  }
+  return { unlock, fx, note, startMusic, setMusic, duck, setLullaby, decode, playVoice, get ready() { return ok(); }, get musicOn() { return musicOn; }, get song() { return song; } };
 })();
 
+/* the voice: natural recorded voices (a different one for Luna and each friend, made with the Kokoro voice generator, in voice/),
+   and the tablet's own reading voice for anything that has no recording */
+function vhash(str) { const b = new TextEncoder().encode(str); let h = 0x811c9dc5; for (let i = 0; i < b.length; i++) { h ^= b[i]; h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8, "0"); }
+const VOICE_CAST = ["narrator", "story", "luna", "bunny", "mimi", "pip", "dot", "stardust", "shelly", "marina", "honey", "pingo"];
 const Voice = (() => {
   const synth = window.speechSynthesis;
-  let voice = null, last = "", timer = null;
+  const HAVE = new Set((typeof VOICE_FILES === "string" ? VOICE_FILES : "").split(",").filter(Boolean));
+  let voice = null, last = { text: "", who: "narrator" }, timer = null, cur = null, seq = 0;
+  const cache = new Map();
   const PREF = ["Samantha", "Ava", "Allison", "Karen", "Serena", "Moira", "Tessa", "Victoria", "Google US English", "Google UK English Female", "Microsoft Aria", "Microsoft Jenny", "Microsoft Zira"];
   function pick() {
     if (!synth) return null;
     const vs = synth.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang));
-    // like Block Buddies: the most natural voice the tablet has (Enhanced or Premium ones first)
     const score = v => (/premium|enhanced|neural|natural/i.test(v.name + " " + v.voiceURI) ? 10 : 0) + (PREF.findIndex(p => v.name.indexOf(p) >= 0) >= 0 ? 6 - PREF.findIndex(p => v.name.indexOf(p) >= 0) * 0.2 : 0) + (/en-US|en-GB/i.test(v.lang) ? 1 : 0) + (v.localService ? 0.5 : 0);
     return vs.slice().sort((a, b) => score(b) - score(a))[0] || null;
   }
   if (synth) { voice = pick(); if ("onvoiceschanged" in synth) synth.onvoiceschanged = () => { voice = pick(); }; }
-  function say(text) {
-    last = text; if (!synth) return;
+  const who2 = w => VOICE_CAST.includes(w) ? w : "narrator";
+  const hashOf = (text, who) => vhash(who2(who) + "|" + String(text).trim());
+  function load(h) {
+    if (cache.has(h)) return cache.get(h);
+    const p = fetch("voice/" + h + ".mp3").then(r => { if (!r.ok) throw new Error("voice " + r.status); return r.arrayBuffer(); }).then(b => Sound.decode(b));
+    cache.set(h, p); p.catch(() => cache.delete(h));
+    if (cache.size > 160) cache.delete(cache.keys().next().value);
+    return p;
+  }
+  function speak(text) {
+    if (!synth) return;
     clearTimeout(timer);
     const go = () => {
       const u = new SpeechSynthesisUtterance(text);
@@ -2608,7 +2687,18 @@ const Voice = (() => {
     };
     if (synth.speaking || synth.pending) { synth.cancel(); timer = setTimeout(go, 80); } else go();
   }
-  return { say, repeat() { if (last) say(last); }, stop() { if (synth) synth.cancel(); }, get available() { return !!synth; } };
+  function stop() { seq++; if (cur) { cur.stop(); cur = null; } clearTimeout(timer); if (synth && (synth.speaking || synth.pending)) synth.cancel(); }
+  function say(text, who) {
+    if (!text) return;
+    who = who2(who); last = { text, who };
+    if (window.__said) window.__said.push([who, String(text).trim()]);
+    stop();
+    const h = hashOf(text, who), my = seq;
+    if (HAVE.has(h) && Sound.ready) load(h).then(buf => { if (my !== seq) return; cur = Sound.playVoice(buf, () => { cur = null; }); }).catch(() => { if (my === seq) speak(text); });
+    else speak(text);
+  }
+  function prefetch(text, who) { if (!text) return; const h = hashOf(text, who); if (HAVE.has(h)) load(h).catch(() => {}); }
+  return { say, prefetch, repeat() { if (last.text) say(last.text, last.who); }, stop, get available() { return !!synth || HAVE.size > 0; }, get recorded() { return HAVE.size; } };
 })();
 
 /* ================= GAME: Luna, her friends, the motion stick, riding Stardust, the camera and speech bubbles ================= */
@@ -2685,13 +2775,14 @@ function showBubble(who, text, withOk) {
   const info = whoInfo(who);
   $("dFace").innerHTML = faceHTML(info.pic); $("dName").textContent = info.name; $("dText").textContent = text;
   $("dOk").hidden = !withOk; $("dialog").hidden = false;
-  Voice.say(text);
+  Voice.say(text, who);
   if (friends[who]) friends[who].hop(2);
   Game.talkTo = friends[who] ? who : Game.talkTo;
   if (who === "luna" && luna) luna.act("wave", 1.6);
 }
 function dialog(lines, done) {
   let i = 0; Game.dialog = true; clearTimeout(Game.chatTimer);
+  lines.forEach(([w, t]) => Voice.prefetch(t, w));
   player.target = null; player.onArrive = null; joyRest();
   let shownAt = 0;
   const show = () => { shownAt = performance.now(); showBubble(lines[i][0], lines[i][1], true); };
@@ -2896,6 +2987,7 @@ function updatePlayer(dt, t) {
   let sx = (keys.arrowright || keys.d ? 1 : 0) - (keys.arrowleft || keys.a ? 1 : 0);
   let sy = (keys.arrowup || keys.w ? 1 : 0) - (keys.arrowdown || keys.s ? 1 : 0);
   if (Joy.id !== null && Math.hypot(Joy.x, Joy.y) > 0.12) { sx = Joy.x; sy = Joy.y; }
+  else if (Math.hypot(Pad.x, Pad.y) > 0.12) { sx = Pad.x; sy = Pad.y; }   // a game controller's stick
   const canMove = Game.mode === "play" && !Game.dialog && !Game.party && !Room.open;
   if (canMove && (sx || sy)) {
     const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw), m = Math.min(1, Math.hypot(sx, sy));
@@ -3049,7 +3141,7 @@ const Save = {
   has(id) { return (this.data.stickers || []).includes(id); },
   addSticker(id) { if (!this.has(id)) this.data.stickers.push(id); this.write(); },
   unlock(id) { if (!this.data.unlocked.includes(id)) this.data.unlocked.push(id); this.write(); },
-  isUnlocked(item) { return !item.lock || this.data.unlocked.includes(item.id); },
+  isUnlocked(item) { return !item.lock || this.data.unlocked.includes(item.lockBy || item.id); },
   photos() { try { return JSON.parse(localStorage.getItem(PHOTO_KEY)) || []; } catch (e) { return []; } },
   addPhoto(url) {
     const list = this.photos(); list.unshift({ d: url, at: Date.now() });
@@ -3086,17 +3178,32 @@ const DRESSES = [
   { id: "dress_violet", name: "Violet", hue: 262, sat: 1.6, val: 0.82, sw: "#8a4fd0", lock: true },
 ];
 const ACCESSORIES = {
-  crown: [{ id: "crown_none", name: "Heart tiara" }, { id: "crown_gold", name: "Gold crown" }, { id: "tiara_star", name: "Star tiara" }, { id: "crown_flower", name: "Flower crown", lock: true }, { id: "crown_shell", name: "Seashell crown", lock: true }],
-  wings: [{ id: "wings_none", name: "No wings" }, { id: "wings_fairy", name: "Fairy wings" }, { id: "wings_butterfly", name: "Butterfly wings", lock: true }],
-  wand: [{ id: "wand_none", name: "No wand" }, { id: "wand_star", name: "Star wand" }, { id: "wand_heart", name: "Heart wand", lock: true }],
-  necklace: [{ id: "necklace_none", name: "No necklace" }, { id: "necklace_pearl", name: "Pearl necklace", lock: true }],
+  crown: [{ id: "crown_none", name: "Heart tiara" }, { id: "crown_gold", name: "Gold crown" }, { id: "crown_silver", name: "Silver crown" }, { id: "crown_rose", name: "Rose gold crown" },
+    { id: "tiara_star", name: "Star tiara" }, { id: "tiara_gold", name: "Gold star tiara" }, { id: "tiara_pink", name: "Pink star tiara" },
+    { id: "crown_flower", name: "Flower crown", lock: true }, { id: "crown_flower_blue", name: "Blue flower crown", lock: true, lockBy: "crown_flower" }, { id: "crown_shell", name: "Seashell crown", lock: true }],
+  wings: [{ id: "wings_none", name: "No wings" }, { id: "wings_fairy", name: "Fairy wings" }, { id: "wings_fairy_purple", name: "Purple fairy wings" }, { id: "wings_fairy_gold", name: "Gold fairy wings" },
+    { id: "wings_fairy_mint", name: "Mint fairy wings" }, { id: "wings_rainbow", name: "Rainbow wings" }, { id: "wings_butterfly", name: "Butterfly wings", lock: true },
+    { id: "wings_butterfly_pink", name: "Pink butterfly wings", lock: true, lockBy: "wings_butterfly" }, { id: "wings_butterfly_purple", name: "Purple butterfly wings", lock: true, lockBy: "wings_butterfly" },
+    { id: "wings_monarch", name: "Orange butterfly wings", lock: true, lockBy: "wings_butterfly" }],
+  wand: [{ id: "wand_none", name: "No wand" }, { id: "wand_star", name: "Star wand" }, { id: "wand_star_pink", name: "Pink star wand" }, { id: "wand_star_blue", name: "Blue star wand" },
+    { id: "wand_moon", name: "Moon wand", proc: true }, { id: "wand_heart", name: "Heart wand", lock: true }, { id: "wand_heart_purple", name: "Purple heart wand", lock: true, lockBy: "wand_heart" }],
+  necklace: [{ id: "necklace_none", name: "No necklace" }, { id: "necklace_heart", name: "Heart locket", proc: true }, { id: "necklace_rainbow", name: "Rainbow beads", proc: true },
+    { id: "necklace_star", name: "Star necklace", proc: true }, { id: "necklace_flower", name: "Flower chain", proc: true }, { id: "necklace_gem", name: "Blue gem", proc: true },
+    { id: "necklace_pearl", name: "Pearl necklace", lock: true }],
+  earrings: [{ id: "earrings_none", name: "No earrings" }, { id: "earrings_pearl", name: "Pearl earrings", proc: true }, { id: "earrings_heart", name: "Heart earrings", proc: true },
+    { id: "earrings_star", name: "Star earrings", proc: true }, { id: "earrings_hoops", name: "Gold hoops", proc: true }, { id: "earrings_rainbow", name: "Rainbow drops", proc: true }],
+  glasses: [{ id: "glasses_none", name: "No glasses" }, { id: "glasses_heart", name: "Heart glasses", proc: true }, { id: "glasses_star", name: "Star glasses", proc: true },
+    { id: "glasses_round", name: "Round glasses", proc: true }, { id: "glasses_sun", name: "Sunglasses", proc: true }],
 };
-const LOOK_DEFAULT = { hair: "curly", hairColor: "", lips: "", blush: "", shadow: "", glitter: false, bow: "", stickers: [] };
-const OUTFIT_DEFAULT = { dress: "dress_pink", crown: "crown_none", wings: "wings_none", wand: "wand_none", necklace: "necklace_none" };
+const LOOK_DEFAULT = { hair: "curly", hairColor: "", lips: "", blush: "", shadow: "", glitter: false, bow: "", stickers: [], lashes: "", paint: "" };
+const OUTFIT_DEFAULT = { dress: "dress_pink", crown: "crown_none", wings: "wings_none", wand: "wand_none", necklace: "necklace_none", earrings: "earrings_none", glasses: "glasses_none" };
 function dressById(id) { return DRESSES.find(d => d.id === id) || DRESSES[0]; }
 
 /* ---------- on her 3D self ---------- */
-const DRESS_U = { uDressMode: { value: 0 }, uHueShift: { value: 0 }, uSat: { value: 1 }, uVal: { value: 1 }, uNeckY: { value: 0.785 } };
+const DRESS_U = { uDressMode: { value: 0 }, uHueShift: { value: 0 }, uSat: { value: 1 }, uVal: { value: 1 }, uNeckY: { value: 0.785 },
+  // her hair colour and makeup on the 3D Luna (positions are in the model's own standing pose: face at z > 0, eyes at y 0.89)
+  uHairMode: { value: 0 }, uHairCol: { value: new THREE.Color(1, 1, 1) }, uLipOn: { value: 0 }, uLipCol: { value: new THREE.Color(1, 0.3, 0.5) },
+  uBlushOn: { value: 0 }, uBlushCol: { value: new THREE.Color(1, 0.5, 0.6) }, uShadowOn: { value: 0 }, uShadowCol: { value: new THREE.Color(0.7, 0.5, 1) } };
 const HSV_GLSL = `
 vec3 lunaRgb2hsv(vec3 c){ vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0); vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
   vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r)); float d = q.x - min(q.w, q.y); float e = 1.0e-10;
@@ -3107,20 +3214,38 @@ function outfitShader(m) {
   if (!m || m.userData.outfit) return; m.userData.outfit = true;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, DRESS_U);
-    sh.vertexShader = "varying float vBindY;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vBindY = position.y;");
-    sh.fragmentShader = "uniform float uDressMode; uniform float uHueShift; uniform float uSat; uniform float uVal; uniform float uNeckY; varying float vBindY;\n" + HSV_GLSL +
+    sh.vertexShader = "varying vec3 vBind;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vBind = position;");
+    sh.fragmentShader = "uniform float uDressMode; uniform float uHueShift; uniform float uSat; uniform float uVal; uniform float uNeckY; varying vec3 vBind;\n" +
+      "uniform float uHairMode; uniform vec3 uHairCol; uniform float uLipOn; uniform vec3 uLipCol; uniform float uBlushOn; uniform vec3 uBlushCol; uniform float uShadowOn; uniform vec3 uShadowCol;\n" + HSV_GLSL +
       sh.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
-  if (uDressMode > 0.5 && vBindY < uNeckY) {
+  {
     vec3 sc = pow(max(diffuseColor.rgb, vec3(0.0)), vec3(1.0 / 2.2));
     vec3 hsv = lunaRgb2hsv(sc); float hd = hsv.x * 360.0;
-    if (hd > 284.0 && hd < 351.0 && hsv.y > 0.05 && hsv.z > 0.4) {
-      if (uDressMode > 1.5) { hsv.x = fract(vBindY * 1.9 + 0.02); hsv.y = clamp(max(hsv.y * 2.2, 0.42), 0.0, 1.0); }
+    bool face = vBind.z > 0.04 && abs(vBind.x) < 0.096 && vBind.y > 0.78 && vBind.y < 0.936;
+    bool skin = hd > 4.0 && hd < 45.0 && hsv.z > 0.45 && hsv.y > 0.1 && hsv.y < 0.65;
+    if (uDressMode > 0.5 && vBind.y < uNeckY && hd > 284.0 && hd < 351.0 && hsv.y > 0.05 && hsv.z > 0.4) {
+      if (uDressMode > 1.5) { hsv.x = fract(vBind.y * 1.9 + 0.02); hsv.y = clamp(max(hsv.y * 2.2, 0.42), 0.0, 1.0); }
       else { hsv.x = fract(hsv.x + uHueShift); hsv.y = clamp(hsv.y * uSat, 0.0, 1.0); hsv.z = clamp(hsv.z * uVal, 0.0, 1.0); }
-      diffuseColor.rgb = pow(lunaHsv2rgb(hsv), vec3(2.2));
+      sc = lunaHsv2rgb(hsv);
+    } else if (uHairMode > 0.5 && vBind.y > 0.6 && !face && hsv.z < 0.5 && hsv.y > 0.16 && (hd < 52.0 || hd > 335.0)) {
+      vec3 tgt = uHairMode > 1.5 ? lunaHsv2rgb(vec3(fract(vBind.y * 2.6 + vBind.x * 1.3 + 0.9), 0.85, 1.0)) : uHairCol;
+      vec3 th = lunaRgb2hsv(tgt);
+      sc = lunaHsv2rgb(vec3(th.x, clamp(max(th.y, 0.55), 0.0, 0.95), clamp(hsv.z * 1.55 + 0.12, 0.0, 0.95) * mix(1.0, th.z, 0.35)));
+    } else if (face) {
+      if (uLipOn > 0.5 && vBind.z > 0.06 && abs(vBind.x) < 0.036 && vBind.y > 0.8 && vBind.y < 0.836 && (hd > 336.0 || hd < 13.0) && hsv.y > 0.3 && hsv.z > 0.3) {
+        float l = dot(sc, vec3(0.3, 0.59, 0.11)), k = pow(l / 0.55, 0.85);
+        sc = mix(sc, min(uLipCol * k, vec3(1.0)), 0.72);
+      } else if (skin) {
+        float b = uBlushOn * max(0.0, 1.0 - length(vec2(abs(vBind.x) - 0.074, (vBind.y - 0.852) * 1.25)) / 0.032);
+        sc = mix(sc, sc * mix(vec3(1.0), uBlushCol * 1.25, 0.8), b * 0.6);
+        float e = uShadowOn * max(0.0, 1.0 - length(vec2((abs(vBind.x) - 0.057) / 0.034, (vBind.y - 0.905) / 0.014)));
+        sc = mix(sc, sc * uShadowCol * 1.3, e * 0.65);
+      }
     }
+    diffuseColor.rgb = pow(sc, vec3(2.2));
   }`);
   };
-  m.customProgramCacheKey = () => "lunaOutfit"; m.needsUpdate = true;
+  m.customProgramCacheKey = () => "lunaOutfit2"; m.needsUpdate = true;
 }
 function setDressUniforms(id) {
   const d = dressById(id);
@@ -3137,9 +3262,12 @@ function accTex(name) {
 }
 function makeCrown3D(id) {
   const g = new THREE.Group();
-  const gold = gloss("#ffcf4d", { metalness: 0.75, roughness: 0.22, clearcoat: 1, emissive: new THREE.Color("#5a3a00"), emissiveIntensity: 0.25 });
-  const silver = gloss("#e9eef7", { metalness: 0.8, roughness: 0.18, clearcoat: 1 });
-  if (id === "crown_gold") {
+  const METAL = { crown_gold: ["#ffcf4d", "#5a3a00"], crown_silver: ["#eef2fa", "#2a3040"], crown_rose: ["#f4a99a", "#4a1a14"] };
+  const [mc, me] = METAL[id] || METAL.crown_gold;
+  const gold = gloss(mc, { metalness: 0.75, roughness: 0.22, clearcoat: 1, emissive: new THREE.Color(me), emissiveIntensity: 0.25 });
+  const silver = gloss(id === "tiara_gold" ? "#ffd65c" : id === "tiara_pink" ? "#ffb3d6" : "#e9eef7", { metalness: 0.8, roughness: 0.18, clearcoat: 1 });
+  const starCol = id === "tiara_gold" ? "#ffe07a" : id === "tiara_pink" ? "#ff9cc8" : "#f4f7ff";
+  if (id === "crown_gold" || id === "crown_silver" || id === "crown_rose") {
     mesh(new THREE.CylinderGeometry(0.135, 0.13, 0.07, 28, 1, true), gold, { y: 0.035, parent: g });
     for (let i = 0; i < 5; i++) {
       const a = Math.PI / 2 + (i - 2) * 0.62;
@@ -3147,16 +3275,17 @@ function makeCrown3D(id) {
       mesh(G.sphereLo, gloss(["#ff4f93", "#4fd68b", "#ff4f93", "#5bb8ff", "#b07cff"][i], { emissive: new THREE.Color("#401020"), emissiveIntensity: 0.2 }), { x: Math.cos(a) * 0.14, z: Math.sin(a) * 0.14, y: 0.035, s: 0.017, parent: g, cast: false });
       mesh(G.sphereLo, gold, { x: Math.cos(a) * 0.135, z: Math.sin(a) * 0.135, y: 0.16, s: 0.014, parent: g, cast: false });
     }
-  } else if (id === "tiara_star") {
+  } else if (id.startsWith("tiara")) {
     mesh(new THREE.TorusGeometry(0.15, 0.009, 6, 30, Math.PI), silver, { rx: Math.PI / 2, rz: Math.PI, parent: g, cast: false });
     for (const [a, s] of [[0, 0.075], [-0.55, 0.045], [0.55, 0.045]]) {
-      const st = mesh(starGeo, gloss("#f4f7ff", { metalness: 0.6, roughness: 0.15, emissive: new THREE.Color("#b8c8ff"), emissiveIntensity: 0.25 }), { x: Math.sin(a) * 0.15, z: Math.cos(a) * 0.15, y: 0.06 + s * 0.4, s: s * 1.4, parent: g, cast: false });
+      const st = mesh(starGeo, gloss(starCol, { metalness: 0.6, roughness: 0.15, emissive: new THREE.Color(id === "tiara_star" ? "#b8c8ff" : starCol), emissiveIntensity: 0.25 }), { x: Math.sin(a) * 0.15, z: Math.cos(a) * 0.15, y: 0.06 + s * 0.4, s: s * 1.4, parent: g, cast: false });
       st.rotation.y = a;
     }
-  } else if (id === "crown_flower") {
+  } else if (id.startsWith("crown_flower")) {
+    const blue = id === "crown_flower_blue";
     for (let i = 0; i < 9; i++) {
       const a = i / 9 * TAU, x = Math.cos(a) * 0.15, z = Math.sin(a) * 0.15, f = new THREE.Group(); f.position.set(x, 0.02, z); g.add(f);
-      const col = i % 3 === 0 ? "#ffffff" : i % 3 === 1 ? "#ff8fbf" : "#ff5fa2";
+      const col = i % 3 === 0 ? "#ffffff" : i % 3 === 1 ? (blue ? "#9fd0ff" : "#ff8fbf") : (blue ? "#5b9cff" : "#ff5fa2");
       for (let k = 0; k < 5; k++) { const b = k / 5 * TAU; mesh(G.sphereLo, gloss(col, { clearcoat: 0.3 }), { x: Math.cos(b) * 0.022, z: Math.sin(b) * 0.022, y: 0.01, sx: 0.022, sy: 0.012, sz: 0.022, parent: f, cast: false }); }
       mesh(G.sphereLo, gloss("#ffd23f"), { y: 0.016, s: 0.012, parent: f, cast: false });
       mesh(G.sphereLo, mat("#4cc25a"), { x: Math.cos(a + 0.35) * 0.02, z: Math.sin(a + 0.35) * 0.02, sx: 0.03, sy: 0.006, sz: 0.012, ry: -a, parent: f, cast: false });
@@ -3185,17 +3314,27 @@ function makeWings3D(id) {
 }
 function makeWand3D(id) {
   const g = new THREE.Group();
-  mesh(GEO.tube, gloss(id === "wand_heart" ? "#ff8fbf" : "#ffcf4d", { metalness: id === "wand_heart" ? 0 : 0.6 }), { y: 0.17, sx: 0.011, sy: 0.34, sz: 0.011, parent: g, cast: false });
-  if (id === "wand_heart") mesh(GEO.heart, gloss("#ff4f93", { emissive: new THREE.Color("#ff2a7a"), emissiveIntensity: 0.35 }), { y: 0.38, s: 0.085, parent: g, cast: false });
-  else mesh(starGeo, gloss("#ffd23f", { metalness: 0.5, roughness: 0.2, emissive: new THREE.Color("#ffae00"), emissiveIntensity: 0.6 }), { y: 0.38, s: 0.12, parent: g, cast: false });
-  const glow = glowSprite(id === "wand_heart" ? "#ff9cc4" : "#fff0a8", 0.32); glow.position.y = 0.38; g.add(glow);
+  const C = { wand_star: ["#ffcf4d", "#ffd23f", "#ffae00", "#fff0a8", 0.6], wand_star_pink: ["#ff9cc8", "#ff6fae", "#ff2a7a", "#ffc2dc", 0], wand_star_blue: ["#9fd0ff", "#6fb8ff", "#2a7aff", "#cfe8ff", 0],
+    wand_heart: ["#ff8fbf", "#ff4f93", "#ff2a7a", "#ff9cc4", 0], wand_heart_purple: ["#c9a8ff", "#a46cff", "#7a2aff", "#d8c2ff", 0], wand_moon: ["#e9eef7", "#fff3a8", "#ffd23f", "#fff6c2", 0.6] }[id] || ["#ffcf4d", "#ffd23f", "#ffae00", "#fff0a8", 0.6];
+  mesh(GEO.tube, gloss(C[0], { metalness: C[4] }), { y: 0.17, sx: 0.011, sy: 0.34, sz: 0.011, parent: g, cast: false });
+  const top = gloss(C[1], { metalness: 0.3, roughness: 0.2, emissive: new THREE.Color(C[2]), emissiveIntensity: 0.45 });
+  if (id.startsWith("wand_heart")) mesh(GEO.heart, top, { y: 0.38, s: 0.085, parent: g, cast: false });
+  else if (id === "wand_moon") { const m = mesh(new THREE.TorusGeometry(0.075, 0.026, 10, 24, Math.PI * 1.25), top, { y: 0.38, parent: g, cast: false }); m.rotation.z = Math.PI * 0.62; mesh(starGeo, top, { x: 0.02, y: 0.4, s: 0.035, parent: g, cast: false }); }
+  else mesh(starGeo, top, { y: 0.38, s: 0.12, parent: g, cast: false });
+  const glow = glowSprite(C[3], 0.32); glow.position.y = 0.38; g.add(glow);
   return g;
 }
-function makeNecklace3D() {
-  const g = new THREE.Group(), pm = gloss("#fff8f2", { roughness: 0.12, metalness: 0.1, sheen: 1, sheenColor: new THREE.Color("#ffd6f0") });
-  const N = 15;
-  for (let i = 0; i < N; i++) { const u = i / (N - 1) * 2 - 1; mesh(G.sphereLo, pm, { x: u * 0.105, y: -Math.cos(u * Math.PI / 2) * 0.07 + 0.0, z: Math.cos(u * Math.PI / 2) * 0.02, s: 0.014, parent: g, cast: false }); }
-  mesh(GEO.heart, gloss("#ff4f93", { emissive: new THREE.Color("#ff2a7a"), emissiveIntensity: 0.3 }), { y: -0.1, z: 0.025, s: 0.035, parent: g, cast: false });
+function makeNecklace3D(id) {
+  const g = new THREE.Group(), N = 15;
+  const bead = (u, m, sc = 0.014) => mesh(G.sphereLo, m, { x: u * 0.105, y: -Math.cos(u * Math.PI / 2) * 0.07, z: Math.cos(u * Math.PI / 2) * 0.02, s: sc, parent: g, cast: false });
+  const shiny = (c, e) => gloss(c, { emissive: new THREE.Color(e || c), emissiveIntensity: 0.3 });
+  if (id === "necklace_rainbow") { const cols = ["#ff5f7e", "#ffa94d", "#ffe066", "#69db7c", "#74c0fc", "#b197fc"]; for (let i = 0; i < N; i++) bead(i / (N - 1) * 2 - 1, gloss(cols[i % 6]), 0.017); return g; }
+  if (id === "necklace_flower") { for (let i = 0; i < 9; i++) { const u = i / 8 * 2 - 1; bead(u, gloss(i % 2 ? "#ffffff" : "#ff8fbf"), 0.02); } return g; }
+  const chain = id === "necklace_pearl" ? gloss("#fff8f2", { roughness: 0.12, metalness: 0.1, sheen: 1, sheenColor: new THREE.Color("#ffd6f0") }) : gloss(id === "necklace_star" ? "#e9eef7" : "#ffcf4d", { metalness: 0.8, roughness: 0.2 });
+  for (let i = 0; i < N + 6; i++) bead(i / (N + 5) * 2 - 1, chain, id === "necklace_pearl" ? 0.014 : 0.008);
+  if (id === "necklace_star") mesh(starGeo, shiny("#ffe07a", "#ffae00"), { y: -0.1, z: 0.025, s: 0.04, parent: g, cast: false });
+  else if (id === "necklace_gem") mesh(G.oct, gloss("#4fa8ff", { metalness: 0.2, roughness: 0.05, emissive: new THREE.Color("#2060ff"), emissiveIntensity: 0.35 }), { y: -0.1, z: 0.025, sx: 0.03, sy: 0.042, sz: 0.02, parent: g, cast: false });
+  else mesh(GEO.heart, shiny(id === "necklace_heart" ? "#ff2f6d" : "#ff4f93", "#ff2a7a"), { y: -0.1, z: 0.025, s: id === "necklace_heart" ? 0.042 : 0.035, parent: g, cast: false });
   return g;
 }
 /* fix an object to a bone, placed where it should be in her standing (rest) pose */
@@ -3211,14 +3350,21 @@ function applyOutfit3D() {
   const o = Save.data.outfit;
   setDressUniforms(o.dress);
   L.acc = L.acc || {};
-  for (const k of ["crown", "wings", "wand", "necklace"]) { if (L.acc[k]) { L.acc[k].parent && L.acc[k].parent.remove(L.acc[k]); L.acc[k] = null; } }
+  for (const k of ["crown", "wings", "wand", "necklace", "earrings", "glasses"]) { if (L.acc[k]) { L.acc[k].parent && L.acc[k].parent.remove(L.acc[k]); L.acc[k] = null; } }
   const R = L.restPos;   // rest positions (root space) of a few bones
   if (o.crown && o.crown !== "crown_none") { const c = makeCrown3D(o.crown); attachRest(L, "Head", c, new THREE.Vector3(R.top.x, R.top.y - 0.06, R.top.z - 0.04), 0, -0.22); L.acc.crown = c; }
   if (o.wings && o.wings !== "wings_none") { const w = makeWings3D(o.wings); attachRest(L, "Spine02", w, new THREE.Vector3(0, R.spine.y + 0.12, R.spine.z - 0.2)); L.acc.wings = w; }
   if (o.wand && o.wand !== "wand_none") { const w = makeWand3D(o.wand); attachRest(L, "RightHand", w, new THREE.Vector3(R.rhand.x - 0.02, R.rhand.y - 0.02, R.rhand.z + 0.05), 0, 0.5); L.acc.wand = w; }
-  if (o.necklace && o.necklace !== "necklace_none") { const n = makeNecklace3D(); attachRest(L, "Spine02", n, new THREE.Vector3(0, R.neck.y - 0.075, R.neck.z + 0.085)); L.acc.necklace = n; }
+  if (o.necklace && o.necklace !== "necklace_none") { const n = makeNecklace3D(o.necklace); attachRest(L, "Spine02", n, new THREE.Vector3(0, R.neck.y - 0.075, R.neck.z + 0.085)); L.acc.necklace = n; }
+  if (o.earrings && o.earrings !== "earrings_none") { const e = makeEarrings3D(o.earrings, L); if (e) L.acc.earrings = e; }
+  if (o.glasses && o.glasses !== "glasses_none") { const gl = makeGlasses3D(o.glasses, L); if (gl) L.acc.glasses = gl; }
+  applyLook3D();
 }
-function updateOutfit3D(t) { if (luna && luna.acc && luna.acc.wings && luna.acc.wings.userData.flap) luna.acc.wings.userData.flap(t); }
+function updateOutfit3D(t) {
+  if (!luna || !luna.acc) return;
+  if (luna.acc.wings && luna.acc.wings.userData.flap) luna.acc.wings.userData.flap(t);
+  updateLook3D(t);
+}
 
 /* ---------- the dress-up picture (2D) ---------- */
 const FEAT = {
@@ -3253,7 +3399,7 @@ async function dollPrepare(style) {
   Doll.base[style] = data; Doll.masks[style] = { dress, hair, lips, skin };
 }
 async function dollItems() {
-  const names = ["crown_gold", "crown_flower", "crown_shell", "tiara_star", "wand_star", "wand_heart", "wings_fairy", "wings_butterfly"];
+  const names = [].concat(...["crown", "wings", "wand"].map(k => ACCESSORIES[k].filter(it => !it.proc && !it.id.endsWith("_none")).map(it => it.id)));
   await Promise.all(names.map(async n => { try { Doll.items[n] = await loadImg("img/on_" + n + ".webp"); } catch (e) {} }));
 }
 function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
@@ -3309,6 +3455,8 @@ function dollRender(outfit, look) {
     for (const [cx, cy] of F.cheeks) { const r = 36 * F.s, gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); const [R, G2, B] = hex2rgb(look.blush); gr.addColorStop(0, "rgba(" + R + "," + G2 + "," + B + ",0.55)"); gr.addColorStop(1, "rgba(" + R + "," + G2 + "," + B + ",0)"); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.fill(); }
     g.restore();
   }
+  if (look.lashes) drawLashes(g, F, look.lashes);
+  if (look.paint) drawFacePaint(g, F, look.paint);
   if (look.glitter) {
     const pts = [[-26, -6], [-12, 10], [-30, 14], [8, -2], [-2, 18], [-40, 2]];
     for (const [cx, cy] of F.cheeks) for (const [ox, oy] of pts) drawSparkle(g, cx + ox * F.s * (cx < F.mouth[0] ? 1 : -1), cy + oy * F.s, 5 * F.s, "#ffffff");
@@ -3365,16 +3513,20 @@ function dollCompose(outfit, look, opts = {}) {
   const it = Doll.items, F = FEAT[look.hair || "curly"];
   if (outfit.wings !== "wings_none" && it[outfit.wings]) { const im = it[outfit.wings], w = 860, h = w * im.height / im.width; g.drawImage(im, 611 - w / 2, 300, w, h); }
   g.drawImage(body, 0, 0);
-  if (outfit.necklace === "necklace_pearl") drawNecklace2D(g);
+  if (outfit.necklace && outfit.necklace !== "necklace_none") drawNecklace2D(g, outfit.necklace);
+  if (outfit.earrings && outfit.earrings !== "earrings_none") drawEarrings2D(g, outfit.earrings, F);
+  if (outfit.glasses && outfit.glasses !== "glasses_none") drawGlasses2D(g, outfit.glasses, F);
   if (outfit.crown !== "crown_none" && it[outfit.crown]) {
-    const im = it[outfit.crown], w = outfit.crown === "crown_flower" ? 330 : outfit.crown === "tiara_star" ? 270 : 280, h = w * im.height / im.width;
+    const im = it[outfit.crown], w = outfit.crown.startsWith("crown_flower") ? 330 : outfit.crown.startsWith("tiara") ? 270 : 280, h = w * im.height / im.width;
     g.drawImage(im, 606 - w / 2, F.top + 18 - h, w, h);
   }
-  if (outfit.wand !== "wand_none" && it[outfit.wand]) { const im = it[outfit.wand], w = 250, h = w * im.height / im.width; g.drawImage(im, 905, 715 - h, w, h); }
+  if (outfit.wand === "wand_moon") drawMoonWand2D(g, 1030, 715);
+  else if (outfit.wand !== "wand_none" && it[outfit.wand]) { const im = it[outfit.wand], w = 250, h = w * im.height / im.width; g.drawImage(im, 905, 715 - h, w, h); }
   g.setTransform(1, 0, 0, 1, 0, 0);
   return c;
 }
-function drawNecklace2D(g) {
+function drawNecklace2D(g, id = "necklace_pearl") {
+  if (id !== "necklace_pearl") return drawNecklaceX2D(g, id);
   const N = 17;
   for (let i = 0; i < N; i++) {
     const u = i / (N - 1) * 2 - 1, x = 611 + u * 52, y = 418 + Math.cos(u * Math.PI / 2) * 30;
@@ -3400,6 +3552,257 @@ async function refreshLunaFace() {
   } catch (e) {}
 }
 let _itemsP = null; function dollItemsOnce() { return _itemsP || (_itemsP = dollItems()); }
+
+/* ================= LUNA'S LOOK IN THE 3D WORLD (hair colour and style, bows, glitter, makeup, earrings, glasses)
+   and the new things to wear in the dress-up picture (necklaces, earrings, glasses, the moon wand, eyelashes, face paint) ================= */
+
+/* ---------- where things are on the 3D Luna: points in her model's own standing pose, turned into her root's space ---------- */
+function bindPt(L, x, y, z) { return new THREE.Vector3(x, y, z).applyMatrix4(L.meshToRoot || new THREE.Matrix4()); }
+function bindScale(L) { return L.meshToRoot ? new THREE.Vector3().setFromMatrixColumn(L.meshToRoot, 0).length() : 1.68; }
+const LOOK3D = { parts: [], glitterT: 0, head: new THREE.Vector3() };
+
+function hairColor3D(look) { const hc = look.hairColor; return !hc ? "#4a2a1a" : hc === "rainbow" ? null : HAIRCOLORS[hc]; }
+function hairMat(col) { return new THREE.MeshStandardMaterial({ color: col, roughness: 0.62, metalness: 0.0 }); }
+const RAINBOW6 = ["#ff5f7e", "#ffa94d", "#ffe066", "#69db7c", "#74c0fc", "#b197fc"];
+
+function makeBow3D(col, k) {
+  const g = new THREE.Group(), c = { pink: "#ff6fae", blue: "#5bb8ff", purple: "#a77cff", gold: "#ffcf3a" }[col] || col;
+  if (col === "flower") {
+    for (let i = 0; i < 5; i++) { const a = i / 5 * TAU; mesh(G.sphereLo, gloss(i % 2 ? "#ffd1e6" : "#ffffff", { clearcoat: 0.3 }), { x: Math.cos(a) * 0.028 * k, y: Math.sin(a) * 0.028 * k, sx: 0.022 * k, sy: 0.022 * k, sz: 0.01 * k, parent: g, cast: false }); }
+    mesh(G.sphereLo, gloss("#ffcf3a"), { z: 0.006 * k, s: 0.014 * k, parent: g, cast: false });
+    return g;
+  }
+  const m = gloss(c, { clearcoat: 0.6, roughness: 0.35 });
+  for (const s of [-1, 1]) mesh(G.sphereLo, m, { x: s * 0.034 * k, sx: 0.034 * k, sy: 0.024 * k, sz: 0.012 * k, rz: s * 0.35, parent: g, cast: false });
+  mesh(G.sphereLo, m, { s: 0.014 * k, parent: g, cast: false });
+  return g;
+}
+/* hairstyle, bows and makeup on the 3D Luna */
+function applyLook3D() {
+  const L = luna; if (!L || !L.glb) return;
+  const look = Save.data.look || LOOK_DEFAULT;
+  // the hair colour and the makeup are done by her shader (outfitShader)
+  const hc = look.hairColor;
+  DRESS_U.uHairMode.value = !hc ? 0 : hc === "rainbow" ? 2 : 1; if (hc && hc !== "rainbow") DRESS_U.uHairCol.value.set(HAIRCOLORS[hc]);
+  DRESS_U.uLipOn.value = look.lips ? 1 : 0; if (look.lips) DRESS_U.uLipCol.value.set(look.lips);
+  DRESS_U.uBlushOn.value = look.blush ? 1 : 0; if (look.blush) DRESS_U.uBlushCol.value.set(look.blush);
+  DRESS_U.uShadowOn.value = look.shadow ? 1 : 0; if (look.shadow) DRESS_U.uShadowCol.value.set(look.shadow);
+  // hairstyle pieces and bows
+  for (const p of LOOK3D.parts) p.parent && p.parent.remove(p);
+  LOOK3D.parts = [];
+  const k = bindScale(L), col = hairColor3D(look);
+  const add = (obj, x, y, z, ry = 0, rx = 0) => { attachRest(L, "Head", obj, bindPt(L, x, y, z), ry, rx); LOOK3D.parts.push(obj); };
+  // the same shade as her recoloured hair (darker in the shadows), each curl a little lighter or darker
+  const shade = (c, i) => { if (!c) c = RAINBOW6[i % 6]; const h = new THREE.Color(c), hsl = {}; h.getHSL(hsl); return new THREE.Color().setHSL(hsl.h, Math.min(0.9, Math.max(hsl.s, 0.5)), (col ? 0.36 : 0.4) + ((i * 37) % 7 - 3) * 0.025); };
+  const curls = (R, n, seed) => {
+    // a ball of curls, like her curly hair: one round middle and small curls all over it
+    // (with rainbow hair each ball is one colour of the rainbow, so a pigtail goes pink, orange, yellow down)
+    const g = new THREE.Group(), base = col || RAINBOW6[seed % 6];
+    mesh(G.sphere, hairMat(shade(base, seed)), { s: R * 0.78 * k, parent: g });
+    for (let i = 0; i < n; i++) {
+      const y = 1 - (i + 0.5) / n * 2, rr = Math.sqrt(1 - y * y), a = i * 2.39996;
+      mesh(G.sphereLo, hairMat(shade(base, seed + i)), { x: Math.cos(a) * rr * R * 0.7 * k, y: y * R * 0.7 * k, z: Math.sin(a) * rr * R * 0.7 * k, s: R * 0.36 * k, parent: g });
+    }
+    return g;
+  };
+  const tieCol = look.bow && look.bow !== "flower" ? ({ pink: "#ff6fae", blue: "#5bb8ff", purple: "#a77cff", gold: "#ffcf3a" }[look.bow]) : "#ff6fae";
+  const tie = (r) => { const g = new THREE.Group(); mesh(new THREE.TorusGeometry(r * k, 0.008 * k, 6, 20), gloss(tieCol), { parent: g, cast: false }); return g; };
+  const style = look.hair || "curly";
+  if (style === "bun") {
+    add(curls(0.062, 16, 1), 0, 1.075, -0.075);
+    add(tie(0.05), 0, 1.035, -0.06, 0, Math.PI / 2 - 0.7);
+  } else if (style === "pigtails") {
+    for (const s of [-1, 1]) {
+      const puff = new THREE.Group(); [[0, 0, 0, 0.06], [s * 0.022, -0.065, -0.008, 0.05], [s * 0.035, -0.12, -0.014, 0.038]].forEach(([x, y, z, r], i) => { const c = curls(r, 12, col ? i * 5 + (s > 0 ? 3 : 0) : i * 2); c.position.set(x * k, y * k, z * k); puff.add(c); });
+      add(puff, s * 0.172, 0.965, -0.045);
+      add(tie(0.036), s * 0.165, 0.995, -0.035, 0, 0);
+    }
+  } else if (style === "braid") {
+    const br = new THREE.Group();
+    for (let i = 0; i < 9; i++) { const r = 0.046 - i * 0.0022; mesh(G.sphere, hairMat(shade(col, i)), { x: (i % 2 ? 0.014 : -0.014) * k, y: -i * 0.042 * k, sx: r * 1.15 * k, sy: r * 0.8 * k, sz: r * 0.9 * k, rz: (i % 2 ? -0.55 : 0.55), parent: br }); }
+    add(br, 0, 0.91, -0.155);
+    add(tie(0.024), 0, 0.91 - 9 * 0.042 + 0.012, -0.155, 0, Math.PI / 2);
+  }
+  if (look.bow) {
+    const spots = { curly: [[0.13, 1.0, 0.04], [-0.13, 1.0, 0.04]], pigtails: [[0.16, 1.01, 0.0], [-0.16, 1.01, 0.0]], bun: [[0.0, 1.06, 0.015]], braid: [[0, 0.93, -0.12], [0, 0.56, -0.15]] }[style] || [];
+    for (const [x, y, z] of spots) { const b = makeBow3D(look.bow, k * 1.25); add(b, x, y, z, Math.atan2(x, z || 0.001)); }
+  }
+}
+function updateLook3D(t) {
+  const L = luna; if (!L || !L.glb || !Save.data.look || !Save.data.look.glitter || Room.open) return;
+  if ((LOOK3D.glitterT -= 1 / 60) > 0) return;
+  LOOK3D.glitterT = 0.3;
+  const hb = L.bones && L.bones.Head; if (!hb) return;
+  hb.getWorldPosition(LOOK3D.head); LOOK3D.head.y += 0.25;
+  const a = Math.random() * TAU, r = 0.25 + Math.random() * 0.2;
+  FX.burst(new THREE.Vector3(LOOK3D.head.x + Math.cos(a) * r, LOOK3D.head.y + 0.05 + Math.random() * 0.35, LOOK3D.head.z + Math.sin(a) * r), 2, ["#ffffff", "#fff3b0", "#ffd1ea"], 0.4, 0.7, 0.4);
+}
+
+/* ---------- earrings and glasses on the 3D Luna ---------- */
+function earringMesh(id, k) {
+  const g = new THREE.Group(), s = k;
+  mesh(G.sphereLo, gloss("#ffcf4d", { metalness: 0.8, roughness: 0.2 }), { s: 0.006 * s, parent: g, cast: false });
+  if (id === "earrings_pearl") mesh(G.sphere, gloss("#fff8f2", { roughness: 0.1, sheen: 1, sheenColor: new THREE.Color("#ffd6f0") }), { y: -0.016 * s, s: 0.013 * s, parent: g, cast: false });
+  else if (id === "earrings_heart") mesh(GEO.heart, gloss("#ff4f93", { emissive: new THREE.Color("#ff2a7a"), emissiveIntensity: 0.3 }), { y: -0.02 * s, s: 0.02 * s, parent: g, cast: false });
+  else if (id === "earrings_star") mesh(starGeo, gloss("#ffd23f", { metalness: 0.5, emissive: new THREE.Color("#ffae00"), emissiveIntensity: 0.4 }), { y: -0.02 * s, s: 0.02 * s, parent: g, cast: false });
+  else if (id === "earrings_hoops") mesh(new THREE.TorusGeometry(0.016 * s, 0.003 * s, 6, 20), gloss("#ffcf4d", { metalness: 0.85, roughness: 0.18 }), { y: -0.017 * s, parent: g, cast: false });
+  else if (id === "earrings_rainbow") RAINBOW6.slice(0, 4).forEach((c, i) => mesh(G.sphereLo, gloss(c, { emissive: new THREE.Color(c), emissiveIntensity: 0.25 }), { y: -(0.01 + i * 0.008) * s, s: (0.006 + i * 0.0015) * s, parent: g, cast: false }));
+  return g;
+}
+function makeEarrings3D(id, L) {
+  // one holder fixed to her head, with an earring on each side
+  const g = new THREE.Group(), k = bindScale(L), c = bindPt(L, 0, 0.825, 0.02);
+  for (const sx of [-1, 1]) { const e = earringMesh(id, k); e.position.copy(bindPt(L, sx * 0.142, 0.825, 0.02).sub(c)); e.rotation.y = sx * 0.6; g.add(e); }
+  attachRest(L, "Head", g, c);
+  return g;
+}
+function lensShape(id) {
+  if (id === "glasses_heart") return GEO.heart;
+  if (id === "glasses_star") return starGeo;
+  return null;
+}
+function makeGlasses3D(id, L) {
+  const g = new THREE.Group(), k = bindScale(L);
+  const FR = { glasses_heart: "#ff4f93", glasses_star: "#ffcf3a", glasses_round: "#a46cff", glasses_sun: "#1d1622" }[id] || "#ff4f93";
+  const LENS = { glasses_heart: ["#ff9cc4", 0.45], glasses_star: ["#fff3a8", 0.4], glasses_round: ["#e0f0ff", 0.25], glasses_sun: ["#120c18", 0.85] }[id] || ["#ffffff", 0.3];
+  const frame = gloss(FR, { clearcoat: 0.8, roughness: 0.25 }), lens = new THREE.MeshPhysicalMaterial({ color: LENS[0], transparent: true, opacity: LENS[1], roughness: 0.05, clearcoat: 1, depthWrite: false });
+  const r = 0.031 * k, shape = lensShape(id);
+  for (const s of [-1, 1]) {
+    const e = new THREE.Group(); e.position.set(s * 0.057 * k, 0, 0); g.add(e);
+    if (shape) {
+      const sc = shape === starGeo ? r * 1.25 : r * 1.25;
+      mesh(shape, frame, { sx: sc, sy: sc, sz: sc * 0.35, parent: e, cast: false });
+      const ln = mesh(shape, lens, { z: 0.004 * k, sx: sc * 0.78, sy: sc * 0.78, sz: sc * 0.2, parent: e, cast: false }); ln.renderOrder = 3;
+    } else {
+      mesh(new THREE.TorusGeometry(r, 0.0045 * k, 8, 28), frame, { parent: e, cast: false });
+      const ln = mesh(new THREE.CircleGeometry(r, 28), lens, { z: 0.001, parent: e, cast: false }); ln.renderOrder = 3;
+    }
+  }
+  mesh(GEO.tube, frame, { sx: 0.004 * k, sy: 0.04 * k, sz: 0.004 * k, rz: Math.PI / 2, y: 0.008 * k, parent: g, cast: false });
+  attachRest(L, "Head", g, bindPt(L, 0, 0.893, 0.124), 0, 0);
+  return g;
+}
+
+/* ---------- the dress-up picture: necklaces, earrings, glasses, the moon wand ---------- */
+function heartPath(g, x, y, s) { g.beginPath(); g.moveTo(x, y + s); g.bezierCurveTo(x - s * 1.3, y, x - s * 0.7, y - s * 1.2, x, y - s * 0.45); g.bezierCurveTo(x + s * 0.7, y - s * 1.2, x + s * 1.3, y, x, y + s); g.closePath(); }
+function starPath(g, x, y, r, inner = 0.45, rot = -Math.PI / 2) { g.beginPath(); for (let i = 0; i < 10; i++) { const a = rot + i * Math.PI / 5, q = i % 2 ? r * inner : r; g.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } g.closePath(); }
+function gemFill(g, x, y, r, c1, c2) { const gr = g.createRadialGradient(x - r * 0.35, y - r * 0.35, 1, x, y, r); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.35, c1); gr.addColorStop(1, c2); return gr; }
+function drawNecklaceX2D(g, id, cx = 611, cy = 418) {
+  const N = id === "necklace_rainbow" ? 15 : id === "necklace_flower" ? 9 : 25;
+  for (let i = 0; i < N; i++) {
+    const u = i / (N - 1) * 2 - 1, x = cx + u * 52, y = cy + Math.cos(u * Math.PI / 2) * 30;
+    if (id === "necklace_rainbow") { g.fillStyle = gemFill(g, x, y, 10, RAINBOW6[i % 6], RAINBOW6[i % 6]); g.beginPath(); g.arc(x, y, 9.5, 0, TAU); g.fill(); }
+    else if (id === "necklace_flower") { for (let p = 0; p < 5; p++) { const a = p / 5 * TAU; g.fillStyle = i % 2 ? "#ffffff" : "#ff8fbf"; g.beginPath(); g.arc(x + Math.cos(a) * 6, y + Math.sin(a) * 6, 5.5, 0, TAU); g.fill(); } g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(x, y, 4, 0, TAU); g.fill(); }
+    else { g.fillStyle = id === "necklace_star" ? "#dfe5f0" : "#e8b33a"; g.beginPath(); g.arc(x, y, 3.6, 0, TAU); g.fill(); }
+  }
+  const px = cx, py = cy + 46;
+  g.save(); g.lineWidth = 3; g.strokeStyle = "#ffffff";
+  if (id === "necklace_heart") { g.fillStyle = gemFill(g, px, py, 20, "#ff4f93", "#c2185b"); heartPath(g, px, py, 17); g.fill(); g.stroke(); g.fillStyle = "#ffcf4d"; g.beginPath(); g.arc(px, py - 20, 4, 0, TAU); g.fill(); }
+  else if (id === "necklace_star") { g.fillStyle = gemFill(g, px, py, 18, "#ffe07a", "#e0a400"); starPath(g, px, py, 18); g.fill(); g.stroke(); }
+  else if (id === "necklace_gem") { g.fillStyle = gemFill(g, px, py, 18, "#6fb8ff", "#1f5fd6"); g.beginPath(); g.moveTo(px, py - 17); g.lineTo(px + 13, py - 3); g.lineTo(px, py + 19); g.lineTo(px - 13, py - 3); g.closePath(); g.fill(); g.stroke(); }
+  g.restore();
+}
+function earPoints(F) { const [fx, fy, frx, fry] = F.face; return [[fx - frx * 1.02, fy + fry * 0.22], [fx + frx * 1.02, fy + fry * 0.22]]; }
+function drawEarring2D(g, id, x, y, s) {
+  g.save(); g.lineWidth = 2.5 * s; g.strokeStyle = "#ffffff";
+  g.fillStyle = "#e8b33a"; g.beginPath(); g.arc(x, y, 4 * s, 0, TAU); g.fill();
+  if (id === "earrings_pearl") { g.fillStyle = gemFill(g, x, y + 16 * s, 11 * s, "#fffaf4", "#d9c6c0"); g.beginPath(); g.arc(x, y + 16 * s, 10 * s, 0, TAU); g.fill(); }
+  else if (id === "earrings_heart") { g.fillStyle = gemFill(g, x, y + 18 * s, 13 * s, "#ff4f93", "#c2185b"); heartPath(g, x, y + 18 * s, 11 * s); g.fill(); g.stroke(); }
+  else if (id === "earrings_star") { g.fillStyle = gemFill(g, x, y + 18 * s, 13 * s, "#ffe07a", "#e0a400"); starPath(g, x, y + 18 * s, 13 * s); g.fill(); g.stroke(); }
+  else if (id === "earrings_hoops") { g.strokeStyle = "#e8b33a"; g.lineWidth = 4 * s; g.beginPath(); g.arc(x, y + 15 * s, 13 * s, 0, TAU); g.stroke(); }
+  else if (id === "earrings_rainbow") { RAINBOW6.slice(0, 4).forEach((c, i) => { g.fillStyle = gemFill(g, x, y + (10 + i * 9) * s, (4 + i * 1.5) * s, c, c); g.beginPath(); g.arc(x, y + (10 + i * 9) * s, (4 + i * 1.4) * s, 0, TAU); g.fill(); }); }
+  g.restore();
+}
+function drawEarrings2D(g, id, F) { for (const [x, y] of earPoints(F)) drawEarring2D(g, id, x, y, F.s * 1.1); }
+function drawGlasses2D(g, id, F) {
+  const [[ax, ay], [bx, by]] = F.eyes, r = 38 * F.s;
+  const FR = { glasses_heart: "#ff4f93", glasses_star: "#ffcf3a", glasses_round: "#a46cff", glasses_sun: "#1d1622" }[id] || "#ff4f93";
+  const LENS = { glasses_heart: "rgba(255,156,196,0.38)", glasses_star: "rgba(255,240,150,0.35)", glasses_round: "rgba(220,235,255,0.2)", glasses_sun: "rgba(18,12,24,0.82)" }[id];
+  g.save(); g.lineWidth = 7 * F.s; g.strokeStyle = FR; g.lineJoin = "round";
+  for (const [x, y] of [[ax, ay + 4 * F.s], [bx, by + 4 * F.s]]) {
+    if (id === "glasses_heart") heartPath(g, x, y + r * 0.1, r * 0.92);
+    else if (id === "glasses_star") starPath(g, x, y, r * 1.12, 0.55);
+    else { g.beginPath(); if (id === "glasses_sun") g.ellipse(x, y, r * 1.08, r * 0.86, 0, 0, TAU); else g.arc(x, y, r * 0.95, 0, TAU); }
+    g.fillStyle = LENS; g.fill(); g.stroke();
+    if (id === "glasses_sun") { g.fillStyle = "rgba(255,255,255,0.5)"; g.beginPath(); g.ellipse(x - r * 0.4, y - r * 0.35, r * 0.22, r * 0.1, -0.5, 0, TAU); g.fill(); }
+  }
+  g.beginPath(); g.moveTo(ax + r * 0.85, ay); g.quadraticCurveTo((ax + bx) / 2, ay - 14 * F.s, bx - r * 0.85, by); g.stroke();
+  g.restore();
+}
+function drawMoonWand2D(g, x, y) {
+  g.save(); g.lineCap = "round";
+  g.strokeStyle = "#d9dde8"; g.lineWidth = 10; g.beginPath(); g.moveTo(x - 70, y + 10); g.lineTo(x, y - 170); g.stroke();
+  g.strokeStyle = "#ffffff"; g.lineWidth = 3; g.beginPath(); g.moveTo(x - 68, y + 4); g.lineTo(x - 2, y - 166); g.stroke();
+  const cx = x + 6, cy = y - 205;
+  g.fillStyle = gemFill(g, cx, cy, 46, "#fff6c2", "#ffcf3a"); g.beginPath(); g.arc(cx, cy, 44, 0.35 * Math.PI, 1.65 * Math.PI, false); g.arc(cx + 22, cy - 6, 36, 1.55 * Math.PI, 0.45 * Math.PI, true); g.closePath(); g.fill();
+  g.strokeStyle = "#ffffff"; g.lineWidth = 4; g.stroke();
+  for (const [ox, oy, r] of [[34, -40, 9], [44, 20, 7], [-50, -56, 6]]) drawSparkle(g, cx + ox, cy + oy, r, "#fff3b0");
+  g.restore();
+}
+/* eyelashes and face paint (part of the makeup) */
+function drawLashes(g, F, kind) {
+  const s = F.s;
+  g.save(); g.strokeStyle = "#1d1016"; g.lineCap = "round"; g.lineWidth = 3.4 * s;
+  F.eyes.forEach(([ex, ey], side) => {
+    const dir = side === 0 ? -1 : 1;
+    for (let i = 0; i < 6; i++) {
+      const t = i / 5, a = Math.PI + 0.25 + t * (Math.PI - 0.5), px = ex + Math.cos(a) * 27 * s, py = ey + 4 * s + Math.sin(a) * 22 * s;
+      const outer = (dir < 0 ? 1 - t : t), len = (9 + outer * 9) * s, ox = Math.cos(a) * 0.6 + dir * outer * 0.5, oy = Math.sin(a) * 0.9 - 0.3;
+      const n = Math.hypot(ox, oy); g.beginPath(); g.moveTo(px, py); g.quadraticCurveTo(px + ox / n * len * 0.5, py + oy / n * len * 0.7, px + ox / n * len, py + oy / n * len); g.stroke();
+      if (kind === "sparkle" && i % 2 === 0) drawSparkle(g, px + ox / n * len, py + oy / n * len, 4 * s, "#fff3b0");
+    }
+  });
+  g.restore();
+}
+function drawFacePaint(g, F, kind) {
+  const s = F.s, [mx, my] = F.mouth, [[lx, ly], [rx, ry]] = F.eyes, [[c1x, c1y], [c2x, c2y]] = F.cheeks;
+  g.save(); g.lineCap = "round"; g.lineJoin = "round";
+  if (kind === "cat") {
+    g.fillStyle = "#ff7aa8"; g.beginPath(); g.moveTo(mx - 9 * s, my - 36 * s); g.lineTo(mx + 9 * s, my - 36 * s); g.lineTo(mx, my - 26 * s); g.closePath(); g.fill();
+    g.strokeStyle = "#3a2440"; g.lineWidth = 3 * s;
+    for (const d of [-1, 1]) for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(mx + d * 30 * s, my - 22 * s + k * 7 * s); g.lineTo(mx + d * 82 * s, my - 26 * s + k * 13 * s); g.stroke(); }
+  } else if (kind === "butterfly") {
+    g.globalAlpha = 0.82;
+    const bx = (lx + c1x) / 2 - 18 * s, by = (ly + c1y) / 2;
+    for (const d of [-1, 1]) {
+      g.fillStyle = d < 0 ? "#b07cff" : "#ff6fae"; g.beginPath(); g.ellipse(bx + d * 22 * s, by - 14 * s, 22 * s, 17 * s, d * 0.5, 0, TAU); g.fill();
+      g.fillStyle = d < 0 ? "#ff9cc4" : "#c9a8ff"; g.beginPath(); g.ellipse(bx + d * 17 * s, by + 14 * s, 14 * s, 12 * s, -d * 0.4, 0, TAU); g.fill();
+      g.fillStyle = "#ffffff"; g.beginPath(); g.arc(bx + d * 24 * s, by - 16 * s, 4 * s, 0, TAU); g.fill();
+    }
+    g.globalAlpha = 1; g.strokeStyle = "#3a2440"; g.lineWidth = 3.5 * s; g.beginPath(); g.moveTo(bx, by - 22 * s); g.lineTo(bx, by + 20 * s); g.stroke();
+  } else if (kind === "rainbow") {
+    RAINBOW6.forEach((c, i) => { g.strokeStyle = c; g.lineWidth = 5 * s; g.globalAlpha = 0.85; g.beginPath(); g.arc(c2x + 6 * s, c2y + 12 * s, (34 - i * 5) * s, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); });
+  } else if (kind === "flowers") {
+    for (const [ox, oy, r, c] of [[-46, 10, 10, "#ff8fd0"], [-40, 34, 8, "#ffd23f"], [-58, 28, 7, "#a77cff"]]) {
+      const x = lx + ox * s, y = ly + oy * s;
+      for (let p = 0; p < 5; p++) { const a = p / 5 * TAU; g.fillStyle = c; g.beginPath(); g.arc(x + Math.cos(a) * r * 0.7 * s, y + Math.sin(a) * r * 0.7 * s, r * 0.55 * s, 0, TAU); g.fill(); }
+      g.fillStyle = "#ffffff"; g.beginPath(); g.arc(x, y, r * 0.35 * s, 0, TAU); g.fill();
+    }
+  } else if (kind === "stars") {
+    for (const [ox, oy, r] of [[46, 12, 11], [56, 36, 7], [36, 34, 6]]) { g.fillStyle = "#ffcf3a"; g.strokeStyle = "#ffffff"; g.lineWidth = 2 * s; starPath(g, rx + ox * s, ry + oy * s, r * s); g.fill(); g.stroke(); }
+  } else if (kind === "hearts") {
+    for (const [x, y] of [[c1x, c1y], [c2x, c2y]]) { g.fillStyle = "#ff4f93"; g.strokeStyle = "#ffffff"; g.lineWidth = 2.5 * s; heartPath(g, x, y + 4 * s, 11 * s); g.fill(); g.stroke(); }
+  } else if (kind === "freckles") {
+    g.fillStyle = "rgba(150,90,60,0.6)";
+    const pts = [[-30, -8], [-22, 2], [-36, 6], [-16, -4], [-26, 14], [-40, -2], [30, -8], [22, 2], [36, 6], [16, -4], [26, 14], [40, -2], [-6, -24], [6, -26]];
+    for (const [ox, oy] of pts) { g.beginPath(); g.arc(mx + ox * 1.6 * s, (c1y + c2y) / 2 - 4 * s + oy * s, 2.6 * s, 0, TAU); g.fill(); }
+  }
+  g.restore();
+}
+
+/* ---------- the pictures on the wardrobe buttons for the things that are drawn, not photographed ---------- */
+const ICONS = {};
+function itemIcon(id) {
+  const it = [].concat(...Object.values(ACCESSORIES)).find(a => a.id === id);
+  if (!it || !it.proc) return "img/it_" + id + ".webp";
+  if (ICONS[id]) return ICONS[id];
+  const c = document.createElement("canvas"); c.width = c.height = 200; const g = c.getContext("2d");
+  if (id.startsWith("necklace")) { g.save(); g.translate(100, 40); g.scale(1.45, 1.45); g.translate(-611, -400); drawNecklaceX2D(g, id); g.restore(); }
+  else if (id.startsWith("earrings")) { drawEarring2D(g, id, 70, 50, 2.6); drawEarring2D(g, id, 135, 50, 2.6); }
+  else if (id.startsWith("glasses")) { const F = { eyes: [[62, 96], [138, 96]], s: 1.0 }; drawGlasses2D(g, id, F); }
+  else if (id === "wand_moon") { g.save(); g.translate(30, 0); g.scale(0.72, 0.72); drawMoonWand2D(g, 110, 250); g.restore(); }
+  return (ICONS[id] = c.toDataURL("image/png"));
+}
 
 /* ================= QUESTS: lots of little helping missions for every friend, in four lands ================= */
 const NUM = ["", "One!", "Two!", "Three!", "Four!", "Five!", "Six!", "Seven!", "Eight!", "Nine!", "Ten!"];
@@ -3585,15 +3988,28 @@ function questStart(i, quiet) {
   if (land && !LAND_BUILT[land]) { Q.phase = "wait"; Beacon.hide(); setMission("🌈", "The rainbow bridge is coming…"); return; }
   if (land && BRIDGE_VIS[land] && !BRIDGES[land].open) openBridge(land, false);
   if (Q.cur.who === "luna") {
-    Q.phase = "intro";
+    Q.phase = "intro"; prefetchQuest(Q.cur);
     setTimeout(() => { if (Q.cur && Q.phase === "intro" && Q.i === i) dialog([["luna", Q.cur.intro]], () => nextStep()); }, quiet ? 50 : 900);
     return;
   }
   Q.phase = "visit";
+  prefetchQuest(Q.cur);
   const g = friends[Q.cur.who];
   setMission(whoPic(Q.cur.who), "Visit " + whoName(Q.cur.who));
   if (g) point(g.root.position.x, g.root.position.z, FRIEND_INFO[Q.cur.who].h + 1.4);
   if (!quiet) setTimeout(() => { if (Q.cur && Q.phase === "visit" && Q.i === i && !Game.dialog && Game.mode === "play" && !Room.open) Voice.say(visitLine(Q.cur.who)); }, 1200);
+}
+/* the recorded voices for a quest are fetched while she walks to the friend, so they play at once */
+function prefetchQuest(C) {
+  if (!C) return;
+  Voice.prefetch(C.intro, C.who); Voice.prefetch(visitLine(C.who));
+  for (const S of C.steps) {
+    if (S.say) Voice.prefetch(S.say, S.to || C.who);
+    if (S.lines) S.lines.forEach(l => Array.isArray(l) ? Voice.prefetch(l[1], l[0]) : Voice.prefetch(l, S.who));
+    if (S.do === "return") Voice.prefetch("Now go back to " + whoName(S.to || C.who) + "!");
+  }
+  if (C.quiz) { Voice.prefetch(C.quiz.q, C.quiz.who || C.who); Voice.prefetch(C.quiz.yay, C.quiz.who || C.who); }
+  for (let n = 1; n <= 8; n++) Voice.prefetch(NUM[n]);
 }
 function visitLine(k) {
   const L = { bunny: "Let's go and see Bun-Bun the bunny!", mimi: "Mimi the cat needs you!", pip: "Pip the kitten wants to play!", dot: "Dot the baby dragon is calling you!",
@@ -4128,7 +4544,7 @@ function bonusUpdate(dt) {
   let C = null; try { C = makeBonusQuest(); } catch (e) { console.error("bonus", e); }
   if (!C) return;
   questCleanup();
-  Q.cur = C; Q.step = -1; Q.count = 0; Q.phase = "visit";
+  Q.cur = C; Q.step = -1; Q.count = 0; Q.phase = "visit"; prefetchQuest(C);
   const g = friends[C.who]; setMission(whoPic(C.who), "Visit " + whoName(C.who)); point(g.root.position.x, g.root.position.z, FRIEND_INFO[C.who].h + 1.4);
   setTimeout(() => { if (Q.cur === C && Q.phase === "visit" && !Game.dialog && !Room.open) Voice.say(whoName(C.who) + " needs your help!"); }, 900);
 }
@@ -4144,7 +4560,7 @@ function bonusReward(C) {
   setMission("👑", "Super helper!");
   setTimeout(() => {
     if (unlocked) { const d = dressById(unlocked); chat("luna", "A present for helping! The " + d.name + " dress! I can wear it in my wardrobe!"); }
-    else chat("luna", "I helped my friends " + (n === 1 ? "one time" : (WORD[n] || n) + " times") + "! Yay!");
+    else chat("luna", n === 1 ? "I helped my friend! Yay!" : n <= 20 ? "I helped my friends " + n + " times! Yay!" : "I helped my friends so many times! Yay!");
   }, 1500);
   setTimeout(() => { if (Q.cur === C) { Q.cur = null; Q.step = -1; Q.phase = "free"; Beacon.hide(); setMission("👑", "Play anywhere you like!"); Bonus.next = 20; } }, 3600);
 }
@@ -4216,13 +4632,14 @@ function runQuiz(Q, done) {
         setTimeout(() => { $("quiz").hidden = true; Game.dialog = false; Game.talkTo = null; done(); }, 650);
       } else {
         wrong++; Sound.fx.boop(); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
-        Voice.say(wrong >= 2 ? "Try this one!" : "Oops! Try again!");
+        Voice.say(wrong >= 2 ? "Try this one!" : "Oops! Try again!", Q.who);
         if (wrong >= 2) box.children[Q.right].classList.add("glow");
       }
     };
     box.appendChild(b); fastTap(b);
   });
-  $("dialog").hidden = true; $("quiz").hidden = false; Voice.say(Q.q);
+  $("dialog").hidden = true; $("quiz").hidden = false; Voice.say(Q.q, Q.who);
+  if (Q.yay) Voice.prefetch(Q.yay, Q.who); Voice.prefetch("Oops! Try again!", Q.who); Voice.prefetch("Try this one!", Q.who);
   if (friends[Q.who]) friends[Q.who].hop(2);
 }
 $("qVoice").onclick = () => Voice.repeat();
@@ -4342,7 +4759,7 @@ function toggleNightRoom() {
   Voice.say(NIGHT.on ? "Good night, moon! Now it's night time in the kingdom." : "Good morning, sun! Now it's day time.");
 }
 function hugTeddy() {
-  Sound.fx.squeak(); Voice.say("I love you, Teddy! Squeeze!");
+  Sound.fx.squeak(); Voice.say("I love you, Teddy! Squeeze!", "luna");
   const hot = document.querySelector('[data-act="teddy"]');
   for (let i = 0; i < 6; i++) { const h = document.createElement("span"); h.textContent = ["💖", "💕", "💗"][i % 3]; h.style.cssText = "position:absolute;left:" + (-20 + Math.random() * 40) + "px;top:-20px;font-size:30px;animation:noteup 1.4s ease-out forwards;animation-delay:" + i * 0.08 + "s;pointer-events:none"; hot.appendChild(h); setTimeout(() => h.remove(), 1800); }
 }
@@ -4395,7 +4812,7 @@ function snapWorld() {
 
 /* ---------- wardrobe (dress up) ---------- */
 async function openWardrobe() {
-  const tabs = [["dress", "👗", "Dresses"], ["crown", "👑", "Crowns"], ["wings", "🦋", "Wings"], ["wand", "🪄", "Wands"], ["necklace", "📿", "Necklace"]];
+  const tabs = [["dress", "👗", "Dresses"], ["crown", "👑", "Crowns"], ["wings", "🦋", "Wings"], ["wand", "🪄", "Wands"], ["necklace", "📿", "Necklaces"], ["earrings", "💎", "Earrings"], ["glasses", "🕶️", "Glasses"]];
   let tab = "dress", cv, busy = false;
   actOpen("👗 Dress up", body => {
     const stage = el("div", "stage-box"); cv = document.createElement("canvas"); fitCanvas(cv, stage, 900); stage.appendChild(cv);
@@ -4415,7 +4832,7 @@ async function openWardrobe() {
         const b = el("button", "item" + (on ? " on" : "") + (unlocked ? "" : " locked"));
         if (tab === "dress") b.innerHTML = '<span class="sw" style="background:' + it.sw + '"></span>';
         else if (it.id.endsWith("_none")) b.innerHTML = it.id === "crown_none" ? '<span class="em">💗</span>' : '<span class="em">🚫</span>';
-        else b.innerHTML = '<img alt="" src="img/it_' + it.id + '.webp">';
+        else b.innerHTML = '<img alt="" src="' + itemIcon(it.id) + '">';
         b.innerHTML += '<span class="nm">' + it.name + "</span>" + (unlocked ? "" : '<span class="lock">🔒</span>');
         b.onclick = () => pick(it, unlocked);
         grid.appendChild(b);
@@ -4437,25 +4854,26 @@ async function openWardrobe() {
       g.clearRect(0, 0, cv.width, cv.height); g.drawImage(c, (cv.width - dw) / 2, 0, dw, cv.height); msg.hidden = true;
     }
     fill(); draw().catch(() => { msg.textContent = "The dress-up picture could not load. Check the internet and try again."; });
-    return () => { refreshLunaFace(); };
+    return () => { refreshLunaFace(); applyOutfit3D(); };
   }, { voice: "Let's play dress up! Pick a dress, a crown, wings and a magic wand." });
 }
 
 /* ---------- vanity (makeup and hair) ---------- */
-const LIPS = ["#ff5f9e", "#e8273f", "#ff7a5a", "#a03fd0", "#ffa48a", "#ffb3cf"];
-const BLUSH = ["#ff7aa8", "#ff9a7a", "#f0507a"];
-const SHADOW = ["#ff8fc8", "#a77cff", "#6fb8ff", "#ffcc55", "#6fd6a0"];
+const LIPS = ["#ff5f9e", "#e8273f", "#ff7a5a", "#a03fd0", "#ffa48a", "#ffb3cf", "#ff2f6d", "#c2185b", "#ff9e3d", "#7b4fd6", "#4fb8ff", "#3fcf8e"];
+const BLUSH = ["#ff7aa8", "#ff9a7a", "#f0507a", "#ffb08a", "#d6a0ff", "#ff6f61"];
+const SHADOW = ["#ff8fc8", "#a77cff", "#6fb8ff", "#ffcc55", "#6fd6a0", "#ff6f9e", "#4fd6c4", "#c9cdd8", "#ff9e3d", "#3b5fd6"];
+const PAINTS_FACE = [["cat", "🐱", "Cat face"], ["butterfly", "🦋", "Butterfly"], ["rainbow", "🌈", "Rainbow"], ["flowers", "🌸", "Flowers"], ["stars", "⭐", "Stars"], ["hearts", "💖", "Hearts"], ["freckles", "🟤", "Freckles"]];
 async function openVanity() {
   let tab = "lips", cv, placing = null;
-  const tabs = [["lips", "💄", "Lips"], ["blush", "🌸", "Cheeks"], ["shadow", "👁️", "Eyes"], ["glitter", "✨", "Glitter"], ["hair", "💇", "Hair"], ["color", "🌈", "Hair colour"], ["bow", "🎀", "Bows"], ["stickers", "🦋", "Stickers"]];
+  const tabs = [["lips", "💄", "Lips"], ["blush", "🌸", "Cheeks"], ["shadow", "👁️", "Eyes"], ["lashes", "👀", "Lashes"], ["glitter", "✨", "Glitter"], ["paint", "🎨", "Face paint"], ["hair", "💇", "Hair"], ["color", "🌈", "Hair colour"], ["bow", "🎀", "Bows"], ["stickers", "🦋", "Stickers"]];
   actOpen("💄 Makeup mirror", body => {
-    const stage = el("div", "stage-box"), mirror = el("div", "mirror"); cv = document.createElement("canvas"); cv.width = cv.height = 640; mirror.appendChild(cv); stage.appendChild(mirror);
+    const stage = el("div", "stage-box"), mirror = el("div", "mirror"); cv = document.createElement("canvas"); cv.width = cv.height = 640; cv.dataset.pad = "canvas"; mirror.appendChild(cv); stage.appendChild(mirror);
     const msg = el("div", "big-msg", "Loading…"); stage.appendChild(msg);
     const side = el("div", "side"), tb = el("div", "tabs"), grid = el("div", "grid"), acts = el("div", "actions");
     side.append(tb, grid, acts); body.append(stage, side);
     tabs.forEach(([k, e, n]) => { const b = el("button", "tab" + (k === tab ? " on" : ""), "<span>" + e + "</span>" + n); b.onclick = () => { tab = k; placing = null; tb.querySelectorAll(".tab").forEach(x => x.classList.remove("on")); b.classList.add("on"); fill(); Sound.fx.pop(); }; tb.appendChild(b); });
     const clean = el("button", "ok grey", "🧽 Clean face"), photo = el("button", "ok pink", "📸 Photo"), done = el("button", "ok", "Done");
-    clean.onclick = () => { const L = Save.data.look; Object.assign(L, { lips: "", blush: "", shadow: "", glitter: false, stickers: [] }); Save.write(); Sound.fx.water(); draw(); Voice.say("All clean! Splash, splash!"); };
+    clean.onclick = () => { const L = Save.data.look; Object.assign(L, { lips: "", blush: "", shadow: "", glitter: false, stickers: [], lashes: "", paint: "" }); Save.write(); Sound.fx.water(); draw(); Voice.say("All clean! Splash, splash!"); };
     photo.onclick = () => { const c = dollCompose(Save.data.outfit, Save.data.look); if (!c) return; flash(); Sound.fx.sparkle(); Save.addPhoto(framePhoto(cropFace(c, 700), "Princess Luna")); toast("Photo saved!"); Voice.say("Say cheese!"); };
     done.onclick = () => actClose();
     acts.append(clean, photo, done);
@@ -4469,6 +4887,8 @@ async function openVanity() {
       if (tab === "lips") { g.appendChild(em("🚫", !L().lips, "None", () => set("lips", ""))); LIPS.forEach(c => g.appendChild(sw(c, L().lips === c, "", () => set("lips", c, "Pretty lips!")))); }
       if (tab === "blush") { g.appendChild(em("🚫", !L().blush, "None", () => set("blush", ""))); BLUSH.forEach(c => g.appendChild(sw(c, L().blush === c, "", () => set("blush", c, "Rosy cheeks!")))); }
       if (tab === "shadow") { g.appendChild(em("🚫", !L().shadow, "None", () => set("shadow", ""))); SHADOW.forEach(c => g.appendChild(sw(c, L().shadow === c, "", () => set("shadow", c, "Sparkly eyes!")))); }
+      if (tab === "lashes") { g.appendChild(em("🚫", !L().lashes, "None", () => set("lashes", ""))); g.appendChild(em("👁️", L().lashes === "long", "Long lashes", () => set("lashes", "long", "Long, pretty eyelashes!"))); g.appendChild(em("✨", L().lashes === "sparkle", "Sparkly lashes", () => set("lashes", "sparkle", "Sparkly eyelashes!"))); }
+      if (tab === "paint") { g.appendChild(em("🚫", !L().paint, "None", () => set("paint", ""))); PAINTS_FACE.forEach(([k, e, n]) => g.appendChild(em(e, L().paint === k, n, () => set("paint", k, n + " face paint!")))); }
       if (tab === "glitter") { g.appendChild(em("✨", L().glitter, "Glitter on", () => set("glitter", true, "Twinkle twinkle!"))); g.appendChild(em("🚫", !L().glitter, "No glitter", () => set("glitter", false))); }
       if (tab === "hair") HAIRSTYLES.forEach(h => { const b = el("button", "item" + (L().hair === h.id ? " on" : ""), '<img alt="" src="' + h.img + '" style="object-fit:cover;object-position:50% 8%;width:100%;height:100%;border-radius:14px"><span class="nm">' + h.name + "</span>"); b.onclick = async () => { msg.hidden = false; msg.textContent = "Brushing…"; set("hair", h.id, h.name + "!"); }; g.appendChild(b); });
       if (tab === "color") { g.appendChild(em("🤎", !L().hairColor, "Brown", () => set("hairColor", "", "Lovely brown hair!"))); Object.entries(HAIRCOLORS).forEach(([k, c]) => g.appendChild(sw(c, L().hairColor === k, k, () => set("hairColor", k, k + " hair!")))); g.appendChild(sw("linear-gradient(90deg,#ff5f7e,#ffa94d,#ffe066,#69db7c,#74c0fc,#b197fc)", L().hairColor === "rainbow", "rainbow", () => set("hairColor", "rainbow", "Rainbow hair!"))); }
@@ -4495,7 +4915,7 @@ async function openVanity() {
       drawing = false; if (draw.again) { draw.again = false; draw(); }
     }
     fill(); draw();
-    return () => { refreshLunaFace(); };
+    return () => { refreshLunaFace(); applyOutfit3D(); };
   }, { voice: "Let's do your makeup and hair! Pick a colour, and watch the mirror." });
 }
 function faceFrame(F) { const cx = (F.eyes[0][0] + F.eyes[1][0]) / 2, size = 470 * F.s + 40; return { x: cx - size / 2, y: F.eyes[0][1] + 20 * F.s - size * 0.52, size }; }
@@ -4504,7 +4924,7 @@ function cropFace(c, S) { const F = FEAT[Save.data.look.hair || "curly"], fr = f
 /* ---------- Pip's bath ---------- */
 function openBath() {
   actOpen("🛁 Pip's bath", body => {
-    const stage = el("div", "stage-box"), cv = document.createElement("canvas"); cv.width = 900; cv.height = 700; cv.style.cssText = "width:100%;height:100%;object-fit:contain;touch-action:none"; stage.appendChild(cv);
+    const stage = el("div", "stage-box"), cv = document.createElement("canvas"); cv.width = 900; cv.height = 700; cv.style.cssText = "width:100%;height:100%;object-fit:contain;touch-action:none"; cv.dataset.pad = "canvas"; stage.appendChild(cv);
     const msg = el("div", "big-msg", "Pip played in the mud!"), bar = el("div", "progress", "<i></i>"); stage.append(msg, bar);
     body.style.flexDirection = "column"; stage.style.flex = "1 1 auto";
     const tools = el("div", "tools"); body.append(stage, tools);
@@ -4636,7 +5056,7 @@ function openPiano() {
 const PAINTS = ["#ff4f93", "#ff8fc8", "#e8273f", "#ff8a3d", "#ffd23f", "#8fd65a", "#2fb36a", "#4fd6c4", "#5bb8ff", "#3b5fd6", "#a77cff", "#8a5232", "#ffffff", "#2c1745"];
 function openPaint() {
   actOpen("🎨 Painting", body => {
-    const stage = el("div", "stage-box"), cv = document.createElement("canvas"); cv.style.cssText = "max-width:100%;max-height:100%;touch-action:none;background:#fff;border-radius:12px"; stage.appendChild(cv);
+    const stage = el("div", "stage-box"), cv = document.createElement("canvas"); cv.style.cssText = "max-width:100%;max-height:100%;touch-action:none;background:#fff;border-radius:12px"; cv.dataset.pad = "canvas"; stage.appendChild(cv);
     const side = el("div", "side"), toolsEl = el("div", "tabs"), pal = el("div", "palette"), acts = el("div", "actions");
     side.append(toolsEl, pal, acts); body.append(stage, side);
     let color = PAINTS[0], mode = "fill", page = 0, line = null, labels = null, W = 0, H = 0, colorC = null, undo = [], down = false, lastP = null, fills = 0;
@@ -4752,7 +5172,8 @@ function openBedtime() {
       let p = 0; const wrap = el("div", "story"), pic = el("div", "pic", '<img alt="" src="' + PICS[s.pic] + '">'), txt = el("div");
       const para = el("p"), row = el("div", "actions"), next = el("button", "ok", "Next ▶"); row.appendChild(next); txt.append(para, row); wrap.append(pic, txt);
       wrap.style.cssText = "margin:auto;max-width:900px;padding:10px"; body.appendChild(wrap);
-      const show = () => { para.textContent = s.pages[p]; Voice.say(s.pages[p]); next.textContent = p < s.pages.length - 1 ? "Next ▶" : "Good night 🌙"; };
+      s.pages.forEach(t => Voice.prefetch(t, "story"));
+      const show = () => { para.textContent = s.pages[p]; Voice.say(s.pages[p], "story"); next.textContent = p < s.pages.length - 1 ? "Next ▶" : "Good night 🌙"; };
       next.onclick = () => { p++; Sound.fx.pop(); if (p < s.pages.length) show(); else goodNight(); };
       show();
     }
@@ -4764,7 +5185,7 @@ function openBedtime() {
       morning.onclick = () => { setNight(false); Save.data.night = false; Save.write(); $("room").classList.remove("night"); actClose(); Voice.say("Good morning, Princess Luna! The sun is up!"); };
       stay.onclick = () => { setNight(true); Save.data.night = true; Save.write(); $("room").classList.add("night"); actClose(); Voice.say("It's night time in the kingdom. Look at the stars and the fireflies!"); };
       row.append(morning, stay); box.appendChild(row); body.appendChild(box);
-      Voice.say("The end. Good night, Princess Luna! Sweet dreams!");
+      Voice.say("The end. Good night, Princess Luna! Sweet dreams!", "story");
       Save.data.stories = (Save.data.stories || 0) + 1; Save.write();
       if (!Save.data.unlocked.includes("dress_night")) { Save.unlock("dress_night"); setTimeout(() => { toast("New dress!"); Voice.say("A surprise! You got the Starry night dress. Try it in your wardrobe!"); }, 4500); }
       roomSticker("room_story");
@@ -4796,7 +5217,7 @@ function openStickers() {
       b.onclick = () => { if (got) { Voice.say(info.title + "!"); Sound.fx.sparkle(); } else { Voice.say("This sticker is still a surprise!"); Sound.fx.boop(); } };
       book.appendChild(b);
     });
-    Voice.say("You have " + have.length + " stickers! " + (have.length < all.length ? "Help your friends to find more." : "You found them all!"));
+    Voice.say(have.length < all.length ? "Look at all your stickers! Help your friends to find more." : "You found all the stickers! Hooray!");
   });
 }
 function openAlbum() {
@@ -4836,7 +5257,7 @@ function openMinigame(game, done) {
   const ICING = ["#ff9cc4", "#fff3c4", "#9fd8ff", "#c9a8ff", "#8a5232"], TOPS = [["🍓", 54], ["🍒", 50], ["💖", 42], ["⭐", 42], ["🌸", 44], ["🕯️", 60]];
   let icing = null, top = TOPS[0][0], placed = [];
   actOpen("🎂 Decorate the cake", body => {
-    const stage = el("div", "stage-box"), cv = document.createElement("canvas"); cv.width = cv.height = 800; cv.style.cssText = "height:100%;width:auto;max-width:100%;aspect-ratio:1;touch-action:none"; stage.appendChild(cv);
+    const stage = el("div", "stage-box"), cv = document.createElement("canvas"); cv.width = cv.height = 800; cv.style.cssText = "height:100%;width:auto;max-width:100%;aspect-ratio:1;touch-action:none"; cv.dataset.pad = "canvas"; stage.appendChild(cv);
     const side = el("div", "side"), t1 = el("div", "tabs", '<b style="font-family:var(--font-display);font-size:18px">1. Icing</b>'), g1 = el("div", "palette"), t2 = el("div", "tabs", '<b style="font-family:var(--font-display);font-size:18px">2. Tap a topping, then tap the cake</b>'), g2 = el("div", "grid"), acts = el("div", "actions");
     side.append(t1, g1, t2, g2, acts); body.append(stage, side);
     ICING.forEach(c => { const b = el("button", "paint"); b.style.background = c; b.onclick = () => { icing = c; g1.querySelectorAll(".paint").forEach(x => x.classList.remove("on")); b.classList.add("on"); Sound.fx.splat(); draw(); Voice.say("Yummy icing!"); }; g1.appendChild(b); });
@@ -4969,6 +5390,232 @@ function updateDance(dt, t) {
 }
 $("mDance").onclick = () => { $("menu").hidden = true; Sound.unlock(); danceParty(); };
 
+/* ================= GAME CONTROLLER: a PS4 / PS5 / Xbox controller on a computer (USB or Bluetooth) or a tablet =================
+   In the kingdom: the left stick (or the arrow buttons) walks, the right stick (or L1 / R1) turns the camera,
+   ✕ jumps, ○ rides / gets off / goes in, □ says hello to the nearest friend (or twirls), △ says it again, OPTIONS opens the menu.
+   On a card (OK, a question, the room, an activity, the menu, the start screen) the stick moves a yellow glow from button to
+   button, ✕ presses the glowing one and ○ goes back. On a picture that takes a finger (painting, Pip's bath, the cake, face
+   stickers, the kitchen) the stick moves a little hand, ✕ is the finger, and the arrow buttons go back to the buttons. */
+const PADB = { X: 0, O: 1, SQ: 2, TRI: 3, L1: 4, R1: 5, L2: 6, R2: 7, SHARE: 8, OPTIONS: 9, UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15, TOUCHPAD: 17 };
+const Pad = { x: 0, y: 0, connected: false, used: false, prev: [], focus: null, held: null, nav: "", navT: 0, mem: new WeakMap(), scope: null,
+  hand: { x: 0, y: 0, down: false, edge: 0 }, told: false, soundTip: 0 };
+const padHandEl = document.createElement("div"); padHandEl.id = "padHand"; padHandEl.textContent = "👆"; padHandEl.hidden = true; $("app").appendChild(padHandEl);
+const padSoundEl = document.createElement("div"); padSoundEl.id = "padSound"; padSoundEl.className = "sticker"; padSoundEl.hidden = true;
+padSoundEl.textContent = "🔊 Click the game once to turn on the sound"; $("app").appendChild(padSoundEl);
+
+function padState() {
+  let list = null; try { list = navigator.getGamepads ? navigator.getGamepads() : null; } catch (e) {}
+  if (!list) return null;
+  let st = null;
+  for (const p of list) {
+    if (!p || p.connected === false) continue;
+    if (!st) st = { lx: 0, ly: 0, rx: 0, ry: 0, b: [] };
+    const a = p.axes || [], lx = a[0] || 0, ly = a[1] || 0;
+    if (Math.hypot(lx, ly) > Math.hypot(st.lx, st.ly)) { st.lx = lx; st.ly = ly; }
+    if (Math.abs(a[2] || 0) > Math.abs(st.rx)) st.rx = a[2] || 0;
+    if (Math.abs(a[3] || 0) > Math.abs(st.ry)) st.ry = a[3] || 0;
+    (p.buttons || []).forEach((bt, i) => { if (bt && (bt.pressed || bt.value > 0.55)) st.b[i] = true; });
+  }
+  return st;
+}
+function padDead(x, y, d) { const m = Math.hypot(x, y); if (m < d) return [0, 0]; const k = Math.min(1, (m - d) / (1 - d)) / m; return [x * k, y * k]; }
+function padWake() {
+  if (!Pad.used) { Pad.used = true; document.body.classList.add("pad-on"); }
+  if (!Pad.told) { Pad.told = true; $("padNote").hidden = false; }
+}
+function padSleep() {   // a finger or the mouse is back: the glow and the little hand go away
+  if (!Pad.used) return;
+  Pad.used = false; document.body.classList.remove("pad-on"); padRelease(false); padSet(null); padHand(false);
+}
+document.addEventListener("pointerdown", e => { if (e.isTrusted) { padSleep(); Sound.unlock(); padSoundEl.hidden = true; } }, true);
+document.addEventListener("keydown", e => { if (e.isTrusted) { Sound.unlock(); padSoundEl.hidden = true; } }, true);
+window.addEventListener("gamepadconnected", () => { if (!Pad.connected) toast("🎮 Ready!"); });
+
+/* where the buttons are: the room's glowing spots have no size of their own, their ring does */
+function padBox(e) { return (e.classList && e.classList.contains("hot") && e.querySelector(".ring") || e).getBoundingClientRect(); }
+function padShown(e) {
+  if (!e || !e.isConnected || e.disabled || e.closest("[hidden]")) return false;
+  const r = padBox(e); if (r.width < 6 || r.height < 6) return false;
+  const cs = getComputedStyle(e); return cs.visibility !== "hidden" && cs.display !== "none";
+}
+function padItems(root) { return root ? [...root.querySelectorAll("button, a.ok, canvas[data-pad]")].filter(padShown) : []; }
+
+/* which card is on top (the same order the cards are stacked on the screen) */
+function padScope() {
+  const shown = id => !$(id).hidden;
+  if (shown("loading")) return { root: null };
+  if (shown("confirm")) return { root: $("confirm"), first: () => $("cfNo"), back: () => $("cfNo").click() };
+  if (shown("fsHelp")) return { root: $("fsHelp"), first: () => $("fsHelpOk"), back: () => $("fsHelpOk").click() };
+  if (Game.mode === "title" && shown("title")) return { root: $("title"), first: () => $("btnPlay") };
+  if (shown("finale")) return { root: $("finale"), first: () => $("btnExplore") };
+  if (Act.open) {
+    const v = $("actBody").querySelector(".viewer");
+    if (v) return { root: v, back: () => v.remove() };
+    return { root: $("actCard"), first: items => items.find(e => e.closest("#actBody") && !e.classList.contains("tab") && e.tagName !== "CANVAS") || items.find(e => e.closest("#actBody")),
+      back: () => { if (!$("actClose").hidden) actClose(); }, voice: () => Voice.repeat() };
+  }
+  if (Room.open) return { root: $("room"), first: padRoomFirst, back: () => Room.leave() };
+  if (!$("menu").hidden && !$("hud").hidden) return { root: $("menu"), back: () => { $("menu").hidden = true; }, options: () => { $("menu").hidden = true; } };
+  if (shown("quiz")) return { root: $("quiz"), first: items => items.find(e => e.closest("#qOpts")), voice: () => $("qVoice").click() };
+  if (Game.dialog && shown("dialog") && !$("dOk").hidden) return { root: $("dialog"), first: () => $("dOk"), back: () => $("dOk").click(), voice: () => Voice.repeat() };
+  return null;   // out in the kingdom
+}
+function padRoomFirst(items) {
+  const cx = innerWidth / 2, cy = innerHeight / 2; let best = null, bd = Infinity;
+  for (const e of items) { if (!e.classList.contains("hot")) continue; const r = padBox(e), d = Math.hypot(r.left + r.width / 2 - cx, r.top + r.height / 2 - cy); if (d < bd) { bd = d; best = e; } }
+  return best || items[0];
+}
+
+/* the yellow glow */
+function padSet(e) {
+  if (Pad.focus === e) return;
+  if (Pad.held) padRelease(false);
+  if (Pad.focus) Pad.focus.classList.remove("padfocus", "padpress");
+  Pad.focus = e || null; padHand(false); Pad.hand.down = false;
+  if (!e) return;
+  e.classList.add("padfocus");
+  if (Pad.scope && Pad.scope.root) Pad.mem.set(Pad.scope.root, e);
+  padReveal(e);
+  if (e.tagName === "CANVAS") { const r = e.getBoundingClientRect(); Pad.hand.x = r.left + r.width / 2; Pad.hand.y = r.top + r.height / 2; Pad.hand.edge = 0; }
+}
+function padReveal(e) {
+  if (e.closest("#roomStage")) {   // the room picture slides so the spot is on the screen
+    const r = padBox(e), W = innerWidth, m = 80; let shift = 0;
+    if (r.left < m) shift = m - r.left; else if (r.right > W - m) shift = W - m - r.right;
+    if (shift) { Room.pan = clamp(Room.pan + shift, -Room.maxPan, Room.maxPan); Room.layout(); }
+    return;
+  }
+  for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) {
+    if (p.scrollHeight <= p.clientHeight + 2 && p.scrollWidth <= p.clientWidth + 2) continue;
+    const cs = getComputedStyle(p); if (!/(auto|scroll)/.test(cs.overflowY + " " + cs.overflowX)) continue;
+    const r = e.getBoundingClientRect(), q = p.getBoundingClientRect(), m = 10;
+    if (r.top < q.top + m) p.scrollTop -= q.top + m - r.top; else if (r.bottom > q.bottom - m) p.scrollTop += r.bottom - q.bottom + m;
+    if (r.left < q.left + m) p.scrollLeft -= q.left + m - r.left; else if (r.right > q.right - m) p.scrollLeft += r.right - q.right + m;
+    break;
+  }
+}
+/* the next button in the direction the stick points: the nearest one ahead, straight ahead counts more than off to the side */
+function padMove(dir, items, from) {
+  const cur = Pad.focus;
+  if (!cur) { padSet(items[0]); return; }
+  let cx, cy; if (from) { cx = from.x; cy = from.y; } else { const a = padBox(cur); cx = a.left + a.width / 2; cy = a.top + a.height / 2; }
+  const [dx, dy] = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[dir];
+  let best = null, bs = Infinity;
+  for (const e of items) {
+    if (e === cur) continue;
+    const b = padBox(e), vx = b.left + b.width / 2 - cx, vy = b.top + b.height / 2 - cy;
+    const along = vx * dx + vy * dy; if (along < 8) continue;
+    const s = along + (Math.abs(vx * dy) + Math.abs(vy * dx)) * 2.2;
+    if (s < bs) { bs = s; best = e; }
+  }
+  // off a picture there is always a way back to the buttons: the nearest one when none is that way
+  if (!best && cur.tagName === "CANVAS") for (const e of items) {
+    if (e === cur) continue; const b = padBox(e), d = Math.hypot(b.left + b.width / 2 - cx, b.top + b.height / 2 - cy);
+    if (d < bs) { bs = d; best = e; }
+  }
+  if (best) { padSet(best); Sound.fx.tick(); }
+}
+function padPointer(e, type, x, y) {
+  if (x === undefined) { const r = padBox(e); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+  try { e.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerId: 41, pointerType: "mouse", isPrimary: true, button: 0, buttons: type === "pointerup" ? 0 : 1 })); } catch (err) {}
+}
+function padPress(e) { Sound.unlock(); padPointer(e, "pointerdown"); Pad.held = e; e.classList.add("padpress"); }
+function padRelease(fire) {
+  const e = Pad.held; Pad.held = null; if (!e) return;
+  e.classList.remove("padpress"); padPointer(e, "pointerup");
+  // the "hold to start over" button only counts when it is held down
+  if (fire && padShown(e) && !(e.id === "cfYes" && e.classList.contains("hold"))) e.click();
+}
+function padHand(show) {
+  if (!show) { padHandEl.hidden = true; return; }
+  const H = Pad.hand; padHandEl.hidden = false;
+  padHandEl.style.transform = "translate(" + Math.round(H.x) + "px," + Math.round(H.y) + "px) translate(-42%, -6%)" + (H.down ? " scale(.86)" : "");
+}
+/* a picture that takes a finger: the stick moves the little hand, ✕ is the finger; the arrow buttons (or pushing on the edge) go back to the buttons */
+function padCanvas(dt, sx, sy, dpad, hit, held, items) {
+  const cv = Pad.focus, r = cv.getBoundingClientRect(), H = Pad.hand;
+  // leaving the picture: the arrow buttons, or the stick pushed against the edge for a moment
+  const leave = dir => { Pad.nav = dir; Pad.navT = 0.42; padMove(dir, items, { x: H.x, y: H.y }); };
+  if (dpad && !H.down) { if (Pad.nav !== dpad) leave(dpad); return; }
+  if (!dpad && Pad.nav && !sx && !sy) Pad.nav = "";
+  const sp = Math.max(260, Math.min(r.width, r.height) * 0.8);
+  const nx = H.x + sx * sp * dt, ny = H.y + sy * sp * dt;
+  const out = nx < r.left ? "left" : nx > r.right ? "right" : ny < r.top ? "up" : ny > r.bottom ? "down" : "";
+  const moved = Math.abs(nx - H.x) + Math.abs(ny - H.y) > 0.3;
+  H.x = clamp(nx, r.left + 2, r.right - 2); H.y = clamp(ny, r.top + 2, r.bottom - 2);
+  if (out && !H.down) { if ((H.edge += dt) > 0.4) { H.edge = 0; leave(out); return; } } else H.edge = 0;
+  if (hit[PADB.X]) { Sound.unlock(); H.down = true; padPointer(cv, "pointerdown", H.x, H.y); }
+  else if (H.down && moved) padPointer(cv, "pointermove", H.x, H.y);
+  if (H.down && !held) { H.down = false; padPointer(cv, "pointerup", H.x, H.y); }
+  padHand(Pad.used);
+}
+function padHello() {   // □: say hello to the nearest friend, or twirl
+  let best = null, bd = 4.5;
+  for (const it of tappables) {
+    if (it.enabled && !it.enabled()) continue;
+    const p = it.pos(), d = Math.hypot(p.x - player.pos.x, p.z - player.pos.z);
+    if (d > 0.6 && d < bd) { bd = d; best = it; }
+  }
+  if (best) best.tap(); else twirl();
+}
+
+function padPoll(dt) {
+  const st = padState();
+  if (!st) { if (Pad.connected) { Pad.connected = false; Pad.x = Pad.y = 0; padSleep(); Pad.prev = []; } return; }
+  Pad.connected = true;
+  const B = st.b, was = Pad.prev, hit = [], rel = [];
+  for (let i = 0; i < Math.max(B.length, was.length); i++) { hit[i] = !!B[i] && !was[i]; rel[i] = !B[i] && !!was[i]; }
+  const [sx, sy] = padDead(st.lx, st.ly, 0.24), [rx] = padDead(st.rx, 0, 0.22);
+  const dpad = B[PADB.LEFT] ? "left" : B[PADB.RIGHT] ? "right" : B[PADB.UP] ? "up" : B[PADB.DOWN] ? "down" : "";
+  const mx = sx || (B[PADB.LEFT] ? -1 : B[PADB.RIGHT] ? 1 : 0), my = sy || (B[PADB.UP] ? -1 : B[PADB.DOWN] ? 1 : 0);
+  if (hit.some(Boolean) || mx || my || rx) padWake();
+  if (hit.some(Boolean)) Sound.unlock();
+  const sc = padScope(); Pad.scope = sc;
+  if (!sc) {
+    // out in the kingdom
+    if (Pad.focus) padSet(null);
+    Pad.x = mx; Pad.y = -my;
+    if (mx || my) $("hint").classList.add("gone");
+    if (Game.mode === "play") {
+      const turn = rx * 2.5 - (B[PADB.L1] ? 1.9 : 0) + (B[PADB.R1] ? 1.9 : 0);   // L1 turns like the stick to the left
+      if (turn && !Game.party && !Game.sledding) { CAM.yaw -= turn * dt; CAM.manual = 1.6; }
+      if (hit[PADB.X]) doJump();
+      if (hit[PADB.O]) { Sound.unlock(); if (!$("btnCtx").hidden && $("btnCtx").dataset.mode) contextPress(); else twirl(); }
+      if (hit[PADB.SQ]) padHello();
+      if (hit[PADB.TRI]) Voice.repeat();
+      if (hit[PADB.OPTIONS] && !$("hud").hidden) $("btnMenu").onclick();
+      if (hit[PADB.TOUCHPAD]) Room.enter();
+    }
+  } else {
+    Pad.x = Pad.y = 0;
+    const items = padItems(sc.root), pick = e => e && items.includes(e) ? e : null;
+    if (Pad.focus && !items.includes(Pad.focus)) padSet(null);
+    // the glow starts on the button used last time on this card, or the most likely one (OK, Start, the first answer…)
+    if (!Pad.focus && Pad.used && items.length) padSet(pick(Pad.mem.get(sc.root)) || pick(sc.first && sc.first(items)) || items[0]);
+    if (Pad.focus && Pad.focus.tagName === "CANVAS") padCanvas(dt, sx, sy, dpad, hit, !!B[PADB.X], items);
+    else if (Pad.focus) {
+      const dir = dpad || (Math.abs(mx) > Math.abs(my) ? (mx > 0.5 ? "right" : mx < -0.5 ? "left" : "") : (my > 0.5 ? "down" : my < -0.5 ? "up" : ""));
+      if (dir) {
+        if (dir !== Pad.nav) { Pad.nav = dir; Pad.navT = 0.42; padMove(dir, items); }
+        else if ((Pad.navT -= dt) <= 0) { Pad.navT = 0.2; padMove(dir, items); }
+      } else Pad.nav = "";
+      if (hit[PADB.X] && Pad.focus) padPress(Pad.focus);
+      if (rel[PADB.X]) padRelease(true);
+    }
+    if (hit[PADB.O] && sc.back) {
+      padRelease(false);
+      if (Pad.hand.down && Pad.focus) { Pad.hand.down = false; padPointer(Pad.focus, "pointerup", Pad.hand.x, Pad.hand.y); }
+      sc.back();
+    }
+    if (hit[PADB.TRI]) (sc.voice || Voice.repeat)();
+    if (hit[PADB.OPTIONS] && sc.options) sc.options();
+  }
+  // no sound yet (the browser waits for a click or a tap before it plays any): say so, once
+  if (Pad.used && Game.mode === "play" && !Sound.ready && (Pad.soundTip += dt) > 1.5 && Pad.soundTip < 99) { Pad.soundTip = 99; padSoundEl.hidden = false; }
+  if (!padSoundEl.hidden && Sound.ready) padSoundEl.hidden = true;
+  Pad.prev = B;
+}
+
 /* ================= START: load the models, build the kingdom, title screen, menu, main loop ================= */
 function startGame() {
   Sound.unlock(); Sound.startMusic("explore");
@@ -5022,6 +5669,7 @@ fastTap($("btnJump"), true); fastTap($("btnCtx"), true); ["btnRoom", "btnVoice",
 /* the menu */
 $("btnMenu").onclick = () => { Sound.unlock(); const m = $("menu"); m.hidden = !m.hidden; if (!m.hidden) fillLands(); Sound.fx.pop(); };
 $("mFull").onclick = () => { $("menu").hidden = true; fsPress(); };
+$("mRoom").onclick = () => { $("menu").hidden = true; Sound.unlock(); Room.enter(); };
 $("mMusic").onclick = () => { Sound.setMusic(!Sound.musicOn); $("mMusicTxt").textContent = "Music: " + (Sound.musicOn ? "on" : "off"); };
 $("mPhoto").onclick = () => { $("menu").hidden = true; setTimeout(snapWorld, 60); };
 $("mStickers").onclick = () => { $("menu").hidden = true; openStickers(); };
@@ -5101,6 +5749,7 @@ function loop(now) {
   requestAnimationFrame(loop);
   if (window.__pause) { last = now; return; }
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  try { padPoll(dt); } catch (e) { console.error(e); }   // a game controller, if one is plugged in
   if (Room.open || Act.open) return;   // Luna is inside or busy with an activity: the kingdom waits
   step(dt); updateQuality(dt); renderer.render(scene, camera);
 }

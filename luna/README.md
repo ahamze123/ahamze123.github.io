@@ -2,7 +2,9 @@
 
 Princess Luna's 3D adventure, made for a 5-year-old. **Play:** https://ahamze123.github.io/luna/
 
-Luna walks around her kingdom and helps her friends, island by island. Like Block Buddies, she moves only with the pink motion stick on the left (it jumps to wherever a finger touches the left side) and the camera swings round behind her as she walks; dragging on the right side turns the camera, and a tap on Luna or a friend makes them twirl or say hello (arrow keys or WASD and the space bar on a computer). The game waits on its start screen until **Start game** (or **Continue**) is tapped, and **Full screen** fills the screen (on an iPad or iPhone it explains Add to Home Screen instead). Everything is read aloud, so she doesn't need to read.
+Luna walks around her kingdom and helps her friends, island by island. Like Block Buddies, she moves only with the pink motion stick on the left (it jumps to wherever a finger touches the left side) and the camera swings round behind her as she walks; dragging on the right side turns the camera, and a tap on Luna or a friend makes them twirl or say hello (arrow keys or WASD and the space bar on a computer). The game waits on its start screen until **Start game** (or **Continue**) is tapped, and **Full screen** fills the screen (on an iPad or iPhone it explains Add to Home Screen instead). Everything is read aloud with natural recorded voices (a different voice for Luna and each friend), so she doesn't need to read.
+
+**Game controller** (PS4, PS5 or Xbox; on a computer plug it in with USB or pair it with Bluetooth, use Chrome or Edge, and press any button once): the left stick (or the arrow buttons) walks, the right stick or L1 / R1 turns the camera, ✕ jumps, ○ rides Stardust / goes into the castle, □ says hello to the nearest friend, △ says it again, OPTIONS opens the menu. On every card (OK, the questions, the room, the activities, the menu) a yellow glow shows the button ✕ will press; the stick moves the glow and ○ goes back. On a picture you paint or tap (painting, Pip's bath, the cake, face stickers) the stick moves a little hand and ✕ is the finger.
 
 ## The adventure: 28 missions in four lands
 
@@ -22,12 +24,12 @@ After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button)
 
 The 🏰 button (or **Go in** at the castle door) opens Luna's room:
 
-- **Dress up**: 17 dresses, crowns, wings, wands and a pearl necklace; she wears them in the game too. Some are surprises won on the adventure.
-- **Makeup mirror**: lipstick, cheeks, eye shadow, glitter, four hairstyles (curls, pigtails, bun, braid), hair colours including rainbow, bows, and face stickers.
+- **Dress up**: 17 dresses, 10 crowns and tiaras, 9 pairs of wings, 6 wands, 6 necklaces, 5 pairs of earrings and 4 pairs of glasses; she wears all of them in the game too. Some are surprises won on the adventure.
+- **Makeup mirror**: lipstick, cheeks, eye shadow, eyelashes, glitter, face paint (cat, butterfly, rainbow, flowers, stars, hearts, freckles), four hairstyles (curls, pigtails, bun, braid), hair colours including rainbow, bows, and face stickers. The hair colour, the hairstyle, the bows and the makeup show on Luna out in the kingdom too.
 - **Pip's bath**: scrub the mud with the sponge, rinse the bubbles, dry with the towel.
 - **Piano**: play anything, or follow the shining key for Twinkle Twinkle, Mary's little lamb and Row your boat.
 - **Painting**: two colouring pages (tap a space to fill it) and a blank page with a brush.
-- **Bedtime**: five read-aloud stories with a lullaby, then morning or night time in the kingdom (night has stars and fireflies).
+- **Bedtime**: five read-aloud stories with a soft music-box lullaby (Brahms), then morning or night time in the kingdom (night has stars and fireflies).
 - **Memory game**: turn two cards over and find the pairs of friends, from 6 cards up to 16.
 - **Day / night** window, the teddy to hug, the fairy lights, the sticker book and the photo album (photos from the wardrobe, the mirror, the painting easel or the game can be saved to the tablet).
 
@@ -36,5 +38,7 @@ Seven room activities give stickers too (35 stickers in all).
 ## Pictures and models
 
 Luna and her friends were drawn by the family in ChatGPT and turned into 3D with Meshy (Meshy runs 14 to 18 in `tools/meshy`): `models/luna.glb` has Luna's skeleton and moves (walk, skip, run, jump, wave, cheer, dance, sit, pick up, swim); the friends, the castle, cottage, trees, flowers, beach things and the things to collect are models that the game moves. The room, the dress-up doll, the hairstyles, the dress-up items and the colouring pages are pictures in `img/`. If a model can't load, the game draws a simple stand-in.
+
+The voices in `voice/` were made with the open Kokoro voice generator (`tools/voices`, run by a GitHub workflow); anything without a recording is read by the tablet's own voice. The bedtime music is `audio/lullaby.mp3`.
 
 `index.html` is the whole game (three.js 0.147 and its model loader are in `lib/`, so it needs no other website). Progress, clothes, makeup and photos are saved on the tablet (`luna-sk-v2`, photos in `luna-sk-photos`); a save from the first version carries over.
