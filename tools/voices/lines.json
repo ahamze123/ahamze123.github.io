@@ -2154,5 +2154,1029 @@
 {
 "who": "narrator",
 "text": "You found Pingo!"
+},
+{
+"who": "narrator",
+"text": "Silver crown!"
+},
+{
+"who": "narrator",
+"text": "Rose gold crown!"
+},
+{
+"who": "narrator",
+"text": "Gold star tiara!"
+},
+{
+"who": "narrator",
+"text": "Pink star tiara!"
+},
+{
+"who": "narrator",
+"text": "Blue flower crown!"
+},
+{
+"who": "narrator",
+"text": "Chef hat!"
+},
+{
+"who": "narrator",
+"text": "Purple fairy wings!"
+},
+{
+"who": "narrator",
+"text": "Gold fairy wings!"
+},
+{
+"who": "narrator",
+"text": "Mint fairy wings!"
+},
+{
+"who": "narrator",
+"text": "Rainbow wings!"
+},
+{
+"who": "narrator",
+"text": "Pink butterfly wings!"
+},
+{
+"who": "narrator",
+"text": "Purple butterfly wings!"
+},
+{
+"who": "narrator",
+"text": "Orange butterfly wings!"
+},
+{
+"who": "narrator",
+"text": "Pink star wand!"
+},
+{
+"who": "narrator",
+"text": "Blue star wand!"
+},
+{
+"who": "narrator",
+"text": "Moon wand!"
+},
+{
+"who": "narrator",
+"text": "Purple heart wand!"
+},
+{
+"who": "narrator",
+"text": "Heart locket!"
+},
+{
+"who": "narrator",
+"text": "Rainbow beads!"
+},
+{
+"who": "narrator",
+"text": "Star necklace!"
+},
+{
+"who": "narrator",
+"text": "Flower chain!"
+},
+{
+"who": "narrator",
+"text": "Blue gem!"
+},
+{
+"who": "narrator",
+"text": "No earrings!"
+},
+{
+"who": "narrator",
+"text": "Pearl earrings!"
+},
+{
+"who": "narrator",
+"text": "Heart earrings!"
+},
+{
+"who": "narrator",
+"text": "Star earrings!"
+},
+{
+"who": "narrator",
+"text": "Gold hoops!"
+},
+{
+"who": "narrator",
+"text": "Rainbow drops!"
+},
+{
+"who": "narrator",
+"text": "No glasses!"
+},
+{
+"who": "narrator",
+"text": "Heart glasses!"
+},
+{
+"who": "narrator",
+"text": "Star glasses!"
+},
+{
+"who": "narrator",
+"text": "Round glasses!"
+},
+{
+"who": "narrator",
+"text": "Sunglasses!"
+},
+{
+"who": "narrator",
+"text": "Pancakes!"
+},
+{
+"who": "narrator",
+"text": "Carrot soup!"
+},
+{
+"who": "narrator",
+"text": "Pizza!"
+},
+{
+"who": "narrator",
+"text": "Rainbow fruit salad!"
+},
+{
+"who": "narrator",
+"text": "Tropical smoothie!"
+},
+{
+"who": "narrator",
+"text": "Salad sandwich!"
+},
+{
+"who": "narrator",
+"text": "Chocolate cookies!"
+},
+{
+"who": "narrator",
+"text": "Hot chocolate!"
+},
+{
+"who": "mimi",
+"text": "Meow! Princess Luna, Pip and I are so hungry! Can you make us pancakes? Find two eggs, the milk, the flour and two strawberries."
+},
+{
+"who": "mimi",
+"text": "Pancakes! Purr, purr! Pip and I love them. You're a super chef, Princess Luna!"
+},
+{
+"who": "mimi",
+"text": "What did we crack into the bowl?"
+},
+{
+"who": "mimi",
+"text": "Eggs! Crack, crack!"
+},
+{
+"who": "narrator",
+"text": "Yummy pancakes! You made them all by yourself!"
+},
+{
+"who": "narrator",
+"text": "Crack the eggs into the bowl! Tap the eggs."
+},
+{
+"who": "narrator",
+"text": "Now pour in the milk! Hold the milk bottle down."
+},
+{
+"who": "narrator",
+"text": "Add the flour! Tap the flour."
+},
+{
+"who": "narrator",
+"text": "Stir, stir, stir! Move the spoon round and round."
+},
+{
+"who": "narrator",
+"text": "Tap the bowl to pour the batter in the pan!"
+},
+{
+"who": "narrator",
+"text": "Put yummy things on your pancakes! Tap a topping, then tap the pancakes."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make pancakes!"
+},
+{
+"who": "narrator",
+"text": "Let's make pancakes!"
+},
+{
+"who": "narrator",
+"text": "Let's take the pancakes to Mimi!"
+},
+{
+"who": "luna",
+"text": "Now I can make pancakes in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Mimi first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Mimi on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Mimi is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 6 things for the pancakes! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Cook in the castle kitchen! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the pancakes to Mimi! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "An egg!"
+},
+{
+"who": "narrator",
+"text": "Milk!"
+},
+{
+"who": "narrator",
+"text": "Flour!"
+},
+{
+"who": "narrator",
+"text": "A strawberry!"
+},
+{
+"who": "bunny",
+"text": "Hop hop! Princess Luna, can you cook a warm carrot soup for me? We need two carrots, a potato and a tomato."
+},
+{
+"who": "bunny",
+"text": "Carrot soup! Slurp, slurp! It's the best soup in the whole kingdom!"
+},
+{
+"who": "bunny",
+"text": "What colour is carrot soup?"
+},
+{
+"who": "bunny",
+"text": "Orange, like the carrots!"
+},
+{
+"who": "narrator",
+"text": "Yummy carrot soup! Careful, it's warm!"
+},
+{
+"who": "narrator",
+"text": "Chop the vegetables! Tap them with the knife."
+},
+{
+"who": "narrator",
+"text": "Put the vegetables in the pot! Tap the board."
+},
+{
+"who": "narrator",
+"text": "Pour in the water! Hold the jug down."
+},
+{
+"who": "narrator",
+"text": "Stir the soup while it bubbles! Round and round."
+},
+{
+"who": "narrator",
+"text": "Pour the soup into the bowl! Tap the pot."
+},
+{
+"who": "narrator",
+"text": "Put a little something on top! Tap a topping, then tap the soup."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make carrot soup!"
+},
+{
+"who": "narrator",
+"text": "Let's make carrot soup!"
+},
+{
+"who": "narrator",
+"text": "Let's take the carrot soup to Bun-Bun!"
+},
+{
+"who": "luna",
+"text": "Now I can make carrot soup in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Bun-Bun first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Bun-Bun on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Bun-Bun is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 4 things for the carrot soup! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the carrot soup to Bun-Bun! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "A carrot!"
+},
+{
+"who": "narrator",
+"text": "A potato!"
+},
+{
+"who": "narrator",
+"text": "A tomato!"
+},
+{
+"who": "dot",
+"text": "Rawr! Princess Luna, I love pizza! Can we make one? Find two tomatoes, the cheese and two mushrooms."
+},
+{
+"who": "dot",
+"text": "Pizza! Rawr, it's so yummy! You and me, the best pizza bakers ever!"
+},
+{
+"who": "dot",
+"text": "Which one is a pizza?"
+},
+{
+"who": "dot",
+"text": "Pizza! Yum, yum!"
+},
+{
+"who": "narrator",
+"text": "Yummy pizza! Dot will love it!"
+},
+{
+"who": "narrator",
+"text": "Roll out the pizza dough! Move the rolling pin back and forth."
+},
+{
+"who": "narrator",
+"text": "Spread the tomato sauce! Rub it all over the pizza."
+},
+{
+"who": "narrator",
+"text": "Sprinkle the cheese! Tap all over the pizza."
+},
+{
+"who": "narrator",
+"text": "Put the mushrooms and the tomatoes on top! Tap a topping, then tap the pizza."
+},
+{
+"who": "narrator",
+"text": "Into the oven! Dot, light it with your dragon fire!"
+},
+{
+"who": "narrator",
+"text": "Cut the pizza! Tap it four times."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make a pizza!"
+},
+{
+"who": "narrator",
+"text": "Let's make a pizza!"
+},
+{
+"who": "narrator",
+"text": "Let's take the pizza to Dot!"
+},
+{
+"who": "luna",
+"text": "Now I can make a pizza in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Dot first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Dot on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Dot is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 5 things for the pizza! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the pizza to Dot! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Cheese!"
+},
+{
+"who": "narrator",
+"text": "A mushroom!"
+},
+{
+"who": "stardust",
+"text": "Hello, Princess Luna! Let's make a rainbow fruit salad! Find a strawberry, an orange, a banana, a kiwi, blueberries and grapes. Red, orange, yellow, green, blue and purple!"
+},
+{
+"who": "stardust",
+"text": "A rainbow fruit salad! It's as colourful as my mane! Thank you, Princess Luna!"
+},
+{
+"who": "stardust",
+"text": "Which one is a banana?"
+},
+{
+"who": "stardust",
+"text": "A yellow banana!"
+},
+{
+"who": "narrator",
+"text": "A rainbow fruit salad! So many colours!"
+},
+{
+"who": "narrator",
+"text": "Chop the fruit! Tap each fruit with the knife."
+},
+{
+"who": "narrator",
+"text": "Put the fruit in the bowl! Tap the board."
+},
+{
+"who": "narrator",
+"text": "Mix it gently! Round and round."
+},
+{
+"who": "narrator",
+"text": "Put something yummy on top! Tap a topping, then tap the fruit salad."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make a rainbow fruit salad!"
+},
+{
+"who": "narrator",
+"text": "Let's make a rainbow fruit salad!"
+},
+{
+"who": "narrator",
+"text": "Let's take the rainbow fruit salad to Stardust!"
+},
+{
+"who": "luna",
+"text": "Now I can make a rainbow fruit salad in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Stardust first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Stardust on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Stardust is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 6 things for the rainbow fruit salad! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the rainbow fruit salad to Stardust! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "An orange!"
+},
+{
+"who": "narrator",
+"text": "A banana!"
+},
+{
+"who": "narrator",
+"text": "A kiwi!"
+},
+{
+"who": "narrator",
+"text": "Blueberries!"
+},
+{
+"who": "narrator",
+"text": "Grapes!"
+},
+{
+"who": "marina",
+"text": "Splash! Hi Luna! It's so sunny today. Can you make me a cold smoothie? Find two bananas, a strawberry, a pineapple and a coconut."
+},
+{
+"who": "marina",
+"text": "A smoothie! Slurp! It's cold and yummy. You're the best, Princess Luna!"
+},
+{
+"who": "marina",
+"text": "Which fruit did we put in the smoothie?"
+},
+{
+"who": "marina",
+"text": "Bananas! Yummy!"
+},
+{
+"who": "narrator",
+"text": "A pink tropical smoothie!"
+},
+{
+"who": "narrator",
+"text": "Put the fruit in the blender! Tap the fruit."
+},
+{
+"who": "narrator",
+"text": "Pour in the coconut milk! Hold the coconut down."
+},
+{
+"who": "narrator",
+"text": "Hold the button to blend! Whirr!"
+},
+{
+"who": "narrator",
+"text": "Pour it into the glass! Tap the blender."
+},
+{
+"who": "narrator",
+"text": "Make it pretty! Put on a straw and an umbrella."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make a smoothie!"
+},
+{
+"who": "narrator",
+"text": "Let's make a smoothie!"
+},
+{
+"who": "narrator",
+"text": "Let's take the smoothie to Marina!"
+},
+{
+"who": "luna",
+"text": "Now I can make a smoothie in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Marina first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Marina on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Marina is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 5 things for the smoothie! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the smoothie to Marina! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "A pineapple!"
+},
+{
+"who": "narrator",
+"text": "A coconut!"
+},
+{
+"who": "shelly",
+"text": "Hello, Princess! Swish, swish. Turtles love lettuce! Can you make me a sandwich? Find the bread, two lettuces, the cheese and a tomato."
+},
+{
+"who": "shelly",
+"text": "A lettuce sandwich! Munch, munch! Thank you, Princess Luna! Swish, swish!"
+},
+{
+"who": "shelly",
+"text": "What goes on the top and the bottom of a sandwich?"
+},
+{
+"who": "shelly",
+"text": "Bread! Clever princess!"
+},
+{
+"who": "narrator",
+"text": "A yummy salad sandwich!"
+},
+{
+"who": "narrator",
+"text": "Slice the tomato and the cheese! Tap them with the knife."
+},
+{
+"who": "narrator",
+"text": "Make the sandwich! Tap the food that sparkles."
+},
+{
+"who": "narrator",
+"text": "Cut it in half! Tap the sandwich."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make a sandwich!"
+},
+{
+"who": "narrator",
+"text": "Let's make a sandwich!"
+},
+{
+"who": "narrator",
+"text": "Let's take the sandwich to Shelly!"
+},
+{
+"who": "luna",
+"text": "Now I can make a sandwich in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Shelly first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Shelly on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Shelly is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 5 things for the sandwich! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the sandwich to Shelly! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Bread!"
+},
+{
+"who": "narrator",
+"text": "Lettuce!"
+},
+{
+"who": "honey",
+"text": "Hello, sweetie! Let's bake chocolate cookies! Find the butter, the sugar, an egg, the flour and the chocolate."
+},
+{
+"who": "honey",
+"text": "Chocolate cookies! Mmm, still warm! You're a real baker, sweetie!"
+},
+{
+"who": "honey",
+"text": "Which one is a cookie?"
+},
+{
+"who": "honey",
+"text": "A yummy cookie!"
+},
+{
+"who": "narrator",
+"text": "Yummy chocolate cookies!"
+},
+{
+"who": "narrator",
+"text": "Put the butter and the sugar in the bowl! Tap them."
+},
+{
+"who": "narrator",
+"text": "Crack the egg! Tap the egg."
+},
+{
+"who": "narrator",
+"text": "Now the flour and the chocolate!"
+},
+{
+"who": "narrator",
+"text": "Stir, stir, stir! Make a cookie dough."
+},
+{
+"who": "narrator",
+"text": "Cut out the cookies! Tap the dough."
+},
+{
+"who": "narrator",
+"text": "Into the oven they go! Let's wait."
+},
+{
+"who": "narrator",
+"text": "Decorate your cookies! Tap a topping, then tap a cookie."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make cookies!"
+},
+{
+"who": "narrator",
+"text": "Let's make cookies!"
+},
+{
+"who": "narrator",
+"text": "Let's take the cookies to Honey!"
+},
+{
+"who": "luna",
+"text": "Now I can make cookies in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Honey first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Honey on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Honey is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 5 things for the cookies! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the cookies to Honey! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Butter!"
+},
+{
+"who": "narrator",
+"text": "Sugar!"
+},
+{
+"who": "narrator",
+"text": "Chocolate!"
+},
+{
+"who": "pingo",
+"text": "Brrr! Hi Princess Luna! It's so cold on Snowy Hill. Can you make me a hot chocolate? Find the milk, two chocolates and two marshmallows."
+},
+{
+"who": "pingo",
+"text": "Hot chocolate! I'm all warm and cozy now. Thank you, Princess Luna!"
+},
+{
+"who": "pingo",
+"text": "Is hot chocolate hot or cold?"
+},
+{
+"who": "pingo",
+"text": "Hot! Blow on it first. Whoo!"
+},
+{
+"who": "narrator",
+"text": "Hot chocolate! Blow on it first. Whoo!"
+},
+{
+"who": "narrator",
+"text": "Pour the milk in the pot! Hold the milk bottle down."
+},
+{
+"who": "narrator",
+"text": "Add the chocolate! Tap the chocolate."
+},
+{
+"who": "narrator",
+"text": "Stir while it gets warm and chocolatey!"
+},
+{
+"who": "narrator",
+"text": "Pour it into the mug! Tap the pot."
+},
+{
+"who": "narrator",
+"text": "Put marshmallows on top! Tap a topping, then tap the mug."
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! Let's make hot chocolate!"
+},
+{
+"who": "narrator",
+"text": "Let's make hot chocolate!"
+},
+{
+"who": "narrator",
+"text": "Let's take the hot chocolate to Pingo!"
+},
+{
+"who": "luna",
+"text": "Now I can make hot chocolate in my kitchen any time!"
+},
+{
+"who": "narrator",
+"text": "Let's finish cooking for Pingo first!"
+},
+{
+"who": "narrator",
+"text": "You will meet Pingo on your adventure!"
+},
+{
+"who": "narrator",
+"text": "Pingo is hungry! Let's cook something yummy!"
+},
+{
+"who": "narrator",
+"text": "Find 5 things for the hot chocolate! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take the hot chocolate to Pingo! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Marshmallows!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Bun-Bun first!"
+},
+{
+"who": "bunny",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Mimi first!"
+},
+{
+"who": "mimi",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Pip first!"
+},
+{
+"who": "pip",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Dot first!"
+},
+{
+"who": "dot",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Stardust first!"
+},
+{
+"who": "stardust",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Shelly first!"
+},
+{
+"who": "shelly",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Marina first!"
+},
+{
+"who": "marina",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Honey first!"
+},
+{
+"who": "honey",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Let's finish helping Pingo first!"
+},
+{
+"who": "pingo",
+"text": "I love you too, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "We have everything! Let's go to the castle kitchen!"
+},
+{
+"who": "narrator",
+"text": "Tap Finished when it looks yummy!"
+},
+{
+"who": "narrator",
+"text": "Tap the sparkly one!"
+},
+{
+"who": "narrator",
+"text": "Let's finish this adventure first!"
+},
+{
+"who": "narrator",
+"text": "Welcome to the castle kitchen! What shall we cook?"
+},
+{
+"who": "narrator",
+"text": "Bubbles! Flip the pancake! Tap the pan!"
+},
+{
+"who": "narrator",
+"text": "Flip it! Tap the pan!"
+},
+{
+"who": "narrator",
+"text": "Yummy! One more pancake! Tap the bowl!"
+},
+{
+"who": "dot",
+"text": "Rawr! Whoosh!"
+},
+{
+"who": "luna",
+"text": "I'm a real chef! I got a chef hat! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "Yummy! I love cooking for my friends!"
+},
+{
+"who": "narrator",
+"text": "A cat face! Meow!"
+},
+{
+"who": "narrator",
+"text": "Butterfly face paint!"
+},
+{
+"who": "narrator",
+"text": "Rainbow face paint!"
+},
+{
+"who": "narrator",
+"text": "Flower face paint!"
+},
+{
+"who": "narrator",
+"text": "Star face paint!"
+},
+{
+"who": "narrator",
+"text": "Heart face paint!"
+},
+{
+"who": "narrator",
+"text": "Cute freckles!"
+},
+{
+"who": "narrator",
+"text": "Long, pretty eyelashes!"
+},
+{
+"who": "narrator",
+"text": "Sparkly eyelashes!"
 }
 ]

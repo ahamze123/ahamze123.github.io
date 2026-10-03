@@ -1,8 +1,9 @@
 """Makes the recorded voices for Sparkle Kingdom (luna/) with the Kokoro voice generator (open, runs on the computer, no account).
 
 Reads tools/voices/lines.json ([{"who": ..., "text": ...}]) and writes one small mp3 per line to $VOICE_OUT/<hash>.mp3, where
-hash = FNV-1a (32 bit, hex) of "who|text" -- the game computes the same name to find the line. Lines already made are skipped,
-so adding new lines only makes the new ones. Each friend has their own voice (CAST below).
+hash = FNV-1a (32 bit, hex) of "who|text" -- the game computes the same name to find the line. Lines already made with the same
+settings are skipped (sig.json remembers the voice, speed and pitch each file was made with), so adding new lines only makes the
+new ones, and changing a friend's voice remakes that friend's lines. Each friend has their own voice (CAST below).
 """
 import json, os, sys, subprocess, time
 import numpy as np
@@ -11,13 +12,14 @@ from kokoro_onnx import Kokoro
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.environ.get("VOICE_OUT", os.path.join(HERE, "out"))
 MODEL = os.environ.get("KOKORO_MODEL", "kokoro-v1.0.onnx"); VOICES = os.environ.get("KOKORO_VOICES", "voices-v1.0.bin")
-# who: (Kokoro voice, speed, pitch in semitones)
+# who: (Kokoro voice, speed, pitch in semitones) -- a little slow, for a five-year-old
 CAST = {
-    "narrator": ("af_heart", 0.95, 0.0), "story": ("af_heart", 0.86, 0.0), "luna": ("af_bella", 1.0, 1.5),
-    "bunny": ("am_puck", 1.05, 2.5), "mimi": ("bf_emma", 0.95, 0.0), "pip": ("af_sky", 1.05, 3.5), "dot": ("am_echo", 1.0, 3.0),
-    "stardust": ("af_nova", 0.95, 0.5), "shelly": ("bf_isabella", 0.88, 0.0), "marina": ("af_aoede", 1.0, 1.0),
-    "honey": ("af_sarah", 0.95, -0.5), "pingo": ("am_fenrir", 1.05, 4.0),
+    "narrator": ("af_heart", 0.88, 0.0), "story": ("af_heart", 0.82, 0.0), "luna": ("af_bella", 0.92, 1.5),
+    "bunny": ("am_puck", 0.95, 2.5), "mimi": ("bf_emma", 0.88, 0.0), "pip": ("af_sky", 0.95, 3.5), "dot": ("am_echo", 0.92, 3.0),
+    "stardust": ("af_nova", 0.88, 0.5), "shelly": ("bf_isabella", 0.84, 0.0), "marina": ("af_aoede", 0.92, 1.0),
+    "honey": ("af_sarah", 0.88, -0.5), "pingo": ("am_fenrir", 0.95, 4.0),
 }
+VERSION = 2   # bump to remake every line
 def vhash(s):
     h = 0x811c9dc5
     for x in s.encode("utf-8"):
@@ -28,12 +30,14 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     k = Kokoro(MODEL, VOICES)
     made = skipped = failed = 0; t0 = time.time(); index = {}
+    sig_path = os.path.join(OUT, "sig.json")
+    sigs = json.load(open(sig_path)) if os.path.exists(sig_path) else {}
     for n, it in enumerate(lines):
         who = it["who"] if it["who"] in CAST else "narrator"; text = it["text"].strip()
         h = vhash(who + "|" + text); path = os.path.join(OUT, h + ".mp3")
         index[h] = who + "|" + text
-        if os.path.exists(path) and os.path.getsize(path) > 500: skipped += 1; continue
-        voice, speed, pitch = CAST[who]
+        voice, speed, pitch = CAST[who]; sig = "%s|%s|%s|%d" % (voice, speed, pitch, VERSION)
+        if os.path.exists(path) and os.path.getsize(path) > 500 and sigs.get(h) == sig: skipped += 1; continue
         try:
             samples, sr = k.create(text, voice=voice, speed=speed, lang="en-us")
             a = np.asarray(samples, dtype=np.float32)
@@ -50,11 +54,14 @@ def main():
             if af: cmd += ["-af", ",".join(af)]
             cmd += ["-c:a", "libmp3lame", "-b:a", "40k", "-ar", "24000", "-ac", "1", path]
             subprocess.run(cmd, input=a.astype(np.float32).tobytes(), check=True)
-            made += 1
+            sigs[h] = sig; made += 1
         except Exception as e:
             failed += 1; print("FAILED", who, repr(text), e, flush=True)
-        if (n + 1) % 50 == 0: print("%d/%d lines, %.0fs" % (n + 1, len(lines), time.time() - t0), flush=True)
+        if (n + 1) % 50 == 0:
+            print("%d/%d lines, %.0fs" % (n + 1, len(lines), time.time() - t0), flush=True)
+            json.dump(sigs, open(sig_path, "w"), indent=0, sort_keys=True)   # kept as it goes, in case the run stops
     json.dump(index, open(os.path.join(OUT, "index.json"), "w"), indent=0, ensure_ascii=False, sort_keys=True)
+    json.dump(sigs, open(sig_path, "w"), indent=0, sort_keys=True)
     print("made %d, already there %d, failed %d, in %.0fs" % (made, skipped, failed, time.time() - t0))
     if failed and not made: sys.exit(1)
 if __name__ == "__main__":
