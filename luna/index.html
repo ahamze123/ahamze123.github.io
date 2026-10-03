@@ -123,6 +123,17 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 #cfYes.hold span { position: relative; }
 #cfYes.holding i { width: 100%; transition: width 1.7s linear; }
 .mission.bump { animation: mbump .9s ease-in-out 2; }
+/* Luna's moves: the 💃 button left of Jump opens a row of moves above it */
+.movesbtn { position: absolute; right: calc(128px + var(--sr)); bottom: calc(34px + var(--sb)); width: 70px; height: 70px; font-size: 34px; }
+.moves { position: absolute; right: calc(12px + var(--sr)); bottom: calc(118px + var(--sb)); width: min(410px, calc(100% - 24px)); padding: 10px;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; z-index: 11; animation: pop .3s cubic-bezier(.3,1.6,.5,1); }
+.move { aspect-ratio: 1; border-radius: 18px; background: #fff; display: grid; place-items: center; align-content: center; gap: 0; padding: 4px 2px;
+  box-shadow: 0 4px 0 rgba(44,23,69,.12), 0 6px 12px rgba(44,23,69,.12); }
+.move .me { font-size: 30px; line-height: 1.05; }
+.move .mn { font-family: var(--font-display); font-weight: 900; font-size: 11px; color: #8a6f9e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.move.on, .move:active { transform: scale(.92); background: var(--blush); }
+#hud.ctxon .moves { bottom: calc(200px + var(--sb)); }
+@media (max-width: 640px) { .movesbtn { right: calc(110px + var(--sr)); width: 60px; height: 60px; font-size: 28px; } .moves { bottom: calc(104px + var(--sb)); } .move .me { font-size: 24px; } }
 /* a game controller: a yellow glow shows the button ✕ will press, and a little hand paints on pictures */
 body.pad-on .padfocus:not(.hot):not(canvas) { outline: 5px solid #ffd23f; outline-offset: 3px; box-shadow: inset 0 0 0 4px #ffd23f, 0 0 0 9px rgba(255,210,63,.45), 0 0 26px rgba(255,190,40,.95); }
 body.pad-on canvas.padfocus { outline: 6px solid #ffd23f; outline-offset: -6px; }
@@ -392,6 +403,8 @@ body.pad-on .padfocus.padpress:not(.hot) { transform: scale(.93); }
     </div>
     <div class="hint sticker" id="hint">Push the pink button to walk!</div>
     <button class="ctx" id="btnCtx" hidden></button>
+    <button class="round sticker movesbtn" id="btnMoves" aria-label="Moves">💃</button>
+    <div class="moves sticker" id="movesBar" hidden></div>
     <button class="jump" id="btnJump" aria-label="Jump"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.6L21 9.5l-5.2 4.3L17.6 21 12 17.2 6.4 21l1.8-7.2L3 9.5l6.6-.9z" fill="#fff"/></svg>Jump</button>
   </div>
 
@@ -1412,8 +1425,16 @@ function makeLunaFromGLB(gltf) {
     root, glb: true, celebrate: 0, twirl: 0, airborne: false, bones, restInv, restPos: rp, model, sitting: false, meshToRoot,
     has: n => !!actions[n],
     act(name, secs) { if (play(name, 0.2)) busy = secs || (actions[name].getClip().duration * 0.95); },
+    flipT: 0, flipD: 1, flipAxis: "x", flipDir: 1,
     update(dt, t, moveFrac) {
       if (L.twirl > 0) { L.twirl = Math.max(0, L.twirl - dt); inner.rotation.y = (1 - L.twirl / 0.9) * TAU; } else inner.rotation.y = 0;
+      // a flip (forwards) or a cartwheel (sideways): one turn round her middle
+      if (L.flipT > 0) {
+        L.flipT = Math.max(0, L.flipT - dt);
+        const u = 1 - L.flipT / L.flipD, a = (u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u)) * TAU * L.flipDir, hy = 0.82;
+        if (L.flipAxis === "x") { inner.rotation.x = a; inner.rotation.z = 0; inner.position.set(0, hy * (1 - Math.cos(a)), -hy * Math.sin(a)); }
+        else { inner.rotation.z = a; inner.rotation.x = 0; inner.position.set(hy * Math.sin(a), hy * (1 - Math.cos(a)), 0); }
+      } else if (inner.rotation.x || inner.rotation.z || inner.position.lengthSq()) { inner.rotation.x = inner.rotation.z = 0; inner.position.set(0, 0, 0); }
       if (L.sitting) { busy = 0; play(actions.sit ? "sit" : "idle", 0.25); mixer.update(dt); return; }
       if (busy > 0) busy -= dt;
       else if (L.airborne) play(actions.jump ? "jump" : "idle", 0.12);
@@ -2542,6 +2563,7 @@ const Sound = (() => {
     magic() { if (!ok()) return; const t = ctx.currentTime; for (let i = 0; i < 10; i++) tone(midi(84 + (i % 5) * 3), t + i * 0.04, 0.4, "sine", 0.09); },
     purr() { if (!ok()) return; const t = ctx.currentTime; for (let i = 0; i < 6; i++) noise(t + i * 0.11, 0.09, 0.12, 160, 3); },
     tick() { if (!ok()) return; tone(1320, ctx.currentTime, 0.06, "sine", 0.07); },
+    kiss() { if (!ok()) return; const t = ctx.currentTime; noise(t, 0.05, 0.25, 2600, 2); tone(1400, t + 0.02, 0.18, "sine", 0.16, sfxBus, 2100); [88, 91, 96].forEach((n, i) => tone(midi(n), t + 0.25 + i * 0.07, 0.4, "sine", 0.08)); },
   };
   /* a little piano for Luna's room: a soft toy-piano tone */
   function note(m) {
@@ -2736,10 +2758,12 @@ function makeFriend(key) {
   if (info.r) { A.block = { x: 0, z: 0, r: info.r }; OBST_C.push(A.block); }
   A.place = (x, z) => { const ox = A.root.position.x, oz = A.root.position.z; A.root.position.set(x, heightAt(x, z), z); A.moveT = Math.hypot(x - ox, z - oz) > 0.002 ? 0.25 : A.moveT; if (A.block) { A.block.x = x; A.block.z = z; } };
   A.hop = (n = 1) => { A.hopT = 0.5 * n; };
+  A.spin = (d = 0.9) => { A.spinT = A.spinD = d; A.hop(1); };   // a twirl, when Luna twirls or dances
   A.update = (dt, t) => {
     m.update(dt, t);
     let y = 0;
     if (A.hopT > 0) { A.hopT -= dt; y = Math.abs(Math.sin((A.hopT % 0.5) / 0.5 * Math.PI)) * 0.45; }
+    if (A.spinT > 0) { A.spinT = Math.max(0, A.spinT - dt); m.root.rotation.y = (1 - A.spinT / A.spinD) * TAU; } else if (A.spinD) { A.spinD = 0; m.root.rotation.y = 0; }
     if (A.moveT > 0) A.moveT -= dt;
     if (key === "pingo" && m.body) m.body.rotation.z = A.moveT > 0 ? Math.sin(t * 14) * 0.18 : m.body.rotation.z;   // a penguin waddle
     const px = A.root.position.x, pz = A.root.position.z;
@@ -2968,7 +2992,7 @@ function updateContext() {
     else if (!Game.riding && s && canRide() && distTo(s.root.position.x, s.root.position.z) < 3.6) mode = "ride";
   }
   if (b.dataset.mode === mode) return;
-  b.dataset.mode = mode; b.hidden = !mode;
+  b.dataset.mode = mode; b.hidden = !mode; $("hud").classList.toggle("ctxon", !!mode);
   b.innerHTML = { ride: "<span>🦄</span>Ride", off: "<span>🦄</span>Get off", in: "<span>🏰</span>Go in" }[mode] || "";
 }
 function contextPress() {
@@ -3024,7 +3048,7 @@ function updatePlayer(dt, t) {
     if (speed > 2 && rand() < dt * 20) FX.burst(new THREE.Vector3(pos.x, g + 0.2, pos.z), 1, ["#ff6b8b", "#ffe066", "#69db7c", "#74c0fc", "#b197fc"], 1, 0.7, 0.8);
     return;
   }
-  luna.sitting = false;
+  luna.sitting = !!Moves.sit;   // sitting on her pouf (a move)
   luna.root.position.set(pos.x, player.y, pos.z); luna.root.rotation.y = player.heading;
   luna.airborne = player.airborne; luna.skippy = true;
   luna.update(dt, t, speed / SPEED);
@@ -5390,9 +5414,163 @@ function updateDance(dt, t) {
 }
 $("mDance").onclick = () => { $("menu").hidden = true; Sound.unlock(); danceParty(); };
 
+/* ================= LUNA'S MOVES: dance, wave, cheer, happy jump, twirl, flip, cartwheel, blow a kiss, sit down and magic,
+   from the 💃 button (keys 1 to 0 on a computer, R2 and L2 on a game controller); the friends nearby join in ================= */
+const MOVES = [
+  { id: "dance", emo: "💃", name: "Dance" }, { id: "wave", emo: "👋", name: "Wave" }, { id: "cheer", emo: "🎉", name: "Cheer" },
+  { id: "hop", emo: "🌟", name: "Happy jump" }, { id: "twirl", emo: "🌀", name: "Twirl" }, { id: "flip", emo: "🙃", name: "Flip" },
+  { id: "cartwheel", emo: "🤸", name: "Cartwheel" }, { id: "kiss", emo: "😘", name: "Kiss" }, { id: "sit", emo: "🧘", name: "Sit" },
+  { id: "magic", emo: "✨", name: "Magic" },
+];
+const Moves = { sit: false, stool: null, cart: null, face: null, hearts: [], blooms: [], last: 0 };
+const RAINBOW_FX = ["#ff5f7e", "#ffa94d", "#ffe066", "#69db7c", "#74c0fc", "#b197fc", "#ffffff"];
+function movesAllowed() { return Game.mode === "play" && !Game.dialog && !Game.party && !Game.sledding && !Room.open && !Act.open; }
+function nearFriends(r) {
+  const out = [];
+  for (const k in friends) { if (Game.riding && k === "stardust") continue; const p = friends[k].root.position, d = distTo(p.x, p.z); if (d < r) out.push([d, k]); }
+  return out.sort((a, b) => a[0] - b[0]).map(x => x[1]);
+}
+/* Luna turns round to the camera for the moves people should see */
+function faceCamera() { Moves.face = Math.atan2(camera.position.x - player.pos.x, camera.position.z - player.pos.z); }
+function doMove(id) {
+  if (!movesAllowed() || player.airborne || Moves.cart) return;
+  if (performance.now() - Moves.last < 350) return; Moves.last = performance.now();
+  Sound.unlock(); Game.idle = 0; $("hint").classList.add("gone");
+  if (Game.riding) dismountStardust();
+  if (id !== "sit") standUp();
+  const P = () => new THREE.Vector3(player.pos.x, player.y + 1.2, player.pos.z);
+  const friendsJoin = (fn, r = 12) => nearFriends(r).forEach((k, i) => setTimeout(() => friends[k] && fn(friends[k], k), 150 + i * 120));
+  if (id === "dance") { danceParty(); friendsJoin(f => f.spin && f.spin(1.0), 16); }
+  else if (id === "wave") {
+    faceCamera(); luna.act("wave", 2.2); Sound.fx.chime();
+    const k = nearFriends(14)[0];
+    if (k) setTimeout(() => { if (!Game.dialog) { friends[k].hop(2); chat(k, friendLine(k)); } }, 700);
+  } else if (id === "cheer") {
+    faceCamera(); luna.act("cheer", 1.8); Sound.fx.gem();
+    [0, 300, 600].forEach(d => setTimeout(() => FX.burst(P().setY(player.y + 2.2), 40, RAINBOW_FX, 5, 1.2, 2), d));
+    friendsJoin(f => f.hop(2));
+  } else if (id === "hop") {
+    luna.act(luna.has("happyjump") ? "happyjump" : "cheer", 3.2); Sound.fx.twirl();
+    for (let i = 0; i < 5; i++) setTimeout(() => FX.burst(P(), 18, MAGIC, 3, 0.8, 1.2), i * 600);
+    friendsJoin(f => f.hop(3));
+  } else if (id === "twirl") {
+    luna.twirl = 0; twirl(); friendsJoin(f => f.spin && f.spin(0.9));
+  } else if (id === "flip") {
+    player.airborne = true; player.vy = 9.6; luna.flipT = luna.flipD = 0.8; luna.flipAxis = "x"; luna.flipDir = 1;
+    Sound.fx.jump(); Sound.fx.twirl(); FX.burst(P(), 30, MAGIC, 3.5, 0.9, 1.5);
+    setTimeout(() => FX.burst(new THREE.Vector3(player.pos.x, player.y + 0.2, player.pos.z), 30, RAINBOW_FX, 4, 0.8, 1), 900);
+  } else if (id === "cartwheel") {
+    const h = player.heading, dir = Moves.cartDir = -(Moves.cartDir || 1);   // left, then right, then left…
+    Moves.cart = { t: 0, dur: 1.0, dx: -Math.cos(h) * dir, dz: Math.sin(h) * dir };
+    luna.flipT = luna.flipD = 1.0; luna.flipAxis = "z"; luna.flipDir = dir;
+    Sound.fx.whoosh(); setTimeout(() => FX.burst(new THREE.Vector3(player.pos.x, player.y + 0.2, player.pos.z), 24, MAGIC, 3, 0.8, 1), 1000);
+  } else if (id === "kiss") {
+    faceCamera(); luna.act("wave", 1.8); Sound.fx.kiss();
+    const k = nearFriends(14)[0];
+    for (let i = 0; i < 7; i++) setTimeout(() => moveHeart(k), 250 + i * 140);
+    if (k) setTimeout(() => { if (!Game.dialog) { friends[k].hop(2); chat(k, "I love you too, Princess Luna!"); } }, 1500);
+  } else if (id === "sit") {
+    if (Moves.sit) return standUp();
+    faceCamera(); Moves.sit = true; player.vel.set(0, 0, 0); Sound.fx.pop(); makeStool();
+    const k = nearFriends(10)[0]; if (k) setTimeout(() => { if (friends[k] && Moves.sit) friends[k].hop(1); }, 500);
+  } else if (id === "magic") {
+    faceCamera(); luna.act("cheer", 1.6); Sound.fx.magic();
+    for (let i = 0; i < 24; i++) setTimeout(() => { const a = i * 0.55, r = 0.6 + i * 0.06; FX.burst(new THREE.Vector3(player.pos.x + Math.cos(a) * r, player.y + 0.3 + i * 0.09, player.pos.z + Math.sin(a) * r), 3, RAINBOW_FX, 0.6, 0.7, 0.5); }, i * 40);
+    setTimeout(magicFlowers, 500);
+  }
+}
+/* sitting on a little pink pouf */
+function makeStool() {
+  if (Moves.stool) scene.remove(Moves.stool);
+  const g = new THREE.Group();
+  mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.5, 24), gloss("#ff8fc8", { clearcoat: 0.6 }), { y: 0.25, parent: g });
+  mesh(G.sphere, gloss("#ffd1ea", { clearcoat: 0.4 }), { y: 0.52, sx: 0.4, sy: 0.12, sz: 0.4, parent: g });
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; mesh(G.sphereLo, gloss("#ffffff"), { x: Math.cos(a) * 0.36, y: 0.3, z: Math.sin(a) * 0.36, s: 0.035, parent: g, cast: false }); }
+  const b = player.heading, back = 0.08;
+  g.position.set(player.pos.x - Math.sin(b) * back, player.y, player.pos.z - Math.cos(b) * back); g.scale.setScalar(0.01);
+  scene.add(g); Moves.stool = g; Moves.stoolT = 0;
+}
+function standUp() {
+  if (!Moves.sit && !Moves.stool) return;
+  Moves.sit = false;
+  if (Moves.stool) { const s = Moves.stool; Moves.stool = null; FX.burst(s.position.clone().setY(s.position.y + 0.5), 20, MAGIC, 2.5, 0.7, 1); scene.remove(s); }
+}
+/* hearts that float from Luna to a friend (or up into the sky) */
+const HEART_MAT = new THREE.MeshStandardMaterial({ color: "#ff4f93", emissive: new THREE.Color("#ff2a7a"), emissiveIntensity: 0.5, transparent: true });
+function moveHeart(k) {
+  const m = new THREE.Mesh(GEO.heart, HEART_MAT.clone()); m.scale.setScalar(0.22 + rand() * 0.12);
+  const from = new THREE.Vector3(player.pos.x, player.y + 1.45, player.pos.z);
+  const f = k && friends[k] ? friends[k].root.position : null;
+  const to = f ? new THREE.Vector3(f.x, f.y + FRIEND_INFO[k].h * 0.8, f.z) : from.clone().add(new THREE.Vector3(rr(-1.5, 1.5), 3.5, rr(-1.5, 1.5)));
+  m.position.copy(from); scene.add(m);
+  Moves.hearts.push({ m, from, to, t: 0, dur: 1.3 + rand() * 0.4, wob: rand() * TAU });
+}
+/* a ring of flowers pops up round her, then goes back into the ground */
+function magicFlowers() {
+  const cols = ["pink", "yellow", "blue", "purple", "white"];
+  for (let i = 0; i < 9; i++) {
+    const a = i / 9 * TAU + rand() * 0.3, r = 1.6 + rand() * 0.5, x = player.pos.x + Math.cos(a) * r, z = player.pos.z + Math.sin(a) * r;
+    if (!walkable(x, z)) continue;
+    const o = THING.flower({ color: cols[i % 5] }); o.root.position.set(x, heightAt(x, z), z); o.root.scale.setScalar(0.01); scene.add(o.root);
+    Moves.blooms.push({ o, t: -i * 0.07, life: 6 + rand() });
+  }
+  Sound.fx.sparkle();
+}
+function movesUpdate(dt, t) {
+  // turning round to the camera
+  if (Moves.face !== null) {
+    let d = Moves.face - player.heading; d = Math.atan2(Math.sin(d), Math.cos(d));
+    player.heading += d * (1 - Math.exp(-dt * 8)); if (Math.abs(d) < 0.02 || Math.hypot(player.vel.x, player.vel.z) > 1) Moves.face = null;
+  }
+  // the cartwheel goes sideways
+  if (Moves.cart) {
+    const C = Moves.cart; C.t += dt;
+    const sp = 2.2 / C.dur, prev = { x: player.pos.x, z: player.pos.z }, nx = player.pos.x + C.dx * sp * dt, nz = player.pos.z + C.dz * sp * dt;
+    if (walkable(nx, nz)) { player.pos.x = nx; player.pos.z = nz; resolveCollisions(player.pos, 0.45, prev); }
+    if (C.t >= C.dur) Moves.cart = null;
+  }
+  // stand up when she walks away; the pouf grows in
+  if (Moves.sit && (Math.hypot(player.vel.x, player.vel.z) > 0.8 || player.airborne || Game.riding || Game.party || Game.sledding)) standUp();
+  if (Moves.stool) { Moves.stoolT = Math.min(1, (Moves.stoolT || 0) + dt * 4); const k = Moves.stoolT; Moves.stool.scale.setScalar(Math.max(0.01, k * (1 + Math.sin(k * Math.PI) * 0.2))); }
+  for (let i = Moves.hearts.length - 1; i >= 0; i--) {
+    const H = Moves.hearts[i]; H.t += dt; const u = Math.min(1, H.t / H.dur);
+    H.m.position.lerpVectors(H.from, H.to, u); H.m.position.y += Math.sin(u * Math.PI) * 0.8; H.m.position.x += Math.sin(H.t * 6 + H.wob) * 0.12;
+    H.m.rotation.y = H.t * 3; H.m.material.opacity = u > 0.8 ? (1 - u) * 5 : 1;
+    if (u >= 1) { if (H.to) FX.burst(H.m.position, 6, ["#ff8fc8", "#ffffff"], 1.5, 0.5, 0.5); scene.remove(H.m); Moves.hearts.splice(i, 1); }
+  }
+  for (let i = Moves.blooms.length - 1; i >= 0; i--) {
+    const B = Moves.blooms[i]; B.t += dt;
+    const grow = B.t < 0 ? 0 : B.t < 0.5 ? Math.sin(B.t / 0.5 * Math.PI / 2) * 1.15 : B.t > B.life - 0.6 ? Math.max(0, (B.life - B.t) / 0.6) : 1;
+    B.o.root.scale.setScalar(Math.max(0.01, grow * 0.8)); B.o.update(t);
+    if (B.t > B.life) { scene.remove(B.o.root); Moves.blooms.splice(i, 1); }
+  }
+  // the bar shows only when the moves can be done
+  const bar = $("movesBar"); if (!bar.hidden && (!movesAllowed() || Game.riding && false)) bar.hidden = true;
+  $("btnMoves").hidden = Game.mode !== "play" || !!Game.party || !!Game.sledding;
+}
+
+/* ---------- the moves button and its row of moves ---------- */
+(function movesBar() {
+  const bar = $("movesBar");
+  MOVES.forEach((M, i) => {
+    const b = el("button", "move", '<span class="me">' + M.emo + '</span><span class="mn">' + M.name + "</span>");
+    b.dataset.move = M.id; b.setAttribute("aria-label", M.name);
+    b.onclick = () => { Sound.fx.pop(); doMove(M.id); };
+    bar.appendChild(b); fastTap(b);
+  });
+  $("btnMoves").onclick = () => { Sound.unlock(); Sound.fx.pop(); bar.hidden = !bar.hidden || !movesAllowed(); };
+  fastTap($("btnMoves"));
+  // keys 1 to 0 on a computer
+  window.addEventListener("keydown", e => {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    const n = "1234567890".indexOf(e.key); if (n >= 0 && MOVES[n] && movesAllowed()) doMove(MOVES[n].id);
+  });
+})();
+
 /* ================= GAME CONTROLLER: a PS4 / PS5 / Xbox controller on a computer (USB or Bluetooth) or a tablet =================
    In the kingdom: the left stick (or the arrow buttons) walks, the right stick (or L1 / R1) turns the camera,
-   ✕ jumps, ○ rides / gets off / goes in, □ says hello to the nearest friend (or twirls), △ says it again, OPTIONS opens the menu.
+   ✕ jumps, ○ rides / gets off / goes in, □ says hello to the nearest friend (or twirls), △ says it again, OPTIONS opens the menu,
+   R2 dances and L2 opens Luna's moves.
    On a card (OK, a question, the room, an activity, the menu, the start screen) the stick moves a yellow glow from button to
    button, ✕ presses the glowing one and ○ goes back. On a picture that takes a finger (painting, Pip's bath, the cake, face
    stickers, the kitchen) the stick moves a little hand, ✕ is the finger, and the arrow buttons go back to the buttons. */
@@ -5456,6 +5634,7 @@ function padScope() {
   }
   if (Room.open) return { root: $("room"), first: padRoomFirst, back: () => Room.leave() };
   if (!$("menu").hidden && !$("hud").hidden) return { root: $("menu"), back: () => { $("menu").hidden = true; }, options: () => { $("menu").hidden = true; } };
+  if (!$("movesBar").hidden && !$("hud").hidden && !Game.dialog) return { root: $("movesBar"), back: () => { $("movesBar").hidden = true; }, l2: () => { $("movesBar").hidden = true; } };
   if (shown("quiz")) return { root: $("quiz"), first: items => items.find(e => e.closest("#qOpts")), voice: () => $("qVoice").click() };
   if (Game.dialog && shown("dialog") && !$("dOk").hidden) return { root: $("dialog"), first: () => $("dOk"), back: () => $("dOk").click(), voice: () => Voice.repeat() };
   return null;   // out in the kingdom
@@ -5585,6 +5764,8 @@ function padPoll(dt) {
       if (hit[PADB.TRI]) Voice.repeat();
       if (hit[PADB.OPTIONS] && !$("hud").hidden) $("btnMenu").onclick();
       if (hit[PADB.TOUCHPAD]) Room.enter();
+      if (hit[PADB.R2]) doMove("dance");
+      if (hit[PADB.L2] && movesAllowed()) { $("movesBar").hidden = false; Sound.fx.pop(); }
     }
   } else {
     Pad.x = Pad.y = 0;
@@ -5609,6 +5790,7 @@ function padPoll(dt) {
     }
     if (hit[PADB.TRI]) (sc.voice || Voice.repeat)();
     if (hit[PADB.OPTIONS] && sc.options) sc.options();
+    if (hit[PADB.L2] && sc.l2) sc.l2();
   }
   // no sound yet (the browser waits for a click or a tap before it plays any): say so, once
   if (Pad.used && Game.mode === "play" && !Sound.ready && (Pad.soundTip += dt) > 1.5 && Pad.soundTip < 99) { Pad.soundTip = 99; padSoundEl.hidden = false; }
@@ -5720,6 +5902,7 @@ function step(dt) {
   Game.time += dt; const t = Game.time;
   if (Game.mode === "title") { titleWave -= dt; if (titleWave <= 0) { luna.act("wave", 2.6); titleWave = 7; } }
   updateSled(dt, t);
+  movesUpdate(dt, t);
   updatePlayer(dt, t);
   for (const k in friends) friends[k].update(dt, t);
   updatePet(dt, t);
