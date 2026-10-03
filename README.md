@@ -36,7 +36,7 @@ A brick hero adventure for kids, with two stories (8 chapters, then 6 more). It 
 5. **Keep a copy of the game safe.** The game is saved only on the tablet, and Safari can clear a website's saved data after about a week without visiting it. **Menu → Settings → 💾 My game → Save a copy** saves the whole game as a small file (keep it in Files, or send it to yourself). **Open a copy** brings it back on any tablet. The game reminds you when there has been no copy for a week.
 - Double-tapping or pinching no longer zooms the page on iPad.
 
-**Playing online:** one player taps **Play online → Host a game**, the others tap **Play online** and **Join**. The **You're hosting!** card hides when you tap it, and by itself after 30 seconds. The online screen shows when it is connected and how many games it found. If a tablet's Wi-Fi drops for a moment (the screen locks, you switch apps), the game reconnects by itself and the Join button comes back. The tablets find each other through four free public servers at once (the PeerJS server and three MQTT message servers, one of them on the normal web port 443), so online play keeps working even when some of them are down. If the tablets cannot connect to each other directly (some Wi-Fi keeps devices apart), the game data goes through those servers instead. The online screen shows a ✓ or ✗ for each server, how the last join went, and the game version (also shown on the title screen).
+**Playing online:** one player taps **Play online → Host a game**, the others tap **Play online** and **Join**. The **You're hosting!** card hides when you tap it, and by itself after 30 seconds. The online screen shows when it is connected and how many games it found. If a tablet's Wi-Fi drops for a moment (the screen locks, you switch apps), the game reconnects by itself and the Join button comes back. The tablets find each other through several free public services at once (the PeerJS server, five MQTT message servers and ntfy.sh, which uses the normal web port 443 like any website), so a tablet at home finds a game hosted from another house or from mobile data, and online play keeps working even when some services are down or blocked. If the tablets cannot connect to each other directly (some Wi-Fi keeps devices apart), the game data goes through those servers instead. The online screen shows a ✓ or ✗ for each server, how the last join went, and the game version (also shown on the title screen).
 
 ## Finding your way
 - Pick a mission or tap a place on the map and three things lead the way: a **golden arrow** on the ground in front of your hero that follows the glowing trail, a **compass** at the top of the screen that points where to go from where you are looking (it says **Turn around** when the place is behind you and **Almost there!** at the end), and a sign above the light beam at the destination.
@@ -59,11 +59,11 @@ A brick hero adventure for kids, with two stories (8 chapters, then 6 more). It 
 - **🎨 Hero Maker: make your own heroes.** **Menu → 🎨 Hero Maker** (or 🦸 → **Make your own hero**). Pick the skin, hair, suit, legs, trim, boots and gloves colours, a chest picture, a hat, a face extra, a cape, wings or a jetpack, legs, a dress or a mermaid tail, something to hold, two attacks, a special move, a super power and a walk (or tap 🎲 **Surprise me**). Your hero turns in front of you while you make them; drag to turn them yourself. Give them a name and tap **Save**: a picture of your hero becomes their card, and **Play** lets you play as them. Up to 12 of the family's own heroes are kept on the tablet (and in **Save a copy**), show in both the Boys and the Girls lists, can be changed or removed with **Change this hero**, and friends playing online see them too.
 - **🌪️ Tornado Spin.** Every hero can whirl into a tornado in their own colours: tap **🌪️ Spin** (keyboard **R**, a gamepad's left trigger). For 2.5 seconds baddies that come close are hit and swirled away and enemy shots bounce off; then the button fills up again in 4 seconds. Friends playing online see your tornado too.
 - **Block heroes dressed like their cards.** Every block hero wears the boots, gloves, legs and trims from their picture card: Astro Aya has her pink headphones, Karate Kira her red trims, Painter Sara her blue beret, cape and paint splashes, Robo Rina her pink buns, and long hair falls over the shoulders. Pick a different suit colour, a shop costume or a power suit and that shows instead.
-- **Real 3D heroes (optional).** Every hero also has a real 3D figure made from their picture, so they look just like their card. The kids liked the block figures better, so the block figures are what you see; turn on **Menu → Settings → 🧸 3D heroes** on a tablet to play with the 3D ones. They stand, walk, run, jump, punch, wave, cheer, sit in cars, swim and get knocked down with their own moves, and friends playing online see them too. A hero wearing a shop costume or a power suit shows as their block figure, and so does a hero for the moment their 3D file is still loading.
-- Every hero has a picture card, made by our family (Captain Prism's was made for her with Meshy, from her look in the game, like her 3D figure). The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
+- Every hero has a picture card, made by our family (Captain Prism's was made for her with Meshy, from her look in the game). The cards show on the first screen, in the 🦸 list and next to your name; tap a hero's picture in 🦸 to see the whole card.
+- The first screen fits on the tablet without sliding: on a tablet lying sideways all your heroes are on the right and **Play** is on the left. On a small screen the whole menu shrinks a little instead of scrolling.
 - Pick **Boys** or **Girls** on the first screen, then one of your heroes. Tap **⇄** any time to swap between your boy and girl hero, also when you play online, so you always have the right power for a job.
 - There are **52 heroes**: 25 boys and 27 girls. Each has their own look, a special skill and two attacks of their own.
-- **Luna the mermaid** 🧜‍♀️ (a blue mermaid costume with a tail and fin, a pearl crown with a little moon; she swims fast and dives deep) and **Butterfly Basma** 🦋 (purple suit, blue hair, big colourful pink butterfly wings; she can fly) can be played right from the start. Both have picture cards and real 3D figures too, made from the family's pictures (Luna's 3D figure wears scaly mermaid leggings with fin boots, so she can walk and run like the others).
+- **Luna the mermaid** 🧜‍♀️ (a blue mermaid costume with a tail and fin, a pearl crown with a little moon; she swims fast and dives deep) and **Butterfly Basma** 🦋 (purple suit, blue hair, big colourful pink butterfly wings; she can fly) can be played right from the start. Both have picture cards made from the family's pictures.
 - Tap 🦸 in the game to see every hero. A locked hero shows how to get them:
   - ⭐ finish their mission,
   - 🔍 find their hidden hero coin (look for a beam of light; the map shows a ❔),
@@ -134,23 +134,25 @@ The whole sea around the islands is alive now.
 
 ## The Humongous Water Park
 A whole island of water fun, just south of Brick City's harbour: walk over the sandy causeway from the lighthouse beach (on the big map under 🎮 Fun, or **What's new → Show me the way**). It is open from the start. Everything is real water you can swim in.
-- **🗼 The Humongous Tower**: 45 metres tall, the tallest thing in Blocktopia. The lift pad at its foot takes you to the top, where you pick a slide:
+- **Nobody needs to fly:** every tall ride has a **glass lift 🛗**. Walk into it and stand still for a moment, and it takes you up; walk back in at the top to come down (or press ✋). The Racer and the Giant Duck have stairs too.
+- **🗼 The Humongous Tower**: 45 metres tall, the tallest thing in Blocktopia. The glass lift at its foot takes you to the top, where you pick a slide:
   - **The Humongous Drop**: almost straight down, the fastest ride in the game, into the landing pool.
   - **🌪️ The Tornado**: four times round its own pole in a blue half-pipe.
   - **🌈 The Rainbow Ribbon**: a long rainbow slide once round over the park, into the wave pool.
-- **🏁 The Racer**: four slides side by side. Take the lift up, tap **Race!**, and after the count-down race your friends (and racing kids in the empty lanes) to the pool. The first four places all win coins.
-- **🌊 Wave Pool**: a sandy beach at one end and a deep end with a wave machine. Every 50 seconds a bell rings and the waves come for 18 seconds: swimmers bob up and down and drift to the beach.
-- **🦆 The Giant Duck**: a rubber duck as big as a house floats in the wave pool. Swim up to it and slide down its back.
+- **🏁 The Racer**: four slides side by side. Walk up the rainbow stairs next to it (they start by the landing pool) or take the lift, tap **Race!**, and after the count-down race your friends (and racing kids in the empty lanes) to the pool. The first four places all win coins.
+- **🌊 Wave Pool**: a sandy beach at one end and a deep end with a wave machine. Every 50 seconds a bell rings and the waves come for 18 seconds: swimmers bob up and down and drift to the beach. Can't wait? Press the big red **Make waves!** button on the beach (friends online get the waves too). Take a **float 🛟** from the rack on the beach, paddle out with the stick and let the waves carry you back: ride the top of a wave to surf (the **Surf a Wave** prize). Jump to get off.
+- **🦆 The Giant Duck**: a rubber duck as big as a house floats in the wave pool. Walk up the yellow stairs from the side of the pool to the platform by its head and slide down its back (or swim up to it and press ✋).
 - **🛟 The Lazy River**: a river all the way round the island. It carries swimmers along, and rubber rings float round it: hop in a ring and float round the whole park (jump to get out). Bridges go over it.
 - **🏴‍☠️ Pirate Splash Ship**: walk up the steps onto the deck, fire the water cannons at your friends, and stand under the giant bucket on the mast: every 30 seconds it tips over and soaks everyone below.
 - **🏖️ Splash Beach**: the whole west side of the island is a sandy beach that slopes into the sea, with umbrellas, towels, sandcastles, a lifeguard tower, a snack shack and beach balls that fly when you run into them.
 - **Rides to ride together** (when friends are online, everyone who hops on before the count-down ends rides in the same boat):
   - **🪵 Splash Mountain**: log boats for 4. Up the lift hill, round the top of the rocky mountain, then the big drop into the splash pool (everyone close by gets wet).
-  - **🛟 The Family Raft**: a round raft for 4. Take the lift up the raft tower on the beach and swirl down the wide yellow slide into the lagoon.
-  - **🍌 The Banana Boat**: a speedboat pulls a banana for 4 from the pier at the south end of the beach, out to sea, round a big loop and back.
+  - **🛟 The Family Raft**: a round raft for 4. Take the glass lift up the raft tower on the beach and swirl down the wide yellow slide into the lagoon.
+  - **🍌 The Banana Boat**: walk out the wooden jetty on the beach (south of the raft lagoon) and climb on. A speedboat pulls the banana for 4 out to sea, round a big loop in deep water and back to the jetty. The banana swings out and leans in the turns and bobs on the waves, and at the end it glides back to the jetty and everyone hops off.
   - **🚤 Bumper Boats**: everybody drives their own little boat; bump each other and press Power to squirt water.
+  - Getting on and off the boats and rafts is a little hop, not a jump through the air.
   - The lazy river's rings are **double rings**, so a friend can float right next to you, and friends standing on top of the Racer race each other when anyone presses **Race!**
-- The waves, the rings, the bucket and the shared boats move the same on every tablet. Each ride's first go pays 500 coins, and trying all twelve wins the **Water Park Champion** trophy (+5000 coins) and a new pet: **Ducky the Rubber Duck** 🦆.
+- The waves, the rings, the bucket and the shared boats move the same on every tablet. Each ride's first go pays 500 coins, and trying all thirteen (surfing a wave counts) wins the **Water Park Champion** trophy (+5000 coins) and a new pet: **Ducky the Rubber Duck** 🦆.
 
 ## Pets that grow
 - Tap **🐾** (next to the other buttons when you have a pet, or **Menu → 🐾 My pet**) to look after your pet. The camera turns to your pet while the panel is open.
@@ -198,7 +200,8 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 - Attacks, coins, doors, splashes and landings each have their own sound.
 
 ## Playing together online
-- Up to 4 players. Each tablet opens the game and taps **Play online** (the same Wi-Fi works best).
+- Up to 4 players. Each tablet opens the game and taps **Play online**. The tablets can be in the same house or in different houses, on Wi-Fi or mobile data.
+- **Family code:** **Play online → Family code → Change**. Type the same code (4 to 12 letters or numbers) on every tablet that plays together, and only those tablets see your games. Tablets with no code all share the website's own.
 - One player taps **Host a game**; the others tap **Join** next to the host's name.
 - The host sees a card saying how many heroes are playing and how friends join. If the lobby says it is connecting, wait a few seconds: the host's name appears with a **Join** button.
 - You can also host or join from the in-game menu under **Online**.
@@ -212,6 +215,6 @@ Tap **🌐 العربية** on the first screen (or Menu → Settings → Langua
 Progress is saved on each device.
 
 ## Credits
-- The 3D heroes were made with [Meshy](https://www.meshy.ai) from the family's standing pictures (image to 3D, a skeleton, and moves from Meshy's animation library); `tools/meshy` has the scripts that make them and turn them into the game's files.
+- Captain Prism's picture card was made with [Meshy](https://www.meshy.ai); `tools/meshy` has the scripts. (The game also had 3D figures of the heroes made with Meshy, but the kids liked the block heroes better, so they were taken out.)
 - Songs: "Skyline Exploration", "Gliding Over Green Valleys", "Quiet Horizons" and "Subtle Quests and Flying Capes" were made for Block Buddies by its owner.
 - The backup music uses instrument recordings from the FluidR3_GM sound font by Frank Wen, as packaged in [midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts) by Benjamin Gleitzman, under the [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/) licence (converted to small MP3 files, one note every four semitones).

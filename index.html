@@ -410,13 +410,16 @@ body.ar .small,body.ar .sub{line-height:1.5}
     </div>
   </div>
 </div>
-<script>window.BB_STANDALONE=true;window.BB_FAMILY='ah7q';</script><script>
+<script>window.BB_STANDALONE=true;window.BB_FAMILY='ah7q';(function(){try{var fc=localStorage.getItem('bb_family');if(!fc&&window.BB_APP){var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='',r=new Uint32Array(6);crypto.getRandomValues(r);for(var i=0;i<6;i++)s+=a[r[i]%a.length];fc=s;localStorage.setItem('bb_family',fc);}fc=String(fc||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);if(fc)window.BB_FAMILY='c-'+fc.toLowerCase();window.BB_FAMCODE=fc;}catch(e){}})();</script><script>
 // ================= standalone online play =================
 // Outside claude.ai there is no shared "room", so devices talk directly over WebRTC data channels:
 // the host links to each guest (up to 3) and passes heroes between them. Game data flows device-to-device.
-// To find each other and swap connection offers, the tablets use two kinds of free public matchmakers at the same time:
-// - the PeerJS cloud server (0.peerjs.com), and
-// - three public MQTT message servers (Eclipse, EMQX and HiveMQ).
+// To find each other and swap connection offers, the tablets use free public matchmakers at the same time:
+// - five public MQTT message servers (Eclipse, EMQX, HiveMQ, shiftr.io and Mosquitto), and
+// - ntfy.sh, a public message service on the normal web port (v27.7: for networks that block the others, so a tablet at
+//   home still finds a game hosted from another house or from mobile data).
+// (v27.7: the PeerJS cloud server now closes the connection as soon as it carries one of our messages, so it is only used
+// when a test asks for its own PeerJS server with ?peerhost=.)
 // Whichever works carries the messages; when more than one works, repeats are ignored. This file exposes the same small
 // interface the game uses for the claude.ai room (presence, onPeers, onConnection, join, leave), so the game code stays the same.
 // Tablets drop their connections all the time (the screen locks, you switch apps, the Wi-Fi hiccups): every connection
@@ -424,18 +427,18 @@ body.ar .small,body.ar .sub{line-height:1.5}
 (function(){
   if(typeof RTCPeerConnection==='undefined'||typeof WebSocket==='undefined')return;
   const Q=new URLSearchParams(location.search);
-  const PJ=Q.get('peerhost')!=='none';
+  const PJ=!!Q.get('peerhost')&&Q.get('peerhost')!=='none';
   const CFG={host:Q.get('peerhost')||'0.peerjs.com',port:+(Q.get('peerport')||443),secure:Q.get('peersecure')!=='0',key:'peerjs',path:'/'};
-  const ICE=Q.get('peerice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
-  // a free relay server (Open Relay, static-auth credentials made on the tablet) for networks where tablets cannot reach each other directly
-  if(ICE.length&&window.crypto&&crypto.subtle)(async()=>{try{const user=(Math.floor(Date.now()/1000)+86400)+':bbuddies';const E=new TextEncoder();
-    const k=await crypto.subtle.importKey('raw',E.encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);const sg=new Uint8Array(await crypto.subtle.sign('HMAC',k,E.encode(user)));let b='';for(const x of sg)b+=String.fromCharCode(x);
-    ICE.push({urls:['turn:staticauth.openrelay.metered.ca:80','turn:staticauth.openrelay.metered.ca:443','turn:staticauth.openrelay.metered.ca:443?transport=tcp'],username:user,credential:btoa(b)});}catch(e){}})();
+  // (the free relay servers we used to list, PeerJS's and Open Relay's, stopped working: when two tablets cannot reach each other
+  // directly, the game data goes through the message servers instead, see RelayLink)
+  const ICE=Q.get('peerice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}];
   const FAM=(window.BB_FAMILY||'fam')+(Q.get('peerns')?'-'+Q.get('peerns'):'');
   const NS='bbuddies-'+FAM;
   // up to three games can be hosted at once on PeerJS (and a game a tablet left behind never blocks a new one)
   const SLOTS=[NS+'-game',NS+'-game2',NS+'-game3'];const isSlot=id=>SLOTS.includes(id);
-  const MQURLS=(Q.get('mqtt')!==null?Q.get('mqtt'):'wss://mqtt.eclipseprojects.io:443/mqtt,wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt').split(',').map(s=>s.trim()).filter(Boolean);
+  const MQURLS=(Q.get('mqtt')!==null?Q.get('mqtt'):'wss://mqtt.eclipseprojects.io:443/mqtt,wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt,wss://public.cloud.shiftr.io|public|public,wss://test.mosquitto.org:8081/mqtt').split(',').map(s=>s.trim()).filter(Boolean);
+  // ntfy.sh (off in the tests that use their own pretend servers)
+  const NTFY=Q.get('ntfy')!==null?Q.get('ntfy'):(Q.get('mqtt')!==null?'none':'https://ntfy.sh');
   const TOP='bbuddies/'+FAM;
   const rid=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s;};
   const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
@@ -471,7 +474,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
       kick(){if(closed)return;if(!ws){tries=0;connect();return;}if(ws.readyState>1){restart();return;}const t=Date.now();ping();clearTimeout(checkT);checkT=setTimeout(()=>{if(!closed&&everPong&&lastPong<t)restart();},4000);}};}
 
   // ---- a small MQTT 3.1.1 client over WebSocket (QoS 0, retained messages, a last-will message) ----
-  function Mqtt(url,clientId,will,onMsg,onState){let ws=null,closed=false,up=false,tries=0,pidN=1,lastRx=0;const subs=new Set();const E=new TextEncoder(),D=new TextDecoder();
+  function Mqtt(url,clientId,will,onMsg,onState,auth){let ws=null,closed=false,up=false,tries=0,pidN=1,lastRx=0;const subs=new Set();const E=new TextEncoder(),D=new TextDecoder();
     const s2=s=>{const b=typeof s==='string'?E.encode(s):s;const o=new Uint8Array(2+b.length);o[0]=b.length>>8;o[1]=b.length&255;o.set(b,2);return o;};
     const cat=(...a)=>{let n=0;for(const x of a)n+=x.length;const o=new Uint8Array(n);let p=0;for(const x of a){o.set(x,p);p+=x.length;}return o;};
     const pkt=(h,body)=>{const lb=[];let x=body.length;do{let d=x%128;x=Math.floor(x/128);if(x>0)d|=128;lb.push(d);}while(x>0);return cat(new Uint8Array([h]),new Uint8Array(lb),body);};
@@ -479,7 +482,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
     const sendSub=t=>{pidN=(pidN%65000)+1;raw(pkt(0x82,cat(new Uint8Array([pidN>>8,pidN&255]),s2(t),new Uint8Array([0]))));};
     function connect(){if(closed||ws)return;let me;try{me=ws=new WebSocket(url,['mqtt']);}catch(e){ws=null;later();return;}me.binaryType='arraybuffer';let buf=new Uint8Array(0);
       me.onopen=()=>{if(me!==ws)return;let flags=0x02;const vh=new Uint8Array([4,0,0,60]);const pay=[s2(clientId)];
-        if(will){flags|=0x04|(will.retain?0x20:0);pay.push(s2(will.topic),s2(will.payload||''));}vh[1]=flags;raw(pkt(0x10,cat(s2('MQTT'),vh,...pay)));};
+        if(will){flags|=0x04|(will.retain?0x20:0);pay.push(s2(will.topic),s2(will.payload||''));}if(auth&&auth.user){flags|=0x80;pay.push(s2(auth.user));if(auth.pass!==undefined){flags|=0x40;pay.push(s2(auth.pass));}}vh[1]=flags;raw(pkt(0x10,cat(s2('MQTT'),vh,...pay)));};
       me.onmessage=ev=>{if(me!==ws)return;lastRx=Date.now();buf=cat(buf,new Uint8Array(ev.data));
         for(;;){if(buf.length<2)break;let mul=1,len=0,i=1,d=0,ok=true;do{if(i>=buf.length){ok=false;break;}d=buf[i++];len+=(d&127)*mul;mul*=128;}while(d&128);if(!ok||buf.length<i+len)break;
           const h=buf[0],type=h>>4,body=buf.slice(i,i+len);buf=buf.slice(i+len);
@@ -495,6 +498,25 @@ body.ar .small,body.ar .sub{line-height:1.5}
       publish(t,payload,retain){if(!up)return false;return raw(pkt(0x30|(retain?1:0),cat(s2(t),E.encode(payload||''))));},
       close(){closed=true;clearInterval(pingI);if(ws){raw(new Uint8Array([0xE0,0]));const w=ws;ws=null;try{w.close();}catch(e){}}up=false;},
       kick(){if(closed)return;if(!ws){tries=0;connect();}}};}
+
+  // ---- ntfy.sh: one topic per family; host announcements and messages to one tablet ride on it (a web socket to listen,
+  // a plain web request to send; it keeps the last minutes of messages, so a tablet that just arrived hears about games at once) ----
+  function Ntfy(base,topic,onMsg,onState){let ws=null,closed=false,up=false,tries=0,lastRx=0,lastId='';
+    const wsUrl=()=>base.replace(/^http/,'ws')+'/'+topic+'/ws?since='+(lastId||'20s');
+    function connect(){if(closed||ws)return;let me;try{me=ws=new WebSocket(wsUrl());}catch(e){ws=null;later();return;}
+      me.onmessage=ev=>{if(me!==ws)return;lastRx=Date.now();let o;try{o=JSON.parse(ev.data);}catch(e){return;}
+        if(!up&&(o.event==='open'||o.event==='message'||o.event==='keepalive')){up=true;tries=0;DIAG.ntOpen=(DIAG.ntOpen||0)+1;onState('open');}
+        if(o.event==='message'&&typeof o.message==='string'){if(o.id)lastId=o.id;try{onMsg(o.message);}catch(e){}}};
+      me.onerror=()=>{};
+      me.onclose=()=>{if(me!==ws)return;ws=null;const was=up;up=false;if(was)onState('closed');later();};}
+    function later(){if(closed)return;tries=Math.min(tries+1,6);setTimeout(()=>{if(!ws)connect();},1500*tries+Math.random()*800);}
+    const pingI=setInterval(()=>{if(closed){clearInterval(pingI);return;}if(ws&&up&&Date.now()-lastRx>100000){const w=ws;ws=null;up=false;try{w.close();}catch(e){}onState('closed');connect();}},20000);
+    connect();
+    return {get open(){return up;},
+      publish(payload){if(closed||!up)return false;try{fetch(base+'/'+topic,{method:'POST',body:payload}).catch(()=>{});return true;}catch(e){return false;}},
+      // a last message as the page closes (no socket needed)
+      beacon(payload){try{fetch(base+'/'+topic,{method:'POST',body:payload,keepalive:true}).catch(()=>{});}catch(e){}},
+      close(){closed=true;clearInterval(pingI);const w=ws;ws=null;up=false;try{w&&w.close();}catch(e){}},kick(){if(closed)return;if(!ws){tries=0;connect();}}};}
 
   // ---- one WebRTC link to another device ----
   function Link(sig,remote,cid,offerer,h){const pc=new RTCPeerConnection({iceServers:ICE});let dc=null,remoteSet=false,pend=[],dead=false;
@@ -566,39 +588,53 @@ body.ar .small,body.ar .sub{line-height:1.5}
   const myHid='h'+rid(11);         // this tablet when it hosts (MQTT)
   const seen=new Map();            // messages that arrive by more than one route are handled once
   const fresh=m=>{const k=m&&m.payload&&m.payload.mid;if(!k)return true;if(seen.has(k))return false;const now=Date.now();seen.set(k,now);if(seen.size>500)for(const [a,t] of seen)if(now-t>60000)seen.delete(a);return true;};
-  const MQ=MQURLS.map(u=>Mqtt(u,'bb-'+FAM+'-'+rid(10),{topic:TOP+'/host/'+myHid,payload:'',retain:true},onMq,()=>connState()));
+  const MQ=MQURLS.map(s=>{const [u,user,pass]=s.split('|');return Mqtt(u,'bb-'+FAM+'-'+rid(10),{topic:TOP+'/host/'+myHid,payload:'',retain:true},onMq,()=>connState(),user?{user,pass}:null);});
+  const NT=NTFY&&NTFY!=='none'?Ntfy(NTFY,('bbuddies-'+FAM).replace(/[^A-Za-z0-9_-]/g,'').slice(0,56)+'-v3',onNt,()=>connState()):null;
   for(const q of MQ){q.subscribe(TOP+'/to/'+myId);q.subscribe(TOP+'/to/'+myHid);q.subscribe(TOP+'/host/+');}
-  const pjOn=()=>!!(LB.sig&&LB.sig.open),mqOn=()=>MQ.some(q=>q.open),anyOn=()=>pjOn()||mqOn();
+  const pjOn=()=>!!(LB.sig&&LB.sig.open),mqOn=()=>MQ.some(q=>q.open),ntOn=()=>!!(NT&&NT.open),anyOn=()=>pjOn()||mqOn()||ntOn();
   function mqSend(from,to,type,payload){let ok=false;const msg=JSON.stringify({type,src:from,dst:to,payload});for(const q of MQ)if(q.open&&q.publish(TOP+'/to/'+to,msg,false))ok=true;return ok;}
+  function ntSend(from,to,type,payload){if(!ntOn())return false;return NT.publish(JSON.stringify({k:'to',m:{type,src:from,dst:to,payload}}));}
   function lobbyPeers(){const a=[{peer:myId,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:LB.pres}];for(const [k,f] of LB.found)a.push({peer:k,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:f.pres});return a;}
   function emitLobby(force){const sig=JSON.stringify([...LB.found].map(([k,v])=>[k,v.pres]));if(!force&&sig===LB.lastSig)return;LB.lastSig=sig;const ps=lobbyPeers();for(const f of LB.peerL){try{f({peers:ps,joined:[],left:[],updated:[]});}catch(e){console.error(e);}}}
   function connState(){const on=anyOn();if(on===LB.lastOn)return;LB.lastOn=on;if(on)setTimeout(probe,300);for(const f of LB.connL){try{f(on);}catch(e){}}}
   // a game we heard about: key it by the host's id so the same game found by two routes shows once
-  function foundGame(key,pres,route){if(!pres||pres.bb!==3)return;const f=LB.found.get(key)||{key,slot:null,hid:null};f.pres=pres;f.at=Date.now();if(route.slot)f.slot=route.slot;if(route.hid)f.hid=route.hid;if(route.mq)f.mqAt=Date.now();LB.found.set(key,f);emitLobby();}
+  function foundGame(key,pres,route){if(!pres||pres.bb!==3)return;const f=LB.found.get(key)||{key,slot:null,hid:null};f.pres=pres;f.at=Date.now();if(route.slot)f.slot=route.slot;if(route.hid)f.hid=route.hid;if(route.mq)f.mqAt=Date.now();if(route.nt)f.ntAt=Date.now();LB.found.set(key,f);emitLobby();}
   function onLobbyMsg(m){if(!fresh(m))return;const p=m.payload||{};
     if(m.type==='ANSWER'&&p.probe&&isSlot(m.src)){if(p.lobby)foundGame(p.hid||m.src,p.lobby,{slot:m.src,hid:p.hid||null});return;}
-    if(m.type==='EXPIRE'&&isSlot(m.src)){for(const [k,f] of LB.found)if(f.slot===m.src&&Date.now()-f.at>4000&&!(f.mqAt&&Date.now()-f.mqAt<20000)){LB.found.delete(k);emitLobby();}
+    if(m.type==='EXPIRE'&&isSlot(m.src)){for(const [k,f] of LB.found)if(f.slot===m.src&&Date.now()-f.at>4000&&!(f.mqAt&&Date.now()-f.mqAt<20000)&&!(f.ntAt&&Date.now()-f.ntAt<70000)){LB.found.delete(k);emitLobby();}
       for(const j of LB.pendJoin.slice())if(j.t.slot===m.src&&!j.t.hid)j.expire();return;}
     for(const j of LB.pendJoin)if(j.cid===p.cid&&(m.src===j.t.slot||m.src===j.t.hid)){if(m.type==='ANSWER')j.answer(p);else if(m.type==='CANDIDATE')j.link.cand(p.candidate);}}
-  function onMq(topic,payload){
+  function onMq(topic,payload,retained){
     if(topic.startsWith(TOP+'/host/')){const hid=topic.slice(TOP.length+6);if(!hid||hid===myHid)return;
       if(!payload){let ch=false;for(const [k,f] of LB.found)if(f.hid===hid){LB.found.delete(k);ch=true;}if(ch)emitLobby();return;}
-      let o;try{o=JSON.parse(payload);}catch(e){return;}if(!o||!o.lobby||Math.abs(Date.now()-(+o.at||0))>120000)return;foundGame(hid,o.lobby,{hid,slot:isSlot(o.slot)?o.slot:null,mq:true});return;}
+      let o;try{o=JSON.parse(payload);}catch(e){return;}if(!o||!o.lobby||(retained&&Math.abs(Date.now()-(+o.at||0))>120000))return;foundGame(hid,o.lobby,{hid,slot:isSlot(o.slot)?o.slot:null,mq:true});return;}
     if(topic.startsWith(TOP+'/r/')){const rl=RL.get(topic.slice(TOP.length+3));if(rl)rl._in(payload);return;}
     let m;try{m=JSON.parse(payload);}catch(e){return;}if(!m||typeof m.type!=='string'||typeof m.src!=='string')return;
     if(topic===TOP+'/to/'+myHid){if(LB.host&&LB.host._msg)LB.host._msg(m,'mq');return;}
     if(topic===TOP+'/to/'+myId)onLobbyMsg(m);}
+  function onNt(msg){let o;try{o=JSON.parse(msg);}catch(e){return;}if(!o||typeof o!=='object')return;
+    if(o.k==='hello'){if(LB.host&&LB.host._ntReply)LB.host._ntReply();return;}
+    if(o.k==='host'){if(typeof o.hid!=='string'||o.hid===myHid||!o.lobby)return;foundGame(o.hid,o.lobby,{hid:o.hid,slot:isSlot(o.slot)?o.slot:null,nt:true});return;}
+    if(o.k==='bye'){if(typeof o.hid!=='string')return;let ch=false;for(const [k,f] of LB.found)if(f.hid===o.hid){LB.found.delete(k);ch=true;}if(ch)emitLobby();return;}
+    const m=o.k==='to'&&o.m;if(!m||typeof m.type!=='string'||typeof m.src!=='string')return;
+    if(m.dst===myHid){if(LB.host&&LB.host._msg)LB.host._msg(m,'nt');return;}if(m.dst===myId)onLobbyMsg(m);}
   function startLobby(){if(PJ)LB.sig=Sig(myId,rid(16),onLobbyMsg,()=>connState());
-    setInterval(probe,2500);setInterval(()=>{let ch=false;const now=Date.now();for(const [k,f] of LB.found){const ttl=f.mqAt?25000:9000;if(now-f.at>ttl){LB.found.delete(k);ch=true;}}if(ch)emitLobby();},1000);
-    const wake=()=>{if(document.hidden)return;LB.sig&&LB.sig.kick();for(const q of MQ)q.kick();if(LB.host)for(const s of LB.host._sigs)s.kick();setTimeout(probe,600);};
+    setInterval(probe,2500);setInterval(()=>{let ch=false;const now=Date.now();for(const [k,f] of LB.found){const ttl=f.ntAt?40000:f.mqAt?25000:9000;if(now-f.at>ttl){LB.found.delete(k);ch=true;}}if(ch)emitLobby();ntHello();},1000);
+    // a host whose page closes says goodbye on every route, so the game leaves everyone's list at once
+    window.addEventListener('pagehide',()=>{if(!LB.host||LB.host._gone)return;for(const q of MQ)q.publish(TOP+'/host/'+myHid,'',true);if(NT)NT.beacon(JSON.stringify({k:'bye',hid:myHid}));});
+    const wake=()=>{if(document.hidden)return;LB.sig&&LB.sig.kick();for(const q of MQ)q.kick();NT&&NT.kick();if(LB.host)for(const s of LB.host._sigs)s.kick();setTimeout(probe,600);};
     document.addEventListener('visibilitychange',wake);window.addEventListener('pageshow',wake);window.addEventListener('online',wake);}
-  function probe(){if(!pjOn()||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;for(const s of SLOTS)LB.sig.send('OFFER',s,{probe:1,ts:Date.now()});}
+  function ntHello(){if(!ntOn()||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;if(Date.now()-(LB.helloT||0)<25000)return;LB.helloT=Date.now();NT.publish(JSON.stringify({k:'hello'}));}
+  function probe(){ntHello();if(!pjOn()||LB.host)return;if(window.BBLobbyWanted&&!window.BBLobbyWanted())return;for(const s of SLOTS)LB.sig.send('OFFER',s,{probe:1,ts:Date.now()});}
 
   // host: announce the game on every route (a PeerJS game id and a retained MQTT message) and answer join offers from both
   function hostGame(){return new Promise((res,rej)=>{const room=GameRoom('host');room.hid=myHid;room._sig=null;let settled=false;LB.host=room;
     const done=()=>{if(settled)return;settled=true;res(room);};
-    const announce=()=>{if(room._gone)return;const msg=JSON.stringify({hid:myHid,slot:room.gid||null,lobby:LB.pres,at:Date.now()});for(const q of MQ)q.publish(TOP+'/host/'+myHid,msg,true);};room._announce=announce;
-    const send=(dst,type,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(room._sig&&room._sig.open)ok=room._sig.send(type,dst,payload)||ok;ok=mqSend(myHid,dst,type,payload)||ok;return ok;};
+    const announce=()=>{if(room._gone)return;const msg=JSON.stringify({hid:myHid,slot:room.gid||null,lobby:LB.pres,at:Date.now()});for(const q of MQ)q.publish(TOP+'/host/'+myHid,msg,true);
+      // ntfy: a little slower (it counts every message), but at once the first time and when the game changes
+      const ns=JSON.stringify(LB.pres);if(ntOn()&&(Date.now()-(room._ntT||0)>28000||(ns!==room._ntP&&Date.now()-(room._ntT||0)>6000))){room._ntT=Date.now();room._ntP=ns;NT.publish(JSON.stringify({k:'host',hid:myHid,slot:room.gid||null,lobby:LB.pres}));}};room._announce=announce;
+    room._ntReply=()=>{if(room._gone||!ntOn()||Date.now()-(room._ntT||0)<4000)return;room._ntT=Date.now();room._ntP=JSON.stringify(LB.pres);NT.publish(JSON.stringify({k:'host',hid:myHid,slot:room.gid||null,lobby:LB.pres}));};
+    const send=(dst,type,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(room._sig&&room._sig.open)ok=room._sig.send(type,dst,payload)||ok;ok=mqSend(myHid,dst,type,payload)||ok;ok=ntSend(myHid,dst,type,payload)||ok;return ok;};
     room._msg=(m,via)=>{if(!fresh(m))return;const p=m.payload||{},src=m.src;if(!src||room._gone)return;
       if(m.type==='OFFER'){if(p.probe){if(via==='pj'&&room._sig)room._sig.send('ANSWER',src,{probe:1,lobby:LB.pres,hid:myHid});return;}
         if(!p.sdp||(p.ts&&Math.abs(Date.now()-p.ts)>45000)||room._link(p.cid))return;
@@ -614,14 +650,14 @@ body.ar .small,body.ar .sub{line-height:1.5}
     if(PJ){const tok=ls.get('bb_ptok')||rid(16);ls.set('bb_ptok',tok);let i=0;
       const next=()=>{if(i>=SLOTS.length||room._gone)return;const gid=SLOTS[i++];const sig=Sig(gid,tok,m=>room._msg(m,'pj'),st=>{if(st==='open'&&!room._sig){room._sig=sig;room.gid=gid;announce();done();}else if(st==='taken'&&room._sig!==sig)next();});room._sigs.push(sig);};next();}
     // route 2: MQTT (the inbox for this host is already subscribed)
-    const chk=setInterval(()=>{if(room._gone){clearInterval(chk);return;}if(mqOn()){announce();done();clearInterval(chk);}},250);
+    const chk=setInterval(()=>{if(room._gone){clearInterval(chk);return;}if(mqOn()||ntOn()){announce();done();clearInterval(chk);}},250);
     const pres=setInterval(announce,8000);
-    room._stop=()=>{clearInterval(chk);clearInterval(pres);for(const q of MQ)q.publish(TOP+'/host/'+myHid,'',true);if(LB.host===room)LB.host=null;};
+    room._stop=()=>{clearInterval(chk);clearInterval(pres);for(const q of MQ)q.publish(TOP+'/host/'+myHid,'',true);if(ntOn())NT.publish(JSON.stringify({k:'bye',hid:myHid}));if(LB.host===room)LB.host=null;};
     setTimeout(()=>{if(!settled){settled=true;room.leave();rej(new Error('timeout'));}},12000);});}
 
   // guest: offer a data channel to the game we found, by every route we know for it
   function joinGame(t){return new Promise((res,rej)=>{if(!anyOn()){rej(new Error('offline'));return;}const room=GameRoom('guest');const cid=rid(8);let settled=false;
-    const router={send:(type,_d,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(t.slot&&pjOn())ok=LB.sig.send(type,t.slot,payload)||ok;if(t.hid)ok=mqSend(myId,t.hid,type,payload)||ok;return ok;}};
+    const router={send:(type,_d,payload)=>{payload={...payload,mid:rid(10)};let ok=false;if(t.slot&&pjOn())ok=LB.sig.send(type,t.slot,payload)||ok;if(t.hid){ok=mqSend(myId,t.hid,type,payload)||ok;ok=ntSend(myId,t.hid,type,payload)||ok;}return ok;}};
     const L=Link(router,t.key,cid,true,{open:l=>{if(J.relay){l.close();return;}room._open(l);if(!settled){settled=true;drop();LB.lastJoin='direct';res(room);}},data:(o,l)=>room._data(o,l),
       close:l=>{if(J.relay&&l===L)return;drop();if(!settled){settled=true;LB.lastJoin=J.full?'full':'failed';rej(new Error(J.full?'full':'failed'));}else room._lost(l);}});
     room._add(L);const J={cid,t,link:L,full:false,answer(p){if(p.full){J.full=true;L.close();return;}L.answer(p.sdp);},expire(){if(!J.relay)L.close();}};LB.pendJoin.push(J);
@@ -645,7 +681,7 @@ body.ar .small,body.ar .sub{line-height:1.5}
         if(!t)return Promise.reject(new Error('gone'));return joinGame(t);}
       return hostGame();},
     leave(){return Promise.resolve();},
-    status:()=>({online:anyOn(),pj:pjOn(),mq:MQ.map(q=>q.open),lastJoin:LB.lastJoin||'',found:LB.found.size,hosting:!!LB.host,slot:LB.host?(LB.host.gid||null):null,hid:myHid,id:myId,diag:{...DIAG}})};
+    status:()=>({online:anyOn(),pj:pjOn(),mq:MQ.map(q=>q.open),nt:ntOn(),lastJoin:LB.lastJoin||'',found:LB.found.size,hosting:!!LB.host,slot:LB.host?(LB.host.gid||null):null,hid:myHid,id:myId,diag:{...DIAG}})};
   window.__peerRoom=lobby;startLobby();
 })();
 </script><script>
@@ -7677,14 +7713,17 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:51,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:53,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🌊',t:'The water park, better',s:'No flying needed: walk into a glass lift 🛗 to go up the tall rides, or take the stairs to the Racer and the giant duck. The Banana Boat has a new jetty on the beach and a loop in deep water. In the wave pool, press Make waves! and take a float to surf to the beach',go:()=>typeof WP!=='undefined'&&WP.ok?dd({x:WP.gate.x,z:WP.gate.z-3,label:tr('Humongous Water Park'),icon:'🌊',col:'#46c0ee'}):null},
+  {ic:'📱',t:'Everything on one screen',s:'The first screen fits on the tablet: all your heroes on the right, Play on the left, and nothing to slide'},
+  {ic:'👨‍👩‍👧',t:'Family codes',s:'Keep your online games private: Play online, Family code, Set a code. Type the same code on every tablet that plays together, and only those tablets see your games'},
   {ic:'◀',t:'Tidy buttons',s:'The buttons at the top fold away. Tap ◀ next to ☰ to open them, and ▶ to fold them again'},
   {ic:'🛡️',t:'No more roaming baddies',s:'Baddies only come in missions, quests and boss fights now. Explore in peace!'},
   {ic:'🪙',t:'Quieter coins and sea',s:'Coins make a soft little jingle, and the sea shore is calm: no more whooshing waves or clicking crabs'},
   {ic:'🔉',t:'Calmer sounds',s:'Walking and jumping are quiet now: no more bangs when you land, softer jumps, and not so many sounds at once. Footsteps are off (turn them on in Settings if you like them, now soft and light)'},
   {ic:'🐾',t:'Your pet, your choice',s:'Pets come out only when you call them: tap 🐾 and pick one. Tap 🐾 › 🏠 Send home to put your pet away. New pets from missions wait at home for you'},
-  {ic:'🌈',t:'Captain Prism has her own card',s:'The Story 2 hero now has her picture card and her own 3D look, like every other hero'},
+  {ic:'🌈',t:'Captain Prism has her own card',s:'The Story 2 hero now has her own picture card, like every other hero'},
   {ic:'🌈',t:'Story 2: The Rainbow Thief',s:'Finished the story? A new adventure starts! Professor Gloom hates colours and fun, and his grey airship is draining the colours from the Fun Park, the Mushroom Forest, Coral Cove, Frosty Peaks and the Sky Kingdom. Find the 6 Rainbow Gems, fire the Rainbow Cannon and beat him in his Gloom Mech. Open the Story Book to see it'},
   {ic:'🐠',t:'The sea is alive!',s:'Fish, clownfish, pufferfish, seahorses, crabs, octopuses, jellyfish, sea turtles, dolphins, friendly sharks and manta rays live all around the islands, and seals and narwhals in the cold sea by Frostpeak. Swim close to them to fill your Sea Album (Menu, Sea Album)'},
   {ic:'🤿',t:'Every hero can dive',s:'In the sea, hold ⬇ (or Shift) to swim down and let go to swim up. Watch your air bubbles! Divers and the Diving Helmet never run out of air'},
@@ -7697,7 +7736,6 @@ function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.cast
   {ic:'🔭',t:'Stargazer fixed',s:'On Frosty Peaks, the observatory telescope can be fixed now from the slope below it or from the top of the dome'},
   {ic:'🎡',t:'Safe rides',s:'Menu, Go to Hero HQ works while you are on a Fun Park ride, and nothing can hurt you while you ride'},
   {ic:'🎢',t:'The Fun Park!',s:'A real theme park on Sunset Bay, north of the town: a roller coaster with a loop, a big wheel, bumper cars, two water slides into a pool and a carousel. Press ✋ next to a ride to get on. Friends ride together!',go:()=>typeof FP!=='undefined'&&FP.ok?dd({x:FP.gate.x,z:FP.gate.z+3,label:tr('Fun Park'),icon:'🎢',col:'#ff5fa8'}):null},
-  {ic:'🧸',t:'Luna and Basma in 3D',s:'Luna and Butterfly Basma have their own picture cards now, and real 3D figures made from the family\'s pictures. To play with the 3D heroes, turn on Menu, Settings, 🧸 3D heroes'},
   {ic:'🧲',t:'Every power opens its treasure',s:'Sheriff Sam\'s lasso and stampede now open the Magnet Safe. Every hero with a power badge (🧲 🔥 💪 ⚔️ ⚡ 💧 🪄) opens the treasures that need it with any of their attacks'},
   {ic:'🦴',t:'Fossil Puzzle fixed',s:'In the Dino Museum, the fossil next to Curator Cora can be picked up now, so the puzzle can be finished'},
   {ic:'🎮',t:'The hosting card hides',s:'Tap the You\'re hosting! card to hide it. It also goes away by itself after 30 seconds'},
@@ -7708,7 +7746,6 @@ function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.cast
   {ic:'🧜‍♀️',t:'Luna the mermaid',s:'Luna the mermaid joins the heroes! She swims super fast and dives deep. Pick her on the first screen or in 🦸'},
   {ic:'🌪️',t:'Tornado Spin',s:'Tap 🌪️ Spin and your hero whirls into a tornado in their own colours, knocking baddies away. Every hero can do it (keyboard: R)'},
   {ic:'👢',t:'Heroes dressed like their cards',s:'Every block hero now has the boots, gloves and colours from their picture card. Astro Aya has her pink headphones, and long hair falls over the shoulders'},
-  {ic:'🧸',t:'Real 3D heroes',s:'Every hero also has a real 3D figure made from their picture card. To play with them, turn on Menu, Settings, 3D heroes'},
   {ic:'🤝',t:'One story online',s:'Playing online, you go on from whoever is furthest in the story, and every chapter you finish together counts on every tablet. The rocket parts are shared too'},
   {ic:'🧭',t:'Show me the way, fixed',s:'After a chapter, Show me the way now leads to the friend who gives the next chapter, never to a place behind a force field'},
   {ic:'🃏',t:'Hero cards',s:'Every hero has their own picture card now, made by our family. Tap a hero\'s picture in 🦸 to see the whole card',act:()=>{if(typeof openRoster==='function')openRoster();}},
@@ -10411,7 +10448,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.5';window.BB_VER=BB_VER;
+const BB_VER='27.7';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -10438,7 +10475,7 @@ function lobbyNetLine(){const st=$('onstat');if(!st)return;let el=$('onnet');if(
   if(!NET.avail){if(el.textContent)el.textContent='';return;}const SA=!!(NET.room&&NET.room.standalone);const s=SA&&NET.room.status?NET.room.status():null;const on=SA?!!(s&&s.online):true;
   const n=(NET.lobby||[]).filter(p=>p.presence&&p.presence.st==='host').length;const t=!on?'🟠 '+tr('Reconnecting…'):n?'🟢 '+trf(n===1?'{0} game found':'{0} games found',n):'🟢 '+tr('Online · looking for games…');
   // which routes are working (helps when something is wrong): PeerJS, then the two message servers
-  const r=s&&s.mq?' · '+[s.pj?'✓':'✗',...s.mq.map(x=>x?'✓':'✗')].join(''):'';const lj=s&&s.lastJoin?' · '+tr('last join: '+s.lastJoin):'';const full=t+r+lj+' · v'+BB_VER;if(el.textContent!==full)el.textContent=full;}
+  const r=s&&s.mq?' · '+[s.pj?'✓':'✗',...s.mq.map(x=>x?'✓':'✗'),s.nt?'✓':'✗'].join(''):'';const lj=s&&s.lastJoin?' · '+tr('last join: '+s.lastJoin):'';const full=t+r+lj+' · v'+BB_VER;if(el.textContent!==full)el.textContent=full;}
 {const _ls=UI.lobbyStatus;UI.lobbyStatus=function(){_ls.call(UI);try{lobbyNetLine();}catch(e){}};}
 MV('Reconnecting…','جارٍ إعادة الاتصال…');MV('{0} game found','تم العثور على لعبة واحدة');MV('{0} games found','تم العثور على {0} ألعاب');MV('Online · looking for games…','متصل · نبحث عن ألعاب…');
 // the version on the title screen (so we know every tablet has the newest one)
@@ -12975,17 +13012,17 @@ function wpBuild(){if(!WP.ok)return;const gy=WP.y,T=WP.tw,top=gy+T.top,wl=gy-.3,
   // the Humongous Tower: 45 m of stripes, a lift pad at its foot and a big platform on top
   {const hw=T.hw;for(let k=0;k<15;k++){box(T.x-hw,gy+k*3,T.z-hw,hw*2,3,hw*2,WPC[k%6],1);box(T.x-hw-.1,gy+k*3+2.6,T.z-hw-.1,hw*2+.2,.4,hw*2+.2,'#ffffff',1);}
     solid(T.x-hw,T.z-hw,T.x+hw,T.z+hw,top);box(T.x-5,top,T.z-5,10,.4,10,'#ffffff',1);solid(T.x-5,T.z-5,T.x+5,T.z+5,top+.4);
-    for(const [a,b,c,d] of [[-5,-5,1.8,.2],[-.8,-5,5.8,.2],[-5,4.8,3.8,.2],[1.2,4.8,3.8,.2],[-5,-5,.2,5.8],[-5,3.2,.2,1.8],[4.8,-5,.2,10]])box(T.x+a,top+.4,T.z+b,c,1.1,d,'#ffcf3a',1);
+    for(const [a,b,c,d] of [[-5,-5,1.8,.2],[-.8,-5,.8,.2],[2,-5,3,.2],[-5,4.8,3.8,.2],[1.2,4.8,3.8,.2],[-5,-5,.2,5.8],[-5,3.2,.2,1.8],[4.8,-5,.2,10]])box(T.x+a,top+.4,T.z+b,c,1.1,d,'#ffcf3a',1);
     // a giant bucket on top (it is just for show) and a flag
     {const m=mat4At(T.x+3,top+.4,T.z-3);sput('cyl',m,0,1.5,0,2.6,3,2.6,'#ff5d73',1);sput('cyl',m,0,3.05,0,2.8,.2,2.8,'#ffffff',1);}
     box(T.x-3.6,top+.4,T.z-3.6,.25,7,.25,'#ffffff',1);box(T.x-3.35,top+5.4,T.z-3.6,3.2,1.6,.08,'#2f8fff',1);
-    WP.lift={x:T.x,z:T.z-hw-1.4,y:gy};WP.topSpot={x:T.x,z:T.z,y:top+.4};box(T.x-1.4,gy,T.z-hw-2.8,2.8,.15,2.8,'#ffcf3a',1);
+    WP.lift={x:T.x+1,z:T.z-hw-1.8,y:gy};WP.topSpot={x:T.x,z:T.z,y:top+.4};
     for(let k=0;k<12;k++)box(T.x-.9,gy+1+k*3.6,T.z-hw-.12,1.8,1.8,.12,'#cfe8ff',1,.4);}
   // the Racer: a tall platform with four start gates and a big scoreboard
   {const Rc=WP.rc,rt=gy+Rc.top;box(Rc.x0,gy,Rc.z0,Rc.x1-Rc.x0,Rc.top,4,'#46c0ee',1);solid(Rc.x0,Rc.z0,Rc.x1,Rc.z0+4,rt);box(Rc.x0-.2,rt,Rc.z0-.2,Rc.x1-Rc.x0+.4,.3,4.4,'#ffffff',1);
-    for(let k=0;k<5;k++)box(Rc.x0+k*3.2+.1,rt+.3,Rc.z0+3.4,.25,1.2,.25,'#ffcf3a',1);box(Rc.x0,rt+.3,Rc.z0,Rc.x1-Rc.x0,1,.2,'#ffcf3a',1);
-    for(let k=0;k<5;k++)box(Rc.x0+.3,gy+1.5+k*3,Rc.z0-.12,Rc.x1-Rc.x0-.6,1.4,.12,WPC[k],1);WP.rcPad={x:(Rc.x0+Rc.x1)/2,z:Rc.z0-1.6,y:gy};WP.rcTop={x:(Rc.x0+Rc.x1)/2,z:Rc.z0+2,y:rt+.3};
-    box((Rc.x0+Rc.x1)/2-1.4,gy,Rc.z0-3,2.8,.15,2.8,'#ffcf3a',1);
+    for(let k=0;k<5;k++)box(Rc.x0+k*3.2+.1,rt+.3,Rc.z0+3.4,.25,1.2,.25,'#ffcf3a',1);box(Rc.x0,rt+.3,Rc.z0,287-Rc.x0,1,.2,'#ffcf3a',1);box(289,rt+.3,Rc.z0,Rc.x1-289,1,.2,'#ffcf3a',1);
+    for(let k=0;k<5;k++)box(Rc.x0+.3,gy+1.5+k*3,Rc.z0-.12,Rc.x1-Rc.x0-.6,1.4,.12,WPC[k],1);WP.rcPad={x:288,z:Rc.z0-1,y:gy};WP.rcTop={x:(Rc.x0+Rc.x1)/2,z:Rc.z0+2,y:rt+.3};
+    
     const sb=mat4At(Rc.x1+.6,gy,Rc.pool.z0-2);sput('box',sb,0,3,0,.3,6,.3,'#ffffff',1);box(Rc.x1-.5,gy+5,Rc.pool.z0-2.6,.2,2.4,4,'#23232f',1);}
   // the pirate ship in the splash lagoon: walk up the plank, pull the cannons, and the big bucket on the mast tips over
   {const S=WP.ship,dy=gy+2.1;const L=19,Wd=6.4;box(S.x-L/2,gy-.9,S.z-Wd/2,L,3,Wd,'#8a5a3a',6);box(S.x-L/2-.1,dy,S.z-Wd/2-.1,L+.2,.25,Wd+.2,'#c98a4a',6);solid(S.x-L/2,S.z-Wd/2,S.x+L/2,S.z+Wd/2,dy+.25);
@@ -13125,7 +13162,7 @@ function wpCannon(c){if(WPS.spray)return;WPS.spray={c,t:0,dir:c.dz>0?0:Math.PI,h
     cand({x:T.x,z:T.z,y:top+.4},'wpdown','⬇️ '+tr('Take the lift down'),1.8,6,{fn:()=>wpLift({x:WP.lift.x,z:WP.lift.z-1,y:gy},null)});}
   if(WP.rcPad)cand({x:WP.rcPad.x,z:WP.rcPad.z,y:gy},'wprcup','🏁 '+tr('Up to the Racer'),2.6,7,{fn:()=>wpLift(WP.rcTop,'🏁 '+tr('Four slides side by side: race!'))});
   if(WP.rcTop&&p.y>WP.rcTop.y-1&&d2(p.x,p.z,WP.rcTop.x,WP.rcTop.z)<8){cand({x:p.x,z:p.z,y:WP.rcTop.y},'wprace','🏁 '+tr('Race!'),3,8,{fn:()=>wpRace()});cand({x:WP.rcTop.x,z:WP.rcTop.z-1.5,y:WP.rcTop.y},'wpdown2','⬇️ '+tr('Take the lift down'),1.6,5,{fn:()=>wpLift({x:WP.rcPad.x,z:WP.rcPad.z-1,y:gy},null)});}
-  const D=WP.duck;if(d2(p.x,p.z,D.x,D.z)<10.5&&p.y<wl+3)cand({x:p.x,z:p.z,y:p.y},'wpduck','🦆 '+tr('Slide down the giant duck!'),11,5,{fn:()=>wpSlide('duck')});
+  const D=WP.duck;if(d2(p.x,p.z,D.x,D.z)<12&&p.y<wl+3)cand({x:p.x,z:p.z,y:p.y},'wpduck','🦆 '+tr('Slide down the giant duck!'),11,5,{fn:()=>wpSlide('duck')});
   const T0=wpNow();for(let k=0;k<RINGS;k++){const q=wpRing(k,T0);if(Math.abs(q.x-p.x)>3||Math.abs(q.z-p.z)>3)continue;if(p.y>gy+1)continue;cand({x:q.x,z:q.z,y:p.y},'wptube','🛟 '+tr('Hop in the ring!'),2.6,7,{fn:()=>wpTube(k)});}
   for(const c of WP.cannons||[])cand({x:c.x,z:c.z,y:c.y},'wpcan','💦 '+tr('Fire the water cannon!'),2,6,{fn:()=>wpCannon(c)});};}
 // ---------- the camera on a slide: behind you and a little above (straight down the Humongous Drop!) ----------
@@ -13279,17 +13316,15 @@ function wpBuild2(){const gy=WP.y,box=(x,y,z,w,h,d,c,mat,e)=>sbox(x,y,z,w,h,d,c,
     const L=WP.lf.pool;for(const [x,z,w,d] of [[L.x0-.5,L.z0-.5,L.x1-L.x0+1,.5],[L.x0-.5,L.z1,L.x1-L.x0+1,.5],[L.x1,L.z0,.5,L.z1-L.z0]])box(x,gy-.05,z,w,.25,d,'#ffffff',1);box(L.x0,gy-.62,L.z0,L.x1-L.x0,.3,L.z1-L.z0,'#2fa8e8',8,.16);}
   // the Family Raft: a tall tower on the beach and a wide yellow slide down to the lagoon
   {const R=WP.rf,top=gy+R.top,hy=hAt(R.x,R.z);for(let k=0;k<6;k++)box(R.x-2.6,hy+k*(top-hy)/6,R.z-2.6,5.2,(top-hy)/6,5.2,k%2?'#46b0ff':'#ffcf3a',1);solid(R.x-2.6,R.z-2.6,R.x+2.6,R.z+2.6,top);
-    box(R.x-3,top,R.z-3,6,.3,6,'#ffffff',1);for(const [a,b,c,d] of [[-3,-3,6,.2],[-3,-3,.2,6],[2.8,-3,.2,6],[-3,2.8,1.8,.2],[1.2,2.8,1.8,.2]])box(R.x+a,top+.3,R.z+b,c,1,d,'#e8343f',1);
-    WP.rfLift={x:R.x+3.6,z:R.z,y:hy};WP.rfTop={x:R.x,z:R.z,y:top+.3};box(R.x+2.8,hy,R.z-1.4,2.8,.15,2.8,'#ffcf3a',1);
+    box(R.x-3,top,R.z-3,6,.3,6,'#ffffff',1);for(const [a,b,c,d] of [[-3,-3,6,.2],[-3,-3,.2,6],[2.8,-3,.2,2.1],[2.8,.9,.2,2.1],[-3,2.8,1.8,.2],[1.2,2.8,1.8,.2]])box(R.x+a,top+.3,R.z+b,c,1,d,'#e8343f',1);
+    WP.rfLift={x:R.x+4,z:R.z,y:gy};WP.rfTop={x:R.x,z:R.z,y:top+.3};
     const V=wpRaftRide();wpTrough(V,{kind:'slide',w:3,col:'#ff9a3c',col2:'#ffd23f',every:9,until:WL+.3});}
   // the bumper boat pond: an edge, a dock and a sign board
   {const B=WP.bb;for(const [x,z,w,d] of [[B.x0-.5,B.z0-.5,B.x1-B.x0+1,.5],[B.x0-.5,B.z1,B.x1-B.x0+1,.5],[B.x0-.5,B.z0,.5,B.z1-B.z0],[B.x1,B.z0,.5,B.z1-B.z0]])box(x,gy-.05,z,w,.35,d,'#ffcf3a',1);
     box(B.x0,gy-.67,B.z0,B.x1-B.x0,.3,B.z1-B.z0,'#46c0ee',8,.18);box((B.x0+B.x1)/2-2.5,gy,B.z0-1.8,5,.25,1.8,'#c98a4a',6);WP.bbBoard={x:(B.x0+B.x1)/2,z:B.z0-.8,y:gy};
     const sm=mat4At(B.x0-1.2,gy,B.z0-1.2);sput('box',sm,0,1.6,0,.25,3.2,.25,'#ffffff',1);sput('box',sm,0,3.4,0,3.4,1.2,.2,'#2f8fff',1);}
-  // the banana boat pier at the south-west corner of the beach
-  {const P=WP.ban.pier;const hy=WL+.7;for(let k=0;k<6;k++){box(P.x-1.2,hy,P.z+k*1.6,2.4,.25,1.6,'#c98a4a',6);for(const s of [-1,1])box(P.x+s*1.1-.12,WL-2.5,P.z+k*1.6+.6,.24,3.3,.24,'#8a5a3a',6);}
-    for(let k=0;k<6;k++){const z0=P.z+k*1.6;for(let x=Math.floor(P.x-1.2);x<Math.ceil(P.x+1.2);x++)for(let z=Math.floor(z0);z<Math.ceil(z0+1.6);z++){if(!inMap(x,z))continue;const i=cid(x,z);if(H[i]<hy+.25)gapSet(x,z,[[H[i]-20,H[i]],[hy,hy+.25]]);}}
-    WP.banBoard={x:P.x,z:P.z+8,y:hy+.25};const V=wpBananaRide();V.off={x:P.x,y:hy+.3,z:P.z+6.4};}
+  // the banana boat jetty (v27.7: from the west beach out to deep water)
+  wpBananaDock();
   // the beach: umbrellas, towels, sandcastles, a lifeguard and a snack shack
   {const x0=WP.x0;const spots=[[381],[388],[399],[410],[421],[447]];for(const [z] of spots){const x=x0-2.6;if(typeof beachUmbrella==='function')beachUmbrella(x+.6,z);const m=mat4At(x-.4,hAt(x-.4,z+1.6),z+1.6);sput('box',m,0,.03,0,1,.05,2,WPC[(z|0)%6],1);}
     const castle=(x,z)=>{const y=hAt(x,z),m=mat4At(x,y,z);sput('cyl',m,0,.3,0,1.4,.6,1.4,'#e8cf8f',6);sput('cyl',m,0,.75,0,.9,.4,.9,'#e8cf8f',6);for(let k=0;k<4;k++){const a=k/4*TAU+.4;sput('cyl',m,Math.cos(a)*.75,.55,Math.sin(a)*.75,.34,.9,.34,'#efd89c',6);sput('cone',m,Math.cos(a)*.75,1.1,Math.sin(a)*.75,.36,.3,.36,'#e8cf8f',6);}sput('box',m,0,1.25,0,.04,.5,.04,'#ffffff',1);sput('box',m,.15,1.42,0,.3,.18,.02,'#e8343f',1);};
@@ -14568,6 +14603,320 @@ const Q2={strokeT:-9,sealT:-99,sealSkip:false};
 MV('Tidy buttons','أزرار مرتبة');MV('The buttons at the top fold away. Tap ◀ next to ☰ to open them, and ▶ to fold them again','الأزرار في الأعلى تنطوي. اضغط ◀ بجانب ☰ لفتحها، و ▶ لطيّها مرة أخرى');
 MV('No more roaming baddies','لا مزيد من الأشرار المتجولين');MV('Baddies only come in missions, quests and boss fights now. Explore in peace!','الأشرار يظهرون الآن فقط في المهمات والتحديات ومعارك الزعماء. استكشف بسلام!');
 MV('Quieter coins and sea','عملات وبحر أهدأ');MV('Coins make a soft little jingle, and the sea shore is calm: no more whooshing waves or clicking crabs','العملات تصدر رنينًا ناعمًا صغيرًا، وشاطئ البحر هادئ: لا مزيد من صوت الأمواج المتكرر أو طقطقة السلطعونات');
+// ================= v27.6: family codes for online play =================
+// Online play finds friends through free public matchmaking servers. A family code keeps your games private: only tablets
+// with the same family code can see and join each other's games. In the App Store app every tablet makes its own code the
+// first time (so strangers never meet); type the same code on all the tablets that play together. The website keeps its
+// old code until you set one. Changing the code saves the game and starts it again (the matchmaking starts with the code).
+const FAMC={code:String(window.BB_FAMCODE||'')};
+function famRowHTML(){const c=FAMC.code;return `<div class="small famrow" style="margin-top:8px;line-height:1.5">👨‍👩‍👧 ${esc(tr('Family code:'))} <b dir="ltr" style="font-size:17px;letter-spacing:.08em;color:var(--gold,#ffcf3a)">${c?esc(c):esc(tr('none yet'))}</b> <button class="mb famchg" style="display:inline-block;width:auto;padding:4px 12px;margin:0 0 0 6px;min-height:34px">${esc(tr(c?'Change':'Set a code'))}</button><br><span style="opacity:.85">${esc(tr('Only tablets with the same family code can see your games.'))}</span></div>`;}
+function famWire(root){root.querySelectorAll('.famchg').forEach(b=>b.onclick=e=>{e.stopPropagation();famEdit();});}
+function famEdit(){let el=$('famedit');if(!el){el=document.createElement('div');el.id='famedit';el.style.cssText='position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(10,8,30,.55)';document.body.appendChild(el);}
+  el.innerHTML=`<div style="background:#1c1846;color:#fff;border-radius:18px;padding:16px 18px;width:min(420px,88vw);box-shadow:0 10px 40px rgba(0,0,0,.4);font-family:var(--body,system-ui,sans-serif)">
+    <h3 style="margin:0 0 6px">👨‍👩‍👧 ${esc(tr('Family code'))}</h3><p class="small" style="margin:0 0 10px">${esc(tr('Type the same family code on every tablet that plays together (4 to 12 letters or numbers).'))}</p>
+    <input id="famin" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" dir="ltr" value="${esc(FAMC.code)}" style="width:100%;box-sizing:border-box;font-size:24px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff">
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="big mint" id="famok" style="flex:1">${esc(tr('Save'))}</button><button class="big" id="famno" style="flex:1">${esc(tr('Cancel'))}</button></div></div>`;
+  el.hidden=false;const inp=$('famin');inp.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')$('famok').click();};inp.onkeyup=e=>e.stopPropagation();
+  el.onpointerdown=e=>{if(e.target===el)el.hidden=true;};$('famno').onclick=()=>{el.hidden=true;};$('famok').onclick=()=>famSave(inp.value);setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},50);SFX.click&&SFX.click();}
+function famSave(v){v=String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
+  if(v.length<4){toast('👨‍👩‍👧 '+tr('Use 4 to 12 letters or numbers'));SFX.nope&&SFX.nope();return;}
+  if(v===FAMC.code){const el=$('famedit');if(el)el.hidden=true;return;}
+  try{localStorage.setItem('bb_family',v);}catch(e){}try{if(G.mode==='play'||G.mode==='menu')saveGame();}catch(e){}
+  try{if(NET.role!=='solo')netLeave();}catch(e){}toast('👨‍👩‍👧 '+trf('Family code {0}: starting again…',v));setTimeout(()=>location.reload(),900);}
+// on the first screen: under "Host a game" and the list of games
+{const box=document.querySelector('#tonline .onl');if(box&&!$('famrow0')){const d=document.createElement('div');d.id='famrow0';box.appendChild(d);}}
+function famTitle(){const d=$('famrow0');if(!d||!window.BB_STANDALONE)return;const k=FAMC.code+'|'+LANG;if(d._k===k)return;d._k=k;d.innerHTML=famRowHTML();famWire(d);}
+setInterval(()=>{try{if($('tonline')&&!$('tonline').hidden)famTitle();}catch(e){}},500);
+// in the menu: Online
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB==='online'&&window.BB_STANDALONE&&NET.role==='solo'){const h=$('pm_host');if(h&&!h.parentNode.querySelector('.famrow')){const d=document.createElement('div');d.innerHTML=famRowHTML();h.after(d.firstChild);famWire(h.parentNode);}}}catch(e){noteErr('famrow',e);}return r;};}
+MV('Family code:','رمز العائلة:');MV('Family code','رمز العائلة');MV('none yet','لا يوجد بعد');MV('Change','تغيير');MV('Set a code','ضع رمزًا');
+MV('Only tablets with the same family code can see your games.','فقط الأجهزة التي لها نفس رمز العائلة ترى ألعابك.');
+MV('Type the same family code on every tablet that plays together (4 to 12 letters or numbers).','اكتب نفس رمز العائلة على كل جهاز يلعب معًا (من 4 إلى 12 حرفًا أو رقمًا).');
+MV('Use 4 to 12 letters or numbers','استخدم من 4 إلى 12 حرفًا أو رقمًا');MV('Family code {0}: starting again…','رمز العائلة {0}: نبدأ من جديد…');MV('Save','حفظ');MV('Cancel','إلغاء');
+// ---------- what's new (Arabic) ----------
+MV('Family codes','رموز العائلة');MV('Keep your online games private: Play online, Family code, Set a code. Type the same code on every tablet that plays together, and only those tablets see your games','اجعل ألعابك عبر الإنترنت خاصة: اللعب عبر الإنترنت، رمز العائلة، ضع رمزًا. اكتب نفس الرمز على كل جهاز يلعب معًا، وفقط تلك الأجهزة ترى ألعابك');
+// ================= v27.6: the App Store app =================
+// In the iPad app (window.BB_APP, set by app/make_www.py) the game is already a full-screen app: no "Add to Home Screen"
+// tips (the app says navigator.standalone), and moving a game talks about the website and this app.
+if(window.BB_APP){
+  const APPTXT={'Safari, the Home Screen app and the Claude page each keep their own save. Move your game with a game code:':'The website and this app keep separate saves. To bring your game here, copy it on the website (Menu, Settings, My game, Copy my game) and paste it here:'};
+  const _tr=tr;tr=function(s){if(typeof s==='string'&&APPTXT[s])s=APPTXT[s];return _tr(s);};
+  MV('Your game code is copied. Paste it into Notes to keep it safe, and paste it back here to load it.','تم نسخ رمز لعبتك. الصقه في الملاحظات لتحفظه، والصقه هنا مرة أخرى لتحمّله.');
+  MV('The website and this app keep separate saves. To bring your game here, copy it on the website (Menu, Settings, My game, Copy my game) and paste it here:','الموقع وهذا التطبيق يحفظ كل منهما لعبته وحده. لتنقل لعبتك إلى هنا: انسخها في الموقع (القائمة، الإعدادات، لعبتي، انسخ لعبتي) ثم الصقها هنا:');
+  document.documentElement.classList.add('bbapp');
+  // Save a copy: the iPad's share sheet (Save to Files, AirDrop, a message) when the app offers it; otherwise the game
+  // code goes to the clipboard to paste into Notes. (A download link would open the file in place of the game.)
+  if(typeof mvSaveFile==='function'){mvSaveFile=async function(code){
+    try{const file=new File([code],'block-buddies-game.txt',{type:'text/plain'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Block Buddies'});return true;}}catch(e){if(e&&e.name==='AbortError')return false;}
+    try{await navigator.clipboard.writeText(code);mvMark();const sm=$('mvsmsg');if(sm)sm.textContent='📋 '+tr('Your game code is copied. Paste it into Notes to keep it safe, and paste it back here to load it.');return false;}catch(e){}
+    const sm=$('mvsmsg');if(sm)sm.textContent=tr('Could not save here.');return false;};}
+  // the songs: each one is read into memory once and played from there (the app's web view plays sound from memory more
+  // reliably than straight from its own files); until a song is ready, the game asks for it again
+  if(typeof TRK!=='undefined'){const BLOB={},busy={};
+    const getSong=id=>{if(BLOB[id]||busy[id])return busy[id];busy[id]=fetch(TRK.src[id]).then(r=>r.ok?r.blob():null).then(b=>{if(b){BLOB[id]=URL.createObjectURL(b);TRK.src[id]=BLOB[id];}}).catch(()=>{});return busy[id];};
+    for(const id of TRK.order)getSong(id);
+    const _ld=trkLoad;trkLoad=function(id){if(!BLOB[id]){const p=getSong(id);if(p)p.then(()=>{if(BLOB[id]&&TRK.cur===id&&TRK.st==='load')_ld(id);});TRK.stT=performance.now();}return _ld(id);};}
+}
+// ================= v27.7: the first screen fits on the tablet, and the 3D heroes switch is gone =================
+// The kids had to slide down the first screen to reach Play (and the heroes list scrolled inside it too). Now on a tablet
+// lying sideways the heroes sit on the right, all of them at once, and Play is on the left under the name of the game.
+// If a screen is still too small, the whole menu shrinks a little to fit: nothing scrolls.
+// The kids did not like the 3D heroes, so they are off for good (the block heroes are the heroes).
+(function(){const st=document.createElement('style');st.id='tidycss';st.textContent=`
+#title .tbox{overflow:visible;max-height:none;scrollbar-width:none}
+#title .tbox::-webkit-scrollbar{display:none}
+#title .chars{max-height:none;overflow:visible}
+@media (orientation:portrait){
+  #title .tbox{max-width:min(640px,100%)}
+  #title .chars{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}
+  #title .chc canvas{max-width:66px}
+}
+@media (orientation:landscape) and (min-width:700px){
+  #title{padding-top:calc(60px + env(safe-area-inset-top,0px))}
+  #title .tbox{max-width:min(1100px,100%);display:grid;grid-template-columns:minmax(250px,330px) minmax(0,1fr);grid-template-rows:repeat(7,min-content) 1fr;column-gap:22px;row-gap:10px;align-items:start}
+  #title .tbox>.logo{grid-column:1;order:1}
+  #title .tbox>.sub{grid-column:1;order:2;font-size:14px}
+  #tmain:not([hidden]){display:contents}
+  #tmain>.picker{grid-column:2;grid-row:1/-1;order:0;background:var(--panel);border-radius:20px;padding:12px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(6px)}
+  #tmain>.tbtns{grid-column:1;order:3;flex-direction:column;align-items:stretch;gap:12px}
+  #tmain>#tmove{grid-column:1;order:4;margin-top:0!important}
+  #tmain>#savehint{grid-column:1;order:5}
+  #tmain>#pickhint{grid-column:1;order:6}
+  #tmain>#keyshelp{grid-column:1;order:7}
+  #tonline:not([hidden]){grid-column:2;grid-row:1/-1;order:0}
+  #title .chars{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:7px}
+  #title .chc{font-size:12.5px;padding:3px 2px 5px}
+  #title .chc canvas{max-width:60px}
+  #title .chc .chs{font-size:11px}
+  #title .chinfo{min-height:0}
+}
+@media (orientation:landscape) and (min-width:700px) and (max-height:760px){
+  #title .tbox>.sub{display:none}
+  #tmain>#pickhint{display:none}
+  #title .logo i{font-size:clamp(28px,6.4vh,50px)}
+}
+@media (orientation:landscape) and (min-width:700px) and (max-height:600px){
+  #title{padding-top:calc(54px + env(safe-area-inset-top,0px))}
+  #title .chc canvas{max-width:46px}
+  #title .chc b{font-size:11px}
+}
+`;document.head.appendChild(st);})();
+// whatever is left over: shrink the whole menu to fit the screen (never scroll)
+function titleFit(){const T=$('title');if(!T||T.hidden)return;const b=T.querySelector('.tbox');if(!b)return;const cs=getComputedStyle(T);
+  const ah=T.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),aw=T.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  const prev=b.style.transform;b.style.transform='';const nh=b.scrollHeight,nw=b.scrollWidth;const k=Math.max(.5,Math.min(1,ah/Math.max(1,nh),aw/Math.max(1,nw)));
+  const want=k<.995?'scale('+k.toFixed(3)+')':'';b.style.transformOrigin='0 50%';b.style.transform=want;if(want!==prev)TITLEFIT.k=k;}
+const TITLEFIT={k:1};
+{const _tp=titlePicker;titlePicker=function(){const r=_tp.apply(this,arguments);try{titleFit();}catch(e){}return r;};}
+window.addEventListener('resize',()=>{try{titleFit();}catch(e){}});
+setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode==='title')titleFit();}catch(e){}},400);
+try{titleFit();}catch(e){}
+
+// ---------- no more 3D heroes ----------
+if(typeof G3D!=='undefined')G3D.on=false;try{localStorage.removeItem('bb_3d');}catch(e){}
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{const b=$('ps_3d');if(b)b.remove();}catch(e){}return r;};}
+// ================= v27.7: the water park, take 3 (the kids tested it and told us what to fix) =================
+// - Nobody has to fly any more: the tall rides have glass lifts you just walk into (they take you up, and down again),
+//   and the Racer and the giant duck have stairs too.
+// - The Banana Boat has a new jetty on the beach and a new loop out in deep water (the old one ran up onto the snowy
+//   shore at the end). The banana swings out and leans in the turns, bobs on the water, and at the end it glides back
+//   to the jetty and you hop off onto it.
+// - The wave pool: a big Make waves! button, floats to paddle out on and surf the waves back to the beach, and bigger waves.
+// - Getting on and off the boats is a little hop now, not a jump through the air.
+
+// ---------- glass lifts ----------
+const WPL={list:[],cool:0,inT:0};
+function wpLiftDefs(){const gy=WP.y,L=[];
+  if(WP.lift)L.push({id:'tower',x:WP.lift.x,z:WP.lift.z,y0:gy,y1:gy+WP.tw.top+.4,out0:{x:WP.lift.x,z:WP.lift.z-2.4},out1:{x:WP.lift.x,z:WP.lift.z+2.5},rails:'ew',ic:'🗼',msg:'45 metres up! Pick a slide'});
+  if(WP.rcPad)L.push({id:'racer',x:WP.rcPad.x,z:WP.rcPad.z,y0:gy,y1:gy+WP.rc.top,out0:{x:WP.rcPad.x-2.5,z:WP.rcPad.z},out1:{x:WP.rcPad.x,z:WP.rcPad.z+2.6},rails:'ne',ic:'🏁',msg:'Four slides side by side: race!'});
+  if(WP.rfLift)L.push({id:'raft',x:WP.rfLift.x,z:WP.rfLift.z,y0:gy,y1:gy+WP.rf.top,out0:{x:WP.rfLift.x+2.5,z:WP.rfLift.z},out1:{x:WP.rfLift.x-2.6,z:WP.rfLift.z},rails:'ns',ic:'🛟',msg:'Everybody in the raft!'});
+  WPL.list=L;return L;}
+function wpLiftBuild(){const box=(x,y,z,w,h,d,c,mat,e)=>sbox(x,y,z,w,h,d,c,mat||1,e);
+  for(const L of wpLiftDefs()){const h=L.y1-L.y0+2.9;
+    // the shaft: four white posts, yellow rings on the closed sides, a roof at the top and a yellow floor at the bottom
+    for(const [a,b] of [[-1.12,-1.12],[.92,-1.12],[-1.12,.92],[.92,.92]])box(L.x+a,L.y0,L.z+b,.2,h,.2,'#2f8fff',1);
+    for(let y=L.y0+3;y<L.y1-.5;y+=3){box(L.x-1.1,y,L.z-1.1,2.2,.14,.12,'#ffcf3a',1);box(L.x-1.1,y,L.z+.98,2.2,.14,.12,'#ffcf3a',1);box(L.x-1.1,y,L.z-1.1,.12,.14,2.2,'#ffcf3a',1);box(L.x+.98,y,L.z-1.1,.12,.14,2.2,'#ffcf3a',1);}
+    box(L.x-1.3,L.y1+2.9,L.z-1.3,2.6,.3,2.6,'#2f8fff',1);box(L.x-.5,L.y1+3.2,L.z-.5,1,.5,1,'#ffcf3a',1,.3);box(L.x-1,L.y0,L.z-1,2,.08,2,'#ffcf3a',1,.15);
+    // you can stand in the cabin at the top too (and walk under it at the bottom)
+    for(let z=Math.floor(L.z-1);z<Math.ceil(L.z+1);z++)for(let x=Math.floor(L.x-1);x<Math.ceil(L.x+1);x++){if(!inMap(x,z))continue;const i=cid(x,z);if(CH[i]>=L.y1-.5)continue;gapSet(x,z,[[H[i]-20,Math.max(H[i],CH[i])],[L.y1-.3,L.y1]]);}}}
+function wpLiftAt(x,z){let best=null,bd=1e9;for(const L of WPL.list){const d=Math.hypot(L.x-x,L.z-z);if(d<bd){bd=d;best=L;}}return {L:best,d:bd};}
+function wpLiftGo(L,up){if(!L)return;const p=ME;const y0=up?L.y0:L.y1,y1=up?L.y1:L.y0;
+  wpStart('lift',{L:L.id,up,sx:p.x,sy:p.y,sz:p.z,y0,y1,ex:up?L.out1:L.out0,dur:Math.max(1.7,Math.abs(y1-y0)/9.5),e:0,reward:null,msg:up?L.ic+' '+tr(L.msg):null});SFX.click&&SFX.click();}
+// the old ✋ buttons call wpLift: now it is a ride in the lift, not a jump
+wpLift=function(S,msg){const a=wpLiftAt(ME.x,ME.z),b=wpLiftAt(S.x,S.z);const L=(a.d<=b.d?a:b).L;if(!L)return;wpLiftGo(L,S.y>ME.y+1);};
+function wpLiftRide(R,dt){const p=ME,A=p.anim;R.e+=dt;const L=WPL.list.find(q=>q.id===R.L);if(!L){wpAbort();return;}const tIn=.4,tOut=.45,e=R.e;let x,y,z,fx,fz;
+  if(e<tIn){const u=e/tIn;x=lerp(R.sx,L.x,u);z=lerp(R.sz,L.z,u);y=lerp(R.sy,R.y0,u);fx=L.x-R.sx;fz=L.z-R.sz;A.walk+=dt*9;A.amp=.6;R.cy=R.y0;}
+  else if(e<tIn+R.dur){const u=(e-tIn)/R.dur,s=u*u*(3-2*u);x=L.x;z=L.z;y=lerp(R.y0,R.y1,s);fx=R.ex.x-L.x;fz=R.ex.z-L.z;A.amp=lerp(A.amp,0,Math.min(1,dt*8));R.cy=y;}
+  else if(e<tIn+R.dur+tOut){const u=(e-tIn-R.dur)/tOut;x=lerp(L.x,R.ex.x,u);z=lerp(L.z,R.ex.z,u);y=R.y1;fx=R.ex.x-L.x;fz=R.ex.z-L.z;A.walk+=dt*9;A.amp=.6;R.cy=R.y1;}
+  else{const msg=R.msg;wpStop(R.ex.x,R.y1+.02,R.ex.z);WPL.cool=.8;if(msg)toast(msg);return;}
+  p.x=x;p.y=y;p.z=z;p.vx=p.vz=p.vy=0;p.ground=true;if(Math.hypot(fx,fz)>.01)p.face=Math.atan2(fx,fz);}
+// walk into a lift and stand still for a moment: up (or down) you go
+function wpLiftAuto(dt){if(WPL.cool>0){WPL.cool-=dt;WPL.inT=0;return;}const p=ME;if(!p||WPS.me||p.veh||p.fly||p.swim||p.carry||G.mode!=='play'){WPL.inT=0;return;}
+  let hit=null,up=true;for(const L of WPL.list){if(Math.abs(p.x-L.x)<.85&&Math.abs(p.z-L.z)<.85){if(Math.abs(p.y-L.y0)<.9){hit=L;up=true;}else if(Math.abs(p.y-L.y1)<.9){hit=L;up=false;}}}
+  if(!hit){WPL.inT=0;return;}WPL.inT+=dt;if(WPL.inT>.35){WPL.inT=0;wpLiftGo(hit,up);}}
+function drawLiftCabin(m,x,y,z,rails){MS.reset();M4.tr(m,x,y,z);bx(m,0,.07,0,1.94,.14,1.94,'#ffcf3a',1);bx(m,0,2.64,0,2.06,.2,2.06,'#2f8fff',1);bx(m,0,2.82,0,.8,.16,.8,'#ffffff',1,.6);
+  for(const [a,b] of [[-.95,-.95],[.95,-.95],[-.95,.95],[.95,.95]])bx(m,a,1.32,b,.14,2.5,.14,'#2f8fff',1);
+  for(const c of rails){const ns=c==='n'||c==='s',s=(c==='n'||c==='w')?-.95:.95;bx(m,ns?0:s,.6,ns?s:0,ns?1.8:.06,.9,ns?.06:1.8,'#bfe6ff',8,.25);bx(m,ns?0:s,1.08,ns?s:0,ns?1.9:.1,.1,ns?.1:1.9,'#ffcf3a',1);}}
+function wpLiftsDraw(t){const m=MS.cur;const riders=[];const R=WPS.me;if(R&&R.k==='lift')riders.push({L:R.L,y:R.cy??ME.y});
+  for(const rp of netFriends())if(rp.wpRide&&rp.wpRide[0]==='lift')riders.push({L:rp.wpRide[1],y:rp.y});
+  for(const L of WPL.list){if(Math.abs(L.x-CAM.tx)>140||Math.abs(L.z-CAM.tz)>140)continue;const mine=riders.filter(r=>r.L===L.id);
+    for(const r of mine)drawLiftCabin(m,L.x,r.y,L.z,L.rails);
+    if(!mine.some(r=>Math.abs(r.y-L.y0)<2.8))drawLiftCabin(m,L.x,L.y0,L.z,L.rails);if(!mine.some(r=>Math.abs(r.y-L.y1)<2.8))drawLiftCabin(m,L.x,L.y1,L.z,L.rails);}}
+
+// ---------- stairs: up to the Racer, and up to the duck slide ----------
+function wpRail(x0,y0,z0,x1,y1,z1,col){const dx=x1-x0,dy=y1-y0,dz=z1-z0,len=Math.hypot(dx,dy,dz);if(len<.01)return;const m=mat4At((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);M4.ry(m,Math.atan2(dx,dz));M4.rx(m,Math.atan2(-dy,Math.hypot(dx,dz)));sput('box',m,0,0,0,.1,.1,len,col||'#ffffff',1);}
+function wpRacerStairs(){const gy=WP.y,Rc=WP.rc,rt=gy+Rc.top,x0=280,n=19,r=Rc.top/n,zb=Rc.z0+4;// steps from z 422 (bottom) to z 404, then the landing beside the platform
+  for(let k=1;k<=n;k++){const z=zb+n-k,h=gy+k*r;sbox(x0,gy,z,2,h-gy,1,k%2?'#ffffff':WPC[Math.floor(k/2)%6],2);solid(x0,z,x0+2,z+1,h);}
+  sbox(x0,gy,Rc.z0,2,rt-gy,4,'#46c0ee',1);sbox(x0-.05,rt-.02,Rc.z0-.05,2.1,.3,4.1,'#ffffff',1);solid(x0,Rc.z0,x0+2,Rc.z0+4,rt);
+  // railings on both sides (a post every two steps and a rail on top)
+  for(const sx of [x0+.05,x0+1.85]){for(let k=1;k<=n;k+=2){const z=zb+n-k+.45,h=gy+k*r;sbox(sx-.05,h,z,.1,1,.1,'#ffffff',3);}wpRail(sx,gy+r+1,zb+n-1+.5,sx,rt+1,zb+.5,'#ffcf3a');}
+  sbox(x0+.05,rt,Rc.z0,.1,1,4,'#ffcf3a',1);
+  WP.rcStair={x:x0+1,z:zb+n+.6,y:gy};}
+function wpDuckStairs(){const gy=WP.y,W=WP.wave,fl=gy-2.4,sl=WP.slBy.duck;if(!sl)return;const s0=sl.P[0],yTop=s0.y-.02,n=12,r=(yTop-gy)/(n+1),z0=424;
+  for(let k=1;k<=n;k++){const x=W.x1-k,h=gy+k*r;sbox(x,fl,z0,1,h-fl,2,k%2?'#ffd21f':'#ffffff',2);solid(x,z0,x+1,z0+2,h);}
+  // the landing next to the duck's head, on legs in the water (you can swim under it)
+  const lx0=236,lx1=240,lz0=424,lz1=429;sbox(lx0,yTop-.35,lz0,lx1-lx0,.35,lz1-lz0,'#ffd21f',1);
+  for(const [a,b] of [[lx0+.2,lz0+.2],[lx1-.4,lz0+2.2],[lx1-.4,lz1-.4]])sbox(a,fl,b,.22,yTop-.35-fl,.22,'#ffffff',3);
+  for(let z=lz0;z<lz1;z++)for(let x=lx0;x<lx1;x++){const i=cid(x,z);if(CH[i]>yTop-1.2){CH[i]=Math.max(CH[i],yTop);continue;}gapSet(x,z,[[H[i]-20,H[i]],[yTop-.35,yTop]]);}
+  // railings: along the steps (both sides) and round the landing (open where the slide starts)
+  for(const sz of [z0+.05,z0+1.85]){for(let k=1;k<=n;k+=2){const x=W.x1-k+.45,h=gy+k*r;sbox(x,h,sz-.05,.1,1,.1,'#ffffff',3);}wpRail(W.x1-.5,gy+r+1,sz,W.x1-n+.5,gy+n*r+1,sz,'#ff8a1f');}
+  sbox(lx0,yTop,lz0,lx1-lx0,1,.1,'#ff8a1f',1);sbox(lx0,yTop,lz0,.1,1,lz1-lz0-1.6,'#ff8a1f',1);sbox(lx1-.1,yTop,lz0+2,.1,1,lz1-lz0-2,'#ff8a1f',1);
+  WP.duckTop={x:237,z:427.6,y:yTop};WP.duckStair={x:W.x1+.9,z:z0+1,y:gy};}
+
+// ---------- the wave pool: the Make waves! button and the float rack ----------
+WAVE.A=.72;
+function wpWaveFunBuild(){const gy=WP.y,W=WP.wave;
+  const B={x:234.35,z:W.z0-1.6};WP.mkw=B;sbox(B.x-.45,gy,B.z-.45,.9,1.05,.9,'#ffcf3a',1);sbox(B.x-.55,gy+1.05,B.z-.55,1.1,.15,1.1,'#ffffff',1);solid(B.x-.45,B.z-.45,B.x+.45,B.z+.45,gy+1.05);
+  const F={x:W.x1-2.4,z:W.z0+1.2};WP.floatRack=F;const fy=hAt(F.x,F.z);for(const s of [-1,1])sbox(F.x+s*1.3-.08,fy,F.z-.08,.16,1.6,.16,'#c98a4a',6);sbox(F.x-1.4,fy+1.45,F.z-.08,2.8,.14,.16,'#c98a4a',6);
+  for(let k=0;k<3;k++){const m=mat4At(F.x-.8+k*.8,fy+.85,F.z+.15);M4.rx(m,-.25);for(let q=0;q<12;q++){const a=q/12*TAU;sput('sph',m,Math.cos(a)*.48,Math.sin(a)*.48,0,.3,.3,.3,q%2?WPC[k*2]:'#ffffff',1,.1);}}}
+{const _we=wpWaveEnv;wpWaveEnv=function(t){const a=_we(t);const t0=WPS.waveT0;if(!t0)return a;const c=t-t0;if(c<0||c>WAVE.len)return a;const u=c/WAVE.len;return Math.max(a,Math.min(1,u*5,(1-u)*5));};}
+function wpMakeWaves(silent){const t=wpNow();WPS.btnT=.5;if(!silent)SFX.click&&SFX.click();if(wpWaveEnv(t)>0||(WPS.waveT0&&t<WPS.waveT0)){if(!silent)toast('🌊 '+tr('The waves are already coming!'));return;}
+  const t0=t+1.6;WPS.waveT0=t0;if(!silent){netEvent('wp',['mkw',+t0.toFixed(2)]);floatText(WP.mkw.x,WP.y+2.2,WP.mkw.z,'🌊','blue');}}
+// a float: paddle with the stick, and the waves carry you to the beach (fastest on top of a wave: surfing!)
+function wpFloatStart(){const W=WP.wave,p=ME;const x=clamp(p.x,W.x0+2,W.x1-2.5);wpStart('float',{x,z:398.6,h:0,v:0,ci:(Math.random()*6)|0,e:0,reward:null});p.drive=true;try{SFX.splash&&SFX.splash();burst(x,WP.y,398.6,['#bfe9ff','#ffffff'],14,3,.16,.5);}catch(e){}
+  toast('🛟 '+tr('Paddle out and ride the waves! Jump to get off'));}
+function wpFloatBlock(R){// the duck, its stairs and the landing's legs
+  const dx=(R.x-236)/5.6,dz=(R.z-433.6)/6.2,d=Math.hypot(dx,dz);if(d<1){const k=1/(d||1);R.x=236+dx*k*5.6;R.z=433.6+dz*k*6.2;R.v*=.5;}
+  if(R.x>239.4&&R.z>423.4&&R.z<426.6){const up=R.z-423.4,dn=426.6-R.z;if(up<dn)R.z=423.4;else R.z=426.6;R.v*=.5;}}
+function wpFloatRide(R,dt,inp){const p=ME,A=p.anim,W=WP.wave,wl=WP.y-.3,t=wpNow();R.e+=dt;
+  const [fx,fz]=camForward(),rx=-fz,rz=fx;let mx=inp.mx,mz=inp.mz;const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}const wx=rx*mx+fx*(-mz),wz=rz*mx+fz*(-mz),w2=Math.hypot(wx,wz);
+  if(w2>.15){const want=Math.atan2(wx,wz);let d=want-R.h;d=Math.atan2(Math.sin(d),Math.cos(d));R.h+=clamp(d,-2.6*dt,2.6*dt);R.v=lerp(R.v,3*Math.min(1,w2),Math.min(1,dt*1.6));}else R.v=lerp(R.v,0,Math.min(1,dt*.9));
+  const env=wpWaveEnv(t),h=wpWaveH(R.x,R.z,t);let vx=Math.sin(R.h)*R.v,vz=Math.cos(R.h)*R.v;if(env>0)vz-=(1+3.4*Math.max(0,h)/WAVE.A)*env;
+  R.x+=vx*dt;R.z+=vz*dt;R.x=clamp(R.x,W.x0+1.2,W.x1-1.2);R.z=Math.min(R.z,W.z1-1.3);wpFloatBlock(R);
+  if(env>.5&&h>WAVE.A*.45){R.surf=(R.surf||0)+dt;A.cheer=Math.max(A.cheer||0,.5);if(R.surf>1.2&&!WPS.ridden.has('surf'))wpReward('surf');}else R.surf=Math.max(0,(R.surf||0)-dt);
+  // washed up on the beach: stand up on the sand
+  if(R.z<397.2){const x=R.x,z=R.z-1.2;wpStop(x,hAt(x,z)+.05,z);if(env>0)toast('🏄 '+tr('Whee! You surfed to the beach!'));return;}
+  const bob=Math.sin(t*2.4+R.x*.7)*.05;p.x=R.x;p.z=R.z;p.y=wl+Math.max(-.2,h)+.12+bob;p.face=R.h;p.vx=vx;p.vz=vz;p.vy=0;p.ground=true;p.drive=true;R.y=p.y;
+  if(inp.jumpP||inp.interactP){wpStop(p.x,wl-.6,p.z,inp.jumpP?5:1);return;}animSprings(p,dt);}
+function drawFloatRing(m,x,y,z,h,col){MS.reset();M4.tr(m,x,y,z);M4.ry(m,h);for(let k=0;k<12;k++){const a=k/12*TAU;sp(m,Math.cos(a)*.62,0,Math.sin(a)*.62,.36,.32,.36,k%2?col:'#ffffff',1,.1);}}
+function wpWaveFunDraw(t){const m=MS.cur;const B=WP.mkw;if(B&&Math.abs(B.x-CAM.tx)<90&&Math.abs(B.z-CAM.tz)<90){const press=(WPS.btnT||0)>0?.12:0;MS.reset();M4.tr(m,B.x,WP.y+1.2-press,B.z);sp(m,0,.12,0,.62,.42,.62,'#e8343f',3,.25);cy(m,0,0,0,.8,.08,.8,'#ffffff',1);}
+  const R=WPS.me;if(R&&R.k==='float')drawFloatRing(m,ME.x,ME.y-.12,ME.z,R.h,WPC[R.ci|0]);
+  for(const rp of netFriends())if(rp.wpRide&&rp.wpRide[0]==='float'){rp.drive=true;drawFloatRing(m,rp.x,rp.y-.12,rp.z,rp.face||0,WPC[rp.wpRide[1]|0]);}}
+
+// ---------- the Banana Boat: a new jetty on the beach and a loop in deep water ----------
+// the jetty runs out from the beach (south of the raft lagoon) to a landing stage; the banana waits along the stage's sea side
+const BAN={x:163.6,z:449,stage:{x0:165,x1:167,z0:445,z1:453},walk:{x0:167,x1:179,z0:448,z1:450}};
+function wpBanPath(){const y=WL+.08;return [[163.6,y,449],[163.6,y,454.5],[161.2,y,459.2],[151,y,461.2],[126,y,460.6],[101,y,461.2],[79,y,466],[56,y,470],[41,y,461],[38.5,y,445],[48,y,433],[66,y,430.5],[85,y,436],[101,y,442.6],[125,y,444.8],[145,y,443.8],[156,y,441.8],[161.6,y,443.6],[163.6,y,447.2],[163.6,y,449]];}
+// a smooth closed loop through the points (it ends where it starts, pointing the same way), a point every half metre
+function wpLoop(C,step){const n=C.length-1,raw=[];for(let i=0;i<n;i++){const p0=C[(i-1+n)%n],p1=C[i],p2=C[i+1],p3=C[(i+2)%n];const seg=Math.hypot(p2[0]-p1[0],p2[2]-p1[2]);const m=Math.max(2,Math.ceil(seg/.25));
+    for(let k=0;k<m;k++){const t=k/m,t2=t*t,t3=t2*t;const f=(a,b,c,d)=>.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);raw.push([f(p0[0],p1[0],p2[0],p3[0]),p1[1],f(p0[2],p1[2],p2[2],p3[2])]);}}
+  raw.push(C[n].slice());const d=[0];for(let i=1;i<raw.length;i++)d.push(d[i-1]+Math.hypot(raw[i][0]-raw[i-1][0],raw[i][2]-raw[i-1][2]));const L=d[d.length-1];
+  const out=[];let j=0;for(let s=0;s<L;s+=step){while(j<d.length-2&&d[j+1]<s)j++;const u=(s-d[j])/((d[j+1]-d[j])||1);out.push([lerp(raw[j][0],raw[j+1][0],u),raw[j][1],lerp(raw[j][2],raw[j+1][2],u)]);}out.push(C[n].slice());return out;}
+function wpBananaRide3(){const pts=wpLoop(wpBanPath(),.5);const W=wpPath(pts),P=W.P,n=P.length;
+  // the frame at the ends points the same way (the loop goes on through the dock)
+  P[0].F=P[1].F.slice();P[0].U=P[1].U.slice();P[0].R=P[1].R.slice();P[n-1].F=P[0].F.slice();P[n-1].U=P[0].U.slice();P[n-1].R=P[0].R.slice();
+  const cum=[0];for(let i=1;i<n;i++)cum.push(cum[i-1]+Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z));const L=cum[n-1];
+  // how sharply it turns at each point (smoothed), and how fast it can go there
+  const th=P.map(q=>Math.atan2(q.F[0],q.F[2]));const k0=th.map((a,i)=>{if(i===0||i===n-1)return 0;let d=th[i+1]-th[i-1];d=Math.atan2(Math.sin(d),Math.cos(d));return d/((cum[i+1]-cum[i-1])||1);});
+  const ks=k0.map((_,i)=>{let s=0,c=0;for(let j=Math.max(0,i-8);j<=Math.min(n-1,i+8);j++){s+=k0[j];c++;}return s/c;});
+  const vs=ks.map(k=>Math.min(12.5,Math.sqrt(4.2/Math.max(1e-4,Math.abs(k)))));vs[0]=.45;for(let i=1;i<n;i++)vs[i]=Math.min(vs[i],Math.sqrt(vs[i-1]*vs[i-1]+2*2.1*(cum[i]-cum[i-1])));
+  vs[n-1]=.25;for(let i=n-2;i>=0;i--)vs[i]=Math.min(vs[i],Math.sqrt(vs[i+1]*vs[i+1]+2*1.7*(cum[i+1]-cum[i])));
+  const T=[0];for(let i=1;i<n;i++)T.push(T[i-1]+(cum[i]-cum[i-1])/Math.max(.2,(vs[i]+vs[i-1])/2));
+  const V={id:'banana',ic:'🍌',col:'#ffd21f',seats:[[0,.62,1.5],[0,.62,.5],[0,.62,-.5],[0,.62,-1.5]],off:{x:BAN.stage.x0+1,y:WL+.98,z:BAN.z},hop:'Climb on the banana! Friends can ride too',
+    P,cum,n,L,T,ks,vs,Tend:T[n-1],TT:T[n-1]+2.4,dep:0,wait:6,
+    fx:(R,f,t,dt)=>{R.cheer=t>1&&t<V.Tend-2?.6:0;}};WV.banana=V;return V;}
+function wpBananaDock(){const y=WL+.7,top=y+.25,J=BAN.walk,S=BAN.stage;
+  const deck=(x0,z0,x1,z1)=>{sbox(x0,y,z0,x1-x0,.25,z1-z0,'#c98a4a',6);for(let z=z0;z<z1;z++)for(let x=x0;x<x1;x++){if(!inMap(x,z))continue;const i=cid(x,z);if(H[i]<top-.05)gapSet(x,z,[[H[i]-20,H[i]],[y,top]]);}};
+  deck(J.x0,J.z0,J.x1,J.z1);deck(S.x0,S.z0,S.x1,S.z1);for(let x=J.x0+.4;x<J.x1;x+=1.6)sbox(x,y+.24,J.z0,.12,.02,J.z1-J.z0,'#a86c3c',6);
+  for(let x=J.x0+.6;x<J.x1-.5;x+=2)for(const z of [J.z0+.06,J.z1-.3]){sbox(x,WL-2.8,z,.24,2.8+y-WL,.24,'#8a5a3a',6);sbox(x+.02,top,z+.02,.2,.85,.2,'#8a5a3a',6);}
+  for(const z of [J.z0+.12,J.z1-.18])sbox(J.x0+.6,top+.72,z-.03,J.x1-J.x0-1.2,.08,.08,'#e8e2d0',1);// rope rails along the jetty
+  for(let z=S.z0+.2;z<S.z1;z+=1.9)for(const x of [S.x0+.06,S.x1-.3])sbox(x,WL-2.8,z,.24,2.8+y-WL,.24,'#8a5a3a',6);
+  for(const z of [S.z0+.5,S.z1-.7])sput('cyl',mat4At(S.x0+.35,top,z),0,.3,0,.36,.6,.36,'#3a3d4a',3);// bollards
+  sbox(S.x1-.12,top,S.z0,.12,.9,J.z0-S.z0,'#ffcf3a',1);sbox(S.x1-.12,top,J.z1,.12,.9,S.z1-J.z1,'#ffcf3a',1);// a rail on the land side of the stage (open where the jetty joins)
+  // a sign post at the start of the jetty
+  {const m=mat4At(J.x1-.6,hAt(J.x1-.6,J.z0-.6),J.z0-.6);sput('box',m,0,1.5,0,.18,3,.18,'#ffffff',1);sput('box',m,0,3,0,.12,1,2.2,'#ffd21f',1);}
+  WP.banBoard={x:S.x0+1,z:BAN.z,y:top};return wpBananaRide3();}
+// the banana's own moves: it swings out and leans in the turns, and bobs and wiggles on the water
+function wpVRot(v,a,ang){const c=Math.cos(ang),s=Math.sin(ang),d=v[0]*a[0]+v[1]*a[1]+v[2]*a[2];const x=[a[1]*v[2]-a[2]*v[1],a[2]*v[0]-a[0]*v[2],a[0]*v[1]-a[1]*v[0]];return [v[0]*c+x[0]*s+a[0]*d*(1-c),v[1]*c+x[1]*s+a[1]*d*(1-c),v[2]*c+x[2]*s+a[2]*d*(1-c)];}
+function wpTilt(f,yaw,pitch,roll,ox,oy){let F=f.F,U=f.U,R=f.R;if(yaw){F=wpVRot(F,U,yaw);R=wpVRot(R,U,yaw);}if(pitch){F=wpVRot(F,R,pitch);U=wpVRot(U,R,pitch);}if(roll){U=wpVRot(U,F,roll);R=wpVRot(R,F,roll);}
+  return {x:f.x+f.R[0]*(ox||0),y:f.y+(oy||0),z:f.z+f.R[2]*(ox||0),F,U,R,i:f.i};}
+function wpBanKV(V,f){const i=clamp(f.i|0,0,V.n-1);return {k:V.ks[i]||0,v:V.vs[i]||0};}
+{const _wa=wvAt;wvAt=function(V,t){const f=_wa(V,t);if(!V||V.id!=='banana'||!V.ks)return f;try{const {k,v}=wpBanKV(V,f),a=v*v*k,T=wpNow(),sp=Math.min(1,v/6);
+    return wpTilt(f,.06*Math.sin(T*1.3)*sp,.03*Math.sin(T*1.9)+.012*sp,clamp(a*.035,-.28,.28)+.02*Math.sin(T*2.7),clamp(-a*.11,-1.5,1.5),.05*Math.sin(T*2.2)+.03*Math.sin(T*3.4+1));}catch(e){return f;}};}
+// where the banana is along its loop (metres) at a time of the ride
+function wpBanS(V,t){const T=V.T,n=V.n;if(t<=0)return 0;if(t>=T[n-1])return V.L;let a=0,b=n-1;while(b-a>1){const m=(a+b)>>1;if(T[m]<=t)a=m;else b=m;}return V.cum[a]+(V.cum[b]-V.cum[a])*((t-T[a])/((T[b]-T[a])||1));}
+function wpBanDraw(V,tt,f,t){const m=MS.cur;MS.reset();m.set(frameM(f));drawBanana(m,t);
+  const s=wpBanS(V,tt),g0=wvAtS(V,(s+10.5)%V.L),i=clamp(g0.i|0,0,V.n-1),k=V.ks[i]||0,v=V.vs[i]||0,a=v*v*k,T=wpNow();
+  const g=wpTilt(g0,0,-.06*Math.min(1,v/8)+.02*Math.sin(T*2.6),clamp(-a*.03,-.2,.2),0,.04*Math.sin(T*2.9));MS.reset();m.set(frameM(g));drawSpeedboat(m,t);
+  OUT=MOB;drawPerson({x:g.x-g.F[0]*1.2,y:g.y+.3,z:g.z-g.F[2]*1.2,face:Math.atan2(g.F[0],g.F[2]),anim:{wave:0,cheer:0,punch:0,walk:0,amp:0},hy:0},t,{shirt:'#ff9a3c',pants:'#2b2d42',skin:'#c68a5a',hair:'#221b25',hs:1,hat:'cap'});OUT=DYN;
+  // the tow rope (it sags a little)
+  const A={x:f.x+f.F[0]*2.9+f.U[0]*.6,y:f.y+f.F[1]*2.9+.62,z:f.z+f.F[2]*2.9+f.U[2]*.6},B={x:g.x-g.F[0]*2.4,y:g.y+.9,z:g.z-g.F[2]*2.4};
+  for(let q=0;q<9;q++){const u=(q+.5)/9;MS.reset();M4.tr(m,lerp(A.x,B.x,u),lerp(A.y,B.y,u)-Math.sin(u*Math.PI)*.3*(1-Math.min(1,v/10)),lerp(A.z,B.z,u));sp(m,0,0,0,.07,.07,.07,'#3a3d4a',1);}
+  // spray behind the boat and along the banana when it goes fast
+  if(tt>0&&v>2.5&&Math.random()<.85){PARTS.push({x:g.x-g.F[0]*2.6+Rr(-.5,.5),y:WL+.2,z:g.z-g.F[2]*2.6+Rr(-.5,.5),vx:-g.F[0]*3+Rr(-1,1),vy:Rr(1,3),vz:-g.F[2]*3+Rr(-1,1),life:.7,s:.2,c:hex('#ffffff'),e:.3,g:7,k:'deb',rot:0});
+    if(Math.random()<.5){const sd=Math.random()<.5?-1:1;PARTS.push({x:f.x+f.R[0]*sd*1.1,y:WL+.15,z:f.z+f.R[2]*sd*1.1,vx:f.R[0]*sd*1.5+Rr(-.5,.5),vy:Rr(.8,2),vz:f.R[2]*sd*1.5+Rr(-.5,.5),life:.5,s:.14,c:hex('#ffffff'),e:.3,g:8,k:'deb',rot:0});}}}
+// all the shared rides, drawn (the banana and its speedboat our new way)
+wvDrawAll=function(t){for(const id in WV){const V=WV[id];const tt=wvT(V);const f=wvAt(V,tt);if(Math.abs(f.x-CAM.tx)>170||Math.abs(f.z-CAM.tz)>170)continue;const m=MS.cur;MS.reset();m.set(frameM(f));
+  if(id==='log')drawLog(m,t);else if(id==='raft'){M4.ry(m,tt*1.8);drawRaft(m,t);}else if(id==='banana')wpBanDraw(V,tt,f,t);}};
+// hop on (from where you stood) and hop off (onto the jetty or the station) instead of jumping through the air
+{const _wb=wvBoard;wvBoard=function(id){const x=ME.x,y=ME.y,z=ME.z;_wb(id);const R=WPS.me;if(R&&R.k==='wv'&&R.id===id)R.hop={x,y,z,e:0};};}
+{const _wr=wvRide;wvRide=function(R,dt,inp){const p=ME,V=WV[R.id];
+  if(R.hopOff){const H2=R.hopOff;H2.e+=dt;const u=Math.min(1,H2.e/.5),s=u*u*(3-2*u);p.x=lerp(H2.x0,H2.x1,s);p.z=lerp(H2.z0,H2.z1,s);p.y=lerp(H2.y0,H2.y1,s)+Math.sin(u*Math.PI)*.8;p.face=H2.face;p.drive=false;
+    if(u>=1){R.hopOff=null;wpStop(H2.x1,H2.y1,H2.z1);}return;}
+  if(V){const t=wpNow()-R.dep,end=V.id==='banana'?V.Tend+.35:V.TT-.6;if(t>=end&&t>0){const o=V.off;const tz=V.id==='banana'?clamp(p.z,BAN.stage.z0+.8,BAN.stage.z1-.8):o.z;
+      R.hopOff={x0:p.x,y0:p.y,z0:p.z,x1:o.x,y1:o.y,z1:tz,e:0,face:Math.atan2(o.x-p.x,tz-p.z)};SFX.jump&&SFX.jump();return;}}
+  _wr(R,dt,inp);if(WPS.me!==R)return;const H1=R.hop;if(H1&&H1.e<.45){H1.e+=dt;const u=Math.min(1,H1.e/.45),s=u*u*(3-2*u);p.x=lerp(H1.x,p.x,s);p.z=lerp(H1.z,p.z,s);p.y=lerp(H1.y,p.y,s)+Math.sin(u*Math.PI)*.7;}};}
+// the camera on the banana: behind and above it, smoothed, so the swing doesn't shake the picture
+{const _uc=updateCamera;updateCamera=function(dt){_uc(dt);const R=WPS.me;if(!R||R.k!=='wv'||R.id!=='banana'||!R.f){WPS.banCam=null;return;}const f=R.f;
+  let fx=f.F[0],fz=f.F[2];const l=Math.hypot(fx,fz)||1;fx/=l;fz/=l;const S=WPS.banCam||(WPS.banCam={fx,fz,ex:null});const k=Math.min(1,dt*1.8);S.fx+=(fx-S.fx)*k;S.fz+=(fz-S.fz)*k;const sl=Math.hypot(S.fx,S.fz)||1;const cx=S.fx/sl,cz=S.fz/sl;
+  const ex=f.x-cx*9.5,ey=WL+5,ez=f.z-cz*9.5;if(S.ex===null){S.ex=ex;S.ey=ey;S.ez=ez;}const k2=Math.min(1,dt*3.5);S.ex+=(ex-S.ex)*k2;S.ey+=(ey-S.ey)*k2;S.ez+=(ez-S.ez)*k2;
+  CAM.eye=[S.ex,S.ey,S.ez];CAM.tx=f.x+cx*7;CAM.ty=WL+1.2;CAM.tz=f.z+cz*7;CAM.lax=0;CAM.laz=0;CAM.lookY=0;CAM.up=null;};}
+
+// the jetty reaches out past the island: it is open from the start like the rest of the park
+{const _an=areaNeed;areaNeed=function(x,z,y){if(WP.ok&&x>=158&&x<WP.x0&&z>=436&&z<460)return 0;return _an(x,z,y);};}
+// ---------- building it all (after the rest of the park) ----------
+function wpBuild3(){wpLiftBuild();wpRacerStairs();wpDuckStairs();wpWaveFunBuild();WP.ok3=true;}
+{const _b2=wpBuild2;wpBuild2=function(){_b2();try{wpBuild3();}catch(e){console.error('waterpark3',e);noteErr('waterpark3',e);}};}
+// ---------- riding: the lift and the float are rides too ----------
+{const _ru=wpRideUpdate;wpRideUpdate=function(dt,inp){const R=WPS.me;if(R&&(R.k==='lift'||R.k==='float')){const p=ME;G.ia=null;p.anim.cheer=Math.max(0,(p.anim.cheer||0)-dt);
+    if(R.k==='lift'){wpLiftRide(R,dt);if(WPS.me===R)animSprings(p,dt);}else wpFloatRide(R,dt,inp);return;}return _ru(dt,inp);};}
+{const _pr=wpPresence;wpPresence=function(R){if(R&&R.k==='lift')return ['lift',R.L];if(R&&R.k==='float')return ['float',R.ci|0];return _pr(R);};}
+{const _pp=wpParseRide;wpParseRide=function(f){if(Array.isArray(f)&&f[0]==='lift')return ['lift',typeof f[1]==='string'?f[1].slice(0,8):''];if(Array.isArray(f)&&f[0]==='float')return ['float',clamp(num(f[1],0)|0,0,5)];return _pp(f);};}
+{const _ae=applyEvent;applyEvent=function(type,a,rp){if(type==='wp'&&Array.isArray(a)&&a[0]==='mkw'){try{const t0=num(a[1],0);if(t0>0&&!(WPS.waveT0&&Math.abs(WPS.waveT0-t0)<1)&&wpWaveEnv(wpNow())<=0){WPS.waveT0=t0;WPS.btnT=.5;}}catch(e){}return;}return _ae(type,a,rp);};}
+{const _ss=simStep;simStep=function(dt,inp){_ss(dt,inp);try{if(WP.ok3&&ME&&d2(ME.x,ME.z,(WP.x0+WP.x1)/2,(WP.z0+WP.z1)/2)<120){wpLiftAuto(dt);if(WPS.btnT>0)WPS.btnT-=dt;}}catch(e){noteErr('waterpark3',e);}};}
+{const _dsf=drawShotFx;drawShotFx=function(t){_dsf(t);try{if(WP.ok3&&camRealm()==='earth'&&Math.abs((WP.x0+WP.x1)/2-CAM.tx)<220&&Math.abs((WP.z0+WP.z1)/2-CAM.tz)<220){OUT=DYN;wpLiftsDraw(t);wpWaveFunDraw(t);OUT=DYN;}}catch(e){noteErr('waterpark3 draw',e);}};}
+// ---------- ✋ next to the new things ----------
+{const _qi=questInteract;questInteract=function(cand,p){_qi(cand,p);if(!WP.ok3||WPS.me||p.veh)return;if(p.x<WP.x0-30||p.x>WP.x1+8||p.z<WP.z0-8||p.z>WP.z1+14)return;const gy=WP.y;
+  const D=WP.duckTop;if(D&&p.y>D.y-1.3&&d2(p.x,p.z,D.x,D.z)<4.2)cand({x:p.x,z:p.z,y:p.y},'wpduck2','🦆 '+tr('Slide down the giant duck!'),5,8,{fn:()=>wpSlide('duck')});
+  const B=WP.mkw;if(B)cand({x:B.x,z:B.z,y:gy},'wpmkw','🌊 '+tr('Make waves!'),2.4,7,{fn:()=>wpMakeWaves()});
+  const F=WP.floatRack;if(F)cand({x:F.x,z:F.z,y:p.y},'wpfloat','🛟 '+tr('Take a float'),2.8,7,{fn:()=>wpFloatStart()});};}
+// ---------- signs ----------
+{const _ul=updateLabels;updateLabels=function(dt){_ul(dt);try{if(!WP.ok3||G.mode==='title'||camRealm()!=='earth')return;const gy=WP.y;
+  for(const L of WPL.list)if(Math.abs(L.x-CAM.tx)<60&&Math.abs(L.z-CAM.tz)<60)label('wpl_'+L.id,L.x,L.y0+3.5,L.z,'🛗 '+tr('Lift'),'sign');
+  const S=WP.rcStair;if(S&&Math.abs(S.x-CAM.tx)<40&&Math.abs(S.z-CAM.tz)<40)label('wp_rcst',S.x,gy+2.4,S.z+.4,'🪜 '+tr('Stairs'),'sign');
+  const D=WP.duckStair;if(D&&Math.abs(D.x-CAM.tx)<45&&Math.abs(D.z-CAM.tz)<45)label('wp_dkst',D.x,gy+2.4,D.z,'🪜 '+tr('Stairs to the duck'),'sign');
+  const B=WP.mkw;if(B&&Math.abs(B.x-CAM.tx)<45&&Math.abs(B.z-CAM.tz)<45)label('wp_mkw',B.x,gy+2.3,B.z,'🌊 '+tr('Make waves!'),'sign');
+  const F=WP.floatRack;if(F&&Math.abs(F.x-CAM.tx)<40&&Math.abs(F.z-CAM.tz)<40)label('wp_flt',F.x,gy+2.2,F.z,'🛟 '+tr('Floats'),'sign');}catch(e){}};}
+// ---------- the surf prize ----------
+WPR.surf={ic:'🏄',n:'Surf a Wave'};
+// ---------- words (Arabic) ----------
+MV('Lift','المصعد');MV('Stairs','الدرج');MV('Stairs to the duck','الدرج إلى البطة');MV('Make waves!','اصنع أمواجًا!');MV('Floats','العوّامات');MV('Take a float','خذ عوّامة');
+MV('The waves are already coming!','الأمواج قادمة بالفعل!');MV('Paddle out and ride the waves! Jump to get off','جدّف بعيدًا واركب الأمواج! اقفز لتنزل');MV('Whee! You surfed to the beach!','ياااي! ركبت الموج حتى الشاطئ!');
+MV('Surf a Wave','اركب موجة');
+// ---------- what's new (Arabic) ----------
+MV('The water park, better','حديقة الماء صارت أفضل');MV('No flying needed: walk into a glass lift 🛗 to go up the tall rides, or take the stairs to the Racer and the giant duck. The Banana Boat has a new jetty on the beach and a loop in deep water. In the wave pool, press Make waves! and take a float to surf to the beach','لا حاجة للطيران: ادخل المصعد الزجاجي 🛗 لتصعد إلى الألعاب العالية، أو اصعد الدرج إلى السباق والبطة العملاقة. لقارب الموزة رصيف جديد على الشاطئ وجولة في الماء العميق. في بركة الأمواج اضغط اصنع أمواجًا! وخذ عوّامة لتركب الموج حتى الشاطئ');
+MV('Everything on one screen','كل شيء في شاشة واحدة');MV('The first screen fits on the tablet: all your heroes on the right, Play on the left, and nothing to slide','الشاشة الأولى تتسع في الجهاز: كل أبطالك على اليمين، واللعب على اليسار، ولا حاجة للسحب');
+MV('The Story 2 hero now has her own picture card, like every other hero','بطلة القصة 2 صار لها بطاقة بصورتها، مثل كل الأبطال');
 // ================= start =================
 boot();
 </script>

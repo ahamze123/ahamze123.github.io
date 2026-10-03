@@ -80,14 +80,10 @@ def main():
         html = html.replace('</head>', TEST_HOOK + '</head>', 1)
         print('simulator test helper added')
     open(os.path.join(WWW, 'index.html'), 'w', encoding='utf-8').write(html)
-    # the hero cards, the 3D heroes (.glb, as on the website), the music and the icons
+    # the hero cards, the music and the icons (v27.7: no 3D heroes any more, so the .glb files stay out of the app)
     for d in ('cards', 'music'):
         if os.path.isdir(os.path.join(ROOT, d)):
             shutil.copytree(os.path.join(ROOT, d), os.path.join(WWW, d))
-    os.makedirs(os.path.join(WWW, 'models'))
-    for f in os.listdir(os.path.join(ROOT, 'models')):
-        if f.endswith('.glb') or f == 'list.json':
-            shutil.copy(os.path.join(ROOT, 'models', f), os.path.join(WWW, 'models', f))
     for f in ('icon-192.png', 'icon-512.png', 'apple-touch-icon.png'):
         if os.path.exists(os.path.join(ROOT, f)):
             shutil.copy(os.path.join(ROOT, f), WWW)
