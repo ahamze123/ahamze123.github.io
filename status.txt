@@ -1,0 +1,20 @@
+Xcode 26.6
+Build version 17F113
+Capacitor 8.5.2
+fonts bundled (2 Google font links replaced)
+simulator test helper added
+app/www ready: 18.6 MB
+Info.plist ready
+iPad only: 2 build settings
+icon and launch screen ready
+== building for the simulator (22:21:08)
+built /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app (22:21:44)
+iPad Pro 13-inch (M5) com.apple.CoreSimulator.SimRuntime.iOS-26-5
+== booting A2011F14-88A1-46AA-999A-FD6FEDCD870B (22:21:46)
+booted (22:22:59)
+== started the game (22:23:25)
+io.github.ahamze123.blockbuddies: 5230
+no picture at 20s
+no picture at 40s
+no picture at 60s
+No Apple key in the secrets yet: no upload this time

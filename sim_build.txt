@@ -1,0 +1,900 @@
+Command line invocation:
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator" -derivedDataPath /Users/runner/work/_temp/simbuild CODE_SIGNING_ALLOWED=NO build
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+    SDKROOT = iphonesimulator26.5
+
+Resolve Package Graph
+
+Fetching from https://github.com/ionic-team/capacitor-swift-pm.git
+
+Creating working copy of package ‘capacitor-swift-pm’
+
+Checking out 8.5.2 of package ‘capacitor-swift-pm’
+
+
+Resolved source packages:
+  CapApp-SPM: /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM @ local
+  capacitor-swift-pm: https://github.com/ionic-team/capacitor-swift-pm.git @ 8.5.2
+
+2026-10-03 22:21:21.821 xcodebuild[1397:7245] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (5 targets)
+    Target 'App' in project 'App'
+        ➜ Explicit dependency on target 'CapApp-SPM' in project 'CapApp-SPM'
+    Target 'CapApp-SPM' in project 'CapApp-SPM'
+        ➜ Explicit dependency on target 'CapApp-SPM' in project 'CapApp-SPM'
+        ➜ Explicit dependency on target 'Capacitor' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova' in project 'capacitor-swift-pm'
+    Target 'CapApp-SPM' in project 'CapApp-SPM'
+        ➜ Explicit dependency on target 'Capacitor' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova' in project 'capacitor-swift-pm'
+    Target 'Cordova' in project 'capacitor-swift-pm' (no dependencies)
+    Target 'Capacitor' in project 'capacitor-swift-pm' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+Build description signature: 1e935e6b1cdc7a6b39f4e8b8811ca9af
+Build description path: /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/XCBuildData/1e935e6b1cdc7a6b39f4e8b8811ca9af.xcbuilddata
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Products
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Products
+
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex
+
+ClangStatCache /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -o /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml
+
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator
+
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+
+ProcessXCFramework /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Cordova/Cordova.xcframework /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/Cordova.framework ios simulator
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-process-xcframework --xcframework /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Cordova/Cordova.xcframework --platform ios --environment simulator --target-path /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator
+/Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Cordova/Cordova.xcframework:1:1: note: The identity of “Cordova.xcframework” is not recorded in your project.
+
+ProcessXCFramework /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Capacitor/Capacitor.xcframework /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/Capacitor.framework ios simulator
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-process-xcframework --xcframework /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Capacitor/Capacitor.xcframework --platform ios --environment simulator --target-path /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator
+/Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Capacitor/Capacitor.xcframework:1:1: note: The identity of “Capacitor.xcframework” is not recorded in your project.
+
+CreateBuildDirectory /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_const_extract_protocols.json (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftConstValuesFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.LinkFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-OutputFileMap.json (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_const_extract_protocols.json (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftConstValuesFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.LinkFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-OutputFileMap.json (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.modulemap (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.modulemap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.DependencyStaticMetadataFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.DependencyMetadataFileList (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.DependencyMetadataFileList
+
+Copy /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/CapApp-SPM.modulemap /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.modulemap (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.modulemap /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_const_extract_protocols.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftConstValuesFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.LinkFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-OutputFileMap.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_const_extract_protocols.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftConstValuesFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.LinkFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-OutputFileMap.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.hmap (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyStaticMetadataFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyMetadataFileList (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-target-headers.hmap (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibPath-normal-x86_64.txt (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibPath-normal-x86_64.txt
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibPath-normal-arm64.txt (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibInstallName-normal-x86_64.txt (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibInstallName-normal-x86_64.txt
+
+WriteAuxiliaryFile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibInstallName-normal-arm64.txt (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    write-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibInstallName-normal-arm64.txt
+
+MkDir /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /bin/mkdir -p /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks
+
+MkDir /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /bin/mkdir -p /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app
+
+SwiftDriver CapApp-SPM normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-SwiftDriver -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CapApp_SPM -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -parse-as-library -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -package-name capapp_spm -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_const_extract_protocols.json -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver CapApp-SPM normal arm64 com.apple.xcode.tools.swift.compiler (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-SwiftDriver -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CapApp_SPM -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -parse-as-library -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -package-name capapp_spm -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_const_extract_protocols.json -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_SwiftConcurrencyShims-F0KVFKNW66GIW06GLUESDR3AC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftShims-DG18TYAMTYBG2SMB5750D2FSJ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftShims-ARQMF59OL3ZZDE2USQKPMVRMP.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_SwiftConcurrencyShims-98VXQHLZHEYBZ4TCNRL5M6QHI.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ CapApp_SPM (in target 'CapApp-SPM' from project 'CapApp-SPM')
+SwiftCompile normal arm64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ CapApp-SPM.swift /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+SwiftCompile normal arm64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ CapApp_SPM (in target 'CapApp-SPM' from project 'CapApp-SPM')
+
+SwiftCompile normal x86_64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    
+
+SwiftCompile normal x86_64 Compiling\ CapApp-SPM.swift /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+SwiftCompile normal x86_64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for CapApp_SPM (in target 'CapApp-SPM' from project 'CapApp-SPM')
+
+SwiftDriver\ Compilation\ Requirements CapApp-SPM normal arm64 com.apple.xcode.tools.swift.compiler (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CapApp_SPM -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -parse-as-library -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -package-name capapp_spm -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_const_extract_protocols.json -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for CapApp_SPM (in target 'CapApp-SPM' from project 'CapApp-SPM')
+
+SwiftDriver\ Compilation\ Requirements CapApp-SPM normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CapApp_SPM -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -parse-as-library -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -package-name capapp_spm -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_const_extract_protocols.json -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/arm64-apple-ios-simulator.swiftmodule /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+SwiftMergeGeneratedHeaders /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/CapApp-SPM-Swift.h /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-Swift.h /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-Swift.h (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-swiftHeaderTool -arch arm64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-Swift.h -arch x86_64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-Swift.h -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/CapApp-SPM-Swift.h
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/x86_64-apple-ios-simulator.swiftmodule /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/x86_64-apple-ios-simulator.swiftmodule
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/x86_64-apple-ios-simulator.swiftdoc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftdoc (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftdoc /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/x86_64-apple-ios-simulator.swiftdoc
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/x86_64-apple-ios-simulator.abi.json /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.abi.json (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.abi.json /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/x86_64-apple-ios-simulator.abi.json
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/arm64-apple-ios-simulator.swiftdoc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftdoc (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftdoc /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/arm64-apple-ios-simulator.abi.json /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.abi.json (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.abi.json /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftsourceinfo (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftsourceinfo (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+MkDir /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/unthinned (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /bin/mkdir -p /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/unthinned
+
+MkDir /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /bin/mkdir -p /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned
+
+GenerateAssetSymbols /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Assets.xcassets (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Assets.xcassets --compile /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_dependencies --output-partial-info-plist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist --app-icon AppIcon --compress-pngs --enable-on-demand-resources YES --development-region en --target-device ipad --minimum-deployment-target 15.0 --platform iphonesimulator --bundle-identifier io.github.ahamze123.blockbuddies --generate-swift-asset-symbol-extensions NO --generate-swift-asset-symbols /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.compilation-results */
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+CompileAssetCatalogVariant thinned /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Assets.xcassets (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Assets.xcassets --compile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --compress-pngs --enable-on-demand-resources YES --development-region en --target-device ipad --minimum-deployment-target 15.0 --platform iphonesimulator
+/* com.apple.actool.compilation-results */
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist_thinned
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned/AppIcon60x60@2x.png
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned/AppIcon76x76@2x~ipad.png
+/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned/Assets.car
+
+
+SwiftDriverJobDiscovery normal arm64 Compiling CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+
+SwiftDriver\ Compilation CapApp-SPM normal arm64 com.apple.xcode.tools.swift.compiler (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-Swift-Compilation -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CapApp_SPM -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -parse-as-library -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -package-name capapp_spm -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_const_extract_protocols.json -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/Binary/CapApp-SPM.o normal arm64 (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0-simulator -r -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -w -F/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -iframework /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -iframework /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -filelist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_lto.o -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM-linker-args.resp -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/Binary/CapApp-SPM.o
+
+SwiftDriver App normal arm64 com.apple.xcode.tools.swift.compiler (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-SwiftDriver -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name App -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftFileList -DDEBUG -D COCOAPODS -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Compiling CapApp-SPM.swift (in target 'CapApp-SPM' from project 'CapApp-SPM')
+
+SwiftDriver App normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-SwiftDriver -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name App -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftFileList -DDEBUG -D COCOAPODS -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver\ Compilation CapApp-SPM normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj
+    builtin-Swift-Compilation -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CapApp_SPM -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -parse-as-library -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -package-name capapp_spm -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_const_extract_protocols.json -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stddef-410S83U2CSSCAA3KWA3LZXX3G.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_float-AU4VLJ7ML813QSVH6Q9XXSVGT.pcm
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/Binary/CapApp-SPM.o normal x86_64 (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios15.0-simulator -r -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -w -F/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -iframework /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -iframework /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -filelist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_lto.o -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM-linker-args.resp -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/Binary/CapApp-SPM.o
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ptrcheck-6B5CUKWB7RD7UDS9LL554Y38M.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_AvailabilityInternal-BSMR5577BUNTQ4DF0K31LGLZF.pcm
+
+CreateUniversalBinary /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp-SPM.o normal arm64\ x86_64 (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/Binary/CapApp-SPM.o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/Binary/CapApp-SPM.o -output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp-SPM.o
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ptrauth-4L863FLLUN5H2BCOQ2CQUIQUI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_SwiftConcurrencyShims-2J2ZKMK1VNK2RB0W5SMQGPCUD.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/DeveloperToolsSupport-11XZ3VW40NZPGG6PIF3JIMOE9.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftShims-E6R6S5TVSI74UQBPEJKU6CVJ8.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdbool-8QCSE01BLWAQE3L3EHHTRQ6IQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdbool-277GWX8IKXMP1LKDF1R30L1TF.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_AvailabilityInternal-9R90WVZHF4Y1YSGB8FO334T7F.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_float-5NGLGAPDI69ZZWH3M8TP0MD3T.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftShims-IEJ7JX4I2E18IUSURBUCC5OY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_DarwinFoundation1-103B2XWG0296VB1DJBQU7DX8S.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ptrcheck-DRH75QD9WA48SHUUHUSH04TKQ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/DeveloperToolsSupport-3JJT9XSCJZS0HG63M7KCV1LRW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_limits-82DDBSXY4E755XDQVCECZBBMW.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_DarwinFoundation1-3K4GPGCUY6G4VKE2U218I5SI5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ptrauth-5OYB4C400KCF0OI0HSMPJ2290.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdarg-92GZZLVHYCNYCON75H0EEWCL5.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_limits-A4LH2M8BOIGW6AYHEDKLUKYIG.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_SwiftConcurrencyShims-1FWYMLROANL434OVG27MTNXI.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_DarwinFoundation2-31CM8UGBC0FXTWO37INWVJQMD.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stddef-BDFFXPRQ7URWIINO92AAA2OYM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdarg-DO0737CLBXID38U2KYCP8T10X.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_tgmath-4745RQ4DOT590LKHHXYO2AJVB.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/sys_types-44DICYRO8RL2GUVD7E8NH9IZ3.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_DarwinFoundation2-7ICV94JLZNOEU3QREKE9VFULN.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdint-5OXPKEFC0S1S5L2EL591K99EX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/sys_types-1ZWCCRCGH1KQE6EXMRYVS9VK1.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdint-2Q4T9FXFS1AS9YUPMH3UP9SD4.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdatomic-73X6A0OS5PWSG0QVHO9C8PDIA.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_DarwinFoundation3-AOLJOCSARGCUJZV3NTU5EM816.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_stdatomic-66IBDX8Y73EH0LG5BYHTLZ8TU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_intrinsics-37NCW3BBUSON9QQ0ZB0LMGOS6.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_DarwinFoundation3-7G1P47ZW1304GRRPO1H4BZK6F.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CommonCrypto-75X1GGCPI82M8ZWEYUMQNJZ6Z.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_inttypes-EFHO55HHZSMWADGJR5GY2SLMW.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_intrinsics-1J5ASN1OB1A74OD8061QMPCEY.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Darwin-5DQQXEBJTFZKC6COFYGQIXIOP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CommonCrypto-B518UVHH0BMTPRO5B7VZ7MXUM.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ObjectiveC-84EHI8TJXG87JUWOU7PMWRTOZ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/MachO-CWMRIY9H4Q737ZEYBGX2ZZR34.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_inttypes-B6CJ2RCCAMMQQ6RVXP1PMKGAT.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/simd-56R8KWBEJSKQ27V38QYGLSSLE.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/os_object-7KIQ0EW23FWMU9EPKKCUCZXM5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Darwin-13NRYEPRBEAISAAAWUA62SYO4.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/os_workgroup-2OYPK7KYGAR5P78YQ0T7V4SMN.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/MachO-EIIU39LILWBQ9925XBU772X41.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Dispatch-63AN40P5CDU6YBTTQP0IJNZI6.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ObjectiveC-314SX7HYDA70BXUHF1H2I83ED.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Spatial-28JDZU5VRSKLCZT1C2NHHAY7X.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/XPC-4QILZX7869G3DEEZFIGJPB5YJ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreFoundation-910KNXH878YTZZP1GT8RSNFOW.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/os-CI6SZDLED93ZF2XJ7TJR26KRL.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Security-AINS9WVAS3X7LTKA7HGEGVY27.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreGraphics-3HMU7GEZJPFIZ7NOUAHYUVDV9.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/dnssd-C223G5F18SM7P4EA4INDBJLYF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CFNetwork-78FF52PYAE7IQPX62W6H83G79.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreText-EQOOL6OYYFFPZWTF80JAHU1UY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/_Builtin_tgmath-49KBL4DN2QJGDO6M9TI34W0N5.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Foundation-520DAAD0VI99ALBHRUDPPCUBB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/os_object-ENMDMNV6EFB285N5N606OFKUS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/simd-6HJKL287YYJIH9XC56RNMRLOB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/os_workgroup-ZV6NFQ49GSONILU3J2TKNJIM.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/DataDetection-8NQ77IKSDVR9W5AH2SM2DCPCR.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/IOSurface-EOGP6G4ERIV9M47FO03R6RW70.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UIUtilities-5CMAAY8JT69852PAD26PCKTHS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Spatial-C4D6CF6Y1CHNAS6PIPE5RQ6M6.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreTransferable-8KWW4MLQIU460BCYCDB795RU3.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/OpenGLES-D529I9WOK32HUGSR0FVW5IHDS.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/OSLog-60ZGETOI2SPJG1YI6OMZAZN0S.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Metal-E1371YODWX6HH81K5WN8XETNY.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UserNotifications-16FNFI05TL6JEC41I83V63IR8.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Network-SEZ9K7GJXX22NU5XOVQCQTTN.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreData-4Z0A5VOAA2MCPSC8DMTMGCEI4.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreVideo-DRR7AOLNZMDKGJ7HF5IYHJCC2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Dispatch-48S7DYO9BKYQWNWOQLWY328GB.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Symbols-9RD74CVMPVIPXD5VMEMG1R1IZ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/QuartzCore-T4SON6MFFNXQIIN29XNOG4NX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/dnssd-3LSCOHXCMX3OQHY8W4L3LKPGS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreFoundation-9KON2AIEPDQMK36ZH0HPM23IS.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UniformTypeIdentifiers-3Z1AC0TUQZ3EP2J381B0BKL7G.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftUICore-3T59W77B6N2U9E8B78NQ3C1KE.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Accessibility-862YJ0VST99Y1UXSF78ZE2FG1.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Security-1Z0DGF2IFR9QQ6JNUA8G5E8O2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreGraphics-CR729GTHFE0TOC7HJ4FLF18B4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CFNetwork-9LMVR0RH8Z7JAS5A1N1ADK3E8.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/XPC-9C2460ID0H8R56BTFUVHI57JS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreText-EKGYOZV0E6NS60RJXT0RSNGZ5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ImageIO-EL5RQ5OY0KLQ72CGHD26MKIAQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Foundation-8JQ90Y1JLRHUAZZ2RLA0OWZ96.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/os-9130ER62NATXO73ET1A9GRCRZ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/FileProvider-6X0VTKLE37THQ5RMLRL4GCPRE.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/ImageIO-2H0KT170AMV1JFAAZ8EVUO3IF.pcm
+
+ExtractAppIntentsMetadata (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.DEgHvQ/Metal.xctoolchain --module-name CapApp_SPM --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 15.0 --bundle-identifier capapp-spm.CapApp-SPM --output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp_SPM.appintents --target-triple arm64-apple-ios15.0-simulator --target-triple x86_64-apple-ios15.0-simulator --binary-file /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp-SPM.o --dependency-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM_dependency_info.dat --dependency-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --stringsdata-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftFileList --source-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftFileList --metadata-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/CapApp-SPM.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.SwiftConstValuesFileList --swift-const-vals-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp-SPM.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-10-03 22:21:36.024 appintentsmetadataprocessor[2341:10207] Starting appintentsmetadataprocessor export
+2026-10-03 22:21:36.060 appintentsmetadataprocessor[2341:10207] Extracted no relevant App Intents symbols, skipping writing output
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreImage-29R98FLYA369MJM3K5MG2BZ4K.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Symbols-DSRA41TN4U56LSSDQG5V0WQUJ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreData-1SUICMVEXF91R495GWONOW5FQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/OpenGLES-2OER2EWTD02E3MPM4IB7RWFEX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UserNotifications-4WQB3SFUBGDODPP6W1YRZJ2ZM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UniformTypeIdentifiers-5QV6H6U3LC8HSJQU6LKC508LQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UIUtilities-D7HXPNETAGUB91MGHPJ6EYNKT.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/DataDetection-CL0I5I3SOY9Y7CIPIE10V28HV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/IOSurface-7UJR1P3F2J9695RZ6B6O4CXYR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Accessibility-Y0OM3VWV6PJOSOVA1BPJTHRE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Network-1R5NNQFWWBGEJ0SZFB5BZVDA2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Metal-6H16J24WE3YAN4Q2XKHG2JZ88.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UIKit-55SEV7DV97T1448FVFLVAVYWA.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/FileProvider-9LZFL61QK95R926871Y71JJUG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreTransferable-266JSWETNQXSVEBZI130WG04E.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/OSLog-F4V4FLUMG6NZTBF1DZRRBKVS6.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreVideo-E27JOAKL7TPBXTWK542C202X4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/QuartzCore-9OCYBRF96WZKTX0WZD3QLEATF.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/CoreImage-2I6W79BM88OF7ZGTW57RBM4RM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftUICore-61J06PQ677U6DHGCUPSR2AH5W.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/UIKit-C5O76O6AKPXCFOXHMGYRR5N5E.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/WebKit-C50D1TFKG172NMMC4G37YXT59.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftUI-CZKGIXH9FJ4QKXZVFNMZBMGCP.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Cordova-84K9B4RIJQ00FGJYKV99F97VF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Capacitor-507R0FUYO4YQ9R6Q3YKH35RKM.pcm
+
+SwiftExplicitDependencyCompileModuleFromInterface x86_64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Capacitor-OLRPYFU03J82.swiftmodule
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/WebKit-CKWWH1FMI3J2B6GJ9H5YNH6AG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/ModuleCache.noindex/SwiftUI-5TOC3OXUZAFOPOD6OVR776BH6.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Cordova-27D41EPCFBIAK95H4FU6F97OQ.pcm
+
+LinkAssetCatalog /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Assets.xcassets (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-linkAssetCatalog --thinned /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/thinned --thinned-dependencies /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist_unthinned --output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app --plist-output /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Assets.car (in target 'App' from project 'App')
+note: Emplaced /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/AppIcon60x60@2x.png (in target 'App' from project 'App')
+note: Emplaced /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/AppIcon76x76@2x~ipad.png (in target 'App' from project 'App')
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ App (in target 'App' from project 'App')
+EmitSwiftModule normal x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftCompile normal x86_64 Compiling\ GeneratedAssetSymbols.swift /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'App' from project 'App')
+SwiftCompile normal x86_64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftCompile normal x86_64 Compiling\ SceneDelegate.swift /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/SceneDelegate.swift (in target 'App' from project 'App')
+
+SwiftCompile normal x86_64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/SceneDelegate.swift (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Capacitor-2F8JSWHC5IVSOL1VHRV6ECGBF.pcm
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for App (in target 'App' from project 'App')
+
+SwiftDriver\ Compilation\ Requirements App normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name App -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftFileList -DDEBUG -D COCOAPODS -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Capacitor-2J84HA2EWUFZD.swiftmodule
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/x86_64-apple-ios-simulator.swiftmodule /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftmodule (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftmodule /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/x86_64-apple-ios-simulator.swiftmodule
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/x86_64-apple-ios-simulator.swiftdoc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftdoc (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftdoc /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/x86_64-apple-ios-simulator.swiftdoc
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/x86_64-apple-ios-simulator.abi.json /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.abi.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.abi.json /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/x86_64-apple-ios-simulator.abi.json
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftsourceinfo (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ App (in target 'App' from project 'App')
+
+EmitSwiftModule normal arm64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftCompile normal arm64 Compiling\ AppDelegate.swift /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/AppDelegate.swift (in target 'App' from project 'App')
+SwiftCompile normal arm64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/AppDelegate.swift (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for App (in target 'App' from project 'App')
+
+SwiftDriver\ Compilation\ Requirements App normal arm64 com.apple.xcode.tools.swift.compiler (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name App -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftFileList -DDEBUG -D COCOAPODS -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SceneDelegate.swift (in target 'App' from project 'App')
+
+SwiftCompile normal arm64 Compiling\ SceneDelegate.swift /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/SceneDelegate.swift (in target 'App' from project 'App')
+SwiftCompile normal arm64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/SceneDelegate.swift (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftMergeGeneratedHeaders /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/App-Swift.h /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-Swift.h /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-Swift.h (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-swiftHeaderTool -arch arm64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-Swift.h -arch x86_64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-Swift.h -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/App-Swift.h
+
+SwiftDriverJobDiscovery normal x86_64 Compiling GeneratedAssetSymbols.swift (in target 'App' from project 'App')
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/arm64-apple-ios-simulator.swiftmodule /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/arm64-apple-ios-simulator.swiftdoc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftdoc (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftdoc /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/arm64-apple-ios-simulator.abi.json /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.abi.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.abi.json /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftsourceinfo (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftsourceinfo /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftCompile normal arm64 Compiling\ GeneratedAssetSymbols.swift /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'App' from project 'App')
+SwiftCompile normal arm64 /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling AppDelegate.swift (in target 'App' from project 'App')
+
+SwiftCompile normal x86_64 Compiling\ AppDelegate.swift /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/AppDelegate.swift (in target 'App' from project 'App')
+
+SwiftCompile normal x86_64 /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/AppDelegate.swift (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling SceneDelegate.swift (in target 'App' from project 'App')
+
+RegisterExecutionPolicyException /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp-SPM.o (in target 'CapApp-SPM' from project 'CapApp-SPM')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/CapApp-SPM
+    builtin-RegisterExecutionPolicyException /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/CapApp-SPM.o
+
+CpResource /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/public /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/public (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/public /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/__preview.dylib normal x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios15.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -install_name @rpath/App.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_dependency_info.dat -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/__preview.dylib
+
+SwiftDriverJobDiscovery normal x86_64 Compiling AppDelegate.swift (in target 'App' from project 'App')
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/__preview.dylib normal arm64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -install_name @rpath/App.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_dependency_info.dat -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/__preview.dylib
+
+SwiftDriver\ Compilation App normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-Swift-Compilation -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name App -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftFileList -DDEBUG -D COCOAPODS -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App -experimental-emit-module-separately -disable-cmo
+
+CreateUniversalBinary /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/__preview.dylib normal arm64\ x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/__preview.dylib /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/__preview.dylib -output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/__preview.dylib
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App.debug.dylib normal x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios15.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -filelist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.LinkFileList -install_name @rpath/App.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.swiftmodule @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App-linker-args.resp -Wl,-no_warn_duplicate_libraries -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -framework Capacitor -framework Capacitor -framework Cordova -framework Cordova -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App.debug.dylib -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM.swiftmodule @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/x86_64/CapApp_SPM-linker-args.resp
+
+CpResource /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/config.xml /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/config.xml (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/config.xml /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app
+
+CpResource /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/capacitor.config.json /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/capacitor.config.json (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/capacitor.config.json /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks/Cordova.framework /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Cordova/Cordova.xcframework/ios-arm64_x86_64-simulator/Cordova.framework (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks -remove-static-executable /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Cordova/Cordova.xcframework/ios-arm64_x86_64-simulator/Cordova.framework /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks
+
+Copy /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks/Capacitor.framework /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Capacitor/Capacitor.xcframework/ios-arm64_x86_64-simulator/Capacitor.framework (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks -remove-static-executable /Users/runner/work/_temp/simbuild/SourcePackages/artifacts/capacitor-swift-pm/Capacitor/Capacitor.xcframework/ios-arm64_x86_64-simulator/Capacitor.framework /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks
+
+CompileStoryboard /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Base.lproj/Main.storyboard (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/ibtool --errors --warnings --notices --module App --output-partial-info-plist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/Main-SBPartialInfo.plist --auto-activate-custom-fonts --target-device ipad --minimum-deployment-target 15.0 --output-format human-readable-text /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Base.lproj/Main.storyboard --compilation-directory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj
+
+CompileStoryboard /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Base.lproj/LaunchScreen.storyboard (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/ibtool --errors --warnings --notices --module App --output-partial-info-plist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/LaunchScreen-SBPartialInfo.plist --auto-activate-custom-fonts --target-device ipad --minimum-deployment-target 15.0 --output-format human-readable-text /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Base.lproj/LaunchScreen.storyboard --compilation-directory /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj
+
+ConstructStubExecutorLinkFileList /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-ExecutorLinkFileList-normal-x86_64.txt (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    construct-stub-executor-link-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App.debug.dylib /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-ExecutorLinkFileList-normal-x86_64.txt
+note: Using stub executor library with Swift entry point. (in target 'App' from project 'App')
+
+SwiftDriverJobDiscovery normal arm64 Compiling GeneratedAssetSymbols.swift (in target 'App' from project 'App')
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App normal x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios15.0-simulator -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibPath-normal-x86_64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibInstallName-normal-x86_64.txt -Xlinker -filelist -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-ExecutorLinkFileList-normal-x86_64.txt /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App.debug.dylib -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App
+
+SwiftDriver\ Compilation App normal arm64 com.apple.xcode.tools.swift.compiler (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-Swift-Compilation -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name App -Onone @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftFileList -DDEBUG -D COCOAPODS -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios15.0-simulator -g -module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/simbuild/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/simbuild/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/simbuild/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/simbuild/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-generated-files.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App-0ca3007d900a678c2b4d53418799ee3d-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-project-headers.hmap -Xcc -I/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-Swift.h -working-directory /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App.debug.dylib normal arm64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -filelist /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.LinkFileList -install_name @rpath/App.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-linker-args.resp -Wl,-no_warn_duplicate_libraries -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -framework Capacitor -framework Capacitor -framework Cordova -framework Cordova -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App.debug.dylib -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM.swiftmodule @/Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/CapApp-SPM.build/Debug-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp_SPM-linker-args.resp
+
+CreateUniversalBinary /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/App.debug.dylib normal arm64\ x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App.debug.dylib /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App.debug.dylib -output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/App.debug.dylib
+
+ConstructStubExecutorLinkFileList /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-ExecutorLinkFileList-normal-arm64.txt (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    construct-stub-executor-link-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App.debug.dylib /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'App' from project 'App')
+
+Ld /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App normal arm64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0-simulator -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App-ExecutorLinkFileList-normal-arm64.txt /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App.debug.dylib -o /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App
+
+CreateUniversalBinary /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/App normal arm64\ x86_64 (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/Binary/App /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/Binary/App -output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/App
+
+ProcessInfoPlistFile /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Info.plist /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Info.plist (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-infoPlistUtility /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App/App/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/LaunchScreen-SBPartialInfo.plist -additionalcontentfile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/Main-SBPartialInfo.plist -additionalcontentfile /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist -scanforprivacyfile /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks/Capacitor.framework -scanforprivacyfile /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks/Cordova.framework -o /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Info.plist
+
+LinkStoryboards (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/ibtool --errors --warnings --notices --module App --target-device ipad --minimum-deployment-target 15.0 --output-format human-readable-text --link /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/LaunchScreen.storyboardc /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/Main.storyboardc
+
+CopySwiftLibs /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/App.debug.dylib --scan-folder /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks --scan-folder /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/PlugIns --scan-folder /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/SystemExtensions --scan-folder /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.DEgHvQ/Metal.xctoolchain --toolchain /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os --back-deploy-swift-span
+Ignoring --strip-bitcode because --sign was not passed
+
+ExtractAppIntentsMetadata (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.DEgHvQ/Metal.xctoolchain --module-name App --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 15.0 --bundle-identifier io.github.ahamze123.blockbuddies --output /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app --target-triple arm64-apple-ios15.0-simulator --target-triple x86_64-apple-ios15.0-simulator --binary-file /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/App --dependency-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App_dependency_info.dat --dependency-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --stringsdata-file /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftFileList --source-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftFileList --metadata-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App.SwiftConstValuesFileList --swift-const-vals-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/x86_64/App.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-10-03 22:21:44.316 appintentsmetadataprocessor[2498:10613] Starting appintentsmetadataprocessor export
+2026-10-03 22:21:44.319 appintentsmetadataprocessor[2498:10613] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+AppIntentsSSUTraining (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Info.plist --temp-dir-path /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/ssu --bundle-id io.github.ahamze123.blockbuddies --product-path /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app --extracted-metadata-path /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Metadata.appintents --metadata-file-list /Users/runner/work/_temp/simbuild/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/App.DependencyMetadataFileList --source-file /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app/Info.plist --archive-ssu-assets
+2026-10-03 22:21:44.349 appintentsnltrainingprocessor[2499:10614] Parsing options for appintentsnltrainingprocessor
+2026-10-03 22:21:44.349 appintentsnltrainingprocessor[2499:10614] Starting AppIntents SSU YAML Generation
+2026-10-03 22:21:44.353 appintentsnltrainingprocessor[2499:10614] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-RegisterExecutionPolicyException /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app
+
+Validate /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    builtin-validationUtility /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app (in target 'App' from project 'App')
+    cd /Users/runner/work/ahamze123.github.io/ahamze123.github.io/app/ios/App
+    /usr/bin/touch -c /Users/runner/work/_temp/simbuild/Build/Products/Debug-iphonesimulator/App.app
+
+** BUILD SUCCEEDED **
+

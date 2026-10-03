@@ -1,0 +1,48 @@
+⚡️  Loading app at capacitor://localhost...
+⚡️  WebView loaded
+⚡️  [log] - BBTEST title 8s {"w":1032,"h":1376,"dpr":2,"webgl2":true,"standalone":true,"app":true}
+⚡️  [log] - BBTEST tick title frame 142 errors 0 music off  fonts loaded 
+⚡️  [log] - BBTEST tap Play true
+⚡️  [log] - BBTEST playing 36s
+⚡️  [log] - BBTEST tick play frame 529 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST into the game play
+⚡️  [log] - BBTEST tick play frame 939 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 1639 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 2122 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 2457 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 2981 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 3498 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 4193 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 4792 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 5351 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 6085 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 6773 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 7238 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 7869 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 8642 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 9275 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 9793 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 10315 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 10692 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 11516 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 12349 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 13093 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 13899 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 14584 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 15367 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 16063 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 16937 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 17478 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 18038 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 18639 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 19314 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 20058 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 20878 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 21649 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 22330 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 22658 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 23466 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 24304 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 24926 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 25336 errors 0 music load skyline fonts loaded 
+⚡️  [log] - BBTEST tick play frame 25657 errors 0 music load skyline fonts loaded 
