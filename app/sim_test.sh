@@ -5,6 +5,8 @@
 #   sim_test.sh run     install the app, start it, take pictures (out/sim_*.png) and keep the game's log (out/sim_log.txt)
 set -uo pipefail
 OUT="${OUT:-$PWD/out}"; mkdir -p "$OUT"
+# run a command, but stop it after N seconds (macOS has no `timeout`; perl's alarm does the same)
+tmo(){ local n=$1; shift; perl -e 'alarm shift; exec @ARGV' "$n" "$@"; }
 HERE="$(cd "$(dirname "$0")" && pwd)"
 T="${RUNNER_TEMP:-/tmp}"
 BID=$(python3 -c "import json;print(json.load(open('$HERE/capacitor.config.json'))['appId'])")
@@ -36,20 +38,20 @@ sys.stderr.write(((best[2]+" "+best[3]) if best else "no iPad simulator")+"\n")'
   echo "$DEV" > "$T/simdev"
   echo "== booting $DEV ($(date +%H:%M:%S))" | tee -a "$OUT/status.txt"
   xcrun simctl boot "$DEV" 2>&1 | tail -3
-  xcrun simctl bootstatus "$DEV" -b > "$OUT/sim_boot.txt" 2>&1
+  tmo 600 xcrun simctl bootstatus "$DEV" -b > "$OUT/sim_boot.txt" 2>&1
   echo "booted ($(date +%H:%M:%S))" | tee -a "$OUT/status.txt";;
 run)
   DEV=$(cat "$T/simdev"); APPP=$(cat "$T/simapp")
   xcrun simctl install "$DEV" "$APPP" || { echo "INSTALL FAILED" | tee -a "$OUT/status.txt"; exit 1; }
   echo "== started the game ($(date +%H:%M:%S))" | tee -a "$OUT/status.txt"
-  xcrun simctl launch --terminate-running-process --stdout="$OUT/sim_out.txt" --stderr="$OUT/sim_err.txt" "$DEV" "$BID" 2>&1 | tee -a "$OUT/status.txt"
+  tmo 60 xcrun simctl launch --terminate-running-process --stdout="$OUT/sim_out.txt" --stderr="$OUT/sim_err.txt" "$DEV" "$BID" 2>&1 | tee -a "$OUT/status.txt"
   for t in 20 40 60 90 120; do
     sleep $(( t==20 ? 20 : (t<=60 ? 20 : 30) ))
-    xcrun simctl io "$DEV" screenshot "$OUT/sim_${t}s.png" > /dev/null 2>&1 || echo "no picture at ${t}s" | tee -a "$OUT/status.txt"
+    tmo 25 xcrun simctl io "$DEV" screenshot --type=png "$OUT/sim_${t}s.png" > /dev/null 2>&1 || echo "no picture at ${t}s" | tee -a "$OUT/status.txt"
   done
-  xcrun simctl terminate "$DEV" "$BID" > /dev/null 2>&1 || true
+  tmo 30 xcrun simctl terminate "$DEV" "$BID" > /dev/null 2>&1 || true
   cat "$OUT/sim_out.txt" "$OUT/sim_err.txt" 2>/dev/null | grep -a "BBTEST\|rror" | head -200 > "$OUT/sim_log.txt" || true
   echo "== the game's log ($(date +%H:%M:%S)):" | tee -a "$OUT/status.txt"; head -60 "$OUT/sim_log.txt" | tee -a "$OUT/status.txt"
-  xcrun simctl shutdown "$DEV" > /dev/null 2>&1 || true;;
+  tmo 60 xcrun simctl shutdown "$DEV" > /dev/null 2>&1 || true;;
 *) echo "usage: sim_test.sh build|boot|run"; exit 2;;
 esac

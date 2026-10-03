@@ -25,10 +25,10 @@ TEST_HOOK = r"""<script>(function(){var log=function(){try{console.log('BBTEST '
 window.addEventListener('error',function(e){log('ERROR',e.message,(e.filename||'').split('/').pop()+':'+e.lineno);});
 var n=0,t0=Date.now();var iv=setInterval(function(){n++;try{if(typeof G==='undefined'){if(n%10===0)log('waiting for the game',n);return;}
  if(G.mode==='title'&&!window.__tT){window.__tT=1;var c=document.createElement('canvas');log('title',Math.round((Date.now()-t0)/1000)+'s',JSON.stringify({w:innerWidth,h:innerHeight,dpr:devicePixelRatio,webgl2:!!c.getContext('webgl2'),standalone:navigator.standalone,app:!!window.BB_APP}));
-   setTimeout(function(){var b=document.getElementById('bplay');log('tap Play',!!b);if(b)b.click();},25000);}
+   setTimeout(function(){var b=document.getElementById('bplay');log('tap Play',!!b);if(b)b.click();setTimeout(function(){try{if(typeof closeIntro==='function'&&document.getElementById('introbox')&&!document.getElementById('introbox').hidden)closeIntro();var g=0;while(typeof DLG!=='undefined'&&DLG&&g++<60){DLG.shown=1e9;advanceDialog();}[].forEach.call(document.querySelectorAll('.modal'),function(m){m.hidden=true;});if(G.mode==='menu')G.mode='play';log('into the game',G.mode);}catch(e){log('skip intro',e.message);}},8000);},25000);}
  if(G.mode==='play'&&!window.__tP){window.__tP=1;log('playing',Math.round((Date.now()-t0)/1000)+'s');
    setTimeout(function(){try{if(typeof closeIntro==='function'&&document.getElementById('introbox')&&!document.getElementById('introbox').hidden)closeIntro();var g=0;while(typeof DLG!=='undefined'&&DLG&&g++<60){DLG.shown=1e9;advanceDialog();}}catch(e){log('intro',e.message);}},4000);}
- if(n%15===0)log('tick',G.mode,'frame',(typeof ERRS!=='undefined'?ERRS.frame:0),'errors',(typeof ERRS!=='undefined'?ERRS.n:0),'fonts',document.fonts?document.fonts.status:'-',
+ if(n%15===0)log('tick',G.mode,'frame',(typeof ERRS!=='undefined'?ERRS.frame:0),'errors',(typeof ERRS!=='undefined'?ERRS.n:0),'music',(typeof TRK!=='undefined'?TRK.st+(TRK.failed?'-failed':'')+' '+(TRK.cur||''):'-'),'fonts',document.fonts?document.fonts.status:'-',
    (function(){try{return [].slice.call(document.fonts).filter(function(f){return f.status==='loaded';}).map(function(f){return f.family;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join('/');}catch(e){return '';}})());
 }catch(e){log('hook error',e.message);}},1000);})();</script>"""
 
