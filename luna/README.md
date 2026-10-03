@@ -14,13 +14,15 @@ A sparkly trail and a golden arrow always lead to the next friend or thing to fi
 - **Snowy Hill** with Pingo the penguin: build a snowman, catch fish at the ice pond, sledding down the hill through the flags, little lost penguins, and a snowflake party.
 - **The Grand Ball** at the castle with every friend, fireworks and the Rainbow dress.
 
+**After the Grand Ball the game keeps going:** the friends ask for help again and again (carrots, eggs, balloons, stars, yarn, flowers, butterflies, seashells, pearls, starfish, lollipops, cupcakes, cookies, fish, snowballs), hidden in new places every time, each with a counting question, and every two helper missions a new dress (Peach, Ocean, Berry, Sunny, Lime, Violet). If she stands still for half a minute in the middle of a mission, the mission is said again.
+
 After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button). The menu (☰) has full screen, music, a photo of the game, the sticker book, the **magic map** to jump between the lands that are open, and Start over.
 
 ## Luna's room
 
 The 🏰 button (or **Go in** at the castle door) opens Luna's room:
 
-- **Dress up**: 11 dresses, crowns, wings, wands and a pearl necklace; she wears them in the game too. Some are surprises won on the adventure.
+- **Dress up**: 17 dresses, crowns, wings, wands and a pearl necklace; she wears them in the game too. Some are surprises won on the adventure.
 - **Makeup mirror**: lipstick, cheeks, eye shadow, glitter, four hairstyles (curls, pigtails, bun, braid), hair colours including rainbow, bows, and face stickers.
 - **Pip's bath**: scrub the mud with the sponge, rinse the bubbles, dry with the towel.
 - **Piano**: play anything, or follow the shining key for Twinkle Twinkle, Mary's little lamb and Row your boat.

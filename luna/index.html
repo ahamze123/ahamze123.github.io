@@ -108,6 +108,8 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
   transition: opacity .5s; }
 .hint.gone, .hint.dlg { opacity: 0; pointer-events: none; }
 .mission.empty { visibility: hidden; }
+.mission.bump { animation: mbump .9s ease-in-out 2; }
+@keyframes mbump { 0%, 100% { transform: translateX(-50%) scale(1); } 40% { transform: translateX(-50%) scale(1.14); } }
 
 /* menu */
 .menu { position: absolute; top: calc(78px + var(--st)); right: calc(12px + var(--sr)); width: min(300px, calc(100% - 24px)); padding: 12px; display: grid; gap: 8px; z-index: 12; }
@@ -2893,7 +2895,8 @@ function updateCamera(dt, t) {
     }
     const gx = Math.sin(CAM.yaw), gz = Math.cos(CAM.yaw);
     wp = new THREE.Vector3(player.pos.x - gx * 8.4 * s, player.y + 5.6 * s, player.pos.z - gz * 8.4 * s);
-    // never below the ground (the snowy hill, the bridges)
+    // never inside the castle or a house (it slides in towards Luna), and never below the ground (the snowy hill, the bridges)
+    camOutOfHouses(wp);
     wp.y = Math.max(wp.y, heightAt(wp.x, wp.z) + 2.2);
     // and it looks a little ahead of where she is walking
     CAM.ahead = (CAM.ahead || new THREE.Vector3()).lerp(new THREE.Vector3(player.vel.x, 0, player.vel.z).multiplyScalar(0.32), 1 - Math.exp(-dt * 2));
@@ -2906,6 +2909,16 @@ function updateCamera(dt, t) {
   sun.position.copy(player.pos).add(SUN_OFFSET); sun.target.position.copy(player.pos);
   sunGlow.position.copy(camera.position).add(SUN_OFFSET.clone().normalize().multiplyScalar(360));
   if (typeof updateSeeThrough === "function") { updateSeeThrough(); updateCamHide(); }
+}
+function camOutOfHouses(wp) {
+  const px = player.pos.x, pz = player.pos.z;
+  for (const b of OBST_B) {
+    const m = 2.2, inside = (x, z) => x > b.x0 - m && x < b.x1 + m && z > b.z0 - m && z < b.z1 + m;
+    if (!inside(wp.x, wp.z) || inside(px, pz)) continue;
+    let lo = 0, hi = 1; const sx = wp.x, sz = wp.z;
+    for (let k = 0; k < 10; k++) { const t = (lo + hi) / 2; if (inside(px + (sx - px) * t, pz + (sz - pz) * t)) hi = t; else lo = t; }
+    wp.x = px + (sx - px) * lo; wp.z = pz + (sz - pz) * lo; wp.y += (1 - lo) * 3;
+  }
 }
 function snapCamera() {
   const gx = Math.sin(CAM.yaw), gz = Math.cos(CAM.yaw);
@@ -2936,7 +2949,7 @@ const SAVE_KEY = "luna-sk-v2", OLD_KEY = "luna-sparkle-kingdom-v1", PHOTO_KEY = 
 const START_UNLOCKED = ["dress_pink", "dress_blue", "dress_lilac", "dress_gold", "dress_mint", "dress_white", "crown_none", "crown_gold", "tiara_star", "wings_none", "wings_fairy", "wand_none", "wand_star", "necklace_none"];
 const Save = {
   data: null,
-  fresh() { return { v: 2, qi: 0, stickers: [], gems: 0, unlocked: START_UNLOCKED.slice(), outfit: Object.assign({}, OUTFIT_DEFAULT), look: JSON.parse(JSON.stringify(LOOK_DEFAULT)), open: {}, night: false, stories: 0, rideTip: 0 }; },
+  fresh() { return { v: 2, qi: 0, stickers: [], gems: 0, unlocked: START_UNLOCKED.slice(), outfit: Object.assign({}, OUTFIT_DEFAULT), look: JSON.parse(JSON.stringify(LOOK_DEFAULT)), open: {}, night: false, stories: 0, rideTip: 0, bonus: 0 }; },
   load() {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
@@ -2977,14 +2990,21 @@ const DRESSES = [
   { id: "dress_pink", name: "Pink", sw: "#f7a6cf" },
   { id: "dress_blue", name: "Sky blue", hue: 205, sat: 1.3, val: 1.0, sw: "#8fd0ff" },
   { id: "dress_lilac", name: "Lilac", hue: 268, sat: 1.15, val: 1.0, sw: "#c9a8ff" },
-  { id: "dress_gold", name: "Gold", hue: 45, sat: 1.75, val: 1.0, sw: "#ffd66b" },
+  { id: "dress_gold", name: "Gold", hue: 30, sat: 1.7, val: 0.98, sw: "#ffd66b" },
   { id: "dress_mint", name: "Mint", hue: 152, sat: 1.15, val: 1.0, sw: "#8fe8c4" },
   { id: "dress_white", name: "Snow white", hue: 220, sat: 0.12, val: 1.05, sw: "#f4f6ff" },
   { id: "dress_night", name: "Starry night", hue: 236, sat: 1.9, val: 0.62, sw: "#3b4aa8", lock: true },
-  { id: "dress_rose", name: "Rose", hue: 352, sat: 2.3, val: 0.86, sw: "#e8456b", lock: true },
+  { id: "dress_rose", name: "Rose", hue: 338, sat: 2.2, val: 0.86, sw: "#e8456b", lock: true },
   { id: "dress_candy", name: "Candy", hue: 302, sat: 2.0, val: 0.98, sw: "#ff5fd2", lock: true },
   { id: "dress_ice", name: "Ice", hue: 192, sat: 0.75, val: 1.07, sw: "#cfefff", lock: true },
   { id: "dress_rainbow", name: "Rainbow", rainbow: true, sw: "linear-gradient(#ff5f7e,#ffa94d,#ffe066,#69db7c,#74c0fc,#b197fc)", lock: true },
+  // presents for the helper missions after the story
+  { id: "dress_peach", name: "Peach", hue: 4, sat: 1.3, val: 1.02, sw: "#ffb38a", lock: true },
+  { id: "dress_ocean", name: "Ocean", hue: 202, sat: 1.9, val: 0.76, sw: "#3f7fd9", lock: true },
+  { id: "dress_berry", name: "Berry", hue: 318, sat: 1.8, val: 0.76, sw: "#c2337a", lock: true },
+  { id: "dress_sunny", name: "Sunny", hue: 36, sat: 1.5, val: 1.02, sw: "#ffd23f", lock: true },
+  { id: "dress_lime", name: "Lime", hue: 84, sat: 1.4, val: 0.98, sw: "#a8e05f", lock: true },
+  { id: "dress_violet", name: "Violet", hue: 262, sat: 1.6, val: 0.82, sw: "#8a4fd0", lock: true },
 ];
 const ACCESSORIES = {
   crown: [{ id: "crown_none", name: "Heart tiara" }, { id: "crown_gold", name: "Gold crown" }, { id: "tiara_star", name: "Star tiara" }, { id: "crown_flower", name: "Flower crown", lock: true }, { id: "crown_shell", name: "Seashell crown", lock: true }],
@@ -3516,6 +3536,7 @@ function questFinish() {
   else done();
 }
 function questReward(C) {
+  if (C.bonus) return bonusReward(C);
   Save.addSticker(C.id);
   Sound.fx.gem(); luna.act("cheer", 2.4);
   FX.burst(new THREE.Vector3(player.pos.x, player.y + 2.2, player.pos.z), 60, ["#ff6fae", "#ffffff", "#fff3b0", "#b07cff"], 6, 1.4, 2);
@@ -3911,6 +3932,142 @@ function isTalkTarget(k) {
   if (Q.phase === "visit") return Q.cur.who === k;
   const S = Q.cur.steps[Q.step]; if (!S || Q.phase !== "step") return false;
   return (S.do === "return" && (S.to || Q.cur.who) === k) || (S.do === "find" && S.who === k) || (S.do === "escort" && (S.to === k || S.who === k)) || (S.do === "gather" && S.to === k);
+}
+
+/* ================= HELPER MISSIONS: when the story is finished the friends keep asking for help, with the things hidden
+   in new places every time, an easy counting question, and every two missions a new dress for the wardrobe ================= */
+const BONUS_DRESSES = ["dress_peach", "dress_ocean", "dress_berry", "dress_sunny", "dress_lime", "dress_violet"];
+const BONUS = [
+  { who: "bunny", land: "main", kind: "carrot", n: 4, emo: "🥕", what: "carrots", label: "Find {n} carrots",
+    intro: "Hop hop! My tummy is rumbly again. Can you find four carrots for me, Princess Luna?", say: "Crunch, crunch! Thank you, Luna!" },
+  { who: "bunny", land: "main", kind: "egg", n: 4, emo: "🥚", what: "eggs", label: "Find {n} painted eggs",
+    intro: "Let's play egg hunt! I hid four painted eggs. Can you find them all?", say: "You found all my eggs! Hop hop hooray!" },
+  { who: "dot", land: "main", kind: "apple", n: 4, emo: "🍎", what: "apples", label: "Find {n} apples",
+    intro: "Rawr! I'm hungry! Can you find four red apples for me?", say: "Yum, yum, yum! Thank you, Luna!" },
+  { who: "dot", land: "main", kind: "balloon", n: 5, emo: "🎈", what: "balloons", label: "Find {n} balloons",
+    intro: "Oops! My party balloons flew away again! Can you find five balloons?", say: "My balloons! Let's have another party!" },
+  { who: "stardust", land: "main", kind: "star", n: 5, emo: "⭐", what: "stars", label: "Catch {n} stars", fly: true,
+    intro: "Oh my, more little stars fell out of the sky! Can you catch five stars?", say: "The sky is twinkly again! Thank you, Princess!" },
+  { who: "mimi", land: "main", kind: "yarn", n: 3, emo: "🧶", what: "balls of yarn", label: "Find {n} balls of yarn",
+    intro: "Purr. Pip played with my yarn again, and now it's everywhere! Can you find three balls of yarn?", say: "Thank you, Princess! Now I can knit a hat for Pip." },
+  { who: "mimi", land: "main", kind: "flower", n: 5, emo: "🌸", what: "flowers", label: "Pick {n} flowers", colors: true,
+    intro: "Let's make the castle pretty! Can you pick five flowers for me?", say: "What a beautiful bunch of flowers! Thank you!" },
+  { who: "pip", land: "main", kind: "butterfly", n: 4, emo: "🦋", what: "butterflies", label: "Catch {n} butterflies", chase: true, speed: 1.6, roam: 5,
+    intro: "Mew! Let's play the butterfly game again! Can you catch four butterflies?", say: "Mew! You're so fast, Princess Luna!" },
+  { who: "shelly", land: "beach", kind: "shell", n: 5, emo: "🐚", what: "seashells", label: "Find {n} seashells",
+    intro: "Swish, swish! The waves washed my seashells away. Can you find five seashells?", say: "My pretty shells! Thank you, Luna!" },
+  { who: "marina", land: "beach", kind: "pearl", n: 5, emo: "⚪", what: "pearls", label: "Find {n} pearls",
+    intro: "Splash! I'm making a necklace for my friend. Can you find five pearls?", say: "Shiny pearls! Thank you, Princess Luna!" },
+  { who: "marina", land: "beach", kind: "starfish", n: 4, what: "starfish", label: "Find {n} starfish",
+    intro: "The starfish are playing hide and seek on the beach! Can you find four starfish?", say: "You found all the starfish! Splash, splash!" },
+  { who: "honey", land: "candy", kind: "lollipop", n: 4, emo: "🍭", what: "lollipops", label: "Find {n} lollipops",
+    intro: "My candy shop is empty again! Can you find four lollipops, sweetie?", say: "Sweet! Thank you, sweetie!" },
+  { who: "honey", land: "candy", kind: "cupcake", n: 4, emo: "🧁", what: "cupcakes", label: "Find {n} cupcakes",
+    intro: "I baked cupcakes, but the wind blew them all over the forest! Can you find four cupcakes?", say: "Yummy cupcakes! You're a great helper!" },
+  { who: "honey", land: "candy", kind: "cookie", n: 3, emo: "🍪", what: "cookies", label: "Catch {n} cookies", chase: true, speed: 2.4, roam: 8,
+    intro: "Oh no, the gingerbread cookies ran away again! Can you catch three cookies?", say: "Got them! You're faster than a cookie!" },
+  { who: "pingo", land: "snow", kind: "fish", n: 4, emo: "🐟", what: "fish", label: "Find {n} fish",
+    intro: "Brrr! I'm a hungry penguin again! Can you find four fish for me?", say: "Yum, fish! Thank you, Princess Luna!" },
+  { who: "pingo", land: "snow", kind: "snowball", n: 5, emo: "⚪", what: "snowballs", label: "Find {n} snowballs",
+    intro: "Let's make a snow fort! Can you find five snowballs?", say: "What a great snow fort! Thank you!" },
+];
+const Bonus = { next: 8, last: null, recent: [] };
+
+/* places to hide things: on the land, on dry ground Luna can walk to, away from trees, houses and friends */
+const BONUS_AREA = { main: { x0: -48, x1: 48, z0: -48, z1: 48, from: () => SPOTS.spawn }, beach: { x0: -38, x1: 38, z0: 72, z1: 146, from: () => ARRIVE.beach },
+  candy: { x0: 72, x1: 144, z0: -36, z1: 36, from: () => ARRIVE.candy }, snow: { x0: -144, x1: -72, z0: -36, z1: 36, from: () => ARRIVE.snow } };
+function bonusCells(land) {
+  const A = BONUS_AREA[land], NX = A.x1 - A.x0 + 1, NZ = A.z1 - A.z0 + 1, RAD = 0.9;
+  const free = new Uint8Array(NX * NZ), seen = new Uint8Array(NX * NZ), H = new Float32Array(NX * NZ);
+  const blocked = (x, z) => {
+    for (const o of OBST_C) if (o.r && Math.abs(x - o.x) < o.r + RAD && Math.abs(z - o.z) < o.r + RAD && Math.hypot(x - o.x, z - o.z) < o.r + RAD) return true;
+    for (const b of OBST_B) if (x > b.x0 - RAD && x < b.x1 + RAD && z > b.z0 - RAD && z < b.z1 + RAD) return true;
+    return false;
+  };
+  for (let i = 0; i < NX; i++) for (let j = 0; j < NZ; j++) {
+    const x = A.x0 + i, z = A.z0 + j, k = i * NZ + j;
+    if (!walkable(x, z) || landAt(x, z) !== land || onBridge(x, z)) continue;
+    if (!walkable(x + 1.5, z) || !walkable(x - 1.5, z) || !walkable(x, z + 1.5) || !walkable(x, z - 1.5)) continue;   // not right at the water's edge
+    const h = heightAt(x, z); H[k] = h;
+    if (h > 0.12 && !blocked(x, z)) free[k] = 1;
+  }
+  // only the places joined to where Luna arrives (no little corners she can't get into)
+  const st = A.from(); let s0 = -1, bd = 1e9;
+  for (let k = 0; k < free.length; k++) if (free[k]) { const d = Math.hypot(A.x0 + Math.floor(k / NZ) - st.x, A.z0 + k % NZ - st.z); if (d < bd) { bd = d; s0 = k; } }
+  if (s0 < 0) return [];
+  const q = [s0]; seen[s0] = 1; const out = [];
+  while (q.length) {
+    const k = q.pop(), i = Math.floor(k / NZ), j = k % NZ; out.push({ x: A.x0 + i, z: A.z0 + j });
+    for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= NX || b >= NZ) continue;
+      const n = a * NZ + b; if (seen[n] || !free[n] || Math.abs(H[n] - H[k]) > 0.9) continue;
+      seen[n] = 1; q.push(n);
+    }
+  }
+  return out;
+}
+function bonusSpots(T) {
+  const cells = bonusCells(T.land), giver = friends[T.who].root.position, door = castleDoor();
+  for (let k = cells.length - 1; k > 0; k--) { const j = Math.floor(rand() * (k + 1)); [cells[k], cells[j]] = [cells[j], cells[k]]; }
+  for (const gap of [8, 6, 4]) {
+    const out = [];
+    for (const c of cells) {
+      if (Math.hypot(c.x - giver.x, c.z - giver.z) < 5 || distTo(c.x, c.z) < 6 || Math.hypot(c.x - door.x, c.z - door.z) < 5) continue;
+      if (out.some(o => Math.hypot(o.x - c.x, o.z - c.z) < gap)) continue;
+      out.push({ x: c.x, z: c.z });
+      if (out.length >= T.n) return out;
+    }
+  }
+  return null;
+}
+function countQuiz(T) {
+  if (!T.emo) return null;
+  const ns = [T.n - 1, T.n, T.n + 1].filter(v => v > 0), opts = ns.map(v => T.emo.repeat(v));
+  const order = [0, 1, 2].slice(0, opts.length).sort(() => rand() - 0.5);
+  return { q: "Can you count them? How many " + T.what + " did you find?", opts: order.map(o => opts[o]), right: order.indexOf(ns.indexOf(T.n)), yay: WORD[T.n][0].toUpperCase() + WORD[T.n].slice(1) + " " + T.what + "! Clever princess!" };
+}
+function makeBonusQuest() {
+  let ok = BONUS.filter(b => friends[b.who] && (b.land === "main" || (LAND_BUILT[b.land] && BRIDGES[b.land].open)) && b !== Bonus.last);
+  if (Bonus.last && ok.some(b => b.who !== Bonus.last.who)) ok = ok.filter(b => b.who !== Bonus.last.who);   // a different friend each time
+  if (ok.some(b => !Bonus.recent.includes(b))) ok = ok.filter(b => !Bonus.recent.includes(b));   // and not the same game again soon
+  if (!ok.length) return null;
+  // often a friend on the land where Luna is, sometimes one far away
+  const here = landAt(player.pos.x, player.pos.z), near = ok.filter(b => b.land === here);
+  const pool = near.length && rand() < 0.55 ? near : ok, T = pool[Math.floor(rand() * pool.length)] || ok[0];
+  const spots = bonusSpots(T); if (!spots) return null;
+  const COLORS = ["pink", "yellow", "blue", "purple", "white"];
+  Bonus.last = T; Bonus.recent = [T].concat(Bonus.recent).slice(0, 5);
+  return { id: "bonus_" + T.kind, bonus: true, who: T.who, title: "Helper", sticker: "💖", intro: T.intro,
+    steps: [{ do: T.chase ? "chase" : "collect", kind: T.kind, spots: () => spots.map((p, i) => T.colors ? Object.assign({ color: COLORS[i % COLORS.length] }, p) : p), label: T.label, icon: T.emo || "⭐", fly: T.fly, speed: T.speed, roam: T.roam },
+      { do: "return", say: T.say }],
+    quiz: countQuiz(T) };
+}
+function bonusUpdate(dt) {
+  if (Q.cur || Q.phase !== "free" || Game.mode !== "play" || Game.dialog || Game.party || Game.sledding || Room.open || Act.open || !$("finale").hidden) return;
+  if ((Bonus.next -= dt) > 0) return;
+  Bonus.next = 12;   // if nothing could be set up, try again a little later
+  let C = null; try { C = makeBonusQuest(); } catch (e) { console.error("bonus", e); }
+  if (!C) return;
+  questCleanup();
+  Q.cur = C; Q.step = -1; Q.count = 0; Q.phase = "visit";
+  const g = friends[C.who]; setMission(whoPic(C.who), "Visit " + whoName(C.who)); point(g.root.position.x, g.root.position.z, FRIEND_INFO[C.who].h + 1.4);
+  setTimeout(() => { if (Q.cur === C && Q.phase === "visit" && !Game.dialog && !Room.open) Voice.say(whoName(C.who) + " needs your help!"); }, 900);
+}
+function bonusReward(C) {
+  Save.data.bonus = (Save.data.bonus || 0) + 1; const n = Save.data.bonus;
+  Sound.fx.gem(); luna.act("cheer", 2.4);
+  FX.burst(new THREE.Vector3(player.pos.x, player.y + 2.2, player.pos.z), 60, ["#ff6fae", "#ffffff", "#fff3b0", "#b07cff"], 6, 1.4, 2);
+  [0, 450].forEach((d, k) => setTimeout(() => launchFirework(player.pos.x + (k ? 3 : -3), player.pos.z - 4, 4), d));
+  toast("💖 " + n);
+  let unlocked = null;
+  if (n % 2 === 0) { unlocked = BONUS_DRESSES.find(id => !Save.data.unlocked.includes(id)); if (unlocked) Save.unlock(unlocked); }
+  Save.write(); setGems(Save.data.gems || 0);
+  setMission("👑", "Super helper!");
+  setTimeout(() => {
+    if (unlocked) { const d = dressById(unlocked); chat("luna", "A present for helping! The " + d.name + " dress! I can wear it in my wardrobe!"); }
+    else chat("luna", "I helped my friends " + (n === 1 ? "one time" : (WORD[n] || n) + " times") + "! Yay!");
+  }, 1500);
+  setTimeout(() => { if (Q.cur === C) { Q.cur = null; Q.step = -1; Q.phase = "free"; Beacon.hide(); setMission("👑", "Play anywhere you like!"); Bonus.next = 20; } }, 3600);
 }
 
 /* ================= FROM BLOCK BUDDIES: trail to follow, thinking puzzles, music, footsteps, greetings, sharpness ================= */
@@ -4739,12 +4896,22 @@ function step(dt) {
   for (const k in friends) friends[k].update(dt, t);
   updatePet(dt, t);
   appleTree.update(t, dt); lanterns.forEach(L => L.update(t));
-  questUpdate(dt, t); questAfterUpdate(dt, t); updateParty(dt, t);
+  questUpdate(dt, t); questAfterUpdate(dt, t); updateParty(dt, t); bonusUpdate(dt);
   World.update(t, dt); Beacon.update(t); TapMark.update(dt); GemPop.update(dt, t); FX.update(dt); BOOM.update(dt);
   Trail.update(t); updateGreetings(); updateAmbience(dt); updateBridges(dt, t); updateNight(dt, t); updateOutfit3D(t);
   if (LAND_DECOR.snowfall) LAND_DECOR.snowfall.update(t, dt);
   updateContext(); rideTip(); HINT.classList.toggle("dlg", !!Game.dialog);
+  idleReminder(dt);
   updateCamera(dt, t);
+}
+/* if she stands still for a while in the middle of a mission, the mission is said again and the card bounces */
+function idleReminder(dt) {
+  if (Game.mode !== "play" || Game.dialog || Game.party || Game.sledding || Room.open || !Q.cur || (Q.phase !== "visit" && Q.phase !== "step")) { Game.idle = 0; return; }
+  if ((Game.idle += dt) < 30) return;
+  Game.idle = 0;
+  const m = $("mission"), txt = $("mText").textContent; if (!txt) return;
+  Voice.say(txt + "! Follow the sparkly trail!");
+  m.classList.remove("bump"); void m.offsetWidth; m.classList.add("bump");
 }
 function rideTip() {
   if (Save.data.rideTip || Game.dialog || Game.riding || Game.mode !== "play") return;
