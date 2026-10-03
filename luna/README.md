@@ -18,7 +18,7 @@ A sparkly trail and a golden arrow always lead to the next friend or thing to fi
 
 **After the Grand Ball the game keeps going:** the friends ask for help again and again (carrots, eggs, balloons, stars, yarn, flowers, butterflies, seashells, pearls, starfish, lollipops, cupcakes, cookies, fish, snowballs), hidden in new places every time, each with a counting question, and every two helper missions a new dress (Peach, Ocean, Berry, Sunny, Lime, Violet). If she stands still for half a minute in the middle of a mission, the mission is said again.
 
-**Luna's moves**: the 💃 button next to Jump opens ten moves: dance (the friends nearby dance along), wave (a friend waves back), cheer (confetti), happy jump, twirl (the friends twirl too), flip, cartwheel, blow a kiss (hearts fly to the nearest friend), sit down on a pink pouf, and magic (a ring of flowers pops up). On a computer the number keys 1 to 0 do the moves; on a game controller R2 dances and L2 opens the moves.
+**Luna's moves**: a row of ten round buttons along the bottom of the screen: dance (the friends nearby dance along), wave (a friend waves back), cheer (confetti), happy jump, twirl (the friends twirl too), flip, cartwheel, blow a kiss (hearts fly to the nearest friend), sit down on a pink pouf, and magic (a ring of flowers pops up). On a computer the number keys 1 to 0 do the moves; on a game controller R2 dances and L2 opens the moves.
 
 After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button). The menu (☰) has full screen, music, a photo of the game, the sticker book, a **dance party** (Luna dances, the friends nearby hop along, sparkles and fireworks), the **magic map** to jump between the lands that are open, and Start over (it has to be held down, so a little tap can't wipe the adventure).
 
@@ -27,7 +27,7 @@ After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button)
 The 🏰 button (or **Go in** at the castle door) opens Luna's room:
 
 - **Dress up**: 17 dresses, 10 crowns and tiaras, 9 pairs of wings, 6 wands, 6 necklaces, 5 pairs of earrings and 4 pairs of glasses; she wears all of them in the game too. Some are surprises won on the adventure.
-- **Makeup mirror**: lipstick, cheeks, eye shadow, eyelashes, glitter, face paint (cat, butterfly, rainbow, flowers, stars, hearts, freckles), four hairstyles (curls, pigtails, bun, braid), hair colours including rainbow, bows, and face stickers. The hair colour, the hairstyle, the bows and the makeup show on Luna out in the kingdom too.
+- **Makeup mirror**: lipstick, cheeks, eye shadow, eyelashes, glitter, face paint (cat, butterfly, rainbow, flowers, stars, hearts, freckles), four hairstyles (curls, pigtails, bun, braid), hair colours including rainbow, bows, and face stickers. The hair colour, the hairstyle, the bows and the makeup show on Luna out in the kingdom too: for the bun, pigtails and braid her curls are tucked in tight round her head (her 3D model has its curls built in) and the new hair, made from her own curls, goes on top.
 - **Pip's bath**: scrub the mud with the sponge, rinse the bubbles, dry with the towel.
 - **Piano**: play anything, or follow the shining key for Twinkle Twinkle, Mary's little lamb and Row your boat.
 - **Painting**: two colouring pages (tap a space to fill it) and a blank page with a brush.
