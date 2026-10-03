@@ -1,0 +1,44 @@
+# Online play on the real internet: are the public matchmakers (PeerJS, MQTT servers, ntfy) up, do the free relays work,
+# and can a tablet find and join a game hosted by a tablet on another network (made by blocking some services for one browser)?
+# Runs when tools/online/run.json changes on this branch. Results go to the branch 'online-out'.
+name: Online check (real internet)
+on:
+  workflow_dispatch:
+  push:
+    branches: [online-test]
+    paths: ['tools/online/run.json']
+permissions:
+  contents: write
+concurrency:
+  group: online-check
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright and Chromium
+        working-directory: tools/online
+        run: |
+          npm init -y > /dev/null
+          npm i playwright --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Check
+        working-directory: tools/online
+        run: |
+          (python3 -m http.server 8000 > /dev/null 2>&1 &)
+          sleep 1
+          BASE=$(python3 -c "import json;print(json.load(open('run.json')).get('base','https://ahamze123.github.io/'))")
+          ONLY=$(python3 -c "import json;print(json.load(open('run.json')).get('only',''))")
+          timeout 4200 node check.js "$BASE" "$GITHUB_WORKSPACE/out" "$ONLY" || echo "check ended with $?" >> "$GITHUB_WORKSPACE/out/log.txt"
+      - name: Save the results (branch online-out)
+        if: always()
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/out" && cd "$GITHUB_WORKSPACE/out"
+          git init -q && git checkout -q -b online-out && git add -A
+          git -c user.name=online-bot -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -qm "online check ${{ github.run_number }}" || true
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" online-out
