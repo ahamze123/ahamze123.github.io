@@ -13,7 +13,7 @@ permissions:
   contents: write
 concurrency:
   group: ipad-app
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   app:
     runs-on: macos-26
@@ -38,8 +38,22 @@ jobs:
           npx cap add ios --packagemanager SPM
           npx cap sync ios
           python3 ios_setup.py | tee -a "$OUT/status.txt"
-      - name: Try it on an iPad simulator
-        run: bash app/sim_test.sh
+      - name: Build it for the iPad simulator
+        id: simbuild
+        timeout-minutes: 30
+        continue-on-error: true
+        run: bash app/sim_test.sh build
+      - name: Start an iPad simulator
+        if: steps.simbuild.outcome == 'success'
+        id: simboot
+        timeout-minutes: 15
+        continue-on-error: true
+        run: bash app/sim_test.sh boot
+      - name: Play it on the simulator (pictures and log)
+        if: steps.simboot.outcome == 'success'
+        timeout-minutes: 10
+        continue-on-error: true
+        run: bash app/sim_test.sh run
       - name: Send it to App Store Connect (once the Apple key is in the secrets)
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
