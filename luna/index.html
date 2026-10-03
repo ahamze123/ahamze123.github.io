@@ -134,14 +134,29 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 .kbar { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; flex: none; min-height: 58px; }
 .kbar .item { width: 78px; flex: none; padding: 6px; }
 .kbar .item img { width: 70%; height: 70%; margin-bottom: 8px; }
+.book.kbook { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 8px; }
+@media (max-width: 640px) { .book.kbook { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kbook .krec { position: relative; background: #fffaf2; }
+.pill.callme { animation: callme 1.1s ease-in-out infinite; background: #fff3b0; }
+@keyframes callme { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); box-shadow: 0 0 0 6px rgba(255,210,63,.55); } }
 .kbook .krec img { aspect-ratio: 1.3; object-fit: contain; background: radial-gradient(circle, #fff, #ffe9f2); }
-.kbook .kname { padding: 6px 6px 8px; font-family: var(--font-display); font-weight: 900; font-size: 16px; color: var(--ink); text-align: center; }
+.kbook .kname { padding: 6px 6px 8px; font-family: var(--font-display); font-weight: 900; font-size: 19px; color: var(--ink); text-align: center; }
 .kbook .krec.locked > img { filter: grayscale(1) opacity(.4); }
-.kbook .klock { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 4px solid #fff; box-shadow: 0 4px 12px var(--shadow); background: var(--blush); }
+.kbook .klock { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 84px; height: 84px; border-radius: 50%; overflow: hidden; border: 4px solid #fff; box-shadow: 0 4px 12px var(--shadow); background: var(--blush); }
 .kbook .klock img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1; background: none; }
-.kbook .klock::after { content: "🔒"; position: absolute; right: -2px; bottom: -4px; font-size: 22px; }
+.kbook .klock::after { content: "🔒"; position: absolute; right: -2px; bottom: -4px; font-size: 24px; }
 @media (max-width: 760px), (max-aspect-ratio: 1/1) { .kstage { flex: 0 0 auto; height: 56vh; } }
+/* a phone on its side: the toppings go down the side so the kitchen picture stays big */
+@media (max-height: 520px) and (min-aspect-ratio: 4/3) {
+  .act-body.kbody { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr); }
+  .kbody .ksteps { grid-column: 1 / -1; gap: 6px; }
+  .kbody .kdot { width: 34px; height: 34px; font-size: 18px; }
+  .kbody .kdot.done::after { width: 16px; height: 16px; font-size: 11px; }
+  .kbody .kstage { grid-column: 1; grid-row: 2; height: auto; }
+  .kbody .kbar { grid-column: 2; grid-row: 2; flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; overflow-y: auto; min-height: 0; }
+  .kbody .kbar .item { width: 64px; }
+  .kbody .kbar .ok { font-size: 15px; padding: 8px 12px; }
+}
 /* Luna's moves: a row of round buttons along the bottom, always there (one tap = one move) */
 .moves { position: absolute; left: 50%; bottom: calc(14px + var(--sb)); transform: translateX(-50%); display: flex; gap: 6px; padding: 6px 8px; border-radius: 999px;
   background: rgba(255,250,242,.55); box-shadow: 0 6px 18px rgba(44,23,69,.18); z-index: 7; max-width: calc(100% - 290px - var(--sl) - var(--sr)); overflow-x: auto; scrollbar-width: none; }
@@ -514,8 +529,8 @@ body.pad-on .padfocus.padpress:not(.hot) { transform: scale(.93); }
 <script src="lib/three.min.js"></script>
 <script src="lib/GLTFLoader.js"></script>
 <script>
-const VOICE_FILES = "00a22cf3,00f1283b,00fc5ec5,014dda19,01be5ec3,01f33e9a,020e07eb,02131897,02648617,02cd4148,0335d870,03d9e9e1,04511d8e,046819bb,04a1e4a5,04e2362d,050c205d,0520f05b,0663012e,0717a444,07da523d,07ffdd30,08e4df78,09733804,0a2c3026,0a32e40e,0b2f3e3b,0b66056b,0c23464d,0ce67d5f,0d48de92,0e3d0444,0e845bfb,0ea94fcb,0ed6cfa3,0fc0baee,0ffac111,103e4448,105aac16,106178f0,11324c99,115ee931,116db324,120b960e,1214b339,123e8d09,125e2eea,129a5e71,12b9258d,1382a3f9,149b75a1,14acb8b5,14f8d06d,1515b88b,15f0c9ed,16c08273,16ef015d,17213f32,17dfc931,18c8c925,19251e26,19282165,192beb66,1998cf90,1a33ff3d,1a604d87,1ad987fe,1b2e0cda,1b61219c,1b94a442,1b9b1494,1be734d4,1c02c49d,1d16e9eb,1da21ac4,1e990e1f,1ef8e144,1f3062eb,1f4f2f64,1fbfe8cf,200ad2cc,202d4534,21523b0a,216be980,2175b1ff,2190a347,21f4423e,22847719,22ba2076,2326d443,23ccfb8b,23e6d765,24bf43d7,25b46350,25c732a1,2603d7a1,26fa4fc9,27916e1d,289a9aa1,28b2ca4d,28e23d3e,2ac097e4,2acdebe8,2adcc6ac,2b08571c,2b2f9da6,2b7ff8f9,2c47f24c,2cc4395c,2ceb52e2,2e3a5211,2e86bb68,2eee22b9,2f43ae51,2f70c01d,2fcbcfbb,3031b1fe,30a91588,30b24255,30f88c4e,3192a169,31bdd84a,32024eee,32ceb357,3345844d,34698270,360018c0,36122426,36203878,36498dff,36678837,37178475,3766e2b9,38352d65,387ae355,38c4ca9b,39fe4f8f,3a2f7ac2,3a6f1eab,3a7661ac,3c7ac8e1,3cee0f2e,3da74f9b,3ded144c,3dfde938,3e0fb59a,3f8e08e5,412a4cfa,41faac08,42f52b55,43a7360c,43b833ac,43b9e3ba,43e131df,43f02814,44a59878,457f71d0,46006901,4602cd78,46318dfa,478faf63,488f62f4,48baaa70,48f22807,499893b4,4b04ceef,4b3e20f2,4c84f500,4d6a0674,4dc360c3,4ddc75d3,4df4b29d,4e759e6d,4e76c6f6,4e8c5492,4ecf7aa7,4eded1b0,505b0f0a,50c67d21,516773ef,522af139,5232bb9e,5237b886,53864a8e,53a9a772,5479f2ed,5550d559,55946541,562b97c3,5662e277,571256ed,5757d152,57acb6bf,58008dce,58086b5e,5941e512,59453f6d,5a052bcf,5a234d01,5ad0402d,5ba5f189,5cd993fe,5d06f6f1,5d19ffe5,5d808842,5e4cac88,5e59085f,5e5cccfc,5e9c366e,60810258,61109715,611a63ac,61c5659e,6261be36,627521af,63d7adb5,6480f9d4,65a2fc4e,663c87f2,6655450f,66f323b9,674d8c85,683037a3,68d81ce4,6904f69d,690931d6,69b93e5f,69f309de,6a4dab24,6aa1e8fa,6aa9bed1,6ab0642b,6ab9c5c5,6aea30d8,6afed0a7,6b0cec74,6b674133,6b7a0783,6c46c45a,6df5fa5f,6dfc885c,6e6c3dfd,6e7ee573,6e8efb72,6efc5130,6f634976,6ff1fa15,704002be,70c26913,70d619df,713a0aef,71911c6e,728e4611,72d4d968,73953c3d,73f7e036,7588c122,7591d38a,75a1229d,75e38cfd,76b97a7f,788d1319,78cadb14,7908053b,79f2a29f,7a018d48,7a81728c,7af6e2f8,7b91e6c1,7be06d16,7c4f9237,7ca812cf,7d2a0260,7e5d146b,7e79803c,7ed1e393,7f751f09,803f01eb,80ec1262,810212cf,814f48ed,8267ac97,826b1ae3,82d22e5b,8328349a,83dd35f7,8537726a,858c9cb7,860b183e,86722320,87d248d3,88436b10,8846c2fa,88b02f72,891dcee6,89d90d0a,8a3aed6c,8a6670f3,8a909aaf,8af26357,8b426480,8b96f635,8bf30896,8c55f0a9,8dcb962d,8e8be6dd,8ea77787,8ed95ea9,8f3f6d22,8f43385d,8f7924fb,8fbfb6b4,90c3c8fd,90e45e4b,9207605d,9210bc92,92859f1c,92e06e54,93ae480f,943f0f5d,94e9abdf,94f5bb99,95c8195d,96097a34,9635280d,97b4f7ae,985bddf7,98ad7bef,992b2675,9ab66708,9bcd4a16,9d3a86d2,9d582420,9d770961,9e0b5e28,9ee37635,9f722af1,9f929386,a00f5df5,a121c475,a1248bcb,a1fa0627,a27cacb0,a2ac8e15,a2e74f17,a3bb0bdd,a517eec4,a51a201a,a6141594,a6a2d973,a77d61f3,a7b14d72,a7c370a3,a82a91b2,a9633c3d,aa3078c6,aa67c59a,aacbf240,ac2b2698,ac9d2907,ad47d754,ad4bfdf2,ad566924,ad782d09,ae92ab61,aeba8ad2,b11bfb48,b12c4f8c,b20969e4,b318f98b,b31cca1a,b3802c45,b3ea4a84,b44ea963,b462238d,b5e417d6,b65bbd3f,b6922439,b7d71556,b81ecfcd,b84fb8d6,b9200fb4,b997ade5,ba0e652e,ba703036,bd843665,be414c06,bece9ce7,bef7117b,bfbd3dd4,c052dd53,c11377c8,c115d52a,c1a28911,c1c6721c,c25ce2b5,c2a26045,c2b6dcef,c42a2710,c43346c9,c4589fe1,c51c3f39,c69f0900,c8c75435,c8dcb7d0,ca6a5040,ca9312c4,cb7a9798,cbe88961,cc41c225,cc9259a4,cd0e6a50,cd54033b,cd80bfb0,cda541a8,cdfd7c2e,ce0a9655,cf82c6c3,cfb5574b,cfc93025,d0210508,d09619e4,d19ed04a,d1adf5d4,d1f4341e,d262e2d8,d2ea5e42,d38be5e8,d3c10c80,d3da0e97,d414f5c8,d4bf26f8,d4d4d12c,d4e01f2f,d532c0d5,d549ad8f,d5510939,d6707c2a,d6cb26cf,d73c33e6,d79fc2ae,d841f188,d89e1fef,d8cb933f,d8cc0aec,d8dc44ab,da120c2b,da577ca0,da805faa,dadcf493,db586fcb,db8efc4c,dc4ebbe2,dd96c01b,debf55b3,decad3dc,deee47bc,dfb19bdf,dfc42b96,e00e3fd5,e0c47d42,e13061cd,e140038b,e1ab9787,e1d233fb,e22f2732,e23a0726,e2af25a6,e2e0b121,e2ea8a64,e3c8956d,e3e6d147,e4272583,e4568fc4,e4aebf25,e515942c,e51cae8a,e55461c0,e55a5945,e57ac697,e5952cce,e5b8c350,e66b2229,e672f607,e690e142,e6ce29ec,e718bd2b,e777835f,e7d468e9,e7e9f0f9,e7f99180,e857ca06,e87d5055,e9456fef,e96a47fe,ea143563,ea39db41,eae24ad0,ebff4d2f,ec5eb6b5,ec6dfdb7,ec889921,ece4644e,ed20aa01,ed6e4c43,ed73203e,ee7d4314,eee7c6d3,eef3a24c,eef427f7,ef974d57,effd821e,f068733b,f1ef67df,f32e0f61,f3bb1011,f4650963,f4e5c5cb,f6c3934d,f80584d5,f82bd5ea,f8852872,f8cdee73,f8fe088b,f915bd2c,f9eb4fb0,fc1dd75b,fc596bde,fc82dc43,fd0aa93c,fd4801e8,fdcf9499,fe6fff2e,fe768032,ff11761d,ff266429,ff73031d,ff95a890,ffc95daa";
-const COOK_ON = false;
+const VOICE_FILES = "0047d45c,00a22cf3,00f1283b,00fc5ec5,014c6431,014dda19,01be5ec3,01f33e9a,020e07eb,02131897,02648617,02cd4148,0335d870,037ee3fc,03d9e9e1,0441d2fc,04511d8e,0457658b,046819bb,04a1e4a5,04b1ebef,04e2362d,050c205d,0520f05b,0663012e,0669d571,067882f0,06cdd978,0717a444,076c672c,07d5df1f,07da523d,07eea8c6,07ffdd30,089b6451,08e4df78,08ecfd97,092830e8,09733804,09c4693f,09da1d18,0a2c3026,0a32e40e,0a66985d,0b2f3e3b,0b66056b,0b74cf35,0bc9dd71,0c23464d,0cae93e1,0cd5916e,0ce67d5f,0d48de92,0df9d565,0e0507e3,0e06faff,0e3d0444,0e845bfb,0ea94fcb,0ed6cfa3,0fc0baee,0ffac111,103e4448,105aac16,106178f0,10ece355,11324c99,1151ed67,115ee931,116db324,120b960e,1214b339,123e8d09,124143a5,125e2eea,129a5e71,12b9258d,1382a3f9,149b75a1,14acb8b5,14c27440,14f8d06d,1515b88b,15e317a3,15f0c9ed,16c08273,16d5efc9,16ef015d,17213f32,179281e2,17dfc931,1842bcac,18c8c925,19251e26,19282165,192beb66,1998cf90,1a33ff3d,1a604d87,1aabc752,1ad987fe,1b2e0cda,1b61219c,1b94a442,1b9b1494,1be734d4,1c02c49d,1d16e9eb,1da21ac4,1db67e59,1e800b5d,1e990e1f,1ef8e144,1f3062eb,1f3b712e,1f4f2f64,1fb81326,1fbfe8cf,200ad2cc,202d4534,206cfbb0,20b817b3,20e953b3,21523b0a,216be980,2175b1ff,2190a347,21f4423e,22847719,22ba2076,2326d443,23ccfb8b,23d3dc2f,23e6d765,24bf43d7,25b46350,25c732a1,2603d7a1,262e38c6,26ba07ca,26fa4fc9,27916e1d,289a9aa1,28b2ca4d,28e23d3e,294a677a,2ac097e4,2acdebe8,2adcc6ac,2b08571c,2b16a7b3,2b2f9da6,2b7ff8f9,2c07a8d6,2c47f24c,2cc4395c,2cc53c19,2ceb52e2,2e3a5211,2e86bb68,2eee22b9,2f43ae51,2f70c01d,2f79774b,2fc9845a,2fcbcfbb,30048c02,3031b1fe,30a91588,30b24255,30f88c4e,3127c7bb,3192a169,31bdd84a,32024eee,3205bea0,32b00702,32ceb357,3304d3bd,3345844d,34698270,3471826a,360018c0,36122426,361b2215,36203878,36333f63,36498dff,36678837,366b858c,37178475,3766e2b9,37fd7cce,38352d65,387ae355,38c4ca9b,394f1eef,39641722,39fe4f8f,3a2f7ac2,3a6f1eab,3a7661ac,3a830a2d,3c1e9dfe,3c7ac8e1,3cee0f2e,3cf256d7,3d6978f2,3da74f9b,3ded144c,3dfde938,3e0be71e,3e0fb59a,3ee48cda,3f7851f9,3f8dc566,3f8e08e5,3fba23d8,40040f30,40f6d464,412a4cfa,41faac08,42f52b55,43a7360c,43b833ac,43b9e3ba,43e131df,43f02814,44a59878,44acffe8,45629a89,457079a1,4572c5bb,457f71d0,46006901,4602cd78,46318dfa,478faf63,488f62f4,48baaa70,48ee01be,48f22807,4913c165,4957e51d,497f9095,499893b4,4ab57511,4b04ceef,4b3e20f2,4b9ad624,4beac9cd,4c84f500,4cb33b71,4d6a0674,4dc360c3,4ddc75d3,4df4b29d,4e3db832,4e759e6d,4e76c6f6,4e8c5492,4ecf7aa7,4eded1b0,4f1a5e34,4f78d41d,505b0f0a,509508a3,50c67d21,516773ef,51b2254e,522af139,5232bb9e,5237b886,5246626a,53864a8e,53a9a772,53f2d132,540b49d8,540f446d,5479f2ed,548b76b1,5521ffe3,5550d559,55946541,55aefafb,5625c97c,562b97c3,562db307,5662e277,571256ed,57276973,5757d152,57a2037f,57acb6bf,57bec70f,58008dce,58086b5e,593fffd8,5941e512,59453f6d,5a052bcf,5a234d01,5ad0402d,5b0f8cee,5b7bf9a4,5ba5f189,5bb88bf1,5bcf6938,5bd5ba1b,5cb70cc6,5cd993fe,5d06f6f1,5d19ffe5,5d808842,5e4cac88,5e59085f,5e5cccfc,5e9c366e,6005939f,6040e690,60810258,60a44748,61109715,611a63ac,61c5659e,6261be36,627521af,63217f43,63d7adb5,64752b25,6480f9d4,65a2fc4e,65dfcfdf,663c87f2,6655450f,66f323b9,674d8c85,683037a3,684c48a9,68d81ce4,6904f69d,690931d6,69b93e5f,69f309de,6a4dab24,6aa1e8fa,6aa9bed1,6ab0642b,6ab9c5c5,6aea30d8,6af7d3c1,6afed0a7,6b0cec74,6b5bb691,6b674133,6b7a0783,6bd52921,6c46c45a,6df5fa5f,6dfc885c,6e6c3dfd,6e7ee573,6e8efb72,6ed6cb7e,6efc5130,6f634976,6fa36615,6ff1fa15,704002be,70c26913,70d619df,713a0aef,715f93e2,71911c6e,71a668e7,728e4611,72d4d968,738b9ffc,73953c3d,73f7e036,7588c122,7591d38a,75a1229d,75d48d65,75e38cfd,76b97a7f,77ed0c06,788d1319,78cadb14,7908053b,79f2a29f,7a018d48,7a81728c,7a85e556,7af6e2f8,7b91e6c1,7be06d16,7c4f9237,7c5a82c2,7ca812cf,7cab3128,7d2a0260,7dc5cba4,7df11cc0,7e5d146b,7e79803c,7ed1e393,7ee5edbf,7f5306d6,7f751f09,803f01eb,80ec1262,810212cf,811531f0,814f48ed,8253dc94,8267ac97,826b1ae3,82d22e5b,8328349a,83adda2f,83dd35f7,8537726a,858c9cb7,85dc6ba2,860b183e,86539174,86722320,87d248d3,87db829a,88436b10,8846c2fa,884aed14,887cb839,888a8cb6,888e422a,88b02f72,89121938,891dcee6,89d90d0a,8a3aed6c,8a6670f3,8a909aaf,8aa93c7d,8af26357,8b426480,8b4b3f0e,8b617aad,8b96f635,8bf30896,8c0db947,8c3b3889,8c55f0a9,8d0591b2,8dcb962d,8e8be6dd,8ea77787,8ed95ea9,8eda6728,8f3f6d22,8f43385d,8f44e8ec,8f7924fb,8fbfb6b4,907b9a5c,90c3c8fd,90e45e4b,9130154a,91bd8288,9207605d,9210bc92,92859f1c,92e06e54,93ae480f,9418faff,943f0f5d,94a42792,94e9abdf,94f5bb99,955509ff,95c8195d,96097a34,9635280d,96f55995,971c0744,97b4f7ae,985bddf7,98ad7bef,992b2675,993f8ae7,9a4dbf80,9ab66708,9add75c5,9af4338a,9bcd4a16,9c63f955,9ca95827,9d3a86d2,9d582420,9d770961,9e0b5e28,9ed55416,9ee37635,9f722af1,9f929386,9fa5ea0a,a00f5df5,a03a41cd,a121c475,a1248bcb,a1fa0627,a27cacb0,a2ac8e15,a2d0fa30,a2e74f17,a2ec648f,a2fe57e7,a3147145,a3bb0bdd,a4a0a7a8,a517eec4,a51a201a,a60783d3,a6141594,a66937e9,a6a2d973,a77d61f3,a7876b49,a7b14d72,a7c370a3,a82a91b2,a93830c8,a9633c3d,a9f496ba,aa0f6e46,aa3078c6,aa67c59a,aacbf240,ac2b2698,ac41257e,ac9d2907,ad47d754,ad4bfdf2,ad566924,ad782d09,ae92ab61,aeba8ad2,aecf4493,b030a6bd,b053a23a,b0d9c154,b11bfb48,b12c4f8c,b1c7bdfe,b20969e4,b318f98b,b31cca1a,b3802c45,b3ea4a84,b44ea963,b462238d,b50f49d3,b5e417d6,b65bbd3f,b6922439,b71b7839,b77f6e6a,b7d71556,b81ecfcd,b84fb8d6,b9200fb4,b997ade5,ba0e652e,ba703036,ba9eff7d,bca7d40b,bd843665,be1eb290,be414c06,bece9ce7,beee7d2b,bef7117b,bfbd3dd4,c0072880,c052dd53,c11377c8,c115d52a,c19b0941,c1a28911,c1c6721c,c202e080,c2401e3a,c25ce2b5,c2a26045,c2b6dcef,c30050ea,c42a2710,c43346c9,c4589fe1,c51c3f39,c547ef89,c5c4e70a,c69f0900,c80de8b9,c8c75435,c8dcb7d0,ca6a5040,ca8003aa,ca9312c4,caf3faa1,cb4b388a,cb7a9798,cbe88961,cc3863f6,cc41c225,cc9259a4,cd0e6a50,cd407713,cd54033b,cd80bfb0,cd8b7ae5,cda541a8,cdfd7c2e,ce0a9655,cf5ba83a,cf82c6c3,cfb5574b,cfc93025,d01954cc,d0210508,d09619e4,d0f1bbc5,d19ed04a,d1a74d66,d1adf5d4,d1c68ad7,d1f4341e,d2448924,d262e2d8,d2ea5e42,d38be5e8,d3c10c80,d3da0e97,d414f5c8,d4325267,d44d74c2,d4bf26f8,d4d4d12c,d4e01f2f,d4e4e86e,d4f71847,d532c0d5,d549ad8f,d5510939,d554c6ca,d616b5f8,d6707c2a,d6cb26cf,d6d4f39b,d73c33e6,d79fc2ae,d7ce5c96,d7fbf990,d80b290d,d841f188,d89e1fef,d8c0aae1,d8cb933f,d8cc0aec,d8dc44ab,d9b439c9,d9d33b4b,d9fef2c3,da120c2b,da577ca0,da805faa,dadcf493,db586fcb,db8efc4c,dc4ebbe2,dcab58db,dd96c01b,de9d22f7,debf55b3,decad3dc,deee47bc,dfb19bdf,dfc42b96,dffa57f6,e00e3fd5,e0c47d42,e0e4a869,e13061cd,e140038b,e1ab9787,e1d233fb,e22f2732,e23a0726,e2af25a6,e2cf387b,e2e0b121,e2ea8a64,e3c8956d,e3e6d147,e4272583,e4568fc4,e499a8c3,e4aebf25,e4c66de6,e4d6995b,e515942c,e51cae8a,e5532f91,e55461c0,e55a5945,e57ac697,e5952cce,e5b8c350,e66b2229,e672f607,e690e142,e6ce29ec,e718bd2b,e741408f,e777835f,e7d468e9,e7e9f0f9,e7f99180,e829f0d5,e857ca06,e87d5055,e9456fef,e96a47fe,e9ad279b,ea143563,ea39db41,ea4bef6c,eae24ad0,ebff4d2f,ec5eb6b5,ec6dfdb7,ec889921,ece4644e,ecf8029c,ed20aa01,ed6e4c43,ed73203e,ee5d9476,ee7d4314,eee7c6d3,eef3a24c,eef427f7,eef4e83c,ef974d57,effa55db,effd821e,f034f88d,f068733b,f1ef67df,f32dde42,f32e0f61,f3bb1011,f4650963,f492d691,f4e5c5cb,f6092748,f6a57c0a,f6c3934d,f7433feb,f7fe4160,f80584d5,f82bd5ea,f83f7c9a,f8852872,f8cdee73,f8fe088b,f915bd2c,f9c904f4,f9eb4fb0,fb42d498,fc1dd75b,fc596bde,fc82dc43,fd0aa93c,fd4801e8,fdcf9499,fdf4fe65,fe211bab,fe6fff2e,fe768032,ff11761d,ff266429,ff73031d,ff95a890,ff9d0509,ffc95daa";
+const COOK_ON = true;
 /* ================= PICTURES (made by Luna's family) ================= */
 const PICS = {
   mom: "data:image/webp;base64,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",
@@ -2632,6 +2647,12 @@ const Sound = (() => {
     purr() { if (!ok()) return; const t = ctx.currentTime; for (let i = 0; i < 6; i++) noise(t + i * 0.11, 0.09, 0.12, 160, 3); },
     tick() { if (!ok()) return; tone(1320, ctx.currentTime, 0.06, "sine", 0.07); },
     kiss() { if (!ok()) return; const t = ctx.currentTime; noise(t, 0.05, 0.25, 2600, 2); tone(1400, t + 0.02, 0.18, "sine", 0.16, sfxBus, 2100); [88, 91, 96].forEach((n, i) => tone(midi(n), t + 0.25 + i * 0.07, 0.4, "sine", 0.08)); },
+    // the kitchen
+    crack() { if (!ok()) return; const t = ctx.currentTime; noise(t, 0.05, 0.4, 3200, 2.5); noise(t + 0.06, 0.04, 0.25, 2400, 2.5); tone(520, t + 0.1, 0.14, "sine", 0.12, sfxBus, 300); },
+    chop() { if (!ok()) return; const t = ctx.currentTime; noise(t, 0.06, 0.45, 1500, 1.4); tone(180, t, 0.09, "triangle", 0.2, sfxBus, 110); },
+    sizzle() { if (!ok()) return; const t = ctx.currentTime; noise(t, 0.5, 0.05, 5200, 0.7); noise(t + 0.15, 0.4, 0.04, 6500, 0.9); },
+    blend() { if (!ok()) return; const t = ctx.currentTime; tone(110, t, 0.24, "sawtooth", 0.035, sfxBus, 130); noise(t, 0.24, 0.07, 900, 0.8); },
+    ding() { if (!ok()) return; const t = ctx.currentTime; tone(midi(91), t, 1.1, "sine", 0.24); tone(midi(103), t, 0.7, "sine", 0.07); tone(midi(96), t + 0.18, 1.0, "sine", 0.16); },
   };
   /* a little piano for Luna's room: a soft toy-piano tone */
   function note(m) {
@@ -4903,7 +4924,7 @@ Room.enter = function () {
   $("room").classList.toggle("night", NIGHT.on);
   Sound.fx.chime(); Sound.startMusic("room");
   Room.layout();
-  Voice.say(Room.visits === 1 ? "Welcome to your room, Princess Luna! Tap something to play!" : "Welcome home, Princess!");
+  if (!Room.quiet) Voice.say(Room.visits === 1 ? "Welcome to your room, Princess Luna! Tap something to play!" : "Welcome home, Princess!");
 };
 Room.leave = function () {
   if (!Room.open) return;
@@ -4956,7 +4977,7 @@ function toggleLights() { $("room").classList.toggle("lights-on"); Sound.fx.spar
 function actOpen(title, build, opts = {}) {
   actClose(true);
   Act.open = true; Act.onClose = opts.onClose || null; Act.voice = opts.voice || "";
-  $("actTitle").textContent = title; const body = $("actBody"); body.innerHTML = ""; body.style.cssText = "";
+  $("actTitle").textContent = title; const body = $("actBody"); body.innerHTML = ""; body.style.cssText = ""; body.className = "act-body";
   $("actCard").classList.toggle("night-bg", !!opts.night);
   $("actClose").hidden = !!opts.noClose;
   $("act").hidden = false;
@@ -5049,7 +5070,7 @@ async function openWardrobe() {
 const LIPS = ["#ff5f9e", "#e8273f", "#ff7a5a", "#a03fd0", "#ffa48a", "#ffb3cf", "#ff2f6d", "#c2185b", "#ff9e3d", "#7b4fd6", "#4fb8ff", "#3fcf8e"];
 const BLUSH = ["#ff7aa8", "#ff9a7a", "#f0507a", "#ffb08a", "#d6a0ff", "#ff6f61"];
 const SHADOW = ["#ff8fc8", "#a77cff", "#6fb8ff", "#ffcc55", "#6fd6a0", "#ff6f9e", "#4fd6c4", "#c9cdd8", "#ff9e3d", "#3b5fd6"];
-const PAINTS_FACE = [["cat", "🐱", "Cat face"], ["butterfly", "🦋", "Butterfly"], ["rainbow", "🌈", "Rainbow"], ["flowers", "🌸", "Flowers"], ["stars", "⭐", "Stars"], ["hearts", "💖", "Hearts"], ["freckles", "🟤", "Freckles"]];
+const PAINTS_FACE = [["cat", "🐱", "Cat face", "A cat face! Meow!"], ["butterfly", "🦋", "Butterfly", "Butterfly face paint!"], ["rainbow", "🌈", "Rainbow", "Rainbow face paint!"], ["flowers", "🌸", "Flowers", "Flower face paint!"], ["stars", "⭐", "Stars", "Star face paint!"], ["hearts", "💖", "Hearts", "Heart face paint!"], ["freckles", "🟤", "Freckles", "Cute freckles!"]];
 async function openVanity() {
   let tab = "lips", cv, placing = null;
   const tabs = [["lips", "💄", "Lips"], ["blush", "🌸", "Cheeks"], ["shadow", "👁️", "Eyes"], ["lashes", "👀", "Lashes"], ["glitter", "✨", "Glitter"], ["paint", "🎨", "Face paint"], ["hair", "💇", "Hair"], ["color", "🌈", "Hair colour"], ["bow", "🎀", "Bows"], ["stickers", "🦋", "Stickers"]];
@@ -5075,7 +5096,7 @@ async function openVanity() {
       if (tab === "blush") { g.appendChild(em("🚫", !L().blush, "None", () => set("blush", ""))); BLUSH.forEach(c => g.appendChild(sw(c, L().blush === c, "", () => set("blush", c, "Rosy cheeks!")))); }
       if (tab === "shadow") { g.appendChild(em("🚫", !L().shadow, "None", () => set("shadow", ""))); SHADOW.forEach(c => g.appendChild(sw(c, L().shadow === c, "", () => set("shadow", c, "Sparkly eyes!")))); }
       if (tab === "lashes") { g.appendChild(em("🚫", !L().lashes, "None", () => set("lashes", ""))); g.appendChild(em("👁️", L().lashes === "long", "Long lashes", () => set("lashes", "long", "Long, pretty eyelashes!"))); g.appendChild(em("✨", L().lashes === "sparkle", "Sparkly lashes", () => set("lashes", "sparkle", "Sparkly eyelashes!"))); }
-      if (tab === "paint") { g.appendChild(em("🚫", !L().paint, "None", () => set("paint", ""))); PAINTS_FACE.forEach(([k, e, n]) => g.appendChild(em(e, L().paint === k, n, () => set("paint", k, n + " face paint!")))); }
+      if (tab === "paint") { g.appendChild(em("🚫", !L().paint, "None", () => set("paint", ""))); PAINTS_FACE.forEach(([k, e, n, say]) => g.appendChild(em(e, L().paint === k, n, () => set("paint", k, say)))); }
       if (tab === "glitter") { g.appendChild(em("✨", L().glitter, "Glitter on", () => set("glitter", true, "Twinkle twinkle!"))); g.appendChild(em("🚫", !L().glitter, "No glitter", () => set("glitter", false))); }
       if (tab === "hair") HAIRSTYLES.forEach(h => { const b = el("button", "item" + (L().hair === h.id ? " on" : ""), '<img alt="" src="' + h.img + '" style="object-fit:cover;object-position:50% 8%;width:100%;height:100%;border-radius:14px"><span class="nm">' + h.name + "</span>"); b.onclick = async () => { msg.hidden = false; msg.textContent = "Brushing…"; set("hair", h.id, h.name + "!"); }; g.appendChild(b); });
       if (tab === "color") { g.appendChild(em("🤎", !L().hairColor, "Brown", () => set("hairColor", "", "Lovely brown hair!"))); Object.entries(HAIRCOLORS).forEach(([k, c]) => g.appendChild(sw(c, L().hairColor === k, k, () => set("hairColor", k, k + " hair!")))); g.appendChild(sw("linear-gradient(90deg,#ff5f7e,#ffa94d,#ffe066,#69db7c,#74c0fc,#b197fc)", L().hairColor === "rainbow", "rainbow", () => set("hairColor", "rainbow", "Rainbow hair!"))); }
@@ -5903,7 +5924,7 @@ function makeDish3D(id) {
 /* ---------- the recipes ---------- */
 const RECIPE_ORDER = ["pancakes", "soup", "pizza", "fruitsalad", "smoothie", "sandwich", "cookies", "cocoa"];
 const RECIPES = {
-  pancakes: { name: "Pancakes", lower: "pancakes", emo: "🥞", who: "mimi", land: "main", need: ["egg", "egg", "milk", "flour", "strawberry", "strawberry"],
+  pancakes: { name: "Pancakes", lower: "pancakes", make: "pancakes", emo: "🥞", who: "mimi", land: "main", need: ["egg", "egg", "milk", "flour", "strawberry", "strawberry"],
     intro: "Meow! Princess Luna, Pip and I are so hungry! Can you make us pancakes? Find two eggs, the milk, the flour and two strawberries.",
     thanks: "Pancakes! Purr, purr! Pip and I love them. You're a super chef, Princess Luna!",
     quiz: { q: "What did we crack into the bowl?", opts: ["🥚", "🧦", "🍌"], right: 0, yay: "Eggs! Crack, crack!" },
@@ -5916,7 +5937,7 @@ const RECIPES = {
       { t: "fry", n: 2, say: "Tap the bowl to pour the batter in the pan!", msg: "Tap the bowl!" },
       { t: "top", palette: ["strawberry", "banana", "honey", "cream"], need: 3, say: "Put yummy things on your pancakes! Tap a topping, then tap the pancakes.", msg: "Decorate!" },
     ] },
-  soup: { name: "Carrot soup", lower: "carrot soup", emo: "🥕", who: "bunny", land: "main", need: ["carrot", "carrot", "potato", "tomato"],
+  soup: { name: "Carrot soup", lower: "carrot soup", make: "carrot soup", emo: "🥕", who: "bunny", land: "main", need: ["carrot", "carrot", "potato", "tomato"],
     intro: "Hop hop! Princess Luna, can you cook a warm carrot soup for me? We need two carrots, a potato and a tomato.",
     thanks: "Carrot soup! Slurp, slurp! It's the best soup in the whole kingdom!",
     quiz: { q: "What colour is carrot soup?", opts: ["%#ff8a2a", "%#4f8dff", "%#b07cff"], right: 0, yay: "Orange, like the carrots!" },
@@ -5929,7 +5950,7 @@ const RECIPES = {
       { t: "tip", to: "bowl", say: "Pour the soup into the bowl! Tap the pot.", msg: "Tap the pot!" },
       { t: "top", palette: ["herbs", "carrot", "bread", "cream"], need: 2, say: "Put a little something on top! Tap a topping, then tap the soup.", msg: "Decorate!" },
     ] },
-  pizza: { name: "Pizza", lower: "pizza", emo: "🍕", who: "dot", land: "main", need: ["tomato", "tomato", "cheese", "mushroom", "mushroom"],
+  pizza: { name: "Pizza", lower: "pizza", make: "a pizza", emo: "🍕", who: "dot", land: "main", need: ["tomato", "tomato", "cheese", "mushroom", "mushroom"],
     intro: "Rawr! Princess Luna, I love pizza! Can we make one? Find two tomatoes, the cheese and two mushrooms.",
     thanks: "Pizza! Rawr, it's so yummy! You and me, the best pizza bakers ever!",
     quiz: { q: "Which one is a pizza?", opts: ["🍦", "🍕", "🍩"], right: 1, yay: "Pizza! Yum, yum!" },
@@ -5942,7 +5963,7 @@ const RECIPES = {
       { t: "bake", dragon: true, say: "Into the oven! Dot, light it with your dragon fire!", msg: "Baking…" },
       { t: "cut", n: 4, say: "Cut the pizza! Tap it four times.", msg: "Tap to cut!" },
     ] },
-  fruitsalad: { name: "Rainbow fruit salad", lower: "rainbow fruit salad", emo: "🌈", who: "stardust", land: "main", need: ["strawberry", "orange", "banana", "kiwi", "blueberries", "grapes"],
+  fruitsalad: { name: "Rainbow fruit salad", lower: "rainbow fruit salad", make: "a rainbow fruit salad", emo: "🌈", who: "stardust", land: "main", need: ["strawberry", "orange", "banana", "kiwi", "blueberries", "grapes"],
     intro: "Hello, Princess Luna! Let's make a rainbow fruit salad! Find a strawberry, an orange, a banana, a kiwi, blueberries and grapes. Red, orange, yellow, green, blue and purple!",
     thanks: "A rainbow fruit salad! It's as colourful as my mane! Thank you, Princess Luna!",
     quiz: { q: "Which one is a banana?", opts: ["🍓", "🍇", "🍌"], right: 2, yay: "A yellow banana!" },
@@ -5953,7 +5974,7 @@ const RECIPES = {
       { t: "stir", into: "glassbowl", gentle: true, say: "Mix it gently! Round and round.", msg: "Mix it!" },
       { t: "top", palette: ["cherry", "cream", "honey", "sprinkles"], need: 2, say: "Put something yummy on top! Tap a topping, then tap the fruit salad.", msg: "Decorate!" },
     ] },
-  smoothie: { name: "Tropical smoothie", lower: "smoothie", emo: "🥤", who: "marina", land: "beach", need: ["banana", "banana", "strawberry", "pineapple", "coconut"],
+  smoothie: { name: "Tropical smoothie", lower: "smoothie", make: "a smoothie", emo: "🥤", who: "marina", land: "beach", need: ["banana", "banana", "strawberry", "pineapple", "coconut"],
     intro: "Splash! Hi Luna! It's so sunny today. Can you make me a cold smoothie? Find two bananas, a strawberry, a pineapple and a coconut.",
     thanks: "A smoothie! Slurp! It's cold and yummy. You're the best, Princess Luna!",
     quiz: { q: "Which fruit did we put in the smoothie?", opts: ["🍌", "🥕", "🧀"], right: 0, yay: "Bananas! Yummy!" },
@@ -5965,7 +5986,7 @@ const RECIPES = {
       { t: "tip", to: "glass", say: "Pour it into the glass! Tap the blender.", msg: "Tap the blender!" },
       { t: "top", palette: ["straw", "umbrella", "strawberry", "pineapple"], need: 2, say: "Make it pretty! Put on a straw and an umbrella.", msg: "Decorate!" },
     ] },
-  sandwich: { name: "Salad sandwich", lower: "sandwich", emo: "🥪", who: "shelly", land: "beach", need: ["bread", "lettuce", "lettuce", "cheese", "tomato"],
+  sandwich: { name: "Salad sandwich", lower: "sandwich", make: "a sandwich", emo: "🥪", who: "shelly", land: "beach", need: ["bread", "lettuce", "lettuce", "cheese", "tomato"],
     intro: "Hello, Princess! Swish, swish. Turtles love lettuce! Can you make me a sandwich? Find the bread, two lettuces, the cheese and a tomato.",
     thanks: "A lettuce sandwich! Munch, munch! Thank you, Princess Luna! Swish, swish!",
     quiz: { q: "What goes on the top and the bottom of a sandwich?", opts: ["🍓", "🍞", "🐟"], right: 1, yay: "Bread! Clever princess!" },
@@ -5975,7 +5996,7 @@ const RECIPES = {
       { t: "stack", order: ["bread", "lettuce", "cheese", "tomato", "lettuce", "bread"], say: "Make the sandwich! Tap the food that sparkles.", msg: "Tap what sparkles!" },
       { t: "cut", n: 1, say: "Cut it in half! Tap the sandwich.", msg: "Tap to cut!" },
     ] },
-  cookies: { name: "Chocolate cookies", lower: "cookies", emo: "🍪", who: "honey", land: "candy", need: ["butter", "sugar", "egg", "flour", "chocolate"],
+  cookies: { name: "Chocolate cookies", lower: "cookies", make: "cookies", emo: "🍪", who: "honey", land: "candy", need: ["butter", "sugar", "egg", "flour", "chocolate"],
     intro: "Hello, sweetie! Let's bake chocolate cookies! Find the butter, the sugar, an egg, the flour and the chocolate.",
     thanks: "Chocolate cookies! Mmm, still warm! You're a real baker, sweetie!",
     quiz: { q: "Which one is a cookie?", opts: ["🥕", "🧀", "🍪"], right: 2, yay: "A yummy cookie!" },
@@ -5989,7 +6010,7 @@ const RECIPES = {
       { t: "bake", say: "Into the oven they go! Let's wait.", msg: "Baking…" },
       { t: "top", palette: ["sprinkles", "heart", "star", "cream"], need: 4, say: "Decorate your cookies! Tap a topping, then tap a cookie.", msg: "Decorate!" },
     ] },
-  cocoa: { name: "Hot chocolate", lower: "hot chocolate", emo: "☕", who: "pingo", land: "snow", need: ["milk", "chocolate", "chocolate", "marshmallow", "marshmallow"],
+  cocoa: { name: "Hot chocolate", lower: "hot chocolate", make: "hot chocolate", emo: "☕", who: "pingo", land: "snow", need: ["milk", "chocolate", "chocolate", "marshmallow", "marshmallow"],
     intro: "Brrr! Hi Princess Luna! It's so cold on Snowy Hill. Can you make me a hot chocolate? Find the milk, two chocolates and two marshmallows.",
     thanks: "Hot chocolate! I'm all warm and cozy now. Thank you, Princess Luna!",
     quiz: { q: "Is hot chocolate hot or cold?", opts: ["🔥", "🧊"], right: 0, yay: "Hot! Blow on it first. Whoo!" },
@@ -6012,7 +6033,8 @@ const TOPPING_NAME = { strawberry: "Strawberries", banana: "Banana", honey: "Hon
 const EMO_FONT = "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Twemoji Mozilla',sans-serif";
 function kEmo(g, e, x, y, s, rot = 0, alpha = 1) {
   g.save(); g.globalAlpha *= alpha; g.translate(x, y); if (rot) g.rotate(rot);
-  g.font = Math.round(s) + "px " + EMO_FONT; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(e, 0, s * 0.04); g.restore();
+  // an opaque fill: a see-through fill left over from a highlight would make the emoji see-through too
+  g.fillStyle = "#000000"; g.font = Math.round(s) + "px " + EMO_FONT; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(e, 0, s * 0.04); g.restore();
 }
 function kRound(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 function kShade(g, x0, y0, x1, y1, a, b) { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, a); gr.addColorStop(1, b); return gr; }
@@ -6022,14 +6044,18 @@ function kStar(g, x, y, s, col) { g.fillStyle = col; starPath(g, x, y, s); g.fil
 function drawFood(g, k, x, y, s, rot = 0) {
   const F = FOOD[k];
   if (F && F.emo) return kEmo(g, F.emo, x, y, s, rot);
-  g.save(); g.translate(x, y); if (rot) g.rotate(rot); const u = s / 100;
+  g.save(); g.translate(x, y); if (rot) g.rotate(rot); const u = s / 100 * 1.12;
   if (k === "flour") {
     g.fillStyle = kShade(g, 0, -50 * u, 0, 50 * u, "#fffaf0", "#e9dcc2"); g.beginPath(); g.moveTo(-34 * u, -30 * u); g.quadraticCurveTo(-46 * u, 40 * u, -30 * u, 48 * u); g.lineTo(30 * u, 48 * u); g.quadraticCurveTo(46 * u, 40 * u, 34 * u, -30 * u); g.closePath(); g.fill();
     g.fillStyle = "#f7efe0"; g.beginPath(); g.ellipse(0, -34 * u, 30 * u, 12 * u, 0, 0, TAU); g.fill();
     g.strokeStyle = "#c9a36a"; g.lineWidth = 5 * u; g.beginPath(); g.moveTo(-26 * u, -24 * u); g.quadraticCurveTo(0, -16 * u, 26 * u, -24 * u); g.stroke();
     kEmo(g, "🌾", 0, 14 * u, 40 * u);
   } else if (k === "sugar") {
-    for (const [dx, dy] of [[-22, 14], [20, 14], [0, -16]]) { g.fillStyle = "#ffffff"; kRound(g, (dx - 20) * u, (dy - 20) * u, 40 * u, 40 * u, 7 * u); g.fill(); g.strokeStyle = "#dfe6f2"; g.lineWidth = 3 * u; g.stroke(); g.fillStyle = "rgba(220,230,245,.7)"; g.fillRect((dx - 14) * u, (dy - 8) * u, 6 * u, 6 * u); }
+    // a pink pot of sugar cubes
+    for (const [dx, dy] of [[-20, -14], [4, -20], [24, -12], [-8, -34], [14, -36]]) { g.fillStyle = "#ffffff"; kRound(g, (dx - 13) * u, (dy - 13) * u, 26 * u, 26 * u, 5 * u); g.fill(); g.strokeStyle = "#cfd8ea"; g.lineWidth = 2.5 * u; g.stroke(); }
+    g.fillStyle = kShade(g, 0, -10 * u, 0, 46 * u, "#ffb8d5", "#ff7eb6"); g.beginPath(); g.moveTo(-42 * u, -8 * u); g.lineTo(42 * u, -8 * u); g.lineTo(32 * u, 42 * u); g.quadraticCurveTo(0, 50 * u, -32 * u, 42 * u); g.closePath(); g.fill();
+    g.fillStyle = "#ff9cc4"; kRound(g, -46 * u, -14 * u, 92 * u, 14 * u, 7 * u); g.fill();
+    kHeart(g, 0, 18 * u, 10 * u, "rgba(255,255,255,.9)");
   } else if (k === "mushroom") {
     g.fillStyle = "#f6ecdc"; kRound(g, -14 * u, -4 * u, 28 * u, 46 * u, 10 * u); g.fill();
     g.fillStyle = kShade(g, 0, -44 * u, 0, 6 * u, "#c98a54", "#9a6234"); g.beginPath(); g.ellipse(0, -4 * u, 42 * u, 36 * u, 0, Math.PI, TAU); g.closePath(); g.fill();
@@ -6092,7 +6118,7 @@ function drawDish(g, id, x, y, s, st = {}) {
     g.strokeStyle = "#ffffff"; g.lineWidth = 8 * u; g.beginPath(); g.ellipse(0, -10 * u, 140 * u, 36 * u, 0, 0, TAU); g.stroke();
   } else if (id === "pizza") {
     g.fillStyle = "#c48a4a"; kRound(g, -170 * u, -10 * u, 340 * u, 90 * u, 30 * u); g.fill();
-    drawPizza(g, 0, 20 * u, 150 * u, st);
+    drawPizza(g, 0, 20 * u, 150 * u, Object.keys(st).length ? st : PIZZA_DEMO);
   } else if (id === "fruitsalad" || id === "glassbowl") {
     g.fillStyle = "rgba(60,30,80,.1)"; g.beginPath(); g.ellipse(0, 72 * u, 120 * u, 20 * u, 0, 0, TAU); g.fill();
     g.fillStyle = "rgba(200,235,255,.55)"; g.beginPath(); g.ellipse(0, -10 * u, 140 * u, 90 * u, 0, 0, Math.PI); g.fill();
@@ -6126,15 +6152,22 @@ function drawDish(g, id, x, y, s, st = {}) {
   }
   g.restore();
 }
+/* the finished pizza for the recipe book */
+const PIZZA_DEMO = { baked: true, sauceFull: true, cuts: 4,
+  cheese: Array.from({ length: 26 }, (_, i) => ({ x: Math.cos(i * 2.4) * (0.15 + (i % 5) * 0.13), y: Math.sin(i * 2.4) * (0.15 + (i % 5) * 0.13), a: i * 1.3 })),
+  ptops: [["mushroom", -0.4, -0.3], ["tomato", 0.35, -0.35], ["mushroom", 0.1, 0.4], ["tomato", -0.2, 0.45], ["pepper", 0.55, 0.2], ["mushroom", 0.5, -0.05]].map(([k, x, y], i) => ({ k, x, y, r: i })) };
 function drawPizza(g, x, y, R, st) {
-  const r = R * (st.dough === undefined ? 1 : st.dough);
+  const dn = st.dough === undefined ? 1 : st.dough, r = R * dn, flat = 0.42 + (1 - dn) * 0.62;
   g.save(); g.translate(x, y);
-  g.fillStyle = kShade(g, 0, -r * 0.4, 0, r * 0.4, "#f3cf8e", "#d9a35a"); g.beginPath(); g.ellipse(0, 0, r, r * 0.42, 0, 0, TAU); g.fill();
+  if (dn < 1) { g.fillStyle = "rgba(120,70,30,.18)"; g.beginPath(); g.ellipse(0, r * flat * 0.5, r * 1.02, r * flat * 0.6, 0, 0, TAU); g.fill(); }
+  g.fillStyle = st.baked ? kShade(g, 0, -r * 0.4, 0, r * 0.4, "#f3cf8e", "#d9a35a") : kShade(g, 0, -r * flat, 0, r * flat, "#fff4e0", "#efcf98");
+  g.beginPath(); g.ellipse(0, dn < 1 ? -r * (flat - 0.42) * 0.5 : 0, r, r * flat, 0, 0, TAU); g.fill();
+  if (dn < 1) { g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(-r * 0.3, -r * flat * 0.55, r * 0.28, r * flat * 0.2, -0.2, 0, TAU); g.fill(); }
   if (st.baked) { g.fillStyle = "rgba(160,90,30,.35)"; g.beginPath(); g.ellipse(0, 0, r, r * 0.42, 0, 0, TAU); g.ellipse(0, 0, r * 0.86, r * 0.34, 0, 0, TAU); g.fill("evenodd"); }
   if (st.sauce) g.drawImage(st.sauce, -r * 0.88, -r * 0.88 * 0.42, r * 1.76, r * 1.76 * 0.42);
   else if (st.sauceFull) { g.fillStyle = "#e2402a"; g.beginPath(); g.ellipse(0, 0, r * 0.86, r * 0.34, 0, 0, TAU); g.fill(); }
   for (const c of st.cheese || []) { g.fillStyle = c.c || "#ffe27a"; g.save(); g.translate(c.x * r, c.y * r * 0.42); g.rotate(c.a); g.fillRect(-r * 0.05, -r * 0.012, r * 0.1, r * 0.024); g.restore(); }
-  for (const t of st.ptops || []) drawTopping(g, t.k, t.x * r, t.y * r * 0.42, r * 0.17, t.r);
+  for (const t of st.ptops || []) drawTopping(g, t.k, t.x * r, t.y * r * 0.42, r * 0.25, t.r);
   if (st.cuts) { g.strokeStyle = "rgba(255,255,255,.85)"; g.lineWidth = Math.max(2, r * 0.025); for (let i = 0; i < st.cuts; i++) { const a = i * Math.PI / 4; g.beginPath(); g.moveTo(-Math.cos(a) * r * 0.9, -Math.sin(a) * r * 0.9 * 0.42); g.lineTo(Math.cos(a) * r * 0.9, Math.sin(a) * r * 0.9 * 0.42); g.stroke(); } }
   g.restore();
 }
@@ -6232,7 +6265,7 @@ function drawVessel(g, v, t) {
   if (v.alpha !== undefined) g.globalAlpha = v.alpha;
   if (v.tilt) { g.translate(x, y - 100); g.rotate(v.tilt); g.translate(-x, -(y - 100)); }
   // a soft shadow
-  g.fillStyle = "rgba(60,30,80,.13)"; g.beginPath(); g.ellipse(x, y + 4, (v.kind === "board" || v.kind === "tray" ? 200 : v.kind === "pan" ? 140 : 130), 14, 0, 0, TAU); g.fill();
+  g.fillStyle = "rgba(60,30,80,.13)"; g.beginPath(); g.ellipse(x, y + 4, (v.kind === "board" ? (v.w || 400) / 2 : v.kind === "tray" ? 200 : v.kind === "pan" ? 140 : 130), 14, 0, 0, TAU); g.fill();
   if (v.hot) {   // a hot plate under it
     g.fillStyle = "#4a3a50"; g.beginPath(); g.ellipse(x, y + 2, 130, 16, 0, 0, TAU); g.fill();
     g.strokeStyle = "rgba(255," + (90 + Math.sin(t * 8) * 30 | 0) + ",60,.9)"; g.lineWidth = 5; g.beginPath(); g.ellipse(x, y + 2, 100, 11, 0, 0, TAU); g.stroke();
@@ -6274,10 +6307,11 @@ function drawVessel(g, v, t) {
     g.strokeStyle = "#ffffff"; g.lineWidth = 6; jar(); g.stroke();
     g.fillStyle = "#e85a9a"; kRound(g, x - 96, y - 348, 192, 22, 10); g.fill();
   } else if (v.kind === "board" || v.kind === "dough") {
-    g.fillStyle = "#c98f5e"; kRound(g, x - 200, y - 74, 400, 80, 22); g.fill();
-    g.fillStyle = kShade(g, 0, y - 80, 0, y, "#f2c894", "#dba56c"); kRound(g, x - 200, y - 80, 400, 76, 22); g.fill();
-    g.strokeStyle = "rgba(160,100,50,.25)"; g.lineWidth = 3; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(x - 170, y - 64 + i * 15); g.quadraticCurveTo(x, y - 70 + i * 15, x + 150, y - 62 + i * 15); g.stroke(); }
-    g.fillStyle = "#b07a4a"; g.beginPath(); g.ellipse(x + 176, y - 42, 9, 13, 0, 0, TAU); g.fill();
+    const bw = (v.w || 400) / 2;
+    g.fillStyle = "#c98f5e"; kRound(g, x - bw, y - 74, bw * 2, 80, 22); g.fill();
+    g.fillStyle = kShade(g, 0, y - 80, 0, y, "#f2c894", "#dba56c"); kRound(g, x - bw, y - 80, bw * 2, 76, 22); g.fill();
+    g.strokeStyle = "rgba(160,100,50,.25)"; g.lineWidth = 3; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(x - bw + 30, y - 64 + i * 15); g.quadraticCurveTo(x, y - 70 + i * 15, x + bw - 50, y - 62 + i * 15); g.stroke(); }
+    g.fillStyle = "#b07a4a"; g.beginPath(); g.ellipse(x + bw - 24, y - 42, 9, 13, 0, 0, TAU); g.fill();
     if (v.kind === "dough") drawPizza(g, x, y - 44, 168, v.pz);
     (v.items || []).forEach(it => drawBoardItem(g, it));
     (v.pieces || []).forEach(p => drawFood(g, p.k, p.x, p.y, p.s, p.r));
@@ -6295,7 +6329,7 @@ function drawVessel(g, v, t) {
   else if (v.kind === "tray") {
     g.fillStyle = kShade(g, 0, y - 70, 0, y, "#e9edf5", "#b9c2d3"); kRound(g, x - 210, y - 70, 420, 64, 16); g.fill();
     g.strokeStyle = "#ffffff"; g.lineWidth = 4; kRound(g, x - 200, y - 64, 400, 52, 12); g.stroke();
-    (v.cookies || []).forEach(c => { drawCookie(g, x + c.x, y - 40 + c.y, 30, c.sh, v.baked); (c.tops || []).forEach(t => drawTopping(g, t.k, x + c.x + t.x, y - 40 + c.y + t.y, 22, t.r)); });
+    (v.cookies || []).forEach(c => { drawCookie(g, x + c.x, y - 40 + c.y, 30, c.sh, v.baked); (c.tops || []).forEach(t => drawTopping(g, t.k, x + c.x + t.x, y - 40 + c.y + t.y, 30, t.r)); });
   } else if (v.kind === "glass") drawDish(g, "glass", x, y - 96, 210, { level: v.level || 0, color: v.color });
   else if (v.kind === "mug") drawDish(g, "mug", x, y - 86, 190, { level: v.level || 0, color: v.color });
   if (v.st && v.st.tops) for (const tp of v.st.tops) drawTopping(g, tp.k, x + tp.x, y + tp.y, tp.s, tp.r);
@@ -6350,13 +6384,13 @@ function drawFly(g, sc, dt) {
 function kGlow(g, x, y, r, t) { g.save(); g.strokeStyle = "rgba(255,210,63," + (0.55 + Math.sin(t * 6) * 0.3) + ")"; g.lineWidth = 7; g.beginPath(); g.arc(x, y, r + Math.sin(t * 6) * 5, 0, TAU); g.stroke(); g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 3; g.stroke(); g.restore(); }
 function kNear(p, x, y, r) { return Math.hypot(p.x - x, p.y - y) < r; }
 function kInEllipse(p, x, y, rx, ry) { const dx = (p.x - x) / rx, dy = (p.y - y) / ry; return dx * dx + dy * dy < 1; }
-function counterSpots(n, x0 = 70, x1 = 300) { const out = []; const row = Math.min(n, 4); for (let i = 0; i < n; i++) { const r = Math.floor(i / 4), c = i % 4, cnt = Math.min(4, n - r * 4); out.push({ x: x0 + (cnt === 1 ? (x1 - x0) / 2 : c * (x1 - x0) / Math.max(1, cnt - 1)), y: 392 - r * 70 }); } return out; }
+function counterSpots(n) { const xs = [[190], [120, 250], [120, 250, 790], [110, 235, 735, 860], [100, 210, 690, 800, 910]][Math.min(n, 5) - 1]; return xs.map(x => ({ x, y: 392 })); }
 
 /* ---------- the steps ---------- */
 const KSTEP = {};
 KSTEP.add = (S, sc) => {
   const v = S.into === "pot" || S.into === "blender" ? sc.main : sc.main;
-  const spots = counterSpots(S.items.length, 56, S.items.length > 2 ? 300 : 220);
+  const spots = counterSpots(S.items.length);
   const items = S.items.map((k, i) => ({ k, x: spots[i].x, y: spots[i].y, s: 84, used: false }));
   let flying = 0;
   return {
@@ -6408,7 +6442,7 @@ KSTEP.pour = (S, sc) => {
 };
 KSTEP.stir = (S, sc) => {
   const v = sc.main; let prog = 0, last = null, sndT = 0;
-  v.base = v.base || mixColor(v.bits, S.color || "#f3d491"); if (!v.level) v.level = 0.75;
+  if (!S.gentle) { v.base = v.base || mixColor(v.bits, S.color || "#f3d491"); if (!v.level) v.level = 0.75; }
   if (S.heat) v.hot = true;
   const cx = v.x, cy = v.y - vesselTop(v) + 6;
   const tool = { x: cx + 60, y: cy - 30, show: true };
@@ -6437,8 +6471,9 @@ KSTEP.stir = (S, sc) => {
 };
 KSTEP.chop = (S, sc) => {
   const v = sc.main, R = KIT.R; v.kind = "board";
-  const ks = R.items || [], n = ks.length, cols = Math.min(n, 3), rows = Math.ceil(n / 3);
-  v.items = ks.map((k, i) => { const r = Math.floor(i / 3), c = i % 3, cc = Math.min(3, n - r * 3); return { k, x: v.x + (cc === 1 ? 0 : (c - (cc - 1) / 2) * 120), y: v.y - 44 - (rows > 1 ? (r === 0 ? 38 : -10) : 0), s: rows > 1 ? 70 : 84, cut: 0, r: rr(-0.3, 0.3) }; });
+  const ks = R.items || [], n = ks.length, gap = n > 4 ? 104 : 112;
+  v.w = Math.max(400, n * gap + 40);
+  v.items = ks.map((k, i) => ({ k, x: v.x + (i - (n - 1) / 2) * gap, y: v.y - 46, s: n > 4 ? 80 : 86, cut: 0, r: rr(-0.25, 0.25) }));
   let knife = null;
   return {
     targets: () => v.items.filter(it => it.cut < 2).map(it => ({ x: it.x, y: it.y, r: 54 })),
@@ -6520,18 +6555,23 @@ KSTEP.top = (S, sc) => {
   const area = () => {
     if (d.kind === "plate") return { x: d.x, y: d.y - 76, rx: 130, ry: 40 };
     if (d.kind === "bowl" || d.kind === "glassbowl") return { x: d.x, y: d.y - 106, rx: 128, ry: 30 };
-    if (d.kind === "glass") return { x: d.x, y: d.y - 290, rx: 70, ry: 26 };
-    if (d.kind === "mug") return { x: d.x, y: d.y - 148, rx: 70, ry: 16 };
+    if (d.kind === "glass") return { x: d.x, y: d.y - 194, rx: 46, ry: 9 };
+    if (d.kind === "mug") return { x: d.x, y: d.y - 146, rx: 58, ry: 12 };
     if (d.kind === "dough") return { x: d.x, y: d.y - 44, rx: 150, ry: 60 };
     if (d.kind === "tray") return { x: d.x, y: d.y - 40, rx: 190, ry: 26 };
     return { x: d.x, y: d.y - 80, rx: 140, ry: 50 };
   };
+  const tall = () => d.kind === "glass" || d.kind === "mug";
+  const hit = () => { const a = area(); return d.kind === "glass" ? { x: d.x, y: d.y - 110, rx: 120, ry: 130 } : d.kind === "mug" ? { x: d.x, y: d.y - 96, rx: 125, ry: 96 } : { x: a.x, y: a.y, rx: a.rx + 30, ry: a.ry + 44 }; };
   KIT.palette(S.palette);
   return {
-    targets: () => { const a = area(); return count < S.need ? [{ x: a.x, y: a.y, r: Math.max(a.rx, 60) }] : []; },
+    targets: () => { if (count >= S.need) return []; if (tall()) { const h = hit(); return [{ x: h.x, y: h.y - 20, r: 110 }]; } const a = area(); return [{ x: a.x, y: a.y, r: Math.max(a.rx, 60) }]; },
     down(p) {
-      const a = area(); if (!kInEllipse(p, a.x, a.y, a.rx + 20, a.ry + 30)) return;
-      const k = KIT.topping || S.palette[0], r = rr(-0.5, 0.5), s = k === "straw" || k === "umbrella" ? 64 : 46;
+      const a = area(), h = hit(); if (!kInEllipse(p, h.x, h.y, h.rx, h.ry)) return;
+      // it lands on the food, even when the tap is a little off
+      const ex = (p.x - a.x) / a.rx, ey = (p.y - a.y) / a.ry, L = Math.hypot(ex, ey);
+      if (L > 0.85) p = { x: a.x + ex / L * 0.85 * a.rx, y: a.y + ey / L * 0.85 * a.ry };
+      const k = KIT.topping || S.palette[0], r = rr(-0.5, 0.5), s = k === "straw" || k === "umbrella" ? 84 : 62;
       if (d.kind === "dough") { d.pz.ptops = d.pz.ptops || []; d.pz.ptops.push({ k, x: (p.x - d.x) / 168, y: (p.y - (d.y - 44)) / (168 * 0.42), r }); }
       else if (d.kind === "tray") { const c = (d.cookies || []).slice().sort((a2, b2) => Math.abs(d.x + a2.x - p.x) - Math.abs(d.x + b2.x - p.x))[0]; if (c) { c.tops = c.tops || []; c.tops.push({ k, x: rr(-10, 10), y: rr(-8, 8), r }); } }
       else tops.push({ k, x: p.x - d.x, y: p.y - d.y, s, r });
@@ -6544,7 +6584,7 @@ KSTEP.top = (S, sc) => {
   };
 };
 KSTEP.roll = (S, sc) => {
-  const v = sc.main; v.kind = "dough"; v.pz = v.pz || { dough: 0.42 }; let last = null; const pin = { x: v.x, y: v.y - 60 };
+  const v = sc.main; v.kind = "dough"; v.pz = v.pz || { dough: 0.42 }; let last = null; const pin = { x: v.x, y: v.y - 132 };
   return {
     prog: () => (v.pz.dough - 0.42) / 0.58,
     targets: () => [{ x: v.x, y: v.y - 44, r: 100 }],
@@ -6557,7 +6597,7 @@ KSTEP.roll = (S, sc) => {
   };
 };
 KSTEP.spread = (S, sc) => {
-  const v = sc.main, pz = v.pz, M = document.createElement("canvas"); M.width = M.height = 200; const mg = M.getContext("2d");
+  const v = sc.main, pz = v.pz, M = document.createElement("canvas"); M.width = M.height = 200; const mg = M.getContext("2d", { willReadFrequently: true });
   pz.sauce = M; let last = null, cover = 0, checkT = 0;
   const paint = p => {
     const u = (p.x - v.x) / (168 * 0.88), w = (p.y - (v.y - 44)) / (168 * 0.88 * 0.42);
@@ -6677,11 +6717,12 @@ KSTEP.blend = (S, sc) => {
 /* ---------- the kitchen card ---------- */
 function openKitchen(rid, opts = {}) {
   const R = RECIPES[rid]; if (!R) return;
+  $("roomKitchen").classList.remove("callme");
   Object.assign(KIT, { open: true, R, rid, si: -1, step: null, onDone: opts.onDone || null, mission: !!opts.mission, finished: false, finishPressed: false, topping: null, t: 0 });
   const startV = { bowl: { kind: "bowl" }, pot: { kind: "pot" }, blender: { kind: "blender" }, board: { kind: "board" }, dough: { kind: "dough", pz: { dough: 0.42 } } }[R.start] || { kind: "bowl" };
   KIT.sc = { main: Object.assign({ x: POS.main, y: POS.feet, level: 0, bits: [] }, startV), side: null, side2: null, fx: [], fly: [] };
   actOpen("🍳 " + R.name, body => {
-    body.style.flexDirection = "column"; body.style.alignItems = "stretch"; body.style.gap = "8px";
+    body.style.flexDirection = "column"; body.style.alignItems = "stretch"; body.style.gap = "8px"; body.classList.add("kbody");
     const strip = el("div", "ksteps"), stage = el("div", "stage-box kstage"), cv = document.createElement("canvas"), bar = el("div", "kbar");
     cv.width = KW; cv.height = KH; cv.dataset.pad = "canvas"; cv.style.touchAction = "none"; stage.appendChild(cv);
     const msg = el("div", "big-msg", ""), prog = el("div", "progress", "<i></i>"); prog.hidden = true; stage.append(msg, prog);
@@ -6703,8 +6744,13 @@ function openKitchen(rid, opts = {}) {
     KIT.g = g;
     nextCookStep();
     return () => { cancelAnimationFrame(KIT.raf); window.removeEventListener("resize", fit); KIT.open = false; };
-  }, { voice: "", onClose: () => { KIT.open = false; if (KIT.finished && KIT.onDone) { const cb = KIT.onDone; KIT.onDone = null; cb(); } } });
-  Voice.say(KIT.mission ? "Welcome to the castle kitchen! Let's cook " + R.lower + "!" : "Let's cook " + R.lower + "!");
+  }, { voice: "", onClose: () => {
+    KIT.open = false;
+    if (KIT.finished && KIT.onDone) { const cb = KIT.onDone; KIT.onDone = null; cb(); return; }
+    // closed in the middle of cooking for a friend: the kitchen button calls her back
+    if (KIT.mission && !KIT.finished && Room.open) { $("roomKitchen").classList.add("callme"); setTimeout(() => { if (Room.open && !Act.open) Voice.say("Let's finish cooking! Tap the kitchen."); }, 500); }
+  } });
+  Voice.say(KIT.mission ? "Welcome to the castle kitchen! Let's make " + R.make + "!" : "Let's make " + R.make + "!");
   setTimeout(() => { if (KIT.open && KIT.step && KIT.R === R) KIT.say(R.steps[Math.max(0, KIT.si)].say); }, 1700);
 }
 function stepIcon(S) { return { add: S.items ? (FOOD[S.items[0]] && FOOD[S.items[0]].emo || "🥄") : "🥄", pour: S.what === "water" ? "💧" : S.what === "coconut" ? "🥥" : "🥛", stir: "🥄", chop: "🔪", tip: "👉", fry: "🍳", top: "✨", roll: "🫓", spread: "🍅", sprinkle: "🧀", bake: "🔥", cut: "🔪", stack: "🥪", shape: "🍪", blend: "🌀" }[S.t] || "⭐"; }
@@ -6833,16 +6879,17 @@ function cookStepDone() {
 }
 const roomEnterBase = Room.enter, roomLeaveBase = Room.leave;
 Room.enter = function () {
-  roomEnterBase();
+  // coming in to cook: the kitchen says hello instead of the room
+  Room.quiet = !!cookPending(); roomEnterBase(); Room.quiet = false;
   if (Room.open && cookPending()) setTimeout(() => { const rid = cookPending(); if (Room.open && !Act.open && rid) openKitchen(rid, { mission: true, onDone: cookStepDone }); }, 800);
 };
-Room.leave = function () { roomLeaveBase(); Cook.away = false; };
+Room.leave = function () { roomLeaveBase(); Cook.away = false; $("roomKitchen").classList.remove("callme"); };
 
 /* ---------- the "deliver" step: the food floats over Luna's head to the friend ---------- */
 function deliverSetup(S) {
   const k = S.to, R = RECIPES[S.dish];
   if (Cook.dish) scene.remove(Cook.dish.root);
-  Cook.dish = makeDish3D(S.dish); Cook.dish.root.scale.setScalar(1.25); scene.add(Cook.dish.root); Cook.dishT = 0; Cook.dishState = "carry";
+  Cook.dish = makeDish3D(S.dish); Cook.dish.root.scale.setScalar(1.45); scene.add(Cook.dish.root); Cook.dishT = 0; Cook.dishState = "carry";
   setMission(R.emo, S.label); const p = friendPos(k); point(p.x, p.z, FRIEND_INFO[k].h + 1.4);
   setTimeout(() => { if (Q.cur && Q.cur.steps[Q.step] === S && !Game.dialog) Voice.say("Let's take the " + R.lower + " to " + whoName(k) + "!"); }, 1000);
 }
@@ -6861,7 +6908,7 @@ function cookUpdate(dt, t) {
   const D = Cook.dish; if (!D) return;
   Cook.dishT += dt;
   if (Cook.dishState === "carry") {
-    const y = player.y + (Game.riding ? 3.2 : 2.4) + Math.sin(t * 3) * 0.08;
+    const y = player.y + (Game.riding ? 2.9 : 2.02) + Math.sin(t * 3) * 0.06;
     D.root.position.set(player.pos.x, y, player.pos.z); D.root.rotation.y += dt * 1.2;
     if (Q.cur && Q.cur.cook && rand() < dt * 4) FX.burst(new THREE.Vector3(player.pos.x, y + 0.2, player.pos.z), 1, MAGIC, 0.6, 0.6, 0.5);
   } else if (Cook.dishState === "give" && friends[Cook.giveTo]) {
@@ -6877,7 +6924,7 @@ function cookCleanup() { if (Cook.dish) { scene.remove(Cook.dish.root); Cook.dis
 
 /* ---------- the prize: a sticker, the chef hat the first time, and the recipe for the kitchen ---------- */
 function cookReward(C) {
-  const rid = C.cook, R = RECIPES[rid], ck = cookState(), first = !Object.keys(ck.done).length;
+  const rid = C.cook, R = RECIPES[rid], ck = cookState(), first = !Object.keys(ck.done).length, fresh = !ck.done[rid];
   ck.done[rid] = (ck.done[rid] || 0) + 1; ck.due = false;
   Save.addSticker(C.id); if (first) Save.unlock("crown_chef");
   Sound.fx.gem(); luna.act("cheer", 2.4);
@@ -6885,7 +6932,7 @@ function cookReward(C) {
   [0, 450].forEach((d, n) => setTimeout(() => launchFirework(player.pos.x + (n ? 3 : -3), player.pos.z - 4, 4), d));
   showSticker(C); Save.write(); setGems(Save.data.gems || 0);
   setMission("🍳", "Super chef!");
-  setTimeout(() => chat("luna", first ? "I'm a real chef! I got a chef hat! I can wear it in my wardrobe!" : "Now I can cook " + R.lower + " in my kitchen any time!"), 1900);
+  setTimeout(() => chat("luna", first ? "I'm a real chef! I got a chef hat! I can wear it in my wardrobe!" : fresh ? "Now I can make " + R.make + " in my kitchen any time!" : "Yummy! I love cooking for my friends!"), 1900);
   setTimeout(() => { if (Q.cur === C) cookResume(); }, first ? 5600 : 4200);
 }
 function cookResume() {
@@ -6913,6 +6960,8 @@ function openKitchenBook() {
         if (cur) { Voice.say("Let's finish cooking for " + whoName(RECIPES[cur].who) + " first!"); return; }
         if (!recipeOpen(rid)) { Sound.fx.boop(); Voice.say("You will meet " + whoName(R.who) + " on your adventure!"); return; }
         if (Game.dialog || Game.party || Game.sledding || ["party", "reward", "busy", "minigame", "intro"].includes(Q.phase)) { Voice.say("Let's finish this adventure first!"); return; }
+        // halfway through helping a friend: that comes first (the recipes she knows can still be cooked)
+        if (Q.cur && Q.phase === "step") { Sound.fx.boop(); Voice.say("Let's finish helping " + whoName(Q.cur.who) + " first!"); return; }
         // a new recipe: off she goes to find the food
         actClose(true); Room.leave(); setTimeout(() => cookStart(rid), 300);
       };

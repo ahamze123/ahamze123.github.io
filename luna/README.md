@@ -4,7 +4,7 @@ Princess Luna's 3D adventure, made for a 5-year-old. **Play:** https://ahamze123
 
 Luna walks around her kingdom and helps her friends, island by island. Like Block Buddies, she moves only with the pink motion stick on the left (it jumps to wherever a finger touches the left side) and the camera swings round behind her as she walks; dragging on the right side turns the camera, and a tap on Luna or a friend makes them twirl or say hello (arrow keys or WASD and the space bar on a computer). The game waits on its start screen until **Start game** (or **Continue**) is tapped, and **Full screen** fills the screen (on an iPad or iPhone it explains Add to Home Screen instead). Everything is read aloud with natural recorded voices (a different voice for Luna and each friend), so she doesn't need to read.
 
-**Game controller** (PS4, PS5 or Xbox; on a computer plug it in with USB or pair it with Bluetooth, use Chrome or Edge, and press any button once): the left stick (or the arrow buttons) walks, the right stick or L1 / R1 turns the camera, ✕ jumps, ○ rides Stardust / goes into the castle, □ says hello to the nearest friend, △ says it again, OPTIONS opens the menu, R2 dances and L2 opens Luna's moves. On every card (OK, the questions, the room, the activities, the menu) a yellow glow shows the button ✕ will press; the stick moves the glow and ○ goes back. On a picture you paint or tap (painting, Pip's bath, the cake, face stickers) the stick moves a little hand and ✕ is the finger.
+**Game controller** (PS4, PS5 or Xbox; on a computer plug it in with USB or pair it with Bluetooth, use Chrome or Edge, and press any button once): the left stick (or the arrow buttons) walks, the right stick or L1 / R1 turns the camera, ✕ jumps, ○ rides Stardust / goes into the castle, □ says hello to the nearest friend, △ says it again, OPTIONS opens the menu, R2 dances and L2 opens Luna's moves. On every card (OK, the questions, the room, the activities, the menu) a yellow glow shows the button ✕ will press; the stick moves the glow and ○ goes back. On a picture you paint or tap (painting, Pip's bath, the cake, face stickers, the kitchen) the stick moves a little hand and ✕ is the finger (hold ✕ to pour or blend, hold ✕ and go round with the stick to stir).
 
 ## The adventure: 28 missions in four lands
 
@@ -18,6 +18,10 @@ A sparkly trail and a golden arrow always lead to the next friend or thing to fi
 
 **After the Grand Ball the game keeps going:** the friends ask for help again and again (carrots, eggs, balloons, stars, yarn, flowers, butterflies, seashells, pearls, starfish, lollipops, cupcakes, cookies, fish, snowballs), hidden in new places every time, each with a counting question, and every two helper missions a new dress (Peach, Ocean, Berry, Sunny, Lime, Violet). If she stands still for half a minute in the middle of a mission, the mission is said again.
 
+## Cooking
+
+After a mission a hungry friend often asks for something yummy. Luna finds the food around the kingdom (the sparkly trail leads to each egg, strawberry or carrot), goes back to the castle door, and the castle kitchen opens: she cracks the eggs, holds the bottle to pour, goes round and round to stir, taps to chop, flips the pancakes, rolls the pizza dough, bakes in the oven and decorates with toppings, then carries the food over her head to the friend, who eats it up (and asks an easy question). Eight recipes: pancakes for Mimi and Pip, carrot soup for Bun-Bun, pizza for Dot (Dot lights the oven), a rainbow fruit salad for Stardust, a tropical smoothie for Marina, a salad sandwich for Shelly, chocolate cookies for Honey and hot chocolate for Pingo; the recipes on the other lands come when their bridge is open. The first one gives Luna a chef hat to wear, and every recipe gives a sticker. The **🍳 Kitchen** button in Luna's room is the recipe book: she can cook any recipe she has made again (and take a photo of it), and a recipe she hasn't made yet starts its mission.
+
 **Luna's moves**: a row of ten round buttons along the bottom of the screen: dance (the friends nearby dance along), wave (a friend waves back), cheer (confetti), happy jump, twirl (the friends twirl too), flip, cartwheel, blow a kiss (hearts fly to the nearest friend), sit down on a pink pouf, and magic (a ring of flowers pops up). On a computer the number keys 1 to 0 do the moves; on a game controller R2 dances and L2 opens the moves.
 
 After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button). The menu (☰) has full screen, music, a photo of the game, the sticker book, a **dance party** (Luna dances, the friends nearby hop along, sparkles and fireworks), the **magic map** to jump between the lands that are open, and Start over (it has to be held down, so a little tap can't wipe the adventure).
@@ -26,7 +30,7 @@ After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button)
 
 The 🏰 button (or **Go in** at the castle door) opens Luna's room:
 
-- **Dress up**: 17 dresses, 10 crowns and tiaras, 9 pairs of wings, 6 wands, 6 necklaces, 5 pairs of earrings and 4 pairs of glasses; she wears all of them in the game too. Some are surprises won on the adventure.
+- **Dress up**: 17 dresses, 9 crowns and tiaras, a chef hat, 9 pairs of wings, 6 wands, 6 necklaces, 5 pairs of earrings and 4 pairs of glasses; she wears all of them in the game too. Some are surprises won on the adventure.
 - **Makeup mirror**: lipstick, cheeks, eye shadow, eyelashes, glitter, face paint (cat, butterfly, rainbow, flowers, stars, hearts, freckles), four hairstyles (curls, pigtails, bun, braid), hair colours including rainbow, bows, and face stickers. The hair colour, the hairstyle, the bows and the makeup show on Luna out in the kingdom too: for the bun, pigtails and braid her curls are tucked in tight round her head (her 3D model has its curls built in) and the new hair, made from her own curls, goes on top.
 - **Pip's bath**: scrub the mud with the sponge, rinse the bubbles, dry with the towel.
 - **Piano**: play anything, or follow the shining key for Twinkle Twinkle, Mary's little lamb and Row your boat.
@@ -35,7 +39,7 @@ The 🏰 button (or **Go in** at the castle door) opens Luna's room:
 - **Memory game**: turn two cards over and find the pairs of friends, from 6 cards up to 16.
 - **Day / night** window, the teddy to hug, the fairy lights, the sticker book and the photo album (photos from the wardrobe, the mirror, the painting easel or the game can be saved to the tablet).
 
-Seven room activities give stickers too (35 stickers in all).
+Seven room activities give stickers too, and every recipe gives one (43 stickers in all).
 
 ## Pictures and models
 
