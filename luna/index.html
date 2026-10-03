@@ -86,6 +86,16 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
   box-shadow: 0 6px 0 #d18f00, 0 12px 24px var(--shadow); display: flex; align-items: center; gap: 6px; justify-content: center;
   animation: breathe 1.4s ease-in-out infinite; }
 .ctx span { font-size: 26px; line-height: 1; }
+/* the touch layer, like Block Buddies: the stick area on the left, the camera area on the right; the HUD buttons sit on top of it,
+   and the hint and the stick picture never catch a finger (an id rule, so "#hud > *" can't turn them back on) */
+#hud > #touch { position: absolute; inset: 0; pointer-events: none; }
+#hud > .hint { pointer-events: none; }
+#touch, #touch * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+#touch .jz { position: absolute; left: 0; bottom: 0; top: 30%; width: 45%; pointer-events: auto; touch-action: none; }
+#touch .cz { position: absolute; right: 0; top: 18%; bottom: 0; width: 55%; pointer-events: auto; touch-action: none; }
+#touch .joy { pointer-events: none; }
+.jump.on { transform: translateY(5px); box-shadow: 0 2px 0 #c2266a, 0 8px 18px var(--shadow); }
+.ctx.on, .round.on, .ok.on { transform: translateY(3px) scale(.96); }
 /* the motion stick (like Block Buddies): rests bottom left, and jumps to wherever a finger touches the left side */
 .joy { position: absolute; left: calc(24px + var(--sl)); bottom: calc(30px + var(--sb)); width: 112px; height: 112px; border-radius: 50%;
   display: grid; place-items: center; pointer-events: none; opacity: .8;
@@ -345,6 +355,10 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
   <canvas id="scene" aria-label="Sparkle Kingdom game world"></canvas>
 
   <div id="hud" hidden>
+    <div id="touch" aria-hidden="true">
+      <div class="jz" id="jz"><div class="joy" id="joy"><div class="joy-knob" id="joyKnob"></div></div></div>
+      <div class="cz" id="cz"></div>
+    </div>
     <div class="crown sticker" aria-label="Crown gems and stickers">
       <svg class="c" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 24 L3 9 L10 15 L16 5 L22 15 L29 9 L28 24 Z" fill="#ffc23a" stroke="#d18f00" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="24" width="24" height="4" rx="2" fill="#ffb000"/></svg>
       <span class="gem" id="gem0"></span><span class="gem" id="gem1"></span><span class="gem" id="gem2"></span><span class="gem" id="gem3"></span><span class="gem" id="gem4"></span>
@@ -366,7 +380,6 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
       <div class="lands" id="mLands"></div>
       <button id="mNew"><span>🌱</span>Start over</button>
     </div>
-    <div class="joy" id="joy" aria-hidden="true"><div class="joy-knob" id="joyKnob"></div></div>
     <div class="hint sticker" id="hint">Push the pink button to walk!</div>
     <button class="ctx" id="btnCtx" hidden></button>
     <button class="jump" id="btnJump" aria-label="Jump"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.6L21 9.5l-5.2 4.3L17.6 21 12 17.2 6.4 21l1.8-7.2L3 9.5l6.6-.9z" fill="#fff"/></svg>Jump</button>
@@ -2727,8 +2740,10 @@ function pick(rr0) {
   }
   return best;
 }
-/* like Block Buddies: the motion stick on the left half of the screen moves Luna, a drag on the right half turns the camera,
-   and a tap on Luna or a friend makes them twirl or talk */
+/* like Block Buddies: the motion stick area on the left moves Luna, a drag on the right turns the camera,
+   and a tap on Luna or a friend makes them twirl or talk. The areas are their own layer (#touch) over the picture,
+   and that layer never lets the browser start a long-press, the magnifier or scrolling (iPad Safari would otherwise
+   take the finger away from the stick after a moment) */
 const Joy = { id: null, ox: 0, oy: 0, x: 0, y: 0, R: 56, t0: 0, sx: 0, sy: 0, moved: 0 };
 const Look = { id: null, sx: 0, sy: 0, lx: 0, t0: 0, moved: 0 };
 const joyEl = () => $("joy");
@@ -2737,44 +2752,82 @@ function joyRest() {
   Joy.x = Joy.y = 0; Joy.id = null;
 }
 function tapAt(cx, cy) { const hit = pick(screenRay(cx, cy)); if (hit) hit.tap(); }
-canvas.addEventListener("pointerdown", e => {
+const TOUCHL = $("touch"), JZ = $("jz"), CZ = $("cz");
+TOUCHL.addEventListener("touchstart", e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+TOUCHL.addEventListener("contextmenu", e => e.preventDefault());
+JZ.addEventListener("pointerdown", e => {
+  e.preventDefault(); Sound.unlock();
   if (Game.mode !== "play" || Game.dialog) return;
-  Sound.unlock(); Game.idle = 0; $("hint").classList.add("gone");
-  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-  const left = e.clientX < window.innerWidth * 0.5;
-  if (left && Joy.id === null) {
-    Joy.id = e.pointerId; Joy.ox = Joy.sx = e.clientX; Joy.oy = Joy.sy = e.clientY; Joy.t0 = performance.now(); Joy.moved = 0;
-    const el = joyEl(); el.classList.add("on"); el.style.left = (e.clientX - Joy.R) + "px"; el.style.top = (e.clientY - Joy.R) + "px";
-  } else if (Look.id === null) {
-    Look.id = e.pointerId; Look.sx = Look.lx = e.clientX; Look.sy = e.clientY; Look.t0 = performance.now(); Look.moved = 0;
-  }
+  Game.idle = 0; $("hint").classList.add("gone");
+  // the newest finger always takes the stick (so it can never stay stuck on a finger that is gone)
+  try { JZ.setPointerCapture(e.pointerId); } catch (_) {}
+  Joy.id = e.pointerId; Joy.ox = Joy.sx = e.clientX; Joy.oy = Joy.sy = e.clientY; Joy.t0 = performance.now(); Joy.moved = 0; Joy.x = Joy.y = 0;
+  const r = JZ.getBoundingClientRect(), el = joyEl(); el.classList.add("on");
+  el.style.left = (e.clientX - r.left - Joy.R) + "px"; el.style.top = (e.clientY - r.top - Joy.R) + "px"; $("joyKnob").style.transform = "";
 });
-canvas.addEventListener("pointermove", e => {
-  if (e.pointerId === Joy.id) {
-    let dx = e.clientX - Joy.ox, dy = e.clientY - Joy.oy; const d = Math.hypot(dx, dy);
-    Joy.moved = Math.max(Joy.moved, Math.hypot(e.clientX - Joy.sx, e.clientY - Joy.sy));
-    if (d > Joy.R) {   // the stick follows a finger that slides further
-      Joy.ox += dx * (1 - Joy.R / d); Joy.oy += dy * (1 - Joy.R / d); dx = e.clientX - Joy.ox; dy = e.clientY - Joy.oy;
-      const el = joyEl(); el.style.left = (Joy.ox - Joy.R) + "px"; el.style.top = (Joy.oy - Joy.R) + "px";
-    }
-    Joy.x = dx / Joy.R; Joy.y = -dy / Joy.R;
-    $("joyKnob").style.transform = "translate(" + dx + "px," + dy + "px)";
-  } else if (e.pointerId === Look.id) {
-    Look.moved = Math.max(Look.moved, Math.hypot(e.clientX - Look.sx, e.clientY - Look.sy));
-    if (Look.moved > 12 && !Game.party && !Game.sledding) { CAM.yaw -= (e.clientX - Look.lx) * 0.009; CAM.manual = 1.6; }
-    Look.lx = e.clientX;
-  }
+JZ.addEventListener("pointermove", e => {
+  if (e.pointerId !== Joy.id) return;
+  let dx = e.clientX - Joy.ox, dy = e.clientY - Joy.oy; const d = Math.hypot(dx, dy);
+  Joy.moved = Math.max(Joy.moved, Math.hypot(e.clientX - Joy.sx, e.clientY - Joy.sy));
+  if (d > Joy.R) { dx *= Joy.R / d; dy *= Joy.R / d; }   // the knob stops at the edge of the ring, like Block Buddies
+  Joy.x = dx / Joy.R; Joy.y = -dy / Joy.R;
+  $("joyKnob").style.transform = "translate(" + dx + "px," + dy + "px)";
 });
-function pointerEnd(e) {
-  if (e.pointerId === Joy.id) {
-    const quick = performance.now() - Joy.t0 < 280 && Joy.moved < 10;
-    joyRest(); if (quick && e.type === "pointerup" && !Game.dialog) tapAt(e.clientX, e.clientY);
-  } else if (e.pointerId === Look.id) {
-    const quick = performance.now() - Look.t0 < 400 && Look.moved < 12;
-    Look.id = null; if (quick && e.type === "pointerup" && !Game.dialog && Game.mode === "play") tapAt(e.clientX, e.clientY);
-  }
+function joyEnd(e) {
+  if (e.pointerId !== Joy.id) return;
+  const quick = performance.now() - Joy.t0 < 280 && Joy.moved < 10;
+  joyRest(); if (quick && e.type === "pointerup" && !Game.dialog && Game.mode === "play") tapAt(e.clientX, e.clientY);
 }
-canvas.addEventListener("pointerup", pointerEnd); canvas.addEventListener("pointercancel", pointerEnd);
+JZ.addEventListener("pointerup", joyEnd); JZ.addEventListener("pointercancel", joyEnd); JZ.addEventListener("lostpointercapture", joyEnd);
+CZ.addEventListener("pointerdown", e => {
+  e.preventDefault(); Sound.unlock();
+  if (Game.mode !== "play") return;
+  Game.idle = 0;
+  try { CZ.setPointerCapture(e.pointerId); } catch (_) {}
+  Look.id = e.pointerId; Look.sx = Look.lx = e.clientX; Look.sy = e.clientY; Look.t0 = performance.now(); Look.moved = 0;
+});
+CZ.addEventListener("pointermove", e => {
+  if (e.pointerId !== Look.id) return;
+  Look.moved = Math.max(Look.moved, Math.hypot(e.clientX - Look.sx, e.clientY - Look.sy));
+  if (Look.moved > 12 && !Game.party && !Game.sledding) { CAM.yaw -= (e.clientX - Look.lx) * 0.009; CAM.manual = 1.6; }
+  Look.lx = e.clientX;
+});
+function lookEnd(e) {
+  if (e.pointerId !== Look.id) return;
+  const quick = performance.now() - Look.t0 < 400 && Look.moved < 12;
+  Look.id = null; if (quick && e.type === "pointerup" && !Game.dialog && Game.mode === "play") tapAt(e.clientX, e.clientY);
+}
+CZ.addEventListener("pointerup", lookEnd); CZ.addEventListener("pointercancel", lookEnd); CZ.addEventListener("lostpointercapture", lookEnd);
+// the top of the picture (above the two areas): a tap still says hello
+canvas.addEventListener("click", e => { if (Game.mode === "play" && !Game.dialog) tapAt(e.clientX, e.clientY); });
+// no finger on the screen: nothing can still be held
+const allUp = e => { if (e.touches && e.touches.length === 0) { if (Joy.id !== null) joyRest(); Look.id = null; } };
+document.addEventListener("touchend", allUp, { passive: true }); document.addEventListener("touchcancel", allUp, { passive: true });
+
+/* HUD buttons that work while another finger is on the stick: iPad Safari makes no "click" for a second finger,
+   so a finger acts through its own pointer events (a mouse and the keyboard still use click) */
+function fastTap(el, instant) {
+  if (!el || el.dataset.fast) return; el.dataset.fast = "1";
+  let pid = null;
+  el.addEventListener("touchstart", e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+  el.addEventListener("pointerdown", e => {
+    if (e.pointerType === "mouse") return;
+    pid = e.pointerId; try { el.setPointerCapture(pid); } catch (_) {} el.classList.add("on");
+    if (instant && el.onclick) { el._firedAt = performance.now(); el.onclick(e); }
+  });
+  const up = (e, fire) => {
+    if (e.pointerId !== pid) return; pid = null; el.classList.remove("on");
+    if (!fire || instant || !el.onclick) return;
+    const r = el.getBoundingClientRect(), m = 16;
+    if (e.clientX > r.left - m && e.clientX < r.right + m && e.clientY > r.top - m && e.clientY < r.bottom + m) { el._firedAt = performance.now(); el.onclick(e); }
+  };
+  el.addEventListener("pointerup", e => up(e, true)); el.addEventListener("pointercancel", e => up(e, false));
+}
+// some browsers still send a click after the finger lifts: the button already did its job, so that click is dropped
+document.addEventListener("click", e => {
+  const b = e.target && e.target.closest && e.target.closest("[data-fast]");
+  if (b && performance.now() - (b._firedAt || 0) < 800) { e.stopImmediatePropagation(); e.preventDefault(); }
+}, true);
 window.addEventListener("keydown", e => {
   keys[e.key.toLowerCase()] = true;
   if (e.key === " " && Game.mode === "play" && !Room.open) { e.preventDefault(); doJump(); }
@@ -4163,7 +4216,7 @@ function runQuiz(Q, done) {
         if (wrong >= 2) box.children[Q.right].classList.add("glow");
       }
     };
-    box.appendChild(b);
+    box.appendChild(b); fastTap(b);
   });
   $("dialog").hidden = true; $("quiz").hidden = false; Voice.say(Q.q);
   if (friends[Q.who]) friends[Q.who].hop(2);
@@ -4960,6 +5013,8 @@ $("btnVoice").onclick = () => { Sound.unlock(); Voice.repeat(); };
 $("btnJump").onclick = doJump;
 $("btnCtx").onclick = contextPress;
 $("btnRoom").onclick = () => { Sound.unlock(); Room.enter(); };
+// these work even while the other hand is on the stick (Jump and Ride act the moment the finger touches them)
+fastTap($("btnJump"), true); fastTap($("btnCtx"), true); ["btnRoom", "btnVoice", "btnMenu", "dOk", "qVoice"].forEach(id => fastTap($(id)));
 /* the menu */
 $("btnMenu").onclick = () => { Sound.unlock(); const m = $("menu"); m.hidden = !m.hidden; if (!m.hidden) fillLands(); Sound.fx.pop(); };
 $("mFull").onclick = () => { $("menu").hidden = true; fsPress(); };
