@@ -1,0 +1,55 @@
+# Makes the recorded voices for Sparkle Kingdom (tools/voices/make.py, with the open Kokoro voice generator).
+# Runs when tools/voices/lines.json changes on main, or from the Actions tab ("Run workflow").
+# The voices go to the branch 'voice-out' (not to the game itself); they are copied into luna/voice/ when the game is updated.
+name: Make the game voices (Kokoro)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/voices/lines.json', 'tools/voices/make.py']
+permissions:
+  contents: write
+concurrency:
+  group: voices
+  cancel-in-progress: false
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open the results branch
+        run: |
+          git config --global user.name "voice-bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin voice-out >/dev/null 2>&1; then
+            git fetch --depth=1 origin voice-out
+            git worktree add -b voice-out out FETCH_HEAD
+          else
+            git worktree add --detach out
+            cd out
+            git checkout --orphan voice-out
+            git rm -rfq . || true
+            git clean -fdxq
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the voice generator
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q kokoro-onnx soundfile numpy
+          curl -sSL -o kokoro-v1.0.onnx https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+          curl -sSL -o voices-v1.0.bin https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+          ls -la kokoro-v1.0.onnx voices-v1.0.bin
+      - name: Make the voices
+        env:
+          VOICE_OUT: ${{ github.workspace }}/out/voice
+        run: python3 tools/voices/make.py
+      - name: Save the results
+        if: always()
+        run: |
+          cd out
+          git add -A
+          git commit -qm "Voices run ${{ github.run_number }}" || echo "nothing new to save"
+          git push -q origin HEAD:voice-out

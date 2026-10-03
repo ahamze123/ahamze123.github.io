@@ -1,0 +1,2158 @@
+[
+{
+"who": "narrator",
+"text": "Shake, shake, shake!"
+},
+{
+"who": "narrator",
+"text": "Take them home to"
+},
+{
+"who": "narrator",
+"text": "Ready, steady, go! Push the pink button to steer!"
+},
+{
+"who": "narrator",
+"text": "Wheee! What a ride!"
+},
+{
+"who": "narrator",
+"text": "needs your help!"
+},
+{
+"who": "narrator",
+"text": "Try this one!"
+},
+{
+"who": "narrator",
+"text": "Oops! Try again!"
+},
+{
+"who": "narrator",
+"text": "Welcome to your room, Princess Luna! Tap something to play!"
+},
+{
+"who": "narrator",
+"text": "Welcome home, Princess!"
+},
+{
+"who": "narrator",
+"text": "Good night, moon! Now it's night time in the kingdom."
+},
+{
+"who": "narrator",
+"text": "Good morning, sun! Now it's day time."
+},
+{
+"who": "luna",
+"text": "I love you, Teddy! Squeeze!"
+},
+{
+"who": "narrator",
+"text": "Say cheese! Your photo is in your album."
+},
+{
+"who": "narrator",
+"text": "Say cheese! What a beautiful princess!"
+},
+{
+"who": "narrator",
+"text": "This one is a surprise! Help your friends on your adventures to find it."
+},
+{
+"who": "narrator",
+"text": "OK!"
+},
+{
+"who": "narrator",
+"text": "All clean! Splash, splash!"
+},
+{
+"who": "narrator",
+"text": "Say cheese!"
+},
+{
+"who": "narrator",
+"text": "Now tap your face to put on the"
+},
+{
+"who": "narrator",
+"text": "Oh no! Pip played in the mud. Scrub, scrub with the sponge!"
+},
+{
+"who": "narrator",
+"text": "Great scrubbing! Now rinse off the bubbles with the shower!"
+},
+{
+"who": "narrator",
+"text": "All rinsed! Now dry Pip with the fluffy towel!"
+},
+{
+"who": "narrator",
+"text": "Pip is sparkly clean! Purr, purr. Thank you, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Bravo! You played"
+},
+{
+"who": "narrator",
+"text": "Play anything you like!"
+},
+{
+"who": "narrator",
+"text": "Let's play"
+},
+{
+"who": "narrator",
+"text": "What a beautiful painting! It's in your photo album."
+},
+{
+"who": "narrator",
+"text": "Good morning, Princess Luna! The sun is up!"
+},
+{
+"who": "narrator",
+"text": "It's night time in the kingdom. Look at the stars and the fireflies!"
+},
+{
+"who": "story",
+"text": "The end. Good night, Princess Luna! Sweet dreams!"
+},
+{
+"who": "narrator",
+"text": "A surprise! You got the Starry night dress. Try it in your wardrobe!"
+},
+{
+"who": "narrator",
+"text": "This sticker is still a surprise!"
+},
+{
+"who": "narrator",
+"text": "Look at all your stickers! Help your friends to find more."
+},
+{
+"who": "narrator",
+"text": "You found all the stickers! Hooray!"
+},
+{
+"who": "narrator",
+"text": "Ask a grown-up first! To start again, hold the pink button."
+},
+{
+"who": "narrator",
+"text": "Yummy icing!"
+},
+{
+"who": "narrator",
+"text": "First pick a colour for the icing!"
+},
+{
+"who": "narrator",
+"text": "Put some more yummy things on the cake!"
+},
+{
+"who": "narrator",
+"text": "What a beautiful cake! Yum, yum!"
+},
+{
+"who": "narrator",
+"text": "A pair!"
+},
+{
+"who": "narrator",
+"text": "You found"
+},
+{
+"who": "narrator",
+"text": "Yay, two the same!"
+},
+{
+"who": "narrator",
+"text": "You found all the pairs! Super memory, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "Dance party! Everybody dance!"
+},
+{
+"who": "narrator",
+"text": "Let's play dress up! Pick a dress, a crown, wings and a magic wand."
+},
+{
+"who": "narrator",
+"text": "Let's do your makeup and hair! Pick a colour, and watch the mirror."
+},
+{
+"who": "narrator",
+"text": "Let's play the piano! Press the keys, or pick a song and follow the shiny key."
+},
+{
+"who": "narrator",
+"text": "Let's paint! Pick a colour, then tap a space in the picture to fill it."
+},
+{
+"who": "narrator",
+"text": "Bedtime! Which story do you want to hear?"
+},
+{
+"who": "narrator",
+"text": "Here are your photos!"
+},
+{
+"who": "narrator",
+"text": "Let's decorate the cake! Pick a colour for the icing, then put yummy things on top."
+},
+{
+"who": "narrator",
+"text": "Let's play memory! Turn over two cards. Can you find two friends that are the same?"
+},
+{
+"who": "stardust",
+"text": "Hop on my back first! Come close and tap Ride!"
+},
+{
+"who": "luna",
+"text": "Welcome back! Let's play!"
+},
+{
+"who": "stardust",
+"text": "Tap the Ride button to ride on my back!"
+},
+{
+"who": "pip",
+"text": "Mew! You found me three times! Can I follow you home?"
+},
+{
+"who": "mimi",
+"text": "My baby Pip! Thank you, Princess Luna!"
+},
+{
+"who": "dot",
+"text": "Look, a birthday cake! Let's blow out the candles. One, two, three, whoosh!"
+},
+{
+"who": "stardust",
+"text": "Wheee! That was the best ride ever! You can ride me any time. Just come close and tap Ride!"
+},
+{
+"who": "bunny",
+"text": "My babies are home! Hop hop! Thank you, Princess Luna!"
+},
+{
+"who": "honey",
+"text": "What a yummy cake! You're a real baker, Luna! I made you a candy dress!"
+},
+{
+"who": "pingo",
+"text": "My brothers! Thank you, Princess Luna! Here's a sparkly ice dress for you!"
+},
+{
+"who": "luna",
+"text": "Hi! I'm Princess Luna. Today is the big Sparkle Party! Let's help my friends get ready!"
+},
+{
+"who": "bunny",
+"text": "Hi Princess Luna! I'm Bun-Bun. My carrots hopped away! Can you find six carrots for me?"
+},
+{
+"who": "bunny",
+"text": "Yay, my carrots! Thank you, Princess Luna!"
+},
+{
+"who": "bunny",
+"text": "Can you help me count? How many carrots did you find?"
+},
+{
+"who": "bunny",
+"text": "Six carrots! You're so clever!"
+},
+{
+"who": "bunny",
+"text": "Oops! Try again!"
+},
+{
+"who": "bunny",
+"text": "Try this one!"
+},
+{
+"who": "mimi",
+"text": "Meow! Hello Princess Luna. My kitten Pip is playing hide and seek, and now I can't find her! She loves the big red mushrooms."
+},
+{
+"who": "pip",
+"text": "Hee hee! You found me! Now catch me!"
+},
+{
+"who": "pip",
+"text": "Mew! Catch me one more time!"
+},
+{
+"who": "pip",
+"text": "Mew mew! Thank you, Luna!"
+},
+{
+"who": "mimi",
+"text": "Which one is my baby, Pip?"
+},
+{
+"who": "mimi",
+"text": "Yes, that's my Pip!"
+},
+{
+"who": "mimi",
+"text": "Oops! Try again!"
+},
+{
+"who": "mimi",
+"text": "Try this one!"
+},
+{
+"who": "dot",
+"text": "Hi Princess Luna! I'm Dot. My tummy is rumbly! Can you get me five apples from the apple tree?"
+},
+{
+"who": "dot",
+"text": "Yum, yum, yum! Thank you, Princess Luna!"
+},
+{
+"who": "dot",
+"text": "What colour were the apples you brought me?"
+},
+{
+"who": "dot",
+"text": "Red! Yummy red apples!"
+},
+{
+"who": "dot",
+"text": "Oops! Try again!"
+},
+{
+"who": "dot",
+"text": "Try this one!"
+},
+{
+"who": "stardust",
+"text": "Hello Princess Luna! I'm Stardust. Eight little stars fell out of the sky! Can you catch them all?"
+},
+{
+"who": "stardust",
+"text": "The stars are back in the sky! Thank you, Luna!"
+},
+{
+"who": "stardust",
+"text": "Which one is a star?"
+},
+{
+"who": "stardust",
+"text": "That's a star, just like you!"
+},
+{
+"who": "stardust",
+"text": "Oops! Try again!"
+},
+{
+"who": "stardust",
+"text": "Try this one!"
+},
+{
+"who": "bunny",
+"text": "Let's grow a flower garden! Can you water the five little sprouts around my garden?"
+},
+{
+"who": "bunny",
+"text": "Look at all the flowers! My garden is so pretty now!"
+},
+{
+"who": "bunny",
+"text": "How many flowers did you grow?"
+},
+{
+"who": "bunny",
+"text": "Five flowers! Hop hop hooray!"
+},
+{
+"who": "pip",
+"text": "Mew! Princess Luna, let's play! Can you catch five butterflies with me?"
+},
+{
+"who": "pip",
+"text": "You caught them all! The butterflies gave you a present: butterfly wings!"
+},
+{
+"who": "luna",
+"text": "I got Butterfly wings! I can wear it in my wardrobe!"
+},
+{
+"who": "dot",
+"text": "Guess what, Luna? Today is my birthday! But my balloons flew away. Can you find six balloons?"
+},
+{
+"who": "dot",
+"text": "My balloons! Now it's a real birthday party!"
+},
+{
+"who": "dot",
+"text": "How many candles were on my cake?"
+},
+{
+"who": "dot",
+"text": "Three candles! I'm three years old!"
+},
+{
+"who": "luna",
+"text": "I got the Heart wand! I can wear it in my wardrobe!"
+},
+{
+"who": "stardust",
+"text": "Princess Luna, do you want to ride on my back? Hop on, and let's fly through the rainbow rings!"
+},
+{
+"who": "bunny",
+"text": "Oh no, Luna! My three baby bunnies went exploring and got lost. Can you find them and bring them home?"
+},
+{
+"who": "narrator",
+"text": "Take them home to Bun-Bun!"
+},
+{
+"who": "bunny",
+"text": "How many baby bunnies did you bring home?"
+},
+{
+"who": "bunny",
+"text": "Three babies! You counted right!"
+},
+{
+"who": "mimi",
+"text": "Purr. I'm knitting a cozy blanket for Pip. Can you find four balls of yarn?"
+},
+{
+"who": "mimi",
+"text": "Now I can knit the coziest blanket! And I made a pretty rose dress for you!"
+},
+{
+"who": "mimi",
+"text": "Which ball of yarn is blue?"
+},
+{
+"who": "mimi",
+"text": "Blue, like the sky!"
+},
+{
+"who": "luna",
+"text": "I got the Rose dress! I can wear it in my wardrobe!"
+},
+{
+"who": "dot",
+"text": "My friends hid five painted eggs for me. Can you help me find them, Luna?"
+},
+{
+"who": "dot",
+"text": "Five pretty eggs! You're the best egg finder in the kingdom!"
+},
+{
+"who": "stardust",
+"text": "Let's make a flower crown! Pick a pink, a yellow, a blue, a purple and a white flower."
+},
+{
+"who": "stardust",
+"text": "Now I can make you a beautiful flower crown! Try it on in your wardrobe!"
+},
+{
+"who": "stardust",
+"text": "Which flower is yellow?"
+},
+{
+"who": "stardust",
+"text": "Yellow, like the sun!"
+},
+{
+"who": "luna",
+"text": "I got the Flower crown! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "It's almost time for the Sparkle Party! Let's light the six lanterns at the castle!"
+},
+{
+"who": "shelly",
+"text": "Hello, Princess Luna! I'm Shelly. My four baby turtles just hatched! Can you help them get to the sea?"
+},
+{
+"who": "narrator",
+"text": "Take them to the sea!"
+},
+{
+"who": "shelly",
+"text": "My babies are swimming in the sea! Thank you, Princess Luna!"
+},
+{
+"who": "marina",
+"text": "Hi Luna! I'm Marina the mermaid. My pearl necklace broke and the pearls rolled away! Can you find eight pearls?"
+},
+{
+"who": "marina",
+"text": "My pearls! I made you a pearl necklace too. Wear it in your wardrobe!"
+},
+{
+"who": "marina",
+"text": "What colour are pearls?"
+},
+{
+"who": "marina",
+"text": "White and shiny!"
+},
+{
+"who": "marina",
+"text": "Oops! Try again!"
+},
+{
+"who": "marina",
+"text": "Try this one!"
+},
+{
+"who": "luna",
+"text": "I got the Pearl necklace! I can wear it in my wardrobe!"
+},
+{
+"who": "shelly",
+"text": "Let's make my nest pretty! Can you find six seashells?"
+},
+{
+"who": "shelly",
+"text": "My nest looks lovely with the seashells!"
+},
+{
+"who": "shelly",
+"text": "Which one is a seashell?"
+},
+{
+"who": "shelly",
+"text": "Yes! A pretty seashell!"
+},
+{
+"who": "shelly",
+"text": "Oops! Try again!"
+},
+{
+"who": "shelly",
+"text": "Try this one!"
+},
+{
+"who": "marina",
+"text": "Let's build the biggest sandcastle ever! Every starfish you find makes it grow. Find five starfish!"
+},
+{
+"who": "marina",
+"text": "Look at our sandcastle! It's a castle for a princess. Here's a seashell crown for you!"
+},
+{
+"who": "luna",
+"text": "I got the Seashell crown! I can wear it in my wardrobe!"
+},
+{
+"who": "marina",
+"text": "Let's have a beach party! Can you open four beach umbrellas?"
+},
+{
+"who": "honey",
+"text": "Hello, sweet Princess! I'm Honey the baker. Let's bake a big cake! Find the egg, the milk, the sugar, the flour, the strawberry and the chocolate."
+},
+{
+"who": "honey",
+"text": "We have everything! Now let's decorate the cake!"
+},
+{
+"who": "luna",
+"text": "I got the Candy dress! I can wear it in my wardrobe!"
+},
+{
+"who": "honey",
+"text": "My candy shop needs six lollipops. Can you find them in the Candy Forest?"
+},
+{
+"who": "honey",
+"text": "Sweet! Now my shop is full of lollipops!"
+},
+{
+"who": "honey",
+"text": "Which one is a lollipop?"
+},
+{
+"who": "honey",
+"text": "Yummy lollipop!"
+},
+{
+"who": "honey",
+"text": "Oops! Try again!"
+},
+{
+"who": "honey",
+"text": "Try this one!"
+},
+{
+"who": "honey",
+"text": "Oh no! My gingerbread cookies ran away! Run, run, as fast as you can, and catch all four!"
+},
+{
+"who": "honey",
+"text": "You caught them all! You're faster than a gingerbread cookie!"
+},
+{
+"who": "honey",
+"text": "Let's have a cupcake party! Put four cupcakes on the party table."
+},
+{
+"who": "pingo",
+"text": "Hi Princess Luna! I'm Pingo. Let's build a snowman! Find three snowballs, a carrot and a hat."
+},
+{
+"who": "pingo",
+"text": "Our snowman is finished! He looks so happy!"
+},
+{
+"who": "pingo",
+"text": "What did we use for the snowman's nose?"
+},
+{
+"who": "pingo",
+"text": "A carrot nose!"
+},
+{
+"who": "pingo",
+"text": "Oops! Try again!"
+},
+{
+"who": "pingo",
+"text": "Try this one!"
+},
+{
+"who": "pingo",
+"text": "I'm a hungry penguin! Can you catch five fish by the ice pond?"
+},
+{
+"who": "pingo",
+"text": "Yum, fish! Thank you, Princess Luna!"
+},
+{
+"who": "pingo",
+"text": "How many fish did you catch?"
+},
+{
+"who": "pingo",
+"text": "Five fish! Yum!"
+},
+{
+"who": "pingo",
+"text": "Let's go sledding! Climb to the top of the snowy hill and slide down through the flags!"
+},
+{
+"who": "pingo",
+"text": "Wheee! You're a super sledder, Luna!"
+},
+{
+"who": "pingo",
+"text": "My three little brothers are lost in the snow! Can you bring them back to me?"
+},
+{
+"who": "narrator",
+"text": "Take them home to Pingo!"
+},
+{
+"who": "luna",
+"text": "I got the Ice dress! I can wear it in my wardrobe!"
+},
+{
+"who": "pingo",
+"text": "Let's have a snowflake party! Light the four ice lanterns."
+},
+{
+"who": "luna",
+"text": "All my friends are coming to the castle for the Grand Ball! Let's go home to the castle!"
+},
+{
+"who": "luna",
+"text": "I got the Rainbow dress! I can wear it in my wardrobe!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Bun-Bun!"
+},
+{
+"who": "narrator",
+"text": "Let's go and see Bun-Bun the bunny!"
+},
+{
+"who": "narrator",
+"text": "Bun-Bun needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Mimi!"
+},
+{
+"who": "narrator",
+"text": "Mimi the cat needs you!"
+},
+{
+"who": "narrator",
+"text": "Mimi needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Pip!"
+},
+{
+"who": "narrator",
+"text": "Pip the kitten wants to play!"
+},
+{
+"who": "narrator",
+"text": "Pip needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Dot!"
+},
+{
+"who": "narrator",
+"text": "Dot the baby dragon is calling you!"
+},
+{
+"who": "narrator",
+"text": "Dot needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Stardust!"
+},
+{
+"who": "narrator",
+"text": "Stardust the unicorn is waiting for you!"
+},
+{
+"who": "narrator",
+"text": "Stardust needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Shelly!"
+},
+{
+"who": "narrator",
+"text": "Let's visit Shelly the turtle!"
+},
+{
+"who": "narrator",
+"text": "Shelly needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Marina!"
+},
+{
+"who": "narrator",
+"text": "Marina the mermaid is calling you!"
+},
+{
+"who": "narrator",
+"text": "Marina needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Honey!"
+},
+{
+"who": "narrator",
+"text": "Honey the bear baker needs help!"
+},
+{
+"who": "narrator",
+"text": "Honey needs your help!"
+},
+{
+"who": "narrator",
+"text": "Now go back to Pingo!"
+},
+{
+"who": "narrator",
+"text": "Pingo the penguin is waving at you!"
+},
+{
+"who": "narrator",
+"text": "Pingo needs your help!"
+},
+{
+"who": "narrator",
+"text": "Visit Bun-Bun! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Bun-Bun! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Mimi! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Mimi! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Pip! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Pip! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Dot! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Dot! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Stardust! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Stardust! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Shelly! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Shelly! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Marina! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Marina! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Honey! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Honey! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Visit Pingo! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go back to Pingo! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 6 carrots! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find baby Pip! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take Pip home to Mimi! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go to the apple tree! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Pick up 5 apples! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 8 stars! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Water 5 sprouts! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 5 butterflies! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 6 balloons! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Ride through 6 rainbow rings! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 3 baby bunnies! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take them to Bun-Bun! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 balls of yarn! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 painted eggs! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Pick 5 flowers! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Light 6 lanterns! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 baby turtles! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take them to the sea! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 8 pearls! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 6 seashells! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 starfish! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Open 4 umbrellas! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 6 things for the cake! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 6 lollipops! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 4 cookies! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Put out 4 cupcakes! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 snowman parts! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 5 fish! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Climb the snowy hill! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 3 little penguins! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Take them to Pingo! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Light 4 ice lanterns! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Go to the castle! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 carrots! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 painted eggs! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 apples! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 balloons! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 5 stars! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 3 balls of yarn! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 4 butterflies! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 seashells! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 pearls! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 starfish! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 lollipops! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 cupcakes! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Catch 3 cookies! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 4 fish! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Find 5 snowballs! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Slide through the flags! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Explore the kingdom! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "Play anywhere you like! Follow the sparkly trail!"
+},
+{
+"who": "narrator",
+"text": "One!"
+},
+{
+"who": "narrator",
+"text": "Two!"
+},
+{
+"who": "narrator",
+"text": "Three!"
+},
+{
+"who": "narrator",
+"text": "Four!"
+},
+{
+"who": "narrator",
+"text": "Five!"
+},
+{
+"who": "narrator",
+"text": "Six!"
+},
+{
+"who": "narrator",
+"text": "Seven!"
+},
+{
+"who": "narrator",
+"text": "Eight!"
+},
+{
+"who": "narrator",
+"text": "Nine!"
+},
+{
+"who": "narrator",
+"text": "Ten!"
+},
+{
+"who": "narrator",
+"text": "Hooray! The Sparkle Party starts now! You helped all your friends, Princess Luna!"
+},
+{
+"who": "narrator",
+"text": "It's a beach party! Splash, splash, hooray!"
+},
+{
+"who": "narrator",
+"text": "Cupcake party! Yum, yum, hooray!"
+},
+{
+"who": "narrator",
+"text": "A snowflake party! Twinkle, twinkle, hooray!"
+},
+{
+"who": "narrator",
+"text": "Welcome to the Grand Ball! You are the kindest princess in the whole kingdom!"
+},
+{
+"who": "luna",
+"text": "Look! A rainbow bridge! It goes to Rainbow Beach!"
+},
+{
+"who": "luna",
+"text": "Look! A rainbow bridge! It goes to Candy Forest!"
+},
+{
+"who": "luna",
+"text": "Look! A rainbow bridge! It goes to Snowy Hill!"
+},
+{
+"who": "bunny",
+"text": "Hop hop! My tummy is rumbly again. Can you find four carrots for me, Princess Luna?"
+},
+{
+"who": "bunny",
+"text": "Crunch, crunch! Thank you, Luna!"
+},
+{
+"who": "bunny",
+"text": "Can you count them? How many carrots did you find?"
+},
+{
+"who": "bunny",
+"text": "Four carrots! Clever princess!"
+},
+{
+"who": "bunny",
+"text": "Let's play egg hunt! I hid four painted eggs. Can you find them all?"
+},
+{
+"who": "bunny",
+"text": "You found all my eggs! Hop hop hooray!"
+},
+{
+"who": "bunny",
+"text": "Can you count them? How many eggs did you find?"
+},
+{
+"who": "bunny",
+"text": "Four eggs! Clever princess!"
+},
+{
+"who": "dot",
+"text": "Rawr! I'm hungry! Can you find four red apples for me?"
+},
+{
+"who": "dot",
+"text": "Yum, yum, yum! Thank you, Luna!"
+},
+{
+"who": "dot",
+"text": "Can you count them? How many apples did you find?"
+},
+{
+"who": "dot",
+"text": "Four apples! Clever princess!"
+},
+{
+"who": "dot",
+"text": "Oops! My party balloons flew away again! Can you find five balloons?"
+},
+{
+"who": "dot",
+"text": "My balloons! Let's have another party!"
+},
+{
+"who": "dot",
+"text": "Can you count them? How many balloons did you find?"
+},
+{
+"who": "dot",
+"text": "Five balloons! Clever princess!"
+},
+{
+"who": "stardust",
+"text": "Oh my, more little stars fell out of the sky! Can you catch five stars?"
+},
+{
+"who": "stardust",
+"text": "The sky is twinkly again! Thank you, Princess!"
+},
+{
+"who": "stardust",
+"text": "Can you count them? How many stars did you find?"
+},
+{
+"who": "stardust",
+"text": "Five stars! Clever princess!"
+},
+{
+"who": "mimi",
+"text": "Purr. Pip played with my yarn again, and now it's everywhere! Can you find three balls of yarn?"
+},
+{
+"who": "mimi",
+"text": "Thank you, Princess! Now I can knit a hat for Pip."
+},
+{
+"who": "mimi",
+"text": "Can you count them? How many balls of yarn did you find?"
+},
+{
+"who": "mimi",
+"text": "Three balls of yarn! Clever princess!"
+},
+{
+"who": "mimi",
+"text": "Let's make the castle pretty! Can you pick five flowers for me?"
+},
+{
+"who": "mimi",
+"text": "What a beautiful bunch of flowers! Thank you!"
+},
+{
+"who": "mimi",
+"text": "Can you count them? How many flowers did you find?"
+},
+{
+"who": "mimi",
+"text": "Five flowers! Clever princess!"
+},
+{
+"who": "pip",
+"text": "Mew! Let's play the butterfly game again! Can you catch four butterflies?"
+},
+{
+"who": "pip",
+"text": "Mew! You're so fast, Princess Luna!"
+},
+{
+"who": "pip",
+"text": "Can you count them? How many butterflies did you find?"
+},
+{
+"who": "pip",
+"text": "Four butterflies! Clever princess!"
+},
+{
+"who": "pip",
+"text": "Oops! Try again!"
+},
+{
+"who": "pip",
+"text": "Try this one!"
+},
+{
+"who": "shelly",
+"text": "Swish, swish! The waves washed my seashells away. Can you find five seashells?"
+},
+{
+"who": "shelly",
+"text": "My pretty shells! Thank you, Luna!"
+},
+{
+"who": "shelly",
+"text": "Can you count them? How many seashells did you find?"
+},
+{
+"who": "shelly",
+"text": "Five seashells! Clever princess!"
+},
+{
+"who": "marina",
+"text": "Splash! I'm making a necklace for my friend. Can you find five pearls?"
+},
+{
+"who": "marina",
+"text": "Shiny pearls! Thank you, Princess Luna!"
+},
+{
+"who": "marina",
+"text": "Can you count them? How many pearls did you find?"
+},
+{
+"who": "marina",
+"text": "Five pearls! Clever princess!"
+},
+{
+"who": "marina",
+"text": "The starfish are playing hide and seek on the beach! Can you find four starfish?"
+},
+{
+"who": "marina",
+"text": "You found all the starfish! Splash, splash!"
+},
+{
+"who": "honey",
+"text": "My candy shop is empty again! Can you find four lollipops, sweetie?"
+},
+{
+"who": "honey",
+"text": "Sweet! Thank you, sweetie!"
+},
+{
+"who": "honey",
+"text": "Can you count them? How many lollipops did you find?"
+},
+{
+"who": "honey",
+"text": "Four lollipops! Clever princess!"
+},
+{
+"who": "honey",
+"text": "I baked cupcakes, but the wind blew them all over the forest! Can you find four cupcakes?"
+},
+{
+"who": "honey",
+"text": "Yummy cupcakes! You're a great helper!"
+},
+{
+"who": "honey",
+"text": "Can you count them? How many cupcakes did you find?"
+},
+{
+"who": "honey",
+"text": "Four cupcakes! Clever princess!"
+},
+{
+"who": "honey",
+"text": "Oh no, the gingerbread cookies ran away again! Can you catch three cookies?"
+},
+{
+"who": "honey",
+"text": "Got them! You're faster than a cookie!"
+},
+{
+"who": "honey",
+"text": "Can you count them? How many cookies did you find?"
+},
+{
+"who": "honey",
+"text": "Three cookies! Clever princess!"
+},
+{
+"who": "pingo",
+"text": "Brrr! I'm a hungry penguin again! Can you find four fish for me?"
+},
+{
+"who": "pingo",
+"text": "Can you count them? How many fish did you find?"
+},
+{
+"who": "pingo",
+"text": "Four fish! Clever princess!"
+},
+{
+"who": "pingo",
+"text": "Let's make a snow fort! Can you find five snowballs?"
+},
+{
+"who": "pingo",
+"text": "What a great snow fort! Thank you!"
+},
+{
+"who": "pingo",
+"text": "Can you count them? How many snowballs did you find?"
+},
+{
+"who": "pingo",
+"text": "Five snowballs! Clever princess!"
+},
+{
+"who": "luna",
+"text": "A present for helping! The Peach dress! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "A present for helping! The Ocean dress! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "A present for helping! The Berry dress! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "A present for helping! The Sunny dress! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "A present for helping! The Lime dress! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "A present for helping! The Violet dress! I can wear it in my wardrobe!"
+},
+{
+"who": "luna",
+"text": "I helped my friend! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 2 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 3 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 4 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 5 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 6 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 7 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 8 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 9 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 10 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 11 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 12 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 13 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 14 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 15 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 16 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 17 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 18 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 19 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends 20 times! Yay!"
+},
+{
+"who": "luna",
+"text": "I helped my friends so many times! Yay!"
+},
+{
+"who": "bunny",
+"text": "Hi Luna! Hop hop!"
+},
+{
+"who": "bunny",
+"text": "Do you like carrots? I love carrots!"
+},
+{
+"who": "bunny",
+"text": "Hop with me, Princess!"
+},
+{
+"who": "mimi",
+"text": "Meow! Hello, Princess!"
+},
+{
+"who": "mimi",
+"text": "Purr. You're so kind, Luna."
+},
+{
+"who": "mimi",
+"text": "Have you seen Pip? She's always playing!"
+},
+{
+"who": "pip",
+"text": "Mew!"
+},
+{
+"who": "pip",
+"text": "Mew! Let's play!"
+},
+{
+"who": "pip",
+"text": "I love you, Princess Luna!"
+},
+{
+"who": "dot",
+"text": "Hi Luna! Rawr!"
+},
+{
+"who": "dot",
+"text": "I'm practising my flying!"
+},
+{
+"who": "dot",
+"text": "Rawr! That means hello in dragon!"
+},
+{
+"who": "stardust",
+"text": "Hello, Princess Luna!"
+},
+{
+"who": "stardust",
+"text": "Do you want to ride on my back?"
+},
+{
+"who": "stardust",
+"text": "What a sparkly day!"
+},
+{
+"who": "shelly",
+"text": "Hello, Princess! Swish, swish!"
+},
+{
+"who": "shelly",
+"text": "The sea is so warm today!"
+},
+{
+"who": "shelly",
+"text": "Slow and steady, that's me!"
+},
+{
+"who": "marina",
+"text": "Hi Luna! Splash!"
+},
+{
+"who": "marina",
+"text": "Do you like my seashell crown?"
+},
+{
+"who": "marina",
+"text": "I can swim faster than a fish!"
+},
+{
+"who": "honey",
+"text": "Hello, sweetie! Something smells yummy!"
+},
+{
+"who": "honey",
+"text": "Do you like cupcakes? I love cupcakes!"
+},
+{
+"who": "honey",
+"text": "Honey and cake, yum!"
+},
+{
+"who": "pingo",
+"text": "Hi Luna! Brrr, it's snowy!"
+},
+{
+"who": "pingo",
+"text": "Let's slide on the ice!"
+},
+{
+"who": "pingo",
+"text": "Penguins love fish and snow!"
+},
+{
+"who": "story",
+"text": "One night, Bun-Bun the bunny looked up at the sky. The moon was round and yellow, like a big crunchy carrot!"
+},
+{
+"who": "story",
+"text": "\"I want to taste the moon carrot!\" said Bun-Bun. He hopped, and hopped, and hopped, but the moon was much too high."
+},
+{
+"who": "story",
+"text": "Princess Luna smiled. \"The moon is not a carrot, silly bunny. It's a night light for everyone!\""
+},
+{
+"who": "story",
+"text": "Then Luna gave Bun-Bun a real carrot from the garden. Crunch, crunch! It was the yummiest carrot ever."
+},
+{
+"who": "story",
+"text": "Bun-Bun yawned a big bunny yawn, curled up in his cozy bed, and said good night to the moon. The end."
+},
+{
+"who": "story",
+"text": "Pip the little kitten could not sleep. She looked out of the window and saw a tiny twinkling star."
+},
+{
+"who": "story",
+"text": "\"Star light, star bright, I wish I could fly tonight!\" whispered Pip."
+},
+{
+"who": "story",
+"text": "Whoosh! Stardust the unicorn flew by the window. \"Hop on, Pip!\" Together they flew over the castle and the sparkly sea."
+},
+{
+"who": "story",
+"text": "They waved hello to the moon and the stars, and the stars twinkled back."
+},
+{
+"who": "story",
+"text": "Then Stardust brought Pip home to her mommy, Mimi. Pip snuggled up and dreamed happy dreams. The end."
+},
+{
+"who": "story",
+"text": "Dot the baby dragon had little wings, but he did not know how to fly."
+},
+{
+"who": "story",
+"text": "He flapped and flapped. Bump! He landed in the flowers. \"Oh no,\" said Dot."
+},
+{
+"who": "story",
+"text": "\"Try again!\" said Princess Luna. \"Everybody needs to practice.\""
+},
+{
+"who": "story",
+"text": "Dot flapped one more time, and up, up, up he went, all the way over the apple tree!"
+},
+{
+"who": "story",
+"text": "\"I did it!\" cheered Dot. That night he fell asleep with a big smile, dreaming of flying. The end."
+},
+{
+"who": "story",
+"text": "Shelly the sea turtle loved to sing to her babies at night."
+},
+{
+"who": "story",
+"text": "\"Swish, swish, says the sea. Sleep, sleep, little ones, close to me.\""
+},
+{
+"who": "story",
+"text": "The fish came to listen. The starfish came to listen. Even Marina the mermaid came to listen."
+},
+{
+"who": "story",
+"text": "The moon made a silver path on the water, and the waves rocked everyone gently."
+},
+{
+"who": "story",
+"text": "Soon all the little turtles were fast asleep. Good night, sea. Good night, Shelly. The end."
+},
+{
+"who": "story",
+"text": "On Snowy Hill, Pingo the penguin was getting ready for bed."
+},
+{
+"who": "story",
+"text": "\"Brrr, I'm a little cold,\" said Pingo. So the snowflakes came down softly, softly."
+},
+{
+"who": "story",
+"text": "They made a white, fluffy blanket over the hill, the trees and the igloo."
+},
+{
+"who": "story",
+"text": "Pingo snuggled into his warm igloo with his three little brothers, all in a row."
+},
+{
+"who": "story",
+"text": "\"Good night, snowflakes,\" said Pingo. And the snowflakes whispered, \"Good night, Pingo.\" The end."
+},
+{
+"who": "narrator",
+"text": "Pink!"
+},
+{
+"who": "narrator",
+"text": "Sky blue!"
+},
+{
+"who": "narrator",
+"text": "Lilac!"
+},
+{
+"who": "narrator",
+"text": "Gold!"
+},
+{
+"who": "narrator",
+"text": "Mint!"
+},
+{
+"who": "narrator",
+"text": "Snow white!"
+},
+{
+"who": "narrator",
+"text": "Starry night!"
+},
+{
+"who": "narrator",
+"text": "Rose!"
+},
+{
+"who": "narrator",
+"text": "Candy!"
+},
+{
+"who": "narrator",
+"text": "Ice!"
+},
+{
+"who": "narrator",
+"text": "Rainbow!"
+},
+{
+"who": "narrator",
+"text": "Peach!"
+},
+{
+"who": "narrator",
+"text": "Ocean!"
+},
+{
+"who": "narrator",
+"text": "Berry!"
+},
+{
+"who": "narrator",
+"text": "Sunny!"
+},
+{
+"who": "narrator",
+"text": "Lime!"
+},
+{
+"who": "narrator",
+"text": "Violet!"
+},
+{
+"who": "narrator",
+"text": "Heart tiara!"
+},
+{
+"who": "narrator",
+"text": "Gold crown!"
+},
+{
+"who": "narrator",
+"text": "Star tiara!"
+},
+{
+"who": "narrator",
+"text": "Flower crown!"
+},
+{
+"who": "narrator",
+"text": "Seashell crown!"
+},
+{
+"who": "narrator",
+"text": "No wings!"
+},
+{
+"who": "narrator",
+"text": "Fairy wings!"
+},
+{
+"who": "narrator",
+"text": "Butterfly wings!"
+},
+{
+"who": "narrator",
+"text": "No wand!"
+},
+{
+"who": "narrator",
+"text": "Star wand!"
+},
+{
+"who": "narrator",
+"text": "Heart wand!"
+},
+{
+"who": "narrator",
+"text": "No necklace!"
+},
+{
+"who": "narrator",
+"text": "Pearl necklace!"
+},
+{
+"who": "narrator",
+"text": "Curly!"
+},
+{
+"who": "narrator",
+"text": "Pigtails!"
+},
+{
+"who": "narrator",
+"text": "Bun!"
+},
+{
+"who": "narrator",
+"text": "Braid!"
+},
+{
+"who": "narrator",
+"text": "pink hair!"
+},
+{
+"who": "narrator",
+"text": "blue hair!"
+},
+{
+"who": "narrator",
+"text": "purple hair!"
+},
+{
+"who": "narrator",
+"text": "gold hair!"
+},
+{
+"who": "narrator",
+"text": "mint hair!"
+},
+{
+"who": "narrator",
+"text": "Lovely brown hair!"
+},
+{
+"who": "narrator",
+"text": "Rainbow hair!"
+},
+{
+"who": "narrator",
+"text": "Pretty lips!"
+},
+{
+"who": "narrator",
+"text": "Rosy cheeks!"
+},
+{
+"who": "narrator",
+"text": "Sparkly eyes!"
+},
+{
+"who": "narrator",
+"text": "Twinkle twinkle!"
+},
+{
+"who": "narrator",
+"text": "Flowers in your hair!"
+},
+{
+"who": "narrator",
+"text": "A pink bow!"
+},
+{
+"who": "narrator",
+"text": "A blue bow!"
+},
+{
+"who": "narrator",
+"text": "A purple bow!"
+},
+{
+"who": "narrator",
+"text": "A gold bow!"
+},
+{
+"who": "narrator",
+"text": "Now tap your face to put on the heart!"
+},
+{
+"who": "narrator",
+"text": "Now tap your face to put on the star!"
+},
+{
+"who": "narrator",
+"text": "Now tap your face to put on the butterfly!"
+},
+{
+"who": "narrator",
+"text": "Now tap your face to put on the flower!"
+},
+{
+"who": "narrator",
+"text": "Now tap your face to put on the rainbow!"
+},
+{
+"who": "narrator",
+"text": "Carrot hunt!"
+},
+{
+"who": "narrator",
+"text": "Hide and seek with Pip!"
+},
+{
+"who": "narrator",
+"text": "Apples for Dot!"
+},
+{
+"who": "narrator",
+"text": "Falling stars!"
+},
+{
+"who": "narrator",
+"text": "Bun-Bun's garden!"
+},
+{
+"who": "narrator",
+"text": "Butterfly game!"
+},
+{
+"who": "narrator",
+"text": "Dot's birthday!"
+},
+{
+"who": "narrator",
+"text": "Rainbow ride!"
+},
+{
+"who": "narrator",
+"text": "Baby bunnies!"
+},
+{
+"who": "narrator",
+"text": "Balls of yarn!"
+},
+{
+"who": "narrator",
+"text": "Painted eggs!"
+},
+{
+"who": "narrator",
+"text": "A flower crown!"
+},
+{
+"who": "narrator",
+"text": "The Sparkle Party!"
+},
+{
+"who": "narrator",
+"text": "Baby turtles!"
+},
+{
+"who": "narrator",
+"text": "Pearl hunt!"
+},
+{
+"who": "narrator",
+"text": "Seashell nest!"
+},
+{
+"who": "narrator",
+"text": "The sandcastle!"
+},
+{
+"who": "narrator",
+"text": "Beach party!"
+},
+{
+"who": "narrator",
+"text": "Bake a cake!"
+},
+{
+"who": "narrator",
+"text": "Lollipops!"
+},
+{
+"who": "narrator",
+"text": "Runaway cookies!"
+},
+{
+"who": "narrator",
+"text": "Cupcake party!"
+},
+{
+"who": "narrator",
+"text": "Build a snowman!"
+},
+{
+"who": "narrator",
+"text": "Fish for Pingo!"
+},
+{
+"who": "narrator",
+"text": "Sledding!"
+},
+{
+"who": "narrator",
+"text": "Little penguins!"
+},
+{
+"who": "narrator",
+"text": "Snowflake party!"
+},
+{
+"who": "narrator",
+"text": "The Grand Ball!"
+},
+{
+"who": "narrator",
+"text": "Dress-up princess!"
+},
+{
+"who": "narrator",
+"text": "Makeover!"
+},
+{
+"who": "narrator",
+"text": "Bath time!"
+},
+{
+"who": "narrator",
+"text": "Piano song!"
+},
+{
+"who": "narrator",
+"text": "Little artist!"
+},
+{
+"who": "narrator",
+"text": "Bedtime story!"
+},
+{
+"who": "narrator",
+"text": "Super memory!"
+},
+{
+"who": "narrator",
+"text": "Let's play Twinkle Twinkle! Press the shiny key."
+},
+{
+"who": "narrator",
+"text": "Bravo! You played Twinkle Twinkle! What a wonderful piano player!"
+},
+{
+"who": "narrator",
+"text": "Let's play Mary's little lamb! Press the shiny key."
+},
+{
+"who": "narrator",
+"text": "Bravo! You played Mary's little lamb! What a wonderful piano player!"
+},
+{
+"who": "narrator",
+"text": "Let's play Row your boat! Press the shiny key."
+},
+{
+"who": "narrator",
+"text": "Bravo! You played Row your boat! What a wonderful piano player!"
+},
+{
+"who": "narrator",
+"text": "Bun-Bun!"
+},
+{
+"who": "narrator",
+"text": "You found Bun-Bun!"
+},
+{
+"who": "narrator",
+"text": "Mimi!"
+},
+{
+"who": "narrator",
+"text": "You found Mimi!"
+},
+{
+"who": "narrator",
+"text": "Pip!"
+},
+{
+"who": "narrator",
+"text": "You found Pip!"
+},
+{
+"who": "narrator",
+"text": "Dot!"
+},
+{
+"who": "narrator",
+"text": "You found Dot!"
+},
+{
+"who": "narrator",
+"text": "Stardust!"
+},
+{
+"who": "narrator",
+"text": "You found Stardust!"
+},
+{
+"who": "narrator",
+"text": "Shelly!"
+},
+{
+"who": "narrator",
+"text": "You found Shelly!"
+},
+{
+"who": "narrator",
+"text": "Marina!"
+},
+{
+"who": "narrator",
+"text": "You found Marina!"
+},
+{
+"who": "narrator",
+"text": "Honey!"
+},
+{
+"who": "narrator",
+"text": "You found Honey!"
+},
+{
+"who": "narrator",
+"text": "Pingo!"
+},
+{
+"who": "narrator",
+"text": "You found Pingo!"
+}
+]
