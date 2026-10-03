@@ -1,1 +1,1 @@
-{"base":"http://localhost:8000/candidate.html?peerns=citest","only":"services,scenarios","run":4}
+{"base":"https://ahamze123.github.io/?peerns=citest","only":"services,both networks block the odd ports,A blocks odd ports, B blocks shiftr (only ntfy shared),relay through shiftr (no direct link),open","run":5}
