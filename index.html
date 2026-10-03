@@ -7713,8 +7713,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:54,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:55,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'🧹',t:'A calmer world',s:'Fewer floating signs: shop, place and mission signs show when you are near, at most 3 at a time. Your quest is a small 📍 with how far it is, people\'s names show when you are close, the guide at the top is one short line, and festivals say hello with a small note once a day'},
   {ic:'✨',t:'A tidy screen',s:'Only your hearts, your coins and the map stay at the top. Tap ☰ to see everything else: your hero, golden bricks, Power Crystals and all the buttons. Tap the crystals to find out what they are. Hold ✋ to call your car shows only after you stand still for 10 seconds with no car near, and the places in Story 2 keep their colours (no more grey)'},
   {ic:'🌊',t:'The water park, better',s:'No flying needed: walk into a glass lift 🛗 to go up the tall rides, or take the stairs to the Racer and the giant duck. The Banana Boat has a new jetty on the beach and a loop in deep water. In the wave pool, press Make waves! and take a float to surf to the beach',go:()=>typeof WP!=='undefined'&&WP.ok?dd({x:WP.gate.x,z:WP.gate.z-3,label:tr('Humongous Water Park'),icon:'🌊',col:'#46c0ee'}):null},
   {ic:'📱',t:'Everything on one screen',s:'The first screen fits on the tablet: all your heroes on the right, Play on the left, and nothing to slide'},
@@ -10449,7 +10450,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.8';window.BB_VER=BB_VER;
+const BB_VER='27.9';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -14980,6 +14981,87 @@ MV('Surf a Wave','اركب موجة');
 MV('The water park, better','حديقة الماء صارت أفضل');MV('No flying needed: walk into a glass lift 🛗 to go up the tall rides, or take the stairs to the Racer and the giant duck. The Banana Boat has a new jetty on the beach and a loop in deep water. In the wave pool, press Make waves! and take a float to surf to the beach','لا حاجة للطيران: ادخل المصعد الزجاجي 🛗 لتصعد إلى الألعاب العالية، أو اصعد الدرج إلى السباق والبطة العملاقة. لقارب الموزة رصيف جديد على الشاطئ وجولة في الماء العميق. في بركة الأمواج اضغط اصنع أمواجًا! وخذ عوّامة لتركب الموج حتى الشاطئ');
 MV('Everything on one screen','كل شيء في شاشة واحدة');MV('The first screen fits on the tablet: all your heroes on the right, Play on the left, and nothing to slide','الشاشة الأولى تتسع في الجهاز: كل أبطالك على اليمين، واللعب على اليسار، ولا حاجة للسحب');
 MV('The Story 2 hero now has her own picture card, like every other hero','بطلة القصة 2 صار لها بطاقة بصورتها، مثل كل الأبطال');
+// ================= v27.9: a calmer world (fewer floating signs) =================
+// The streets were full of floating signs (shops, garages, places, missions), a big orange label for the quest and the
+// names of everybody around. Now:
+//  - the quest is a small 📍 pin with how far it is;
+//  - building, place and mission signs show only when you are near (30 m), at most 3 at a time, a little smaller,
+//    the nearest first and never on top of each other (signs for what you are doing right now always show);
+//  - people's names show when you are close to them (friends' names always show);
+//  - the guide at the top is one slim line that says just how far, who and where (230 m  King Brickley · Hero Castle).
+const SIGNS={c:[],on:false,shown:new Set(),R:30,N:3,nameR:9,lb:null,hud:null,hudAt:0};
+(function(){const st=document.createElement('style');st.id='signcss';st.textContent=`
+.tag.sign{font-size:15px;padding:1px 8px;box-shadow:0 2px 0 #b3223b;animation:signin .3s ease-out}
+.tag.sign.or{box-shadow:0 2px 0 #b35a10}.tag.sign.gr{box-shadow:0 2px 0 #22803a}
+@keyframes signin{from{opacity:0}to{opacity:1}}
+.tag.navpin{font-family:var(--display);font-weight:400;font-size:14px;letter-spacing:.03em;background:#ff8a1f;color:#fff;padding:1px 9px 1px 7px;border-radius:999px;box-shadow:0 2px 0 #b35a10}
+#navc{padding:1px 9px 1px 1px;gap:5px;border-width:2px;max-width:min(250px,44vw);box-shadow:0 3px 8px rgba(0,0,0,.22)}
+#navc .nca{width:19px;height:19px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+#navc .nca i{border-left-width:5px;border-right-width:5px;border-bottom-width:9px}
+#navc .nct{flex-direction:row;align-items:baseline;gap:5px}
+#navc .nct b{font-size:12px;flex:0 0 auto;white-space:nowrap}
+#navc .nct small{font-size:10.5px;min-width:0}
+body.ar #navc{padding:1px 1px 1px 9px}
+body.hudmin.navon #toasts{top:calc(36px + env(safe-area-inset-top,0px))}
+`;// the game's own styles sit in the page body, so these (and v27.8's, which lost to them) go after them
+  const h=document.getElementById('hudcss');if(h)document.body.appendChild(h);document.body.appendChild(st);})();
+// which signs always show (they are about what you are doing right now, or you are inside a place)
+function signKeep(k){return /^(navdst|swall|fence|eggs|pexit|czt|cz.+|crf.+|stn\d+|bin\d+)$/.test(k)||(!!ME&&ME.realm==='inside');}
+function signIs(c){return typeof c==='string'&&/(^|\s)sign(\s|$)/.test(c);}
+const SIGNNK={set:null,n:-1};
+function signNpcKey(k){if(typeof NPCS==='undefined')return false;if(!SIGNNK.set||SIGNNK.n!==NPCS.length){SIGNNK.set=new Set(NPCS.map(n=>'n'+n.id));SIGNNK.n=NPCS.length;}return SIGNNK.set.has(k);}
+{const _lb=label;SIGNS.lb=_lb;label=function(key,x,y,z,html,cls){
+  try{
+    if(key==='navdst'){const m=/·\s*([0-9]+)\s*m\s*$/.exec(String(html||''));if(m){html='📍 '+esc(trf('{0} m',m[1]));cls='navpin';}}
+    else if(SIGNS.on&&signIs(cls)&&!signKeep(key)){SIGNS.c.push([key,x,y,z,html,cls]);return;}
+    else if(SIGNS.on&&cls==='name'&&ME&&key.charCodeAt(0)===110&&signNpcKey(key)){
+      // a person's name: only up close (a little further when they have a ? for you)
+      const r=String(html||'').indexOf('var(--gold)')>=0?14:SIGNS.nameR;if(Math.hypot(x-ME.x,z-ME.z)>r)return;}
+  }catch(e){}
+  return _lb(key,x,y,z,html,cls);};}
+// how big a sign is on the screen (a guess from its words, so nothing has to be measured)
+function signSize(h){const t=String(h).replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&[a-z#0-9]+;/gi,'x');const ls=t.split('\n');let w=0;
+  for(const l of ls){let u=0;for(const ch of l){const c=ch.codePointAt(0);u+=c>0x2500?1.7:c===32?.5:1;}if(u>w)w=u;}return {w:18+w*9.4,h:4+ls.length*20};}
+function signsFlush(){const C=SIGNS.c,prev=SIGNS.shown,now=new Set();SIGNS.shown=now;if(!C.length||!ME)return;
+  const vw=innerWidth,vh=innerHeight,L=[];
+  // the hearts, the map, the guide and the buttons at the top: a sign never hides under them
+  const now_=performance.now();if(!SIGNS.hud||now_-SIGNS.hudAt>500){SIGNS.hudAt=now_;SIGNS.hud=[];for(const id of ['navc','hudmini','mini','pbtns','topc','me']){const e=$(id);if(!e||e.hidden)continue;const r=e.getBoundingClientRect();if(r.width>1&&r.height>1)SIGNS.hud.push({l:r.left,r:r.right,t:r.top,bt:r.bottom});}}
+  for(const s of C){const was=prev.has(s[0]);const d=Math.hypot(s[1]-ME.x,s[3]-ME.z);if(d>SIGNS.R+(was?3:0))continue;
+    const p=project(s[1],s[2],s[3]);if(!p||!p.vis||p.x<-60||p.x>vw+60||p.y<0||p.y>vh+60)continue;
+    L.push({s,d:d-(was?2:0),p,was});}
+  L.sort((a,b)=>a.d-b.d);const boxes=SIGNS.hud.slice();
+  for(const o of L){if(now.size>=SIGNS.N)break;const m=signSize(o.s[4]);const pad=o.was?-3:4;
+    const b={l:o.p.x-m.w/2,r:o.p.x+m.w/2,t:o.p.y-m.h,bt:o.p.y};
+    // never on top of a nearer sign
+    if(boxes.some(q=>b.l-pad<q.r&&b.r+pad>q.l&&b.t-pad<q.bt&&b.bt+pad>q.t))continue;
+    boxes.push(b);now.add(o.s[0]);SIGNS.lb(o.s[0],o.s[1],o.s[2],o.s[3],o.s[4],o.s[5]);}}
+{const _ul=updateLabels;updateLabels=function(dt){SIGNS.c.length=0;SIGNS.on=G.mode!=='title';try{_ul(dt);}finally{SIGNS.on=false;}
+  try{signsFlush();}catch(e){noteErr('signs',e);}};}
+// ---------- the guide at the top: just who and where ----------
+const GSH={out:null,lang:null,rules:null};
+function guideRules(){if(GSH.rules&&GSH.lang===LANG)return GSH.rules;GSH.lang=LANG;const R=[];
+  const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  // a sentence with {0} {1}... becomes a pattern; out says what is left of it ('{0}', '📖 {1}' ...)
+  const add=(tpl,out)=>{const t=tr(tpl),parts=t.split(/\{(\d)\}/),idx=[];let src='';
+    for(let i=0;i<parts.length;i++){if(i%2){idx.push(+parts[i]);src+='(.+?)';}else src+=reEsc(parts[i]);}
+    try{R.push({re:new RegExp('^([^\\p{L}\\p{N}\\s]+\\s)?'+src+'$','u'),idx,out});}catch(e){}};
+  add('New quest: talk to {0}','{0}');add('New mission: talk to {0}','{0}');add('Next: talk to {0}','{0}');add('Talk to {0}','{0}');
+  add('📖 Chapter {0}: talk to {1}','📖 {1}');add('Chapter {0}: {1}','{1}');add('🤝 Go to {0}','🤝 {0}');add('in {0}','{0}');
+  GSH.rules=R;return R;}
+function guidePart(part,depth){const R=guideRules();
+  for(const r of R){const m=r.re.exec(part);if(!m)continue;let o=r.out;r.idx.forEach((k,j)=>{o=o.split('{'+k+'}').join(m[j+2]);});o=o.replace(/\{\d\}/g,'').trim();
+    if(depth<2)o=guidePart(o,depth+1);return (m[1]&&!/^\p{Extended_Pictographic}/u.test(o)?m[1]:'')+o;}
+  // "Talk to Mayor Pip at Hero HQ" → "Mayor Pip at Hero HQ"
+  return part.replace(/^[Tt]alk to /,'').replace(/^تحد[ّ]?ث (مع|إلى) /,'');}
+function guideShort(s){return String(s).split(' · ').map(p=>guidePart(p,0)).join(' · ');}
+{const _gh=guideHud;guideHud=function(dt){_gh(dt);try{const el=$('navc');if(!el||el.hidden)return;const s=el.querySelector('.nct small');if(!s)return;
+  const t=s.textContent;if(t!==GSH.out){const o=guideShort(t);GSH.out=o;if(o!==t)s.textContent=o;}}catch(e){}};}
+// ---------- festivals say hello quietly: a small note at the top once a day, not a big title in the middle ----------
+// (finding the candies and the "Festival complete!" celebration are the same as before)
+function festHello(f,small){const day=new Date().toDateString()+'|'+f.id;let seen='';try{seen=localStorage.getItem('bb_festhi')||'';}catch(e){}if(seen===day)return;
+  try{localStorage.setItem('bb_festhi',day);}catch(e){}toast(f.ic+' '+tr(f.n)+(small?': '+tr(small):''));}
+{const _bn=banner;banner=function(big,small,color){try{const f=typeof FEST!=='undefined'&&FEST.cur;if(f&&big===f.ic+' '+tr(f.n)+'!'){festHello(f,small);return;}}catch(e){}return _bn.apply(this,arguments);};}
+MV('A calmer world','عالم أهدأ');MV("Fewer floating signs: shop, place and mission signs show when you are near, at most 3 at a time. Your quest is a small 📍 with how far it is, people's names show when you are close, the guide at the top is one short line, and festivals say hello with a small note once a day",'لافتات أقل في الهواء: لافتات المتاجر والأماكن والمهمات تظهر عندما تقترب منها، 3 على الأكثر في المرة. مهمتك علامة 📍 صغيرة مع المسافة، وأسماء الناس تظهر عندما تكون قريبًا منهم، والدليل في الأعلى سطر واحد قصير، والمهرجانات تُلقي التحية بملاحظة صغيرة مرة في اليوم');
 // ================= start =================
 boot();
 </script>
