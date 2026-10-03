@@ -1,0 +1,15 @@
+{
+  "name": "block-buddies-ipad",
+  "private": true,
+  "description": "Block Buddies as an iPad app (Capacitor). The GitHub workflow .github/workflows/ipad-app.yml installs these and builds the app on a Mac.",
+  "dependencies": {
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "latest",
+    "@fontsource/lilita-one": "latest",
+    "@fontsource/nunito": "latest",
+    "@fontsource/baloo-bhaijaan-2": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  }
+}

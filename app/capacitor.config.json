@@ -1,0 +1,12 @@
+{
+  "appId": "io.github.ahamze123.blockbuddies",
+  "appName": "Block Buddies",
+  "webDir": "www",
+  "backgroundColor": "#1c1846",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#1c1846",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false
+  }
+}

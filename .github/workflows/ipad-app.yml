@@ -1,0 +1,66 @@
+# Makes Block Buddies as an iPad app on a Mac (GitHub's macOS 26 runners, with Xcode 26), tries it on an iPad simulator,
+# and, once the Apple key is in the repository secrets, sends the build to App Store Connect (TestFlight).
+# Runs when app/build.json changes on main, or from the Actions tab ("Run workflow").
+# The pictures and logs go to the branch 'app-out' (not to the website).
+# Repository secrets for the upload (never put them in a file or a chat): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, APPLE_TEAM_ID.
+name: iPad app (App Store)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['app/build.json']
+permissions:
+  contents: write
+concurrency:
+  group: ipad-app
+  cancel-in-progress: false
+jobs:
+  app:
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      OUT: ${{ github.workspace }}/out
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Xcode
+        run: |
+          mkdir -p "$OUT"
+          xcodebuild -version | tee -a "$OUT/status.txt"
+      - name: The app's files and the Xcode project
+        working-directory: app
+        run: |
+          npm install --no-audit --no-fund
+          echo "Capacitor $(npx cap --version)" | tee -a "$OUT/status.txt"
+          python3 make_www.py --test | tee -a "$OUT/status.txt"
+          npx cap add ios --packagemanager SPM
+          npx cap sync ios
+          python3 ios_setup.py | tee -a "$OUT/status.txt"
+      - name: Try it on an iPad simulator
+        run: bash app/sim_test.sh
+      - name: Send it to App Store Connect (once the Apple key is in the secrets)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          if [ -z "$ASC_KEY_P8" ] || [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$APPLE_TEAM_ID" ]; then
+            echo "No Apple key in the secrets yet: no upload this time" | tee -a "$OUT/status.txt"; exit 0; fi
+          cd app
+          python3 make_www.py | tee -a "$OUT/status.txt"
+          npx cap copy ios
+          python3 ios_setup.py
+          bash upload.sh
+      - name: Save the pictures and logs (branch app-out)
+        if: always()
+        run: |
+          cd "$OUT"
+          git init -q
+          git checkout -q -b app-out
+          git add -A
+          git -c user.name=app-bot -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -qm "iPad app run ${{ github.run_number }}" || true
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" app-out
