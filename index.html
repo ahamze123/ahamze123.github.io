@@ -7713,8 +7713,9 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:53,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:54,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'✨',t:'A tidy screen',s:'Only your hearts, your coins and the map stay at the top. Tap ☰ to see everything else: your hero, golden bricks, Power Crystals and all the buttons. Tap the crystals to find out what they are. Hold ✋ to call your car shows only after you stand still for 10 seconds with no car near, and the places in Story 2 keep their colours (no more grey)'},
   {ic:'🌊',t:'The water park, better',s:'No flying needed: walk into a glass lift 🛗 to go up the tall rides, or take the stairs to the Racer and the giant duck. The Banana Boat has a new jetty on the beach and a loop in deep water. In the wave pool, press Make waves! and take a float to surf to the beach',go:()=>typeof WP!=='undefined'&&WP.ok?dd({x:WP.gate.x,z:WP.gate.z-3,label:tr('Humongous Water Park'),icon:'🌊',col:'#46c0ee'}):null},
   {ic:'📱',t:'Everything on one screen',s:'The first screen fits on the tablet: all your heroes on the right, Play on the left, and nothing to slide'},
   {ic:'👨‍👩‍👧',t:'Family codes',s:'Keep your online games private: Play online, Family code, Set a code. Type the same code on every tablet that plays together, and only those tablets see your games'},
@@ -10448,7 +10449,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.7';window.BB_VER=BB_VER;
+const BB_VER='27.8';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -14657,6 +14658,68 @@ if(window.BB_APP){
     for(const id of TRK.order)getSong(id);
     const _ld=trkLoad;trkLoad=function(id){if(!BLOB[id]){const p=getSong(id);if(p)p.then(()=>{if(BLOB[id]&&TRK.cur===id&&TRK.st==='load')_ld(id);});TRK.stT=performance.now();}return _ld(id);};}
 }
+// ================= v27.8: a tidy top of the screen =================
+// The top of the screen was still busy (the hero card, golden bricks, the Power Crystals, a row of buttons, a big guide and
+// the map). Now only small things stay: your hearts and coins (top left), the map (top right) and one ☰ button. Tap ☰ and
+// everything else opens (your hero card, golden bricks, Power Crystals, friends, every button and the menu); ✕ folds it
+// again, and so does using one of the buttons. The guide to where you are going is smaller and sits at the very top.
+// Tap the Power Crystals or the golden bricks to hear what they are.
+const HUDF={open:false};
+(function(){const st=document.createElement('style');st.id='hudcss';st.textContent=`
+#hudmini{order:-1;display:none;align-items:center;gap:8px;background:var(--panel);border-radius:999px;padding:4px 12px 4px 8px;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:auto;cursor:pointer;font-family:var(--display);font-size:16px;line-height:1;font-variant-numeric:tabular-nums;color:#fff}
+#hudmini .hearts{display:flex;gap:1px;margin:0;max-width:none;flex-wrap:nowrap}#hudmini .hrt{width:12px;height:10.5px}
+#hudmini .cn{width:16px;height:16px}#hudmini .fr{font-size:13px;opacity:.9}#hudmini .fr:empty{display:none}
+body.hudmin #hudmini{display:flex}
+body.hudmin #me,body.hudmin #topc,body.hudmin #friends{display:none!important}
+body.hudmin #pbtns>.ib:not(#bhud){display:none!important}
+#bfold{display:none!important}
+#pbtns>#bhud{display:grid!important}
+#bhud{font-size:20px;font-weight:900}
+@media (min-width:761px) and (min-height:501px){body.hudmin #mini{width:100px;height:100px}body.hudmin #pbtns{right:122px}}
+/* the guide: smaller, at the very top (a little lower when everything is open, under the buttons) */
+#navc{top:calc(62px + env(safe-area-inset-top,0px));gap:7px;padding:3px 13px 3px 3px;border-width:2px;max-width:min(360px,52vw)}
+#navc .nca{width:30px;height:30px}
+#navc .nca i{border-left-width:8px;border-right-width:8px;border-bottom-width:16px}
+#navc .nct b{font-size:15px}
+#navc .nct small{font-size:11px}
+body.hudmin #navc{top:calc(6px + env(safe-area-inset-top,0px))}
+body.hudmin.navlow #navc{top:calc(64px + env(safe-area-inset-top,0px))}
+body.ar #navc{padding:3px 3px 3px 13px}
+body.hudmin.navon #toasts{top:calc(56px + env(safe-area-inset-top,0px))}
+#topc .pill.tapme{pointer-events:auto;cursor:pointer}
+`;document.head.appendChild(st);})();
+function hudFoldSet(open,quiet){HUDF.open=!!open;document.body.classList.toggle('hudmin',!HUDF.open);const b=$('bhud');if(b){b.textContent=HUDF.open?'✕':'☰';b.title=tr(HUDF.open?'Fold away':'More');b.setAttribute('aria-label',b.title);}
+  // (the v27.5 fold is replaced by this one: its row is always 'open', and this fold decides what shows)
+  if(typeof TOPF!=='undefined'&&!TOPF.open&&typeof topFoldSet==='function')topFoldSet(true,true);if(!quiet&&SFX.click)SFX.click();}
+function hudFoldInit(){const pb=$('pbtns');if(!pb)return;let b=$('bhud');
+  if(!b){b=document.createElement('button');b.className='ib';b.id='bhud';b.type='button';b.addEventListener('click',e=>{e.stopPropagation();hudFoldSet(!HUDF.open);});
+    // using any other button in the row folds everything away again
+    pb.addEventListener('click',e=>{const t=e.target&&e.target.closest&&e.target.closest('.ib');if(t&&t.id!=='bhud'&&HUDF.open)setTimeout(()=>hudFoldSet(false,true),60);});}
+  if(b.parentNode!==pb||pb.lastElementChild!==b)pb.appendChild(b);hudFoldSet(HUDF.open,true);}
+// hearts and coins (and how many friends are with you) in one small pill
+function hudMini(){if(!ME)return;let el=$('hudmini');if(!el){const hud=$('hud');if(!hud)return;el=document.createElement('div');el.id='hudmini';el.innerHTML='<div class="hearts"></div><i class="cn"></i><span class="mc">0</span><span class="fr"></span>';
+    el.addEventListener('pointerdown',e=>e.stopPropagation());el.addEventListener('click',e=>{e.stopPropagation();hudFoldSet(true);});hud.appendChild(el);}
+  setH(el.querySelector('.hearts'),'hmh',heartsHTML(ME.hp,maxHp(prof())));const c=$('coinv'),t=c?c.textContent:'',mc=el.querySelector('.mc');if(mc.textContent!==t)mc.textContent=t;
+  const n=typeof netFriends==='function'?netFriends().length:0,ft=n?'👥 '+n:'',fr=el.querySelector('.fr');if(fr.textContent!==ft)fr.textContent=ft;}
+// what are the diamonds? tap them (and the golden bricks) to find out
+function hudExplain(){for(const p of document.querySelectorAll('#topc .pill')){if(p.dataset.ex)continue;const kind=p.querySelector('#crys')?'cr':p.querySelector('.gbi')?'gb':'';if(!kind)continue;p.dataset.ex=kind;p.classList.add('tapme');
+    p.addEventListener('pointerdown',e=>e.stopPropagation());
+    p.addEventListener('click',e=>{e.stopPropagation();SFX.click&&SFX.click();toast(kind==='cr'?'💎 '+tr('Power Crystals: the Glitch King stole all 5. Each one lights up when you win it back in a story chapter (📖)'):'🧱 '+tr('Golden bricks: hidden all over Blocktopia, each one needs a special hero move to reach. Find them all!'));});}}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const pb=$('pbtns'),b=$('bhud');if(pb&&(!b||pb.lastElementChild!==b))hudFoldInit();hudMini();hudExplain();}catch(e){noteErr('hud',e);}};}
+document.body.classList.add('hudmin');hudFoldInit();
+MV('More','المزيد');MV('Fold away','اطوِ');
+MV('Power Crystals: the Glitch King stole all 5. Each one lights up when you win it back in a story chapter (📖)','بلورات القوة: سرق ملك الخلل البلورات الخمس كلها. تضيء كل واحدة عندما تستعيدها في فصل من القصة (📖)');
+MV('Golden bricks: hidden all over Blocktopia, each one needs a special hero move to reach. Find them all!','الطوب الذهبي: مخبّأ في كل مكان في بلوكتوبيا، وكل واحد يحتاج حركة بطل خاصة لتصل إليه. اعثر عليها كلها!');
+// ---------- "Hold ✋ to call your car" only when it helps: you stand still for 10 seconds and no car is close by ----------
+// (holding ✋ with nothing near still calls the car any time; the prompt just stops popping up everywhere)
+const WHIS={still:0};
+function whistleShowOK(){const p=ME;if(!p||p.veh||p.swim||p.fly||!p.ground||WHIS.still<10)return false;for(const v of VEH){if(v.carried)continue;if(Math.abs(v.x-p.x)<26&&Math.abs(v.z-p.z)<26&&d2(v.x,v.z,p.x,p.z)<26)return false;}return true;}
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const p=ME;if(p){const sp=Math.hypot(p.vx||0,p.vz||0);WHIS.still=sp<.4&&!p.veh?WHIS.still+dt:0;}
+  const ia=G.ia;if(ia&&ia.k==='whistle'&&!(G.iaHold>0)&&!whistleShowOK()){const pe=$('prompt');if(pe&&!pe.hidden)pe.hidden=true;}}catch(e){}};}
+// ---------- Story 2 keeps the colours: the kids thought the grey places were a bug, so nothing goes grey any more ----------
+if(typeof s2GreyAt==='function'){s2GreyAt=function(){return 0;};}
+if(typeof S2!=='undefined'&&S2.sat0!==undefined)LOOK.sat=S2.sat0;
+MV('A tidy screen','شاشة مرتّبة');MV('Only your hearts, your coins and the map stay at the top. Tap ☰ to see everything else: your hero, golden bricks, Power Crystals and all the buttons. Tap the crystals to find out what they are. Hold ✋ to call your car shows only after you stand still for 10 seconds with no car near, and the places in Story 2 keep their colours (no more grey)','تبقى في الأعلى قلوبك وعملاتك والخريطة فقط. اضغط ☰ لترى كل شيء آخر: بطلك والطوب الذهبي وبلورات القوة وكل الأزرار. اضغط على البلورات لتعرف ما هي. رسالة اضغط ✋ لاستدعاء سيارتك تظهر فقط بعد أن تقف ساكنًا 10 ثوانٍ ولا توجد سيارة قريبة، والأماكن في القصة 2 تحتفظ بألوانها (لا مزيد من الرمادي)');
 // ================= v27.7: the first screen fits on the tablet, and the 3D heroes switch is gone =================
 // The kids had to slide down the first screen to reach Play (and the heroes list scrolled inside it too). Now on a tablet
 // lying sideways the heroes sit on the right, all of them at once, and Play is on the left under the name of the game.

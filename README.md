@@ -14,7 +14,7 @@ A brick hero adventure for kids, with two stories (8 chapters, then 6 more). It 
 - Playing online, you all play one story: it goes on from whoever is furthest along, and every chapter you finish together counts on every tablet, also when you play alone again. Commander Nova's rocket parts and the Moon quests are shared too. Each tablet gets its own prizes.
 
 ## Story 2: The Rainbow Thief
-- Opens when Story 1 is finished: Mayor Pip calls on the hero radio. **Professor Gloom** hates colours and fun. His grumpy grey airship circles over Brick City, and his Gloom Ray drains the colours from five places (they look grey while you are there, until you win their chapter).
+- Opens when Story 1 is finished: Mayor Pip calls on the hero radio. **Professor Gloom** hates colours and fun. His grumpy grey airship circles over Brick City, and his Gloom Ray is after the colours of five places (the places keep their colours on screen: the kids thought the grey was a bug).
 - Six chapters, each with a friend, a Rainbow Gem and a prize. The 📖 Story Book shows them under Story 1, with **Show me the way**:
   1. **The Silent Fun Park** (Ringmaster Rico at the Fun Park gate): chase the Grey Bots out of the park, then ride the roller coaster and grab the gem at the top. Prize: the Rainbow Cap.
   2. **The Lost Baby Animals** (Ranger Rosa, Mushroom Forest): your pet sniffs out 5 baby animals in grey cages (no pet? Rosa gives you a puppy); open every cage. Prize: a **Rainbow Foal** pet.
@@ -169,7 +169,8 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 - **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 
 ## Things to do
-- **The buttons at the top fold away**: only **☰** and a small **◀** show. Tap **◀** to open the row (🐾 🦸 🧱 ⇄ 😀 📸 📖) and **▶** to fold it again; each tablet remembers. The keys (H, B, Tab, T, C) work either way.
+- **A tidy screen**: only your hearts, your coins and the map show at the top, with one **☰**. Tap **☰** (or the hearts and coins) to open everything else: your hero card, golden bricks, the Power Crystals (tap the diamonds to hear what they are), friends online and all the buttons (🐾 🦸 🧱 ⇄ 😀 📸 📖 and the menu ☰). **✕** folds it again, and so does using one of the buttons. The keys (H, B, Tab, T, C, Esc) work either way. The guide that shows the way is small, at the very top.
+- With the **Car Whistle**, hold ✋ with nothing near to call your car. The reminder only shows after you stand still for 10 seconds with no car close by.
 - **No baddies roaming around**: you can explore in peace. Baddies only come in the missions, quests, story chapters and boss fights that need them.
 - About 100 quests from people with a **!** over their heads, or pick one on the castle's Quest Board.
 - **New missions** all over the islands: catch runaway chickens, kittens and baby dinos, put out forest fires (only a water hero can), melt frozen fountains (only a fire hero can), take photos, train like a knight, a sea swimming race, sunken treasure and more. Each one has its own prize: 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks.
