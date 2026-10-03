@@ -2996,8 +2996,11 @@ const Save = {
   photos() { try { return JSON.parse(localStorage.getItem(PHOTO_KEY)) || []; } catch (e) { return []; } },
   addPhoto(url) {
     const list = this.photos(); list.unshift({ d: url, at: Date.now() });
-    // keep the newest ones that fit (the tablet keeps only a few megabytes for a website)
-    for (let n = Math.min(list.length, 16); n > 0; n--) { try { localStorage.setItem(PHOTO_KEY, JSON.stringify(list.slice(0, n))); return true; } catch (e) {} }
+    // keep the newest ones that fit in a small budget: the tablet keeps only a few megabytes for the whole website,
+    // and Block Buddies (same website) needs room for its own save
+    let n = 0, size = 0;
+    while (n < list.length && n < 14 && size + list[n].d.length < 1500000) { size += list[n].d.length; n++; }
+    for (n = Math.max(1, n); n > 0; n--) { try { localStorage.setItem(PHOTO_KEY, JSON.stringify(list.slice(0, n))); return true; } catch (e) {} }
     return false;
   },
   removePhoto(at) { const list = this.photos().filter(p => p.at !== at); try { localStorage.setItem(PHOTO_KEY, JSON.stringify(list)); } catch (e) {} },
@@ -4316,14 +4319,14 @@ function canvasPoint(cv, e) { const r = cv.getBoundingClientRect(); return { x: 
 /* ---------- photos ---------- */
 function flash() { const f = el("div"); f.style.cssText = "position:absolute;inset:0;background:#fff;z-index:50;opacity:.9;transition:opacity .5s;pointer-events:none"; $("app").appendChild(f); requestAnimationFrame(() => f.style.opacity = "0"); setTimeout(() => f.remove(), 600); }
 function framePhoto(src, label) {
-  const S = 900, c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d");
+  const S = 760, c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d");
   const gr = g.createLinearGradient(0, 0, 0, S); gr.addColorStop(0, "#ffe3f1"); gr.addColorStop(1, "#e7ddff"); g.fillStyle = gr; g.fillRect(0, 0, S, S);
   const w = src.width, h = src.height, k = Math.min((S - 80) / w, (S - 150) / h), dw = w * k, dh = h * k;
   g.drawImage(src, (S - dw) / 2, 40 + (S - 150 - dh) / 2, dw, dh);
   g.strokeStyle = "#ffffff"; g.lineWidth = 26; g.strokeRect(13, 13, S - 26, S - 26);
   g.fillStyle = "#ff4f93"; g.font = "900 46px Grandstander, 'Comic Sans MS', sans-serif"; g.textAlign = "center"; g.fillText(label || "Princess Luna", S / 2, S - 50);
   for (let i = 0; i < 14; i++) drawSparkle(g, 40 + Math.random() * (S - 80), 40 + Math.random() * 60, 8 + Math.random() * 8, i % 2 ? "#ffd23f" : "#ffffff");
-  return c.toDataURL("image/jpeg", 0.82);
+  return c.toDataURL("image/jpeg", 0.78);
 }
 function snapWorld() {
   renderer.render(scene, camera);
