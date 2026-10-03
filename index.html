@@ -7677,8 +7677,11 @@ SONGS.dino={vol:0.12,bpm:98,key:55,minor:1,prog:[[0,'m7'],[-2,'M'],[3,'M'],[-4,'
 {const _pk=MUS.pickStyle.bind(MUS);MUS.pickStyle=function(){const w=_pk();if(w==='boss'||!ME||ME.realm==='inside'||ME.realm==='moon'||G.mode==='title')return w;
   if(DV.ok&&d2(ME.x,ME.z,DV.x,DV.z)<62)return 'dino';if(SKY.ok&&d2(ME.x,ME.z,SKY.x,SKY.z)<80&&ME.y>30)return 'sky';return w;};}
 // ================= "What's new": a card that shows returning players the new places, with a trail to each one =================
-const NEWS={ver:50,shown:false,t:0};G.newsSeen=G.newsSeen||0;
+const NEWS={ver:51,shown:false,t:0};G.newsSeen=G.newsSeen||0;
 function newsItems(){const dd=(o)=>o&&isFinite(o.x)?o:null;const CD=PLACEBY.castle&&PLACEBY.castle.door;return [
+  {ic:'◀',t:'Tidy buttons',s:'The buttons at the top fold away. Tap ◀ next to ☰ to open them, and ▶ to fold them again'},
+  {ic:'🛡️',t:'No more roaming baddies',s:'Baddies only come in missions, quests and boss fights now. Explore in peace!'},
+  {ic:'🪙',t:'Quieter coins and sea',s:'Coins make a soft little jingle, and the sea shore is calm: no more whooshing waves or clicking crabs'},
   {ic:'🔉',t:'Calmer sounds',s:'Walking and jumping are quiet now: no more bangs when you land, softer jumps, and not so many sounds at once. Footsteps are off (turn them on in Settings if you like them, now soft and light)'},
   {ic:'🐾',t:'Your pet, your choice',s:'Pets come out only when you call them: tap 🐾 and pick one. Tap 🐾 › 🏠 Send home to put your pet away. New pets from missions wait at home for you'},
   {ic:'🌈',t:'Captain Prism has her own card',s:'The Story 2 hero now has her picture card and her own 3D look, like every other hero'},
@@ -10408,7 +10411,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.4';window.BB_VER=BB_VER;
+const BB_VER='27.5';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -14515,6 +14518,56 @@ MV('Captain Prism has her own card','الكابتن بريزم لها بطاقت
 // cards/prism_card.jpg and prism_face.jpg (her face in the 🦸 roster and next to your name), models/prism.glb (made with Meshy
 // from her standing picture, tools/meshy/pics/prism.jpg, with the same moves as the other girls)
 if(typeof CARD_IDS!=='undefined')CARD_IDS.add('prism');
+// ================= v27.5: the buttons at the top fold away =================
+// The row of buttons at the top (🐾 🦸 🧱 ⇄ 😀 📸 📖 ⛶) was crowded. Now only ☰ and a small ◀ show: tap ◀ and the row opens
+// (the arrow turns into ▶), tap ▶ to fold it again. Each tablet remembers whether the row was open. The keys still work.
+const TOPF={open:false};
+try{TOPF.open=localStorage.getItem('bb_topopen')==='1';}catch(e){}
+{const st=document.createElement('style');st.textContent=`
+#pbtns.fold>.ib:not(#bfold):not(#bpause){display:none!important}
+#bfold{font-size:18px;font-weight:900}
+#pbtns.opening>.ib:not(#bfold):not(#bpause){animation:bbUnfold .22s ease-out both}
+@keyframes bbUnfold{from{opacity:0;transform:translateX(16px) scale(.7)}to{opacity:1;transform:none}}`;document.head.appendChild(st);}
+function topFoldSet(open,quiet){TOPF.open=!!open;const pb=$('pbtns');if(pb){pb.classList.toggle('fold',!TOPF.open);pb.classList.remove('opening');if(TOPF.open&&!quiet){void pb.offsetWidth;pb.classList.add('opening');}}
+  const b=$('bfold');if(b){b.textContent=TOPF.open?'▶':'◀';b.title=tr(TOPF.open?'Fold the buttons':'More buttons');b.setAttribute('aria-label',b.title);}
+  try{localStorage.setItem('bb_topopen',TOPF.open?'1':'0');}catch(e){}if(!quiet&&SFX.click)SFX.click();}
+function topFoldInit(){const pb=$('pbtns');if(!pb)return;let b=$('bfold');
+  if(!b){b=document.createElement('button');b.className='ib';b.id='bfold';b.addEventListener('click',e=>{e.stopPropagation();topFoldSet(!TOPF.open);});}
+  const bp=$('bpause');if(b.parentNode!==pb||b.nextSibling!==bp)pb.insertBefore(b,bp&&bp.parentNode===pb?bp:null);topFoldSet(TOPF.open,true);}
+topFoldInit();
+// other parts of the game add their buttons later (🐾 and others): keep the fold button right before ☰
+{const _uh=updateHUD;updateHUD=function(dt){_uh(dt);try{const pb=$('pbtns'),b=$('bfold'),bp=$('bpause');if(pb&&(!b||b.parentNode!==pb||(bp&&b.nextSibling!==bp)))topFoldInit();}catch(e){}};}
+MV('More buttons','المزيد من الأزرار');MV('Fold the buttons','اطوِ الأزرار');
+// ================= v27.5: no baddies roaming around =================
+// Baddies used to pop up all over the islands while you were just exploring (slimes in the fields, beetles in the forest,
+// robots and drones in the desert, ice slimes and yetis in the snow, crabs on the beach, slimes on the Moon), and they
+// chased you and attacked. Now baddies only come in the missions, quests, story chapters and boss fights that need them
+// (and the Boss of the Week when you ask Coach Tariq). Any roaming baddie still out there goes away in a puff of smoke.
+spawnAmbient=function(dt){for(let i=EN.length-1;i>=0;i--){const e=EN[i];if(e.tag||e.boss||e.gm||e.mirror||e.dead)continue;
+  try{smokePuff(e.x,(e.y||0)+.5,e.z,4,'#ffffff');}catch(_){}EN.splice(i,1);}};
+// ================= v27.5: quieter coins and a calmer sea shore =================
+// - coins: a softer, lower chime, much quieter (it was bright and loud); golden bricks and stickers a bit quieter too
+// - by the sea: no more "whoosh" every few seconds (the wave sound), no clicking when you walk past crabs, and a seal
+//   barks at most every 20 seconds, softer; swimming strokes are softer and slower
+const Q2={strokeT:-9,sealT:-99,sealSkip:false};
+{const _bk=SND.bank;SND.bank=function(c){_bk.call(this,c);try{const G0=this.G,T=Math.PI*2,E=Math.exp,S=Math.sin;
+  const bell=(d,sr,n,t0,f,dec,amp)=>{const i0=Math.floor(t0*sr);for(let i=i0;i<n;i++){const t=(i-i0)/sr;d[i]+=amp*(S(T*f*t)+.22*S(T*f*2.01*t)*E(-t*dec*1.5))*E(-t*dec)*Math.min(1,t/.002);}};
+  this.gen.coin=()=>this.mk(c,.24,(d,sr,n)=>{bell(d,sr,n,0,1319,30,.8);bell(d,sr,n,.05,1760,16,1);});
+  this.gen.coin2=()=>this.mk(c,.34,(d,sr,n)=>{[1175,1319,1760].forEach((f,k)=>bell(d,sr,n,k*.05,f,k<2?22:11,k<2?.7:1));});
+  this.gen.coin3=()=>this.mk(c,.56,(d,sr,n)=>{[1175,1319,1568,1760,2093].forEach((f,k)=>bell(d,sr,n,k*.05,f,k<4?18:7,.8));});
+  G0.coin=.075;G0.coin2=.085;G0.coin3=.1;G0.gold=.16;G0.stroke=.035;}catch(e){console.error('quiet coins',e);}};}
+{const _pl=SND.play;SND.play=function(name,v,rate,pan,delay){if(name==='wave')return true;
+  if(name==='stroke'){const now=performance.now()/1000;if(now-Q2.strokeT<.9&&now>=Q2.strokeT)return true;Q2.strokeT=now;}
+  return _pl.call(this,name,v,rate,pan,delay);};}
+// the sea animals' little sounds (from 90_ocean.js): crab clicks (two short square beeps) are gone; seal barks are rare and soft
+{const _t=AU.tone;AU.tone=function(f,d,type,v,...a){
+  if(type==='square'&&d===.04&&(f===1800||f===1700))return;
+  if(type==='sawtooth'&&d===.14&&(f===520||f===500)){if(f===520){const now=performance.now()/1000;Q2.sealSkip=now-Q2.sealT<20&&now>=Q2.sealT;if(!Q2.sealSkip)Q2.sealT=now;}if(Q2.sealSkip)return;v*=.6;}
+  return _t.call(this,f,d,type,v,...a);};}
+// ---------- what's new (Arabic) ----------
+MV('Tidy buttons','أزرار مرتبة');MV('The buttons at the top fold away. Tap ◀ next to ☰ to open them, and ▶ to fold them again','الأزرار في الأعلى تنطوي. اضغط ◀ بجانب ☰ لفتحها، و ▶ لطيّها مرة أخرى');
+MV('No more roaming baddies','لا مزيد من الأشرار المتجولين');MV('Baddies only come in missions, quests and boss fights now. Explore in peace!','الأشرار يظهرون الآن فقط في المهمات والتحديات ومعارك الزعماء. استكشف بسلام!');
+MV('Quieter coins and sea','عملات وبحر أهدأ');MV('Coins make a soft little jingle, and the sea shore is calm: no more whooshing waves or clicking crabs','العملات تصدر رنينًا ناعمًا صغيرًا، وشاطئ البحر هادئ: لا مزيد من صوت الأمواج المتكرر أو طقطقة السلطعونات');
 // ================= start =================
 boot();
 </script>

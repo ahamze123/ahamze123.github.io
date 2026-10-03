@@ -167,6 +167,8 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 - **Parachute**: jump out of a plane or helicopter and a parachute opens. Hold **⬇** to fall faster, or tap **🦸** to drop.
 
 ## Things to do
+- **The buttons at the top fold away**: only **☰** and a small **◀** show. Tap **◀** to open the row (🐾 🦸 🧱 ⇄ 😀 📸 📖) and **▶** to fold it again; each tablet remembers. The keys (H, B, Tab, T, C) work either way.
+- **No baddies roaming around**: you can explore in peace. Baddies only come in the missions, quests, story chapters and boss fights that need them.
 - About 100 quests from people with a **!** over their heads, or pick one on the castle's Quest Board.
 - **New missions** all over the islands: catch runaway chickens, kittens and baby dinos, put out forest fires (only a water hero can), melt frozen fountains (only a fire hero can), take photos, train like a knight, a sea swimming race, sunken treasure and more. Each one has its own prize: 12 hats, 4 pets (a chick, a fox, a seal pup and a little alien), emotes and golden bricks.
 - **People react to you**: people in the street wave and say hi, cheer when you beat baddies, run from monsters and shout "Watch out!" when you drive too fast. Some of them are quite funny.
@@ -192,7 +194,7 @@ A whole island of water fun, just south of Brick City's harbour: walk over the s
 - Cars in traffic don't beep. Your own horn is a soft, low toot, and jumping makes a soft swish.
 - People in the street cheer, say thank you and give friendly tips; they never say anything mean.
 - Walking is quiet: footsteps are off unless you turn on **Menu → Settings → Footsteps** (soft, light taps on grass, sand, snow and wood, at most about three a second). You hear birds in the trees, waves on the beach and wind up high.
-- Landings only make a sound after a real fall (not after every jump), jumps are soft, pets bark or purr by themselves at most every 25 seconds, coins picked up together make one jingle, and when lots happens at once the small sounds are left out.
+- Coins make a soft little jingle. The sea shore is calm (no whooshing waves, no clicking crabs; seals bark only now and then). Landings only make a sound after a real fall (not after every jump), jumps are soft, pets bark or purr by themselves at most every 25 seconds, coins picked up together make one jingle, and when lots happens at once the small sounds are left out.
 - Attacks, coins, doors, splashes and landings each have their own sound.
 
 ## Playing together online
