@@ -108,6 +108,10 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
   transition: opacity .5s; }
 .hint.gone, .hint.dlg { opacity: 0; pointer-events: none; }
 .mission.empty { visibility: hidden; }
+#cfYes.hold { position: relative; overflow: hidden; }
+#cfYes.hold i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,.5); }
+#cfYes.hold span { position: relative; }
+#cfYes.holding i { width: 100%; transition: width 1.7s linear; }
 .mission.bump { animation: mbump .9s ease-in-out 2; }
 @keyframes mbump { 0%, 100% { transform: translateX(-50%) scale(1); } 40% { transform: translateX(-50%) scale(1.14); } }
 
@@ -4739,10 +4743,16 @@ function openAlbum() {
     fill();
   }, { voice: "Here are your photos!" });
 }
-function askConfirm(title, text, yes) {
+function askConfirm(title, text, yes, opts = {}) {
   $("cfTitle").textContent = title; $("cfText").textContent = text; $("confirm").hidden = false;
-  $("cfYes").onclick = () => { $("confirm").hidden = true; yes(); };
-  $("cfNo").onclick = () => { $("confirm").hidden = true; };
+  const Y = $("cfYes"); Y.onclick = Y.onpointerdown = Y.onpointerup = Y.onpointerleave = Y.onpointercancel = null; Y.classList.remove("hold", "holding");
+  $("cfNo").onclick = () => { $("confirm").hidden = true; clearTimeout(askConfirm.t); };
+  if (!opts.hold) { Y.textContent = "Yes"; Y.onclick = () => { $("confirm").hidden = true; yes(); }; return; }
+  // for big things (starting the whole adventure again) the button has to be held down, so a little tap can't do it by mistake
+  Y.innerHTML = "<i></i><span>Hold to start over</span>"; Y.classList.add("hold");
+  Voice.say("Ask a grown-up first! To start again, hold the pink button.");
+  Y.onpointerdown = e => { e.preventDefault(); Y.classList.add("holding"); clearTimeout(askConfirm.t); askConfirm.t = setTimeout(() => { $("confirm").hidden = true; Y.classList.remove("holding"); yes(); }, 1700); };
+  Y.onpointerup = Y.onpointerleave = Y.onpointercancel = () => { Y.classList.remove("holding"); clearTimeout(askConfirm.t); };
 }
 
 /* ---------- decorate the cake with Honey (from the Candy Forest) ---------- */
@@ -4831,7 +4841,7 @@ $("btnPlay").onclick = () => {
   if (navigator.maxTouchPoints > 0 && !fsIOS() && fsAPI() && !fsApp() && !fsOn()) fsEnter();
   startGame();
 };
-const newAdventure = () => askConfirm("Start a new adventure?", "All the missions and stickers start again from the beginning. Your photos stay in the album.", () => { Save.reset(); location.reload(); });
+const newAdventure = () => askConfirm("Start a new adventure?", "All the missions and stickers start again from the beginning. Your photos stay in the album.", () => { Save.reset(); location.reload(); }, { hold: true });
 $("btnNew").onclick = newAdventure;
 $("btnAgain").onclick = newAdventure;
 $("btnExplore").onclick = () => { $("finale").hidden = true; $("hud").hidden = false; Game.party = false; luna.dancing = false; Sound.startMusic("explore"); setMission("👑", "Play anywhere you like!"); };
