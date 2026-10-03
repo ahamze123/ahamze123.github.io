@@ -16,7 +16,7 @@ A sparkly trail and a golden arrow always lead to the next friend or thing to fi
 
 **After the Grand Ball the game keeps going:** the friends ask for help again and again (carrots, eggs, balloons, stars, yarn, flowers, butterflies, seashells, pearls, starfish, lollipops, cupcakes, cookies, fish, snowballs), hidden in new places every time, each with a counting question, and every two helper missions a new dress (Peach, Ocean, Berry, Sunny, Lime, Violet). If she stands still for half a minute in the middle of a mission, the mission is said again.
 
-After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button). The menu (☰) has full screen, music, a photo of the game, the sticker book, the **magic map** to jump between the lands that are open, and Start over.
+After Stardust's ride Luna can ride the unicorn anywhere (Ride / Get off button). The menu (☰) has full screen, music, a photo of the game, the sticker book, a **dance party** (Luna dances, the friends nearby hop along, sparkles and fireworks), the **magic map** to jump between the lands that are open, and Start over (it has to be held down, so a little tap can't wipe the adventure).
 
 ## Luna's room
 
@@ -28,9 +28,10 @@ The 🏰 button (or **Go in** at the castle door) opens Luna's room:
 - **Piano**: play anything, or follow the shining key for Twinkle Twinkle, Mary's little lamb and Row your boat.
 - **Painting**: two colouring pages (tap a space to fill it) and a blank page with a brush.
 - **Bedtime**: five read-aloud stories with a lullaby, then morning or night time in the kingdom (night has stars and fireflies).
+- **Memory game**: turn two cards over and find the pairs of friends, from 6 cards up to 16.
 - **Day / night** window, the teddy to hug, the fairy lights, the sticker book and the photo album (photos from the wardrobe, the mirror, the painting easel or the game can be saved to the tablet).
 
-Six room activities give stickers too (34 stickers in all).
+Seven room activities give stickers too (35 stickers in all).
 
 ## Pictures and models
 

@@ -298,6 +298,19 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 .viewer { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: rgba(255,250,242,.97); padding: 12px; gap: 12px; grid-template-rows: 1fr auto; }
 .viewer img { max-width: 100%; max-height: 100%; border-radius: 18px; border: 8px solid #fff; box-shadow: 0 10px 30px var(--shadow); }
 .viewer .actions a { text-decoration: none; }
+/* memory game */
+.memo { flex: 1 1 auto; min-height: 0; display: grid; gap: 12px; justify-content: center; align-content: center; padding: 6px; }
+.card { position: relative; padding: 0; border: 0; background: none; perspective: 700px; }
+.card .in { position: absolute; inset: 0; transition: transform .35s; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
+.card.up .in { transform: rotateY(180deg); }
+.card .f, .card .b { position: absolute; inset: 0; border-radius: 22px; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: grid; place-items: center; overflow: hidden;
+  border: 5px solid #fff; box-shadow: 0 5px 0 rgba(44,23,69,.14), 0 8px 16px rgba(44,23,69,.14); }
+.card .b { background: linear-gradient(135deg, #ff8fc8, #b98cff); color: #fff; font-size: 40px; }
+.card .f { transform: rotateY(180deg); background: #fff; }
+.card .f img { width: 100%; height: 100%; object-fit: cover; }
+.card.done .f { box-shadow: 0 0 0 5px #ffd23f, 0 8px 18px rgba(44,23,69,.2); }
+.memo-win { display: flex; justify-content: center; min-height: 0; }
+.memo-win:empty { display: none; }
 .empty-note { font-family: var(--font-display); font-weight: 900; font-size: 22px; color: #8a6f9e; text-align: center; padding: 40px 12px; grid-column: 1 / -1; }
 
 @media (max-width: 760px), (max-aspect-ratio: 1/1) {
@@ -348,6 +361,7 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
       <button id="mMusic"><span>🎵</span><b id="mMusicTxt">Music: on</b></button>
       <button id="mPhoto"><span>📸</span>Take a photo</button>
       <button id="mStickers"><span>⭐</span>My stickers</button>
+      <button id="mDance"><span>💃</span>Dance party</button>
       <h3>MAGIC MAP</h3>
       <div class="lands" id="mLands"></div>
       <button id="mNew"><span>🌱</span>Start over</button>
@@ -396,6 +410,7 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
       <button class="pill go" id="roomOut">🚪 Go outside</button>
       <button class="pill" id="roomStickers">⭐ Stickers</button>
       <button class="pill" id="roomAlbum">📸 Photos</button>
+      <button class="pill" id="roomGames">🃏 Memory</button>
     </div>
   </div>
 
@@ -2953,7 +2968,7 @@ const SAVE_KEY = "luna-sk-v2", OLD_KEY = "luna-sparkle-kingdom-v1", PHOTO_KEY = 
 const START_UNLOCKED = ["dress_pink", "dress_blue", "dress_lilac", "dress_gold", "dress_mint", "dress_white", "crown_none", "crown_gold", "tiara_star", "wings_none", "wings_fairy", "wand_none", "wand_star", "necklace_none"];
 const Save = {
   data: null,
-  fresh() { return { v: 2, qi: 0, stickers: [], gems: 0, unlocked: START_UNLOCKED.slice(), outfit: Object.assign({}, OUTFIT_DEFAULT), look: JSON.parse(JSON.stringify(LOOK_DEFAULT)), open: {}, night: false, stories: 0, rideTip: 0, bonus: 0 }; },
+  fresh() { return { v: 2, qi: 0, stickers: [], gems: 0, unlocked: START_UNLOCKED.slice(), outfit: Object.assign({}, OUTFIT_DEFAULT), look: JSON.parse(JSON.stringify(LOOK_DEFAULT)), open: {}, night: false, stories: 0, rideTip: 0, bonus: 0, memo: 0 }; },
   load() {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
@@ -4801,6 +4816,99 @@ function openMinigame(game, done) {
   }, { voice: "Let's decorate the cake! Pick a colour for the icing, then put yummy things on top.", onClose: done, noClose: false });
 }
 
+/* ================= LITTLE GAMES: the memory card game in Luna's room, and a dance party anywhere in the kingdom ================= */
+ROOM_STICKERS.push({ id: "room_memory", who: "luna", sticker: "🃏", title: "Super memory" });
+
+/* ---------- memory: turn two cards over and find the pairs of friends ---------- */
+const MEMO_LEVELS = [{ pairs: 3, cols: 3, icon: "🌱" }, { pairs: 4, cols: 4, icon: "🌼" }, { pairs: 6, cols: 4, icon: "🌷" }, { pairs: 8, cols: 4, icon: "🌳" }];
+function shuffled(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function openMemory(level) {
+  if (level === undefined) level = Math.min(Save.data.memo || 0, MEMO_LEVELS.length - 1);
+  actOpen("🃏 Memory game", body => {
+    body.style.flexDirection = "column"; body.style.alignItems = "stretch";
+    const top = el("div", "tabs"); top.style.justifyContent = "center";
+    const grid = el("div", "memo"), msg = el("div", "memo-win", "");
+    body.append(top, grid, msg);
+    const tabs = MEMO_LEVELS.map((L, i) => { const b = el("button", "tab", "<span>" + L.icon + "</span>" + L.pairs * 2 + " cards"); b.onclick = () => { level = i; start(); Sound.fx.pop(); }; top.appendChild(b); return b; });
+    let first = null, lock = false, found = 0, cards = [], tries = 0;
+    function layout() {
+      const L = MEMO_LEVELS[level], rows = Math.ceil(L.pairs * 2 / L.cols), gap = 12;
+      const w = grid.clientWidth - 12, h = grid.clientHeight - 12;
+      const s = Math.max(56, Math.min(170, (w - gap * (L.cols - 1)) / L.cols, (h - gap * (rows - 1)) / rows));
+      grid.style.gridTemplateColumns = "repeat(" + L.cols + ", " + Math.floor(s) + "px)";
+      cards.forEach(c => { c.style.width = c.style.height = Math.floor(s) + "px"; });
+    }
+    function start() {
+      tabs.forEach((b, i) => b.classList.toggle("on", i === level));
+      grid.innerHTML = ""; msg.innerHTML = ""; first = null; lock = false; found = 0; tries = 0;
+      const L = MEMO_LEVELS[level], keys = shuffled(Object.keys(FRIEND_INFO)).slice(0, L.pairs);
+      cards = shuffled(keys.concat(keys)).map(k => {
+        const c = el("button", "card", '<div class="in"><div class="b">⭐</div><div class="f"><img alt="" src="' + PICS[FRIEND_INFO[k].pic] + '"></div></div>');
+        c.dataset.k = k; c.setAttribute("aria-label", "Card"); c.onclick = () => flip(c); grid.appendChild(c); return c;
+      });
+      requestAnimationFrame(layout);
+    }
+    function flip(c) {
+      if (lock || c.classList.contains("up")) return;
+      c.classList.add("up"); Sound.fx.swish(); Voice.say(FRIEND_INFO[c.dataset.k].name + "!");
+      if (!first) { first = c; return; }
+      const a = first; first = null; tries++;
+      if (a.dataset.k === c.dataset.k) {
+        found++;
+        setTimeout(() => {
+          a.classList.add("done"); c.classList.add("done"); Sound.fx.collect(Math.min(found, 8));
+          if (found === MEMO_LEVELS[level].pairs) win(); else Voice.say(["A pair!", "You found " + FRIEND_INFO[c.dataset.k].name + "!", "Yay, two the same!"][found % 3]);
+        }, 380);
+      } else {
+        lock = true;
+        setTimeout(() => { a.classList.remove("up"); c.classList.remove("up"); lock = false; }, 1100);
+      }
+    }
+    function win() {
+      Sound.fx.gem(); toast("Hooray!"); Voice.say("You found all the pairs! Super memory, Princess Luna!");
+      for (let i = 0; i < 18; i++) { const s = el("span", "", ["⭐", "💖", "✨", "🌸"][i % 4]); s.style.cssText = "position:absolute;left:" + (10 + Math.random() * 80) + "%;top:60%;font-size:34px;animation:noteup 1.6s ease-out forwards;animation-delay:" + (i * 0.06) + "s;pointer-events:none"; body.appendChild(s); setTimeout(() => s.remove(), 2200); }
+      roomSticker("room_memory");
+      if (level + 1 > (Save.data.memo || 0) && level + 1 < MEMO_LEVELS.length) { Save.data.memo = level + 1; Save.write(); }
+      const again = el("button", "ok", level + 1 < MEMO_LEVELS.length ? "More cards ▶" : "Play again ▶");
+      again.onclick = () => { if (level + 1 < MEMO_LEVELS.length) level++; start(); };
+      msg.appendChild(again);
+    }
+    const onResize = () => layout(); window.addEventListener("resize", onResize);
+    start();
+    return () => window.removeEventListener("resize", onResize);
+  }, { voice: "Let's play memory! Turn over two cards. Can you find two friends that are the same?" });
+}
+$("roomGames").onclick = () => { Sound.unlock(); Sound.fx.pop(); openMemory(); };
+
+/* ---------- dance party: Luna dances, friends nearby hop along, sparkles and party music ---------- */
+const Dance = { t: 0, beat: 0, moved: 0 };
+function danceParty() {
+  if (Game.mode !== "play" || Game.dialog || Game.party || Game.sledding || Room.open || Dance.t > 0) return;
+  if (Game.riding) dismountStardust();
+  Dance.t = 10; Dance.moved = 0; luna.dancing = true; player.vel.set(0, 0, 0);
+  Sound.startMusic("party"); Voice.say("Dance party! Everybody dance!");
+  FX.burst(new THREE.Vector3(player.pos.x, player.y + 1.5, player.pos.z), 60, ["#ff5f7e", "#ffe066", "#69db7c", "#74c0fc", "#b197fc", "#ffffff"], 5, 1.2, 2);
+}
+function updateDance(dt, t) {
+  if (Dance.t <= 0) return;
+  Dance.t -= dt;
+  // walking away ends the party
+  if (Math.hypot(player.vel.x, player.vel.z) > 1.2) Dance.moved += dt; else Dance.moved = 0;
+  if (Dance.t <= 0 || Dance.moved > 0.4 || Game.party || Game.dialog || Game.sledding) {
+    Dance.t = 0; if (!Game.party) { luna.dancing = false; Sound.startMusic(landAt(player.pos.x, player.pos.z) === "snow" ? "snow" : "explore"); }
+    return;
+  }
+  const beat = Math.floor(t * 2.2);
+  if (beat !== Dance.beat) {
+    Dance.beat = beat;
+    const cols = ["#ff5f7e", "#ffe066", "#69db7c", "#74c0fc", "#b197fc"], a = rand() * TAU;
+    FX.burst(new THREE.Vector3(player.pos.x + Math.cos(a) * 1.6, player.y + 2.2, player.pos.z + Math.sin(a) * 1.6), 14, [cols[beat % 5], "#ffffff"], 3, 0.9, 1.2);
+    for (const k in friends) { const f = friends[k], p = f.root.position; if ((beat + k.length) % 2 === 0 && distTo(p.x, p.z) < 16 && !(Game.riding && k === "stardust")) f.hop(1.6); }
+    if (beat % 9 === 0) launchFirework(player.pos.x + rr(-6, 6), player.pos.z + rr(-6, 6), 4);
+  }
+}
+$("mDance").onclick = () => { $("menu").hidden = true; Sound.unlock(); danceParty(); };
+
 /* ================= START: load the models, build the kingdom, title screen, menu, main loop ================= */
 function startGame() {
   Sound.unlock(); Sound.startMusic("explore");
@@ -4906,7 +5014,7 @@ function step(dt) {
   for (const k in friends) friends[k].update(dt, t);
   updatePet(dt, t);
   appleTree.update(t, dt); lanterns.forEach(L => L.update(t));
-  questUpdate(dt, t); questAfterUpdate(dt, t); updateParty(dt, t); bonusUpdate(dt);
+  questUpdate(dt, t); questAfterUpdate(dt, t); updateParty(dt, t); bonusUpdate(dt); updateDance(dt, t);
   World.update(t, dt); Beacon.update(t); TapMark.update(dt); GemPop.update(dt, t); FX.update(dt); BOOM.update(dt);
   Trail.update(t); updateGreetings(); updateAmbience(dt); updateBridges(dt, t); updateNight(dt, t); updateOutfit3D(t);
   if (LAND_DECOR.snowfall) LAND_DECOR.snowfall.update(t, dt);
