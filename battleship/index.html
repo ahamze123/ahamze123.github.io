@@ -112,7 +112,7 @@ html,body{height:100%;overflow:hidden}body{overscroll-behavior:none}main{height:
 'use strict';
 (()=>{
  const effects=window.BattleFX,reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;let flights=new Set();
- function launch(board,index){if(reduced)return Promise.resolve();return new Promise(resolve=>{const projectile=document.createElement('div'),muzzle=document.createElement('div');projectile.className='projectile';muzzle.className='muzzle';const flight={resolve,projectile,muzzle,cancelled:false};flights.add(flight);const finish=()=>{projectile.remove();muzzle.remove();flights.delete(flight);resolve();};function begin(){if(flight.cancelled)return;const cell=document.querySelector('#'+board+' [data-index="'+index+'"]'),target=cell?.getBoundingClientRect(),sourceBoard=document.getElementById(board==='enemy-board'?'own-board':'enemy-board'),source=sourceBoard.getBoundingClientRect();if(!target?.width||!source.width){finish();return;}let origin=source;if(board==='enemy-board'){const ship=state.own.ships.find(s=>!sunk(state.own,s));const sourceCell=ship&&document.querySelector('#own-board [data-index="'+ship.cells[Math.floor(ship.cells.length/2)]+'"]');const rect=sourceCell?.getBoundingClientRect();if(rect?.width)origin=rect;}const start={x:origin.x+origin.width/2,y:origin.y+origin.height/2},end={x:target.x+target.width/2,y:target.y+target.height/2},control={x:(start.x+end.x)/2+Math.min(55,Math.abs(end.y-start.y)*.15),y:(start.y+end.y)/2-45};muzzle.style.left=start.x+'px';muzzle.style.top=start.y+'px';document.body.append(muzzle,projectile);const born=performance.now();let smokeAt=0;function tick(now){if(flight.cancelled)return;const t=Math.min(1,(now-born)/820),u=1-t,x=u*u*start.x+2*u*t*control.x+t*t*end.x,y=u*u*start.y+2*u*t*control.y+t*t*end.y,dx=2*u*(control.x-start.x)+2*t*(end.x-control.x),dy=2*u*(control.y-start.y)+2*t*(end.y-control.y);projectile.style.left=x+'px';projectile.style.top=y+'px';const angle=Math.atan2(dy,dx);projectile.style.rotate=angle*180/Math.PI+'deg';if(now-smokeAt>45){effects.trail?.(x,y,angle);smokeAt=now;}if(t<1)requestAnimationFrame(tick);else finish();}requestAnimationFrame(tick);}requestAnimationFrame(()=>requestAnimationFrame(begin));});}
+ function launch(board,index,duration=820){if(reduced)return Promise.resolve();return new Promise(resolve=>{const projectile=document.createElement('div'),muzzle=document.createElement('div');projectile.className='projectile';muzzle.className='muzzle';const flight={resolve,projectile,muzzle,cancelled:false};flights.add(flight);const finish=()=>{projectile.remove();muzzle.remove();flights.delete(flight);resolve();};function begin(){if(flight.cancelled)return;const cell=document.querySelector('#'+board+' [data-index="'+index+'"]'),target=cell?.getBoundingClientRect(),sourceBoard=document.getElementById(board==='enemy-board'?'own-board':'enemy-board'),source=sourceBoard.getBoundingClientRect();if(!target?.width||!source.width){finish();return;}let origin=source;if(board==='enemy-board'){const ship=state.own.ships.find(s=>!sunk(state.own,s));const sourceCell=ship&&document.querySelector('#own-board [data-index="'+ship.cells[Math.floor(ship.cells.length/2)]+'"]');const rect=sourceCell?.getBoundingClientRect();if(rect?.width)origin=rect;}const start={x:origin.x+origin.width/2,y:origin.y+origin.height/2},end={x:target.x+target.width/2,y:target.y+target.height/2},control={x:(start.x+end.x)/2+Math.min(55,Math.abs(end.y-start.y)*.15),y:(start.y+end.y)/2-45};muzzle.style.left=start.x+'px';muzzle.style.top=start.y+'px';document.body.append(muzzle,projectile);const born=performance.now();let smokeAt=0;function tick(now){if(flight.cancelled)return;const t=Math.min(1,(now-born)/duration),u=1-t,x=u*u*start.x+2*u*t*control.x+t*t*end.x,y=u*u*start.y+2*u*t*control.y+t*t*end.y,dx=2*u*(control.x-start.x)+2*t*(end.x-control.x),dy=2*u*(control.y-start.y)+2*t*(end.y-control.y);projectile.style.left=x+'px';projectile.style.top=y+'px';const angle=Math.atan2(dy,dx);projectile.style.rotate=angle*180/Math.PI+'deg';if(now-smokeAt>45){effects.trail?.(x,y,angle);smokeAt=now;}if(t<1)requestAnimationFrame(tick);else finish();}requestAnimationFrame(tick);}requestAnimationFrame(()=>requestAnimationFrame(begin));});}
  const oldClear=effects.clear;effects.clear=()=>{for(const f of flights){f.cancelled=true;f.projectile.remove();f.muzzle.remove();f.resolve();}flights.clear();oldClear();};effects.launch=launch;
 
 })();
@@ -259,18 +259,18 @@ const context=document.modelContext;if(context?.registerTool){const lifecycle=ne
  const server=location.hostname.endsWith('.github.io')?'https://battleship-command.amer234.chatgpt.site':location.origin;
  const dialog=$('online-dialog'),storageKey='battleship-room-session';
  const baseReset=reset,baseStart=start,baseFire=fire;
- let room=null,busy=false,animating=false,pollTimer,generation=0,lastEvent=0,snapshot=null,connectionError=false;
+ let room=null,busy=false,animating=false,pollTimer,generation=0,lastEvent=0,snapshot=null,connectionError=false,unlockTimer;
  async function request(path,data,session=room){
    const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),9000);
    try{
      const response=await fetch(server+'/api/rooms'+path,{method:data===undefined?'GET':'POST',headers:{...(data===undefined?{}:{'Content-Type':'application/json'}),...(session?.token?{Authorization:'Bearer '+session.token}:{})},body:data===undefined?undefined:JSON.stringify(data),signal:abort.signal,cache:'no-store'});
      let result;try{result=await response.json();}catch{throw new Error('The room server could not be reached. Try again.');}
-     if(!response.ok)throw Object.assign(new Error(result.error||'The room server could not be reached.'),{status:response.status});return result;
+     if(!response.ok)throw Object.assign(new Error(result.error||'The room server could not be reached.'),{status:response.status});if(Number.isFinite(result.serverNow))result.localShotDeadline=Date.now()+Math.max(0,result.nextShotAt-result.serverNow);return result;
    }finally{clearTimeout(timeout);}
  }
  function storeSession(){try{if(room)sessionStorage.setItem(storageKey,JSON.stringify(room));else sessionStorage.removeItem(storageKey);}catch{}}
  function disconnect(forfeit=true){
-   const old=room;generation++;clearTimeout(pollTimer);room=null;snapshot=null;busy=false;animating=false;lastEvent=0;storeSession();
+   const old=room;generation++;clearTimeout(pollTimer);clearTimeout(unlockTimer);room=null;snapshot=null;busy=false;animating=false;lastEvent=0;storeSession();
    if(old&&forfeit)request('/'+old.code+'/leave',{},old).catch(()=>{});
    document.body.classList.remove('online-game');$('room-bar').hidden=true;document.querySelector('.mode').textContent='VS COMPUTER';$('start').innerHTML='Deploy & start battle <span aria-hidden="true">⊕</span>';$('shuffle').disabled=false;$('manual').disabled=false;
  }
@@ -283,8 +283,8 @@ const context=document.modelContext;if(context?.registerTool){const lifecycle=ne
    state.enemy.results=new Map(data.outgoing.map(e=>[e.index,e]));state.enemy.sunkCells=new Set(data.enemyRevealed.flatMap(s=>s.cells));state.enemy.afloat=5-data.enemySunk.length;
    state.turn=data.turn===data.slot?'player':'enemy';state.moves=data.outgoing.length;data.localShotDeadline??=Date.now()+Math.max(0,data.nextShotAt-data.serverNow);state.nextShotAt=data.localShotDeadline;state.action=null;state.aim=null;state.flightTarget=null;state.manual=data.ready?false:state.manual;
  }
- async function receive(data,replay=true){
-   const mine=generation;connectionError=false;if(snapshot&&(data.round||1)!==(snapshot.round||1)){baseReset();lastEvent=0;}hydrate(data);
+ async function receive(data,replay=true,launchedEventId=null){
+   const mine=generation;if(snapshot&&data.revision===snapshot.revision&&(data.round||1)===(snapshot.round||1)&&!connectionError&&replay){const wasLocked=Date.now()<state.nextShotAt;state.nextShotAt=data.localShotDeadline;if(wasLocked&&Date.now()>=state.nextShotAt&&state.turn==='player')render();return;}if(snapshot&&(data.round||1)===(snapshot.round||1)&&data.revision<snapshot.revision)return;connectionError=false;if(snapshot&&(data.round||1)!==(snapshot.round||1)){baseReset();lastEvent=0;}hydrate(data);
    const events=replay?data.events.filter(e=>e.id>lastEvent):[];
    lastEvent=data.events.at(-1)?.id||0;
    animating=events.length>0;if(!events.length)render();
@@ -295,24 +295,24 @@ const context=document.modelContext;if(context?.registerTool){const lifecycle=ne
      say(resultText(outgoing?'You':'Opponent',event.index,event),event.hit);
      {
        state.action=outgoing?'firing':'incoming';if(outgoing)state.aim=event.index;else{state.flightTarget=event.index;setView('own');}
-       render();window.BattleFX?.sound('shot');await window.BattleFX?.launch?.(target,event.index);
+       render();if(event.id!==launchedEventId){window.BattleFX?.sound('shot');await window.BattleFX?.launch?.(target,event.index,600);}
      }
      if(mine!==generation)return;
-     state.action=null;state.aim=null;state.flightTarget=null;render();window.BattleFX?.impact(target,event.index,event);if(event.hit)await new Promise(resolve=>setTimeout(resolve,event.sunk?1150:300));
+     state.action=null;state.aim=null;state.flightTarget=null;render();window.BattleFX?.impact(target,event.index,event);if(!outgoing&&event.hit)await new Promise(resolve=>setTimeout(resolve,event.sunk?450:180));
    }
    if(mine!==generation)return;
-   animating=false;hydrate(data);render();if(data.phase==='battle'&&state.turn==='player')setView('enemy');
+   animating=false;hydrate(data);render();clearTimeout(unlockTimer);const remaining=state.nextShotAt-Date.now();if(remaining>0&&data.phase==='battle'&&state.turn==='player')unlockTimer=setTimeout(()=>{if(mine===generation)render();},remaining+15);if(data.phase==='battle'&&state.turn==='player')setView('enemy');
    if(data.phase==='over'){
      say(data.winner===data.slot?(data.closed?'Your opponent left. You win!':'Victory! You sank the opposing fleet.'):'Battle ended. Your opponent won.',true);
      if(events.length)window.BattleFX?.sound(data.winner===data.slot?'victory':'defeat');
    }
  }
- function poll(){clearTimeout(pollTimer);if(!room)return;pollTimer=setTimeout(async()=>{
+ function poll(delay){clearTimeout(pollTimer);if(!room)return;const wait=delay??(document.hidden?1500:state.phase==='battle'?(state.turn==='enemy'?250:500):state.phase==='over'?1000:750);pollTimer=setTimeout(async()=>{
    const mine=generation;if(busy||animating){poll();return;}
-   try{const data=await request('/'+room.code);if(mine===generation)await receive(data);}
+   try{const data=await request('/'+room.code);if(mine===generation&&!busy&&!animating)await receive(data);}
    catch(error){if(mine===generation){connectionError=true;say(error.status===401||error.status===404?error.message:'Connection interrupted. Reconnecting…');decorate();}}
    finally{if(mine===generation)poll();}
- },1000);}
+ },wait);}
  async function enter(data,resuming=false){
    disconnect(false);baseReset();room={code:data.code,token:data.token,slot:data.slot};storeSession();document.body.classList.add('online-game');$('room-bar').hidden=false;dialog.close();
    await receive(data,!resuming);say(data.joined?'Connected. Deploy your fleet when ready.':'Room created. Copy the invite and send it to your friend.');poll();
@@ -328,7 +328,7 @@ const context=document.modelContext;if(context?.registerTool){const lifecycle=ne
      $('headline').textContent=d.ready?'Fleet deployed.':!d.joined?'Invite your opponent.':'Position your fleet.';
      $('instruction').textContent=d.ready?'Waiting for your friend to deploy.':'Arrange your ships, then select Deploy fleet.';
    }else if(d.phase==='battle'){
-     $('headline').textContent=busy?'Sending your shot…':animating?'Shot in progress…':state.turn==='player'?'Your turn. Take aim.':'Opponent’s turn.';
+     $('headline').textContent=busy&&state.action?'Missile away…':busy?'Syncing shot…':animating?'Shot in progress…':state.turn==='player'?'Your turn. Take aim.':'Opponent’s turn.';
      $('instruction').textContent=state.turn==='player'?'Tap an enemy square to fire.':'Waiting for your opponent to fire.';
    }else $('headline').textContent=d.winner===d.slot?'Victory. Ocean secured.':'Your opponent won.';
  }
@@ -343,8 +343,10 @@ const context=document.modelContext;if(context?.registerTool){const lifecycle=ne
  fire=function(i){
    if(!room)return baseFire(i);
    if(busy||animating||state.phase!=='battle'||state.turn!=='player'||Date.now()<state.nextShotAt||state.enemy.shots.has(i)||!Number.isInteger(i)||i<0||i>99)return false;
-   busy=true;render();const mine=generation;
-   state.pending=request('/'+room.code+'/fire',{index:i}).then(async data=>{if(mine===generation)await receive(data);}).catch(error=>{if(mine===generation)say(error.message);}).finally(()=>{if(mine===generation){busy=false;render();poll();}});
+   busy=true;const mine=generation;state.action='firing';state.aim=i;state.turn='enemy';render();window.BattleFX?.sound('shot');
+   const flight=Promise.resolve(window.BattleFX?.launch?.('enemy-board',i,600));
+   const result=request('/'+room.code+'/fire',{index:i});
+   state.pending=Promise.all([result,flight]).then(async([data])=>{if(mine!==generation)return;const event=data.events.find(e=>e.player===data.slot&&e.index===i);await receive(data,true,event?.id);}).catch(error=>{if(mine===generation){window.BattleFX?.clear();hydrate(snapshot);say(error.message);}}).finally(()=>{if(mine===generation){busy=false;render();poll(0);}});
    return true;
  };
  $('online').onclick=()=>{if(room){say('Room '+room.code+'. Select Copy invite to invite your friend.');return;}$('online-error').textContent='';dialog.showModal();};
