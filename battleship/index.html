@@ -47,7 +47,7 @@ html,body{height:100%;overflow:hidden}body{overscroll-behavior:none}main{height:
  let audio,master,enabled=true,frame=0,particles=[],rings=[];
  const voices=new Set(),samples=new Map(),decoding=new Set();
  const files={shot:'cannon',hit:'impact',sunk:'sinking',miss:'splash'};
- const downloads=typeof fetch==='function'?Object.entries(files).map(([kind,name])=>fetch('https://battleship-command.amer234.chatgpt.site/audio/'+name+'.wav?v=2').then(r=>{if(!r.ok)throw new Error('Audio unavailable');return r.arrayBuffer();}).then(bytes=>({kind,bytes})).catch(()=>null)):[];
+ const downloads=typeof fetch==='function'?Object.entries(files).map(([kind,name])=>fetch('https://battleship-command.amer234.chatgpt.site/api/sfx/'+name+'.wav?v=2').then(r=>{if(!r.ok)throw new Error('Audio unavailable');return r.arrayBuffer();}).then(bytes=>({kind,bytes})).catch(()=>null)):[];
  function prepareSamples(){if(!audio?.decodeAudioData)return;for(const pending of downloads)pending.then(item=>{if(!item||decoding.has(item.kind))return;decoding.add(item.kind);audio.decodeAudioData(item.bytes.slice(0)).then(buffer=>samples.set(item.kind,buffer)).catch(()=>{});});}
  function stopSound(){for(const voice of voices){try{voice.stop();}catch{}}voices.clear();}
  function sample(kind){const buffer=samples.get(kind);if(!buffer)return false;const source=audio.createBufferSource(),level=audio.createGain();source.buffer=buffer;level.gain.value=kind==='miss'?.42:.78;source.connect(level);level.connect(master||audio.destination);voices.add(source);source.onended=()=>voices.delete(source);source.start();return true;}
