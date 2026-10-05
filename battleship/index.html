@@ -33,6 +33,8 @@ html,body{height:100%;overflow:hidden}body{overscroll-behavior:none}main{height:
 
 @media(max-width:760px) and (orientation:landscape){body.online-game .boards{padding-bottom:72px}.room-bar{max-width:580px}#match-score{flex-basis:auto;letter-spacing:0}}
 
+.board{position:relative;background:radial-gradient(ellipse at 20% 30%,#23758d66,transparent 50%),radial-gradient(ellipse at 80% 75%,#104c6666,transparent 55%),repeating-linear-gradient(165deg,#17394b0d 0px,#17394b0d 8px,#5092a40d 9px,#17394b0d 11px),#081e2e;background-size:180% 160%;box-shadow:inset 0 0 45px #02142266;border-radius:6px}.cell{background:#0b293d80;border-color:#6c9bad26;border-radius:2px}.own .cell.ship{background:#12394c80;border-color:#75bdc338}.own .cell.ship:before{display:none}.cell.hit:not(.sunk){background:radial-gradient(circle,#1d1410 20%,#64301c 50%,#152b35 85%);border-color:#d781475c}.cell.hit:not(.sunk):after{color:#ffb67e;text-shadow:0 0 7px #ff6d2777}.cell.miss:after{color:#96cada}.ship-art{position:absolute;z-index:2;pointer-events:none;background-repeat:no-repeat;background-size:500% 100%;transform:translate(-50%,-50%) rotate(var(--ship-angle));filter:drop-shadow(1px 2px 2px #000b);transform-origin:center}.ship-art.wreck{opacity:.53;filter:grayscale(1) brightness(.5) drop-shadow(0 1px 2px #000b)}.cell.hit:after,.cell.sunk:after{z-index:4;position:relative}.ship-art.sinking-ship{animation:hull-sink 1s ease-in-out forwards}.projectile{box-shadow:0 0 4px #ffc175,0 0 9px #ff8a3366}.muzzle{width:24px;height:24px;box-shadow:0 0 14px #ffad5480,inset 0 0 12px #ffcd9566}@keyframes hull-sink{0%{opacity:1;filter:brightness(1.4)}35%{opacity:.85;filter:brightness(.7)}100%{opacity:.25;filter:grayscale(1) brightness(.4)}}@media(prefers-reduced-motion:reduce){.ship-art.sinking-ship{animation:none}}
+
 </style><style>
 .room-bar{display:flex;align-items:center;gap:10px;flex:none;border:1px solid #36515b;border-radius:8px;background:#0d2633;padding:6px 10px;font-size:13px}.room-bar strong{font-family:var(--mono);letter-spacing:2px;color:var(--teal)}.room-bar span{flex:1;min-width:0}.room-bar .quiet{padding:5px 9px;min-height:30px;font-size:12px}#online-dialog{width:min(390px,calc(100vw - 32px));padding:24px;background:#102333;color:#e5edf1;border:1px solid #416573;border-radius:14px}#online-dialog::backdrop{background:#02070be0}#online-dialog h2{margin:0 0 12px}#online-dialog p{line-height:1.5}#create-room{width:100%;margin:12px 0}.join-room{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0 20px}.join-room label{grid-column:1/-1;font-size:13px;color:var(--muted)}#join-code{min-width:0;width:100%;background:#061823;color:#fff;border:1px solid #517783;border-radius:6px;padding:10px;font:18px var(--mono);letter-spacing:3px;text-transform:uppercase}#online-error{color:#ffc49d;font-size:13px;min-height:18px}#close-online{width:100%}@media(max-width:760px){body.online-game .room-bar{gap:6px;padding:4px 8px;font-size:12px}body.online-game .command p:last-child{font-size:12px}.brand{display:none}header{justify-content:flex-end}.header-actions{width:100%;justify-content:space-between}.header-actions .quiet{padding:7px 8px}body.online-game .command{min-height:43px}body.online-game .transmission{min-height:32px}}@media(max-width:760px) and (orientation:landscape){.room-bar{position:absolute;bottom:8px;left:12px;right:12px;z-index:10;background:#061823e8;max-width:410px}body.online-game .boards{padding-bottom:37px}}
 
@@ -88,12 +90,13 @@ html,body{height:100%;overflow:hidden}body{overscroll-behavior:none}main{height:
   }
   if(!frame)frame=requestAnimationFrame(draw);
  }
- function impact(board,index,result,withSound=true){if(withSound)sound(result.sunk?'sunk':result.hit?'hit':'miss');burst(board,index,result.hit?'hit':'miss');if(result.sunk){const epoch=effectEpoch,f=board==='enemy-board'?state.enemy:state.own,ship=f.ships.find(s=>s.cells.includes(index));if(ship)ship.cells.forEach((i,n)=>{const cell=document.querySelector('#'+board+' [data-index="'+i+'"]');cell?.classList.add('sinking');if(cell)cell.style.setProperty('--sink-delay',n*55+'ms');setTimeout(()=>{if(epoch===effectEpoch)burst(board,i,'hit');},n*55);setTimeout(()=>cell?.classList.remove('sinking'),1100);});}}
- function fit(){for(const board of document.querySelectorAll('.board')){const area=board.parentElement.getBoundingClientRect();if(area.width&&area.height){const size=Math.max(1,Math.floor(Math.min(area.width,area.height)));board.style.width=size+'px';board.style.height=size+'px';}}}
+ function impact(board,index,result,withSound=true){if(withSound)sound(result.sunk?'sunk':result.hit?'hit':'miss');burst(board,index,result.hit?'hit':'miss');if(result.sunk){const epoch=effectEpoch,f=board==='enemy-board'?state.enemy:state.own,ship=f.ships.find(s=>s.cells.includes(index));if(ship){window.BattleShips?.sink(board,ship.cells[0]);const art=document.querySelector('#'+board+' .ship-art[data-start="'+ship.cells[0]+'"]');art?.classList.add('sinking-ship');setTimeout(()=>art?.classList.remove('sinking-ship'),1100);ship.cells.forEach((i,n)=>{const cell=document.querySelector('#'+board+' [data-index="'+i+'"]');cell?.classList.add('sinking');if(cell)cell.style.setProperty('--sink-delay',n*55+'ms');setTimeout(()=>{if(epoch===effectEpoch)burst(board,i,'hit');},n*55);setTimeout(()=>cell?.classList.remove('sinking'),1100);});}}}
+ function fit(){for(const board of document.querySelectorAll('.board')){const area=board.parentElement.getBoundingClientRect();if(area.width&&area.height){const size=Math.max(1,Math.floor(Math.min(area.width,area.height)));board.style.width=size+'px';board.style.height=size+'px';}}window.BattleShips?.paint();}
  let pending=false;function scheduleFit(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;fit();});}
  document.getElementById('sound').onclick=()=>{enabled=!enabled;if(!enabled){stopSound();if(master)master.gain.setValueAtTime(0,audio.currentTime);}else if(master)master.gain.setValueAtTime(.8,audio.currentTime);const b=document.getElementById('sound');b.textContent=enabled?'Sound on':'Sound off';b.setAttribute('aria-pressed',String(enabled));b.setAttribute('aria-label',enabled?'Mute sound':'Enable sound');if(enabled)sound('click');};
  document.addEventListener('pointerdown',unlock,{passive:true});document.addEventListener('keydown',unlock);window.addEventListener('resize',()=>{resize();scheduleFit();});window.visualViewport?.addEventListener('resize',scheduleFit);if(window.ResizeObserver){const observer=new ResizeObserver(scheduleFit);document.querySelectorAll('.board-wrap').forEach(el=>observer.observe(el));}resize();
- window.BattleFX={sound,stopSound,impact,fit:scheduleFit,clear:()=>{effectEpoch++;stopSound();particles=[];rings=[];if(frame)cancelAnimationFrame(frame);frame=0;ctx.clearRect(0,0,window.innerWidth,window.innerHeight);}};
+ function trail(x,y,angle){if(reduced)return;const now=performance.now();particles.push({kind:'smoke',x,y,vx:-Math.cos(angle)*12,vy:-Math.sin(angle)*12,size:2.4,color:'#a7b8c2',born:now,life:350});if(!frame)frame=requestAnimationFrame(draw);}
+ window.BattleFX={sound,stopSound,impact,trail,fit:scheduleFit,clear:()=>{effectEpoch++;stopSound();particles=[];rings=[];if(frame)cancelAnimationFrame(frame);frame=0;ctx.clearRect(0,0,window.innerWidth,window.innerHeight);}};
 })();
 
 </script><script>
@@ -109,7 +112,7 @@ html,body{height:100%;overflow:hidden}body{overscroll-behavior:none}main{height:
 'use strict';
 (()=>{
  const effects=window.BattleFX,reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;let flights=new Set();
- function launch(board,index){if(reduced)return Promise.resolve();return new Promise(resolve=>{const projectile=document.createElement('div'),muzzle=document.createElement('div');projectile.className='projectile';muzzle.className='muzzle';const flight={resolve,projectile,muzzle,cancelled:false};flights.add(flight);const finish=()=>{projectile.remove();muzzle.remove();flights.delete(flight);resolve();};function begin(){if(flight.cancelled)return;const cell=document.querySelector('#'+board+' [data-index="'+index+'"]'),target=cell?.getBoundingClientRect(),sourceBoard=document.getElementById(board==='enemy-board'?'own-board':'enemy-board'),source=sourceBoard.getBoundingClientRect();if(!target?.width||!source.width){finish();return;}let origin=source;if(board==='enemy-board'){const ship=state.own.ships.find(s=>!sunk(state.own,s));const sourceCell=ship&&document.querySelector('#own-board [data-index="'+ship.cells[Math.floor(ship.cells.length/2)]+'"]');const rect=sourceCell?.getBoundingClientRect();if(rect?.width)origin=rect;}const start={x:origin.x+origin.width/2,y:origin.y+origin.height/2},end={x:target.x+target.width/2,y:target.y+target.height/2},control={x:(start.x+end.x)/2+Math.min(55,Math.abs(end.y-start.y)*.15),y:(start.y+end.y)/2-45};muzzle.style.left=start.x+'px';muzzle.style.top=start.y+'px';document.body.append(muzzle,projectile);const born=performance.now();function tick(now){if(flight.cancelled)return;const t=Math.min(1,(now-born)/820),u=1-t,x=u*u*start.x+2*u*t*control.x+t*t*end.x,y=u*u*start.y+2*u*t*control.y+t*t*end.y,dx=2*u*(control.x-start.x)+2*t*(end.x-control.x),dy=2*u*(control.y-start.y)+2*t*(end.y-control.y);projectile.style.left=x+'px';projectile.style.top=y+'px';projectile.style.rotate=Math.atan2(dy,dx)*180/Math.PI+'deg';if(t<1)requestAnimationFrame(tick);else finish();}requestAnimationFrame(tick);}requestAnimationFrame(()=>requestAnimationFrame(begin));});}
+ function launch(board,index){if(reduced)return Promise.resolve();return new Promise(resolve=>{const projectile=document.createElement('div'),muzzle=document.createElement('div');projectile.className='projectile';muzzle.className='muzzle';const flight={resolve,projectile,muzzle,cancelled:false};flights.add(flight);const finish=()=>{projectile.remove();muzzle.remove();flights.delete(flight);resolve();};function begin(){if(flight.cancelled)return;const cell=document.querySelector('#'+board+' [data-index="'+index+'"]'),target=cell?.getBoundingClientRect(),sourceBoard=document.getElementById(board==='enemy-board'?'own-board':'enemy-board'),source=sourceBoard.getBoundingClientRect();if(!target?.width||!source.width){finish();return;}let origin=source;if(board==='enemy-board'){const ship=state.own.ships.find(s=>!sunk(state.own,s));const sourceCell=ship&&document.querySelector('#own-board [data-index="'+ship.cells[Math.floor(ship.cells.length/2)]+'"]');const rect=sourceCell?.getBoundingClientRect();if(rect?.width)origin=rect;}const start={x:origin.x+origin.width/2,y:origin.y+origin.height/2},end={x:target.x+target.width/2,y:target.y+target.height/2},control={x:(start.x+end.x)/2+Math.min(55,Math.abs(end.y-start.y)*.15),y:(start.y+end.y)/2-45};muzzle.style.left=start.x+'px';muzzle.style.top=start.y+'px';document.body.append(muzzle,projectile);const born=performance.now();let smokeAt=0;function tick(now){if(flight.cancelled)return;const t=Math.min(1,(now-born)/820),u=1-t,x=u*u*start.x+2*u*t*control.x+t*t*end.x,y=u*u*start.y+2*u*t*control.y+t*t*end.y,dx=2*u*(control.x-start.x)+2*t*(end.x-control.x),dy=2*u*(control.y-start.y)+2*t*(end.y-control.y);projectile.style.left=x+'px';projectile.style.top=y+'px';const angle=Math.atan2(dy,dx);projectile.style.rotate=angle*180/Math.PI+'deg';if(now-smokeAt>45){effects.trail?.(x,y,angle);smokeAt=now;}if(t<1)requestAnimationFrame(tick);else finish();}requestAnimationFrame(tick);}requestAnimationFrame(()=>requestAnimationFrame(begin));});}
  const oldClear=effects.clear;effects.clear=()=>{for(const f of flights){f.cancelled=true;f.projectile.remove();f.muzzle.remove();f.resolve();}flights.clear();oldClear();};effects.launch=launch;
 
 })();
@@ -218,6 +221,36 @@ const context=document.modelContext;if(context?.registerTool){const lifecycle=ne
   previousTurn=key;
  }
  window.BattleEnhancements={tap,rotate,decorate};render();
+})();
+
+</script><script>
+'use strict';
+(()=>{
+ const atlas=location.hostname.endsWith('.github.io')?'https://battleship-command.amer234.chatgpt.site/ship-atlas.png':'ship-atlas.png';
+ const sinking=new Map();
+ const crops=[[108,11,385,869],[454,11,698,873],[797,10,981,868],[1114,23,1323,868],[1455,22,1614,868]];
+ function paint(){
+  for(const [id,f,own] of [['own-board',state.own,true],['enemy-board',state.enemy,false]]){
+   const root=document.getElementById(id),box=root.getBoundingClientRect();
+   root.querySelectorAll('.ship-art').forEach(el=>el.remove());
+   if(!box.width)return;
+   for(const ship of f.ships){
+    const dead=sunk(f,ship);
+    // Enemy art is restricted to fully sunk ships, including after the battle.
+    if(!own&&!dead)continue;
+    const first=root.querySelector('[data-index="'+ship.cells[0]+'"]')?.getBoundingClientRect(),last=root.querySelector('[data-index="'+ship.cells.at(-1)+'"]')?.getBoundingClientRect();
+    if(!first?.width||!last?.width)continue;
+    const vertical=ship.cells[1]-ship.cells[0]===10,art=document.createElement('div');
+    art.className='ship-art'+(dead?' wreck':'')+((sinking.get(id+':'+ship.cells[0])||0)>Date.now()?' sinking-ship':'');art.dataset.start=ship.cells[0];art.setAttribute('aria-hidden','true');
+    const centerX=(first.x+last.x+last.width)/2-box.x,centerY=(first.y+last.y+last.height)/2-box.y;
+    art.style.left=centerX+'px';art.style.top=centerY+'px';art.style.width=(vertical?first.width:first.height)*.98+'px';art.style.height=(vertical?last.bottom-first.top:last.right-first.left)+'px';
+    const crop=crops[TYPES.findIndex(([name])=>name===ship.name)];if(!crop)continue;const w=crop[2]-crop[0],h=crop[3]-crop[1];
+    art.style.backgroundImage='url("'+atlas+'")';art.style.backgroundSize=(1774/w*100)+'% '+(887/h*100)+'%';art.style.backgroundPosition=(crop[0]/(1774-w)*100)+'% '+(crop[1]/(887-h)*100)+'%';
+    art.style.setProperty('--ship-angle',vertical?'0deg':'90deg');root.append(art);
+   }
+  }
+ }
+ window.BattleShips={paint,sink(id,start){sinking.set(id+':'+start,Date.now()+1100);paint();}};window.BattleFX?.fit();
 })();
 
 </script><script>
