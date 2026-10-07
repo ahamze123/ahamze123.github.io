@@ -10450,7 +10450,7 @@ function drawCaves(t){const P=PLACEBY.caves;if(!P||camRoom()!==P.room)return;con
 MAPX.prov.push((add,realm)=>{if(realm!=='earth'||!CAVE.mouth)return;add({id:'caves',cat:'place',x:CAVE.mouth.x,z:CAVE.mouth.z,ic:'💎',col:'#7ef9ff',t:tr('Crystal Caves'),s:tr('A glowing cave under the mountains'),pr:5});});
 MV('A glowing cave under the mountains','كهف يلمع تحت الجبال');
 MV('A glowing cave under the Frostpeak mountains, with crystal towers, giant mushrooms, bats and three golden bricks','كهف يلمع تحت جبال فروستبيك، فيه أبراج كريستال، وفطر عملاق، وخفافيش، وثلاث طوبات ذهبية');
-const BB_VER='27.9';window.BB_VER=BB_VER;
+const BB_VER='28.0';window.BB_VER=BB_VER;
 // ================= online: the host sees how friends join, and how many are playing =================
 function hostCard(){let el=$('hostcard');const now=performance.now();if(NET.role==='host'&&playerCount()>1){if(!NET.hcJoin)NET.hcJoin=now;else if(now-NET.hcJoin>15000)NET.hcHide=1;}else NET.hcJoin=0;
   let want=NET.role==='host'&&!NET.hcHide&&playerCount()<MAXP&&G.mode==='play';
@@ -14981,6 +14981,125 @@ MV('Surf a Wave','اركب موجة');
 MV('The water park, better','حديقة الماء صارت أفضل');MV('No flying needed: walk into a glass lift 🛗 to go up the tall rides, or take the stairs to the Racer and the giant duck. The Banana Boat has a new jetty on the beach and a loop in deep water. In the wave pool, press Make waves! and take a float to surf to the beach','لا حاجة للطيران: ادخل المصعد الزجاجي 🛗 لتصعد إلى الألعاب العالية، أو اصعد الدرج إلى السباق والبطة العملاقة. لقارب الموزة رصيف جديد على الشاطئ وجولة في الماء العميق. في بركة الأمواج اضغط اصنع أمواجًا! وخذ عوّامة لتركب الموج حتى الشاطئ');
 MV('Everything on one screen','كل شيء في شاشة واحدة');MV('The first screen fits on the tablet: all your heroes on the right, Play on the left, and nothing to slide','الشاشة الأولى تتسع في الجهاز: كل أبطالك على اليمين، واللعب على اليسار، ولا حاجة للسحب');
 MV('The Story 2 hero now has her own picture card, like every other hero','بطلة القصة 2 صار لها بطاقة بصورتها، مثل كل الأبطال');
+// ================= v28.0: the free game and the full game (the App Store app) =================
+// In the App Store app, Brick City and Mushroom Forest, with the first two story chapters, are free. One purchase opens
+// everything else for good: Canyon Desert, Frosty Peaks, Happy Farm, Glitch Island, the four towns, the Moon, the Sky
+// Kingdom and Story 2. A grown-up buys it behind a little sum (the parent check), Restore brings it back on another
+// iPad, and with Family Sharing every iPad in the family gets it. A friend who joins a full game online can go everywhere
+// with the host. The website is not touched: it stays the whole game for everybody.
+// The app also keeps a second copy of the save in its own storage (iOS can clear a web view's storage when an iPad is
+// very low on space); if the game's save is ever missing, it comes back from there.
+const FULL={id:'io.github.ahamze123.blockbuddies.full',on:!!window.BB_APP,owned:false,price:'',busy:false,loading:false,
+  panelAt:-1e9,endDay:'',gate:0,tries:0,why:'',need:0,prev:null};
+try{FULL.owned=localStorage.getItem('bb_full')==='1';FULL.endDay=localStorage.getItem('bb_fullend')||'';}catch(e){}
+function bbNative(m,o){const C=window.Capacitor;if(!C||typeof C.nativePromise!=='function')return Promise.reject(new Error('not in the app'));return C.nativePromise('BBStore',m,o||{});}
+// the free game: in your own world (a friend who joins a full game goes everywhere with the host)
+function fullLocked(){return FULL.on&&!FULL.owned&&!(typeof NET!=='undefined'&&NET.role==='guest');}
+// Canyon Desert and everything after it (they need chapter 2 or more); 0 = free
+function fullNeedAt(x,z,y){try{const n=areaNeed(x,z,y);return n>=2?n:0;}catch(e){return 0;}}
+function fullGot(quiet){if(FULL.owned)return;FULL.owned=true;try{localStorage.setItem('bb_full','1');}catch(e){}if(typeof SW!=='undefined')SW.cur=-1;fullClose();
+  if(!quiet){try{SFX.win&&SFX.win();}catch(e){}banner('🎉 '+tr('The whole world is open!'),tr('Thank you for getting the full game'),'#ffcf3a');}
+  try{const pb=$('pm_full');if(pb)pb.remove();}catch(e){}}
+function fullLost(){if(!FULL.owned)return;FULL.owned=false;try{localStorage.removeItem('bb_full');}catch(e){}if(typeof SW!=='undefined')SW.cur=-1;}
+// ---------- the edge of the free game: the same glowing fence as the story's, and a gentle push back ----------
+const FLK={safe:null,msgT:0};
+function fullLock(dt){FLK.msgT-=dt;const p=ME;if(!p||!fullLocked()||p.realm==='inside')return;const v=p.veh,x=v?v.x:p.x,z=v?v.z:p.z;const need=fullNeedAt(x,z,p.y);
+  if(!need){FLK.safe={x,z};return;}if(typeof storyExempt==='function'&&storyExempt())return;
+  const s=FLK.safe;if(s&&Math.hypot(s.x-x,s.z-z)<40){if(v){v.x=s.x;v.z=s.z;v.spd=-(v.spd||0)*.3;if(v.vx!==undefined){v.vx*=-.3;v.vz*=-.3;}p.x=v.x;p.z=v.z;}else{p.x=s.x;p.z=s.z;p.vx*=-.4;p.vz*=-.4;}}
+  else{if(v)exitVeh(p);const H0=LOC.hq;teleport(H0.x,H0.z+4);FLK.safe=null;}
+  if(FLK.msgT<=0){FLK.msgT=6;try{SFX.nope();}catch(e){}toast('🔒 '+trf('{0} is in the full game',tr(AREANAME[need]||'')));
+    if((G.t||0)-FULL.panelAt>45)setTimeout(()=>{if(G.mode==='play'&&fullLocked())fullPanel('wall',need);},700);}}
+{const _um=updateMe;updateMe=function(dt,inp){_um(dt,inp);try{fullLock(dt);}catch(e){noteErr('flock',e);}};}
+// the story's force-field fences also stand around the full game (as if only chapter 1 was done)
+if(typeof storyWallsBuild==='function'){const _sw=storyWallsBuild;storyWallsBuild=function(){if(!fullLocked())return _sw.apply(this,arguments);const sd=storyDone;
+  storyDone=function(){return Math.min(sd(),1);};try{return _sw.apply(this,arguments);}finally{storyDone=sd;}};}
+// ---------- the full game panel: for the kids (what's inside), the grown-up check, then the App Store ----------
+(function(){const st=document.createElement('style');st.id='fullcss';st.textContent=`
+#fullbox .mbox{max-width:min(480px,94vw)}
+#fullbox h2{margin:0;font-family:var(--display);font-weight:400}
+#fullbox .fl{display:flex;flex-direction:column;gap:6px}
+#fullbox .fl div{display:flex;align-items:center;gap:10px;background:var(--panel2);border-radius:12px;padding:7px 10px;font-weight:800;font-size:15px}
+#fullbox .fl i{font-style:normal;font-size:22px}
+#fullbox .fq{font-family:var(--display);font-size:34px;text-align:center;direction:ltr}
+#fullbox input{font-size:26px;text-align:center;padding:8px;border-radius:12px;border:0;direction:ltr;width:100%;box-sizing:border-box}
+#fullbox .fm{text-align:center;font-weight:800}
+#fullbox .big[disabled]{opacity:.6}
+#pm_full{background:linear-gradient(90deg,#ffcf3a,#ff9f1c);color:var(--ink)}
+`;document.body.appendChild(st);})();
+const FULL_LIST=()=>[['🏜️','6 more story chapters: Canyon Desert, Frosty Peaks, Happy Farm and Glitch Island'],['🚀','The Moon and the Sky Kingdom'],
+  ['🚆','Four more towns to visit by train'],['📖','Story 2, a whole new adventure'],['🦸','Lots more heroes to unlock']];
+function fullPanel(why,need){if(!FULL.on||FULL.owned)return;FULL.panelAt=G.t||0;FULL.why=why||'menu';FULL.need=need||0;let m=$('fullbox');
+  if(!m){m=document.createElement('div');m.className='modal';m.id='fullbox';m.hidden=true;m.innerHTML='<div class="mbox" id="fullin"></div>';document.body.appendChild(m);
+    for(const ev of ['pointerdown','touchstart','keydown'])m.addEventListener(ev,e=>e.stopPropagation());}
+  if(m.hidden){FULL.prev=G.mode==='play'?'play':null;if(G.mode==='play')G.mode='menu';}m.hidden=false;fullKid();}
+function fullClose(){const m=$('fullbox');if(m&&!m.hidden){m.hidden=true;if(FULL.prev==='play'&&G.mode==='menu'&&$('pause').hidden)G.mode='play';}FULL.prev=null;}
+function fullKid(){const B=$('fullin');if(!B)return;const head=FULL.why==='end'?tr('You finished the free part!'):FULL.why==='wall'?trf('{0} is in the full game',tr(AREANAME[FULL.need]||'')):tr('The full game');
+  B.innerHTML=`<h2>🌍 ${esc(head)}</h2><div class="small">${esc(tr('Ask a grown-up to open all of Blocktopia, for good:'))}</div>
+    <div class="fl">${FULL_LIST().map(([ic,t])=>`<div><i>${ic}</i>${esc(tr(t))}</div>`).join('')}</div>
+    <button class="big" id="fp_grown">🔒 ${esc(tr('For grown-ups'))}</button><button class="mb" id="fp_no">${esc(tr('Not now'))}</button>`;
+  $('fp_grown').onclick=()=>{SFX.click&&SFX.click();FULL.tries=0;fullGate('');};$('fp_no').onclick=()=>{SFX.click&&SFX.click();fullClose();};}
+// the grown-up check: a sum that little ones can't do yet (any digits work, Arabic ones too)
+function fullGate(msg){const B=$('fullin');if(!B)return;const a=11+Math.floor(Math.random()*9),b=3+Math.floor(Math.random()*7);FULL.gate=a*b;
+  B.innerHTML=`<h2>🔒 ${esc(tr('For grown-ups'))}</h2><div class="small">${esc(tr('So little ones can\'t buy by mistake, please answer:'))}</div>
+    <div class="fq">${a} × ${b} = ?</div><input id="fp_ans" type="text" inputmode="numeric" autocomplete="off" maxlength="4">
+    ${msg?`<div class="small fm" style="color:#ffb0b0">${esc(msg)}</div>`:''}
+    <button class="big" id="fp_ok">${esc(tr('OK'))}</button><button class="mb" id="fp_back">${esc(tr('Back'))}</button>`;
+  const inp=$('fp_ans');setTimeout(()=>{try{inp.focus();}catch(e){}},60);
+  const go=()=>{const v=parseInt(String(inp.value).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))),10);
+    if(v===FULL.gate){FULL.tries=0;fullBuy('');}else{FULL.tries++;if(FULL.tries>=3){FULL.tries=0;fullKid();}else fullGate(tr('That is not right. Try this one:'));}};
+  $('fp_ok').onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});$('fp_back').onclick=()=>fullKid();}
+function fullBuy(msg){const B=$('fullin');if(!B)return;const p=FULL.price;
+  const label=FULL.busy?tr('Talking to the App Store…'):p?trf('Unlock everything · {0}',p):tr('Getting the price…');
+  B.innerHTML=`<h2>⭐ ${esc(tr('The full game'))}</h2><div class="small">${esc(tr('Everything in Blocktopia, for good. One payment: no ads and nothing else to buy. With Family Sharing, every iPad in your family gets it.'))}</div>
+    <button class="big" id="fp_buy" ${FULL.busy||!p?'disabled':''}>${esc(label)}</button><button class="mb" id="fp_restore" ${FULL.busy?'disabled':''}>↩️ ${esc(tr('Restore purchase'))}</button>
+    ${msg?`<div class="small fm">${esc(msg)}</div>`:''}<button class="mb" id="fp_close">${esc(tr('Close'))}</button>`;
+  $('fp_buy').onclick=fullDoBuy;$('fp_restore').onclick=fullDoRestore;$('fp_close').onclick=()=>fullClose();
+  if(!p&&!FULL.busy&&!FULL.loading)fullPrice();}
+function fullOnBuy(){return !!$('fp_buy')&&!$('fullbox').hidden;}
+function fullPrice(){FULL.loading=true;bbNative('products',{ids:[FULL.id]}).then(r=>{FULL.loading=false;const q=(r&&r.products||[]).find(x=>x&&x.id===FULL.id);
+    if(q&&q.price){FULL.price=String(q.price);if(fullOnBuy())fullBuy('');}else if(fullOnBuy())fullBuy(tr('The full game is not in the App Store yet. Please try again later.'));})
+  .catch(()=>{FULL.loading=false;if(fullOnBuy())fullBuy(tr('The App Store is not answering. Check the internet and try again.'));});}
+function fullDoBuy(){if(FULL.busy||!FULL.price)return;SFX.click&&SFX.click();FULL.busy=true;fullBuy('');
+  bbNative('buy',{id:FULL.id}).then(r=>{FULL.busy=false;if(r&&r.ok)fullGot(false);else if(r&&r.pending)fullBuy(tr('Waiting for the family organizer to say yes. The game opens by itself when they do.'));else fullBuy('');})
+  .catch(()=>{FULL.busy=false;fullBuy(tr('The purchase did not go through. Please try again.'));});}
+function fullDoRestore(){if(FULL.busy)return;SFX.click&&SFX.click();FULL.busy=true;fullBuy('');
+  bbNative('restore',{}).then(r=>{FULL.busy=false;if(r&&(r.ids||[]).includes(FULL.id))fullGot(false);else fullBuy(tr('No full game was found for this Apple Account.'));})
+  .catch(()=>{FULL.busy=false;fullBuy(tr('The App Store is not answering. Check the internet and try again.'));});}
+// ⭐ The full game in the menu (until it's yours)
+{const _rp=renderPause;renderPause=function(){const r=_rp.apply(this,arguments);try{if(PTAB!=='main'||!FULL.on||FULL.owned||$('pm_full'))return r;const after=$('pm_resume');if(!after)return r;
+  const b=document.createElement('button');b.className='mb';b.id='pm_full';b.innerHTML='⭐ '+esc(tr('The full game'));b.onclick=()=>fullPanel('menu',0);after.insertAdjacentElement('afterend',b);}catch(e){noteErr('fullmenu',e);}return r;};}
+// after chapter 2 (the end of the free part): show what's next, once a day
+{const _su=statusUpdate;statusUpdate=function(dt){_su(dt);try{if(fullLocked()&&G.mode==='play'&&!(typeof DLG!=='undefined'&&DLG)&&storyDone()>=2){const day=new Date().toDateString();
+    if(FULL.endDay!==day){FULL.endDay=day;try{localStorage.setItem('bb_fullend',day);}catch(e){}setTimeout(()=>{if(G.mode==='play'&&fullLocked())fullPanel('end',0);},8000);}}
+  if(FULL.on&&(G.t||0)-FBK.chk>30){FBK.chk=G.t||0;fullBackup(false);}}catch(e){}};}
+// ---------- what this Apple Account owns (on start, and when a purchase arrives later or is refunded) ----------
+function fullCheck(){if(!FULL.on)return;bbNative('owned',{id:FULL.id}).then(r=>{const ids=r&&r.ids||[];if(ids.includes(FULL.id))fullGot(true);else if((r&&r.revoked||[]).includes(FULL.id))fullLost();}).catch(()=>{});}
+if(FULL.on){setTimeout(fullCheck,1500);try{const C=window.Capacitor;if(C&&typeof C.addListener==='function')C.addListener('BBStore','owned',d=>{if(!d||d.id!==FULL.id)return;if(d.revoked)fullLost();else fullGot(false);});}catch(e){}}
+// ---------- the second copy of the save, in the app's own storage ----------
+const FBK={t:0,last:'',chk:0};
+function fullBackup(force){if(!FULL.on)return;let save='';try{save=localStorage.getItem(SAVE_KEY)||'';}catch(e){}if(!save||save===FBK.last)return;const now=performance.now();if(!force&&now-FBK.t<15000)return;
+  FBK.t=now;FBK.last=save;let lang='',fam='';try{lang=localStorage.getItem('bb2_lang')||'';fam=localStorage.getItem('bb_family')||'';}catch(e){}
+  bbNative('backupWrite',{data:JSON.stringify({v:1,t:Date.now(),save,lang,fam})}).catch(()=>{FBK.last='';});}
+{const _sg=saveGame;saveGame=function(){const r=_sg.apply(this,arguments);try{fullBackup(false);}catch(e){}return r;};}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)try{fullBackup(true);}catch(e){}});
+// the game's save is missing (cleared by iOS)? bring it back from the copy, then start again
+if(FULL.on){let has=false,again=false;try{has=!!localStorage.getItem(SAVE_KEY);again=!!sessionStorage.getItem('bb_fromBackup');}catch(e){}
+  if(!has&&!again)bbNative('backupRead',{}).then(r=>{let d=null;try{d=r&&r.data?JSON.parse(r.data):null;}catch(e){}if(!d||!d.save)return;let still=false;try{still=!!localStorage.getItem(SAVE_KEY);}catch(e){}if(still)return;
+    try{localStorage.setItem(SAVE_KEY,d.save);if(d.lang)localStorage.setItem('bb2_lang',d.lang);if(d.fam)localStorage.setItem('bb_family',d.fam);sessionStorage.setItem('bb_fromBackup','1');}catch(e){return;}location.reload();}).catch(()=>{});}
+// ---------- Arabic ----------
+MV('The full game','اللعبة الكاملة');MV('You finished the free part!','أنهيت الجزء المجاني!');MV('{0} is in the full game','{0} في اللعبة الكاملة');
+MV('Ask a grown-up to open all of Blocktopia, for good:','اطلب من أحد الكبار أن يفتح عالم بلوكتوبيا كله نهائيًا:');
+MV('6 more story chapters: Canyon Desert, Frosty Peaks, Happy Farm and Glitch Island','6 فصول أخرى من القصة: صحراء الوادي والقمم الجليدية والمزرعة السعيدة وجزيرة الخلل');
+MV('The Moon and the Sky Kingdom','القمر ومملكة السماء');MV('Four more towns to visit by train','أربع مدن أخرى تزورها بالقطار');MV('Story 2, a whole new adventure','القصة 2، مغامرة جديدة كاملة');
+MV('Lots more heroes to unlock','أبطال كثيرون آخرون لتفتحهم');MV('For grown-ups','للكبار');MV('Not now','ليس الآن');
+MV('So little ones can\'t buy by mistake, please answer:','حتى لا يشتري الصغار بالخطأ، أجب من فضلك:');MV('That is not right. Try this one:','هذا غير صحيح. جرّب هذه:');
+MV('Talking to the App Store…','جارٍ التواصل مع متجر App Store…');MV('Unlock everything · {0}','افتح كل شيء · {0}');MV('Getting the price…','جارٍ جلب السعر…');
+MV('Everything in Blocktopia, for good. One payment: no ads and nothing else to buy. With Family Sharing, every iPad in your family gets it.','كل شيء في بلوكتوبيا نهائيًا. دفعة واحدة: بلا إعلانات ولا شيء آخر للشراء. ومع المشاركة العائلية يحصل عليها كل آيباد في عائلتك.');
+MV('Restore purchase','استعادة الشراء');MV('The full game is not in the App Store yet. Please try again later.','اللعبة الكاملة ليست في متجر App Store بعد. حاول مرة أخرى لاحقًا.');
+MV('The App Store is not answering. Check the internet and try again.','متجر App Store لا يستجيب. تحقق من الإنترنت وحاول مرة أخرى.');
+MV('Waiting for the family organizer to say yes. The game opens by itself when they do.','بانتظار موافقة منظّم العائلة. ستُفتح اللعبة وحدها عندما يوافق.');
+MV('The purchase did not go through. Please try again.','لم تتم عملية الشراء. حاول مرة أخرى من فضلك.');MV('No full game was found for this Apple Account.','لم يُعثر على اللعبة الكاملة في حساب Apple هذا.');
+MV('The whole world is open!','العالم كله مفتوح!');MV('Thank you for getting the full game','شكرًا لأنك حصلت على اللعبة الكاملة');
 // ================= v27.9: a calmer world (fewer floating signs) =================
 // The streets were full of floating signs (shops, garages, places, missions), a big orange label for the quest and the
 // names of everybody around. Now:

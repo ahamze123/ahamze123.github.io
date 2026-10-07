@@ -56,3 +56,30 @@ if os.path.isdir(sp):
     for f in glob.glob(os.path.join(sp, '*.png')):
         shutil.copy(os.path.join(HERE, 'resources', 'splash-2732.png'), f)
 print('icon and launch screen ready')
+
+# ---------- Block Buddies' own plugin: the App Store purchase (the full game) and a second copy of the save ----------
+# (app/ios-src: BBStorePlugin.swift, and BBViewController.swift, which registers it; Main.storyboard is pointed at it)
+SRC = os.path.join(HERE, 'ios-src')
+OWN = [('BBStorePlugin.swift', 'BB57A0E00000000000000001', 'BB57A0E00000000000000002'),
+       ('BBViewController.swift', 'BB57A0E00000000000000003', 'BB57A0E00000000000000004')]
+for f, _, _ in OWN:
+    shutil.copy(os.path.join(SRC, f), os.path.join(APP, f))
+s = open(pj).read()
+if 'BBStorePlugin.swift' not in s:
+    s = s.replace('/* Begin PBXBuildFile section */\n', '/* Begin PBXBuildFile section */\n' + ''.join(
+        '\t\t%s /* %s in Sources */ = {isa = PBXBuildFile; fileRef = %s /* %s */; };\n' % (b, f, r, f) for f, r, b in OWN), 1)
+    s = s.replace('/* Begin PBXFileReference section */\n', '/* Begin PBXFileReference section */\n' + ''.join(
+        '\t\t%s /* %s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = %s; sourceTree = "<group>"; };\n' % (r, f, f) for f, r, b in OWN), 1)
+    m = re.search(r'\n(\t+)[0-9A-F]{24} /\* AppDelegate\.swift \*/,\n', s)
+    assert m, 'the App group in project.pbxproj'
+    s = s[:m.end()] + ''.join('%s%s /* %s */,\n' % (m.group(1), r, f) for f, r, b in OWN) + s[m.end():]
+    m = re.search(r'\n(\t+)[0-9A-F]{24} /\* AppDelegate\.swift in Sources \*/,\n', s)
+    assert m, 'the Sources phase in project.pbxproj'
+    s = s[:m.end()] + ''.join('%s%s /* %s in Sources */,\n' % (m.group(1), b, f) for f, r, b in OWN) + s[m.end():]
+    open(pj, 'w').write(s)
+sb = os.path.join(APP, 'Base.lproj', 'Main.storyboard')
+t = open(sb).read()
+t = t.replace('customClass="CAPBridgeViewController" customModule="Capacitor"', 'customClass="BBViewController" customModule="App" customModuleProvider="target"')
+assert 'customClass="BBViewController"' in t, 'Main.storyboard'
+open(sb, 'w').write(t)
+print('BBStore plugin added')

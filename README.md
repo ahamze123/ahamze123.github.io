@@ -38,6 +38,15 @@ A brick hero adventure for kids, with two stories (8 chapters, then 6 more). It 
 
 **Playing online:** one player taps **Play online → Host a game**, the others tap **Play online** and **Join**. The **You're hosting!** card hides when you tap it, and by itself after 30 seconds. The online screen shows when it is connected and how many games it found. If a tablet's Wi-Fi drops for a moment (the screen locks, you switch apps), the game reconnects by itself and the Join button comes back. The tablets find each other through several free public services at once (the PeerJS server, five MQTT message servers and ntfy.sh, which uses the normal web port 443 like any website), so a tablet at home finds a game hosted from another house or from mobile data, and online play keeps working even when some services are down or blocked. If the tablets cannot connect to each other directly (some Wi-Fi keeps devices apart), the game data goes through those servers instead. The online screen shows a ✓ or ✗ for each server, how the last join went, and the game version (also shown on the title screen).
 
+## The App Store app
+The iPad app on the App Store is the same game, free to start:
+- **Free:** Brick City and Mushroom Forest with the first two story chapters, the Humongous Water Park, online play, and everything else you can reach there.
+- **The full game** is one purchase that opens everything else for good: Canyon Desert, Frosty Peaks, Happy Farm, Glitch Island, the four towns, the Moon, the Sky Kingdom and Story 2. At the edge of the free part a glowing fence and a note say what is in the full game.
+- A grown-up buys it from **Menu → ⭐ The full game** (or from the note at the fence) after answering a little sum, so little ones can't buy by mistake. One payment: no ads and nothing else to buy. **Restore purchase** brings it back on another iPad, and with **Family Sharing** every iPad in the family gets it.
+- A friend who joins a full game online can go everywhere with the host.
+- The app keeps a second copy of the save in its own storage (it is in the iPad's iCloud backup too), so the game comes back even if iOS clears the game's saved data when the iPad is very low on space.
+- The website stays the whole game, free.
+
 ## Finding your way
 - Pick a mission or tap a place on the map and three things lead the way: a **golden arrow** on the ground in front of your hero that follows the glowing trail, a **compass** at the top of the screen that points where to go from where you are looking (it says **Turn around** when the place is behind you and **Almost there!** at the end), and a sign above the light beam at the destination.
 

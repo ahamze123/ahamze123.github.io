@@ -7,8 +7,9 @@ What changes in the app:
     gets its own family code for online play)
   - the fonts come with the app (from the @fontsource packages that `npm install` puts in app/node_modules) instead of
     from Google, so nothing loads from other websites and the letters look right without the internet
-  - --test adds a small helper for the simulator check in the GitHub workflow: it writes BBTEST lines to the console and
-    taps Play by itself. The App Store build never has it.
+  - --test adds a small helper for the simulator check in the GitHub workflow: it writes BBTEST lines to the console,
+    taps Play by itself and asks the app's own plugin (BBStore) what it owns, the price and the save copy (the plugin
+    writes BBTEST lines too). The App Store build never has it.
 """
 import os, re, shutil, sys
 
@@ -30,7 +31,10 @@ var n=0,t0=Date.now();var iv=setInterval(function(){n++;try{if(typeof G==='undef
    setTimeout(function(){try{if(typeof closeIntro==='function'&&document.getElementById('introbox')&&!document.getElementById('introbox').hidden)closeIntro();var g=0;while(typeof DLG!=='undefined'&&DLG&&g++<60){DLG.shown=1e9;advanceDialog();}}catch(e){log('intro',e.message);}},4000);}
  if(n%15===0)log('tick',G.mode,'frame',(typeof ERRS!=='undefined'?ERRS.frame:0),'errors',(typeof ERRS!=='undefined'?ERRS.n:0),'music',(typeof TRK!=='undefined'?TRK.st+(TRK.failed?'-failed':'')+' '+(TRK.cur||''):'-'),'fonts',document.fonts?document.fonts.status:'-',
    (function(){try{return [].slice.call(document.fonts).filter(function(f){return f.status==='loaded';}).map(function(f){return f.family;}).filter(function(v,i,a){return a.indexOf(v)===i;}).join('/');}catch(e){return '';}})());
-}catch(e){log('hook error',e.message);}},1000);})();</script>"""
+}catch(e){log('hook error',e.message);}},1000);})();</script>
+<script>setTimeout(function(){try{var C=window.Capacitor;if(!C||!C.nativePromise){console.log('BBTEST no Capacitor bridge');return;}
+var P=function(m,o){return C.nativePromise('BBStore',m,o||{}).then(function(r){console.log('BBTEST BBStore '+m+' ok '+JSON.stringify(r||{}).slice(0,160));},function(e){console.log('BBTEST BBStore '+m+' failed '+(e&&e.message));});};
+var ID='io.github.ahamze123.blockbuddies.full';P('owned',{id:ID});P('products',{ids:[ID]});P('backupRead');}catch(e){console.log('BBTEST store hook '+e.message);}},45000);</script>"""
 
 # the fonts the game uses, from the @fontsource packages (the same fonts as the website gets from Google Fonts)
 FONTS = [('lilita-one', ['400.css']), ('nunito', ['700.css', '800.css', '900.css']),
