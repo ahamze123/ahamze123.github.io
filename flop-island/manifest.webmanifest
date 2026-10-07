@@ -1,0 +1,29 @@
+{
+ "name": "Flop Island",
+ "short_name": "Flop Island",
+ "description": "Flop Island: wobbly fuzzy animals, a sunny island full of jobs and missions, and big floppy brawls. Play online with friends, each on their own tablet.",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "orientation": "any",
+ "background_color": "#8fd3ff",
+ "theme_color": "#8fd3ff",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
