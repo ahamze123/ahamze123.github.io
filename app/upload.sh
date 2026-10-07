@@ -7,7 +7,21 @@ HERE="$(cd "$(dirname "$0")" && pwd)"; cd "$HERE"
 BID=$(python3 -c "import json;print(json.load(open('capacitor.config.json'))['appId'])")
 VER=$(python3 -c "import json;print(json.load(open('build.json'))['version'])")
 BUILD="${BUILD:-1}"
-KEY=~/private_keys/AuthKey_${ASC_KEY_ID}.p8; mkdir -p ~/private_keys; printf '%s\n' "$ASC_KEY_P8" > "$KEY"; chmod 600 "$KEY"
+KEY=~/private_keys/AuthKey_${ASC_KEY_ID}.p8; mkdir -p ~/private_keys
+# the .p8 file as pasted into the secret: tidy it up (pasting can turn the dashes into long dashes, lose the line
+# breaks, add quotes or spaces) and write it back as a proper key file. Only the length is printed, never the key.
+python3 - "$KEY" <<'PY' | tee -a "$OUT/status.txt"
+import os, re, sys
+s = os.environ.get('ASC_KEY_P8', '').strip().strip('"').strip("'").replace('\\n', '\n').replace('\r', '')
+for d in '\u2010\u2011\u2012\u2013\u2014\u2015\u2212':
+    s = s.replace(d, '-')
+m = re.search(r'-+\s*BEGIN\s+PRIVATE\s+KEY\s*-+(.*?)-+\s*END\s+PRIVATE\s+KEY\s*-+', s, re.S)
+body = re.sub(r'[^A-Za-z0-9+/=]', '', m.group(1) if m else s)
+open(sys.argv[1], 'w').write('-----BEGIN PRIVATE KEY-----\n' + '\n'.join(body[i:i + 64] for i in range(0, len(body), 64)) + '\n-----END PRIVATE KEY-----\n')
+print('key file: %d characters%s%s' % (len(body), '' if m else ' (no BEGIN/END lines in the secret)',
+      '' if 150 <= len(body) <= 260 else ' -- this does not look like the .p8 file (it has about 200); paste the whole file into ASC_KEY_P8 again'))
+PY
+chmod 600 "$KEY"
 python3 -m venv "$RUNNER_TEMP/v" > /dev/null && "$RUNNER_TEMP/v/bin/pip" -q install pyjwt cryptography > /dev/null
 R=$("$RUNNER_TEMP/v/bin/python" asc.py prepare "$BID" "Block Buddies")
 echo "== App Store Connect: $R" | tee -a "$OUT/status.txt"
