@@ -72,6 +72,28 @@ button { font: inherit; color: inherit; }
 .menu-btns .btn { width: 100%; }
 .menu-btns .btn.big { grid-column: span 2; font-size: 28px; min-height: 68px; }
 .title-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.menu-mini { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: min(620px, 100%); }
+.menu-mini .btn { flex: 1 1 0; min-width: 0; white-space: nowrap; }
+ol.steps { margin: 6px 0 0; padding-left: 22px; line-height: 1.5; font-weight: 700; }
+.kbd { display: inline-block; border: 2px solid var(--ink); border-radius: 6px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+/* the stage: menus leave a hole where your animal (and your friends' animals) stand */
+.stage-hole { min-width: 0; min-height: 0; justify-self: stretch; align-self: stretch; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.screen.stage { background: linear-gradient(90deg, rgba(43,27,63,0) 40%, rgba(43,27,63,0.16) 100%); place-items: stretch; overflow: hidden; padding: max(14px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); }
+.stage-split { display: grid; grid-template-columns: minmax(0, 1fr) min(480px, 50%); gap: 16px; height: 100%; min-height: 0; width: 100%; }
+.stage-split.wide-card { grid-template-columns: minmax(0, 1fr) min(620px, 56%); }
+.stage-split > .card { align-self: center; width: 100%; max-height: 100%; }
+.screen:not(.stage) .stage-split { height: auto; max-height: 100%; }
+@media (max-aspect-ratio: 1/1) {
+  .screen.stage { background: linear-gradient(180deg, rgba(43,27,63,0) 40%, rgba(43,27,63,0.18) 100%); }
+  .stage-split, .stage-split.wide-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(30%, 1fr) auto; }
+  .stage-split > .card { align-self: end; max-height: 66vh; max-height: 66dvh; }
+}
+@media (min-aspect-ratio: 6/5) {
+  .title-wrap { width: min(1240px, 100%); grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "top top" "hole bottom"; gap: 10px 20px; }
+  .title-top { grid-area: top; } .title-wrap > .stage-hole { grid-area: hole; } .title-bottom { grid-area: bottom; align-self: center; }
+  #title { background: linear-gradient(90deg, rgba(43,27,63,0) 45%, rgba(43,27,63,0.28) 100%), linear-gradient(180deg, rgba(43,27,63,0.16) 0%, rgba(43,27,63,0) 26%); }
+}
+@media (max-height: 520px) { .logo { font-size: clamp(40px, 8vw, 60px); } .tagline { display: none; } .menu-btns .btn.big { font-size: 22px; min-height: 54px; } }
 /* chips */
 .chip { display: inline-flex; align-items: center; gap: 8px; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 14px 4px 5px; font-family: var(--font-display); font-size: 20px; box-shadow: 0 4px 0 var(--ink); font-variant-numeric: tabular-nums; }
 .chip .ico { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--ink); display: grid; place-items: center; font-size: 15px; box-sizing: border-box; }
@@ -116,7 +138,7 @@ button { font: inherit; color: inherit; }
 .pcard.out { opacity: 0.45; }
 .pcard .crowns { font-family: var(--font-display); color: #c98a00; font-size: 16px; letter-spacing: 1px; }
 #roundinfo { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); }
-#tags { position: absolute; inset: 0; overflow: hidden; }
+#tags { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 9; }
 .tag { position: absolute; transform: translate(-50%, -100%); padding: 1px 9px; border-radius: 999px; border: 3px solid var(--ink); font-family: var(--font-display); font-size: 14px; white-space: nowrap; color: var(--ink); }
 .pop3d { position: absolute; transform: translate(-50%, -50%); font-family: var(--font-display); color: var(--sun); -webkit-text-stroke: 0.1em var(--ink); paint-order: stroke fill; font-size: 30px; animation: float3d 0.9s ease-out forwards; white-space: nowrap; }
 .pop3d.coin { color: var(--sun); font-size: 24px; } .pop3d.ko { color: var(--bubble); font-size: 40px; }
@@ -266,13 +288,13 @@ body.touch #scorebar { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 7
 <canvas id="game" tabindex="0" aria-label="Flop Island game view"></canvas>
 <div id="vignette"></div>
 <div id="loading">Inflating animals…</div>
+<div id="tags"></div>
 <div id="hud" hidden>
   <div class="tl" id="hudTL"></div>
   <div class="tr"><button class="icon-btn" id="pauseBtn" aria-label="Pause"><span class="bars"><i></i><i></i></span></button></div>
   <div id="mission" hidden></div>
   <div id="job" hidden></div>
   <div id="roundinfo" class="chip" hidden></div>
-  <div id="tags"></div>
   <div id="toasts" aria-live="polite"></div>
   <div id="prompt" hidden></div>
   <div id="scorebar" hidden></div>
@@ -3076,6 +3098,7 @@ class Puppet extends Character {
     for (const b of this.bodies) { b.puppet = true; b.gravityScale = 0; b.linDamp = 0; b.angDamp = 0; b.maxSpeed = 200; }
     for (const hd of this.hands) hd.mask = 0; // their fists only count on their own tablet
     this.S = makeSnap(); this.nudge = new V3(); this.nudgeV = new V3(); this.flags = 0;
+    this.sm = new V3(); this.t1 = new V3(); this.t2 = new V3(); this.tn = 0; // smoothing of small corrections
   }
   addToWorld() { if (this.inWorld) return; this.inWorld = true; for (const b of this.bodies) { this.world.add(b); b.enabled = true; } }
   removeFromWorld() {
@@ -3085,13 +3108,24 @@ class Puppet extends Character {
   place() { // appear exactly where the snapshot says (no swoop)
     const S = this.S; if (!this.ent.buf.sample(this.net.simMs(), S) || !S.has) return false;
     this.torso.teleport(S.p, S.q); this.head.teleport(S.h, S.q); this.hands[0].teleport(S.a0, S.q); this.hands[1].teleport(S.a1, S.q);
-    this.yaw = S.yaw; return true;
+    this.yaw = S.yaw; this.tn = 0; this.sm.set(0, 0, 0); return true;
   }
   prePhysics(h) {
     if (!this.inWorld) return;
     const S = this.S; if (!this.ent.buf.sample(this.net.simMs(), S) || !S.has) return;
-    const n = this.nudge;
-    if (n.x || n.y || n.z) { S.p.add(n); S.h.add(n); S.a0.add(n); S.a1.add(n); }
+    // When an update arrives a little late we have been guessing where they went; the real path is then slightly
+    // different. Instead of jumping across, ease over the difference in a tenth of a second.
+    const sm = this.sm;
+    if (this.tn >= 2 && !window.__noSmooth) {
+      const ex = 2 * this.t1.x - this.t2.x, ey = 2 * this.t1.y - this.t2.y, ez = 2 * this.t1.z - this.t2.z; // where the path was heading
+      const jx = S.p.x - ex, jy = S.p.y - ey, jz = S.p.z - ez, j2 = jx * jx + jy * jy + jz * jz;
+      if (j2 > 2.25) sm.set(0, 0, 0); // a respawn or a big knock: show it as it is
+      else if (j2 > 0.0025) { sm.x -= jx; sm.y -= jy; sm.z -= jz; } // (5 cm off course in one physics step: a correction, not a turn)
+    }
+    this.t2.copy(this.t1); this.t1.copy(S.p); this.tn++;
+    sm.scale(Math.exp(-h / 0.1)); if (sm.lengthSq() > 1) sm.setLength(1);
+    const n = this.nudge, ox = n.x + sm.x, oy = n.y + sm.y, oz = n.z + sm.z;
+    if (ox || oy || oz) { const o = _pv.set(ox, oy, oz); S.p.add(o); S.h.add(o); S.a0.add(o); S.a1.add(o); }
     steerBody(this.torso, S.p, S.q, h); steerBody(this.head, S.h, null, h); steerBody(this.hands[0], S.a0, null, h); steerBody(this.hands[1], S.a1, null, h);
   }
   postPhysics() {}
@@ -5124,30 +5158,38 @@ function makePeerRoom(opts={}){
       close(){closed=true;clearInterval(pingI);const w=ws;ws=null;up=false;try{w&&w.close();}catch(e){}},kick(){if(closed)return;if(!ws){tries=0;connect();}}};}
 
   // ---- one WebRTC link to another device ----
-  function Link(sig,remote,cid,offerer,h){const pc=new RTCPeerConnection({iceServers:ICE});let dc=null,remoteSet=false,pend=[],dead=false;
+  // (window.__netsim = {lat, jit, drop} pretends to be a slow, wobbly network in the tests)
+  const simOut=(fast,fn)=>{const ns=window.__netsim;if(!ns){fn();return;}if(fast&&Math.random()<(ns.drop||0))return;const now=performance.now();let at=now+(ns.lat||0)+Math.random()*(ns.jit||0);if(!fast){at=Math.max(at,(simOut.last||0)+0.1);simOut.last=at;}setTimeout(fn,at-now);};
+  function Link(sig,remote,cid,offerer,h){const pc=new RTCPeerConnection({iceServers:ICE});let dc=null,fs=null,remoteSet=false,pend=[],dead=false;
+    // two lanes: "fi" is reliable and in order (joining, leaving), "fs" is the fast lane for the animals' positions: a lost
+    // update is simply skipped (the next one is newer anyway) instead of holding up everything behind it
     const L={cid,remote,get ready(){return !!dc&&dc.readyState==='open';},
-      send(o){if(dc&&dc.readyState==='open'){try{dc.send(typeof o==='string'?o:JSON.stringify(o));}catch(e){}}},
+      send(o){const str=typeof o==='string'?o:JSON.stringify(o);const fast=!!fs&&fs.readyState==='open'&&str.startsWith('{"t":"p"');
+        simOut(fast,()=>{try{if(fast&&fs.readyState==='open')fs.send(str);else if(dc&&dc.readyState==='open')dc.send(str);}catch(e){}});},
       close(){if(dead)return;dead=true;try{dc&&dc.close();}catch(e){}try{pc.close();}catch(e){}h.close&&h.close(L);},
       async answer(sdp){if(dead||remoteSet)return;try{await pc.setRemoteDescription({type:'answer',sdp});remoteSet=true;for(const c of pend)await pc.addIceCandidate(c).catch(()=>{});pend=[];}catch(e){log('answer fail',e);L.close();}},
       cand(c){if(dead||!c)return;if(remoteSet)pc.addIceCandidate(c).catch(()=>{});else pend.push(c);},
       async start(){const o=await pc.createOffer();await pc.setLocalDescription(o);sig.send('OFFER',remote,{cid,sdp:pc.localDescription.sdp,ts:Date.now(),fi:1});},
       async accept(sdp){await pc.setRemoteDescription({type:'offer',sdp});remoteSet=true;for(const c of pend)await pc.addIceCandidate(c).catch(()=>{});pend=[];const a=await pc.createAnswer();await pc.setLocalDescription(a);sig.send('ANSWER',remote,{cid,sdp:pc.localDescription.sdp});}};
     const wire=ch=>{dc=ch;ch.onopen=()=>{log('channel open',cid);h.open&&h.open(L);};ch.onmessage=ev=>{let o;try{o=JSON.parse(ev.data);}catch(e){return;}h.data&&h.data(o,L);};ch.onclose=()=>L.close();};
+    const wireFast=ch=>{fs=ch;ch.onmessage=ev=>{let o;try{o=JSON.parse(ev.data);}catch(e){return;}h.data&&h.data(o,L);};ch.onclose=()=>{if(fs===ch)fs=null;};};
     pc.onicecandidate=ev=>{if(ev.candidate)sig.send('CANDIDATE',remote,{cid,candidate:ev.candidate.toJSON?ev.candidate.toJSON():{candidate:ev.candidate.candidate,sdpMid:ev.candidate.sdpMid,sdpMLineIndex:ev.candidate.sdpMLineIndex}});};
     const watch=()=>{const s=pc.connectionState||pc.iceConnectionState;if(s==='failed'||s==='closed')L.close();else if(s==='disconnected')setTimeout(()=>{const s2=pc.connectionState||pc.iceConnectionState;if(s2==='disconnected'||s2==='failed')L.close();},7000);};
     pc.onconnectionstatechange=watch;pc.oniceconnectionstatechange=watch;
-    if(offerer)wire(pc.createDataChannel('fi',{ordered:true}));else pc.ondatachannel=ev=>wire(ev.channel);
+    if(offerer){wire(pc.createDataChannel('fi',{ordered:true}));try{wireFast(pc.createDataChannel('fs',{ordered:false,maxRetransmits:0}));}catch(e){}}
+    else pc.ondatachannel=ev=>{if(ev.channel.label==='fs')wireFast(ev.channel);else wire(ev.channel);};
     return L;}
 
   // ---- when two tablets cannot reach each other directly (some Wi-Fi keeps devices apart), the game data goes through the MQTT
-  // message servers instead: a "relay link" that works like a WebRTC link. Hero updates go at most 8 times a second. ----
+  // message servers instead: a "relay link" that works like a WebRTC link. Animal updates go at most 12 times a second. ----
   const RL=new Map();
   function RelayLink(cid,side,remote,h){const other=side==='h'?'g':'h';const mine=TOP+'/r/'+cid+'/'+side,theirs=TOP+'/r/'+cid+'/'+other;let q=0,lastQ=0,dead=false,opened=false,pend=null,pendT=null,lastSend=0;
     const L={cid,remote,relay:true,get ready(){return opened&&!dead;},
       send(o){if(dead)return;const str=typeof o==='string'?o:JSON.stringify(o);const now=Date.now();
-        if(str.startsWith('{"t":"p"')&&now-lastSend<125){pend=str;if(!pendT)pendT=setTimeout(()=>{pendT=null;if(pend&&!dead){const x=pend;pend=null;L._out(x);}},125-(now-lastSend));return;}
+        if(str.startsWith('{"t":"p"')&&now-lastSend<80){pend=str;if(!pendT)pendT=setTimeout(()=>{pendT=null;if(pend&&!dead){const x=pend;pend=null;L._out(x);}},80-(now-lastSend));return;}
         L._out(str);},
-      _out(str){lastSend=Date.now();const msg=JSON.stringify({q:++q,d:str});for(const m of MQ)if(m.open)m.publish(theirs,msg,false);},
+      // (to at most three message servers: the other tablet listens on all of them, so one in common is enough)
+      _out(str){lastSend=Date.now();const msg=JSON.stringify({q:++q,d:str});simOut(false,()=>{let n=0;for(const m of MQ)if(m.open&&n<3&&m.publish(theirs,msg,false))n++;});},
       _in(payload){if(dead)return;let o;try{o=JSON.parse(payload);}catch(e){return;}if(!o||typeof o.q!=='number'||o.q<=lastQ)return;lastQ=o.q;
         if(!opened){opened=true;h.open&&h.open(L);}if(o.d==='hello')return;let d;try{d=JSON.parse(o.d);}catch(e){return;}h.data&&h.data(d,L);},
       hello(){L._out('hello');},
@@ -5164,7 +5206,9 @@ function makePeerRoom(opts={}){
     const dropId=id=>{const p=rps.get(id);if(p){rps.delete(id);fire([],[p],[]);}};
     const sendAll=(o,except)=>{const str=JSON.stringify(o);for(const L of links.values())if(L!==except&&L.ready)L.send(str);};
     const R={role,name:'flop',standalone:true,_sigs:[],
-      presence(patch){for(const k in patch){if(patch[k]===null)delete myPres[k];else myPres[k]=patch[k];}if(!pending)pending=setTimeout(()=>{pending=null;sendAll({t:'p',p:myPres});},30);return Promise.resolve();},
+      presence(patch){for(const k in patch){if(patch[k]===null)delete myPres[k];else myPres[k]=patch[k];}
+        // send at once (no waiting), but never more than about 40 times a second
+        if(!pending){const wait=Math.max(0,25-(performance.now()-(R._sentAt||0)));pending=setTimeout(()=>{pending=null;R._sentAt=performance.now();sendAll({t:'p',p:myPres});},wait);}return Promise.resolve();},
       onPeers(f,onErr){peerL.push(f);if(onErr)errL.push(onErr);setTimeout(()=>{if(!gone)f({peers:snap(),joined:[...rps.values()],left:[],updated:[]});},0);return ()=>{};},
       peers:()=>snap(),emit(){return Promise.resolve();},on(){return ()=>{};},connected:()=>[...links.values()].some(L=>L.ready),onConnection(f){setTimeout(()=>f(true),0);return ()=>{};},
       leave(){gone=true;R._gone=true;for(const L of [...links.values()]){L.send({t:'bye'});setTimeout(()=>L.close(),60);}links.clear();for(const s of R._sigs)s.close();if(R._stop)R._stop();return Promise.resolve();},
@@ -5271,7 +5315,7 @@ function makePeerRoom(opts={}){
     setTimeout(()=>{if(settled||J.full||!t.hid||!mqOn())return;J.relay=true;
       const R=RelayLink(cid,'g',t.key,{open:l=>{room._add(l);room._open(l);if(!settled){settled=true;drop();LB.lastJoin='relay';res(room);}},data:(o,l)=>room._data(o,l),close:l=>{if(!settled){settled=true;drop();rej(new Error('failed'));}else room._lost(l);}});
       router.send('RELAY',t.key,{cid});setTimeout(()=>{if(!R.ready&&!settled)router.send('RELAY',t.key,{cid});},2500);try{L.close();}catch(e){}},Q.get('relayms')?+Q.get('relayms'):6000);
-    L.start().catch(()=>{if(!J.relay)L.close();});setTimeout(()=>{if(!settled){settled=true;drop();L.close();LB.lastJoin='timeout';rej(new Error('timeout'));}},22000);});}
+    if(!Q.get('nodirect'))L.start().catch(()=>{if(!J.relay)L.close();});/* (?nodirect=1: tests of the message-server route) */setTimeout(()=>{if(!settled){settled=true;drop();L.close();LB.lastJoin='timeout';rej(new Error('timeout'));}},22000);});}
 
   const lobby={name:'lobby',standalone:true,
     presence(patch){for(const k in patch){if(patch[k]===null)delete LB.pres[k];else LB.pres[k]=patch[k];}
@@ -5297,7 +5341,8 @@ function makePeerRoom(opts={}){
 // friend's animal are sent to their tablet as requests, and their tablet applies them. The host also runs the CPU
 // animals and the brawl rounds. Works over the claude.ai room (in the Claude app) or over WebRTC (87_peerroom.js,
 // on the GitHub site); both give the same small interface: presence, onPeers, onConnection, leave.
-const NET_V = 1, NET_MAXP = 4, NET_SEND = 1 / 20;
+const NET_V = 1, NET_MAXP = 4, NET_SEND = 1 / 20, NET_SEND_FAST = 1 / 30;
+const NET_TUNE = { g: 1, a: 1, d: 2, c: 8, cap: 0.2 }; // playback buffer = update gap + typical lateness + 2 x its wobble (ms), at most 0.2 s
 const NET_COLORS = ['#ffc93c', '#2ec4d6', '#ff5e8a', '#7bd84b'];
 const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const nnum = (v, d = 0) => (typeof v === 'number' && isFinite(v) ? v : d);
@@ -5341,7 +5386,7 @@ function decBody(a, i, tMs) { const s = makeSnap(); s.t = tMs; s.has = true; v3a
 function encBody(b) { return [r2(b.pos.x), r2(b.pos.y), r2(b.pos.z), r3(b.q.x), r3(b.q.y), r3(b.q.z), r3(b.q.w), r2(b.vel.x), r2(b.vel.y), r2(b.vel.z)]; }
 class RemotePeer {
   constructor(pid, label) {
-    this.pid = pid; this.label = label; this.pres = null; this.off = null; this.lastRecv = 0; this.lastTs = -1; this.gap = 0.05;
+    this.pid = pid; this.label = label; this.pres = null; this.off = null; this.lastRecv = 0; this.lastTs = -1; this.gap = 0.05; this.lateA = 20; this.lateD = 10;
     this.ents = new Map(); this.lastHit = 0; this.name = 'Friend'; this.lk = null; this.role = 'g'; this.mi = 0; this.rn = 0;
     this.gr = []; this.hb = []; this.bl = null; this.carId = -1; this.carBuf = null; this.props = new Map(); this.md = null; this.rd = null; this.pl = null; this.mt = -1; this.mtAt = 0;
   }
@@ -5356,7 +5401,7 @@ class Net {
     this.game = null; this.role = 'solo'; this.code = ''; this.joinT = 0; this.busy = false; this.gameOn = true;
     this.peers = new Map(); this.labels = new Map();
     this.md = null; this.loaded = 0; this.rd = null; this.bl = null;
-    this.simT = 0; this.delay = 0.13; this.clk = 0;
+    this.simT = 0; this.delay = 0.13; this.clk = 0; this.frameAt = 0;
     this.sendT = 0; this.hitsOut = []; this.hitSeq = 0; this.inbox = [];
     this.honor = new Map(); this.escaped = new Map();
     this.listeners = new Set(); this._lobbySig = '';
@@ -5547,10 +5592,18 @@ class Net {
     this.labels.set(p.peer, o.id); rp.label = p.peer;
     if (o === rp.pres) return; rp.pres = o;
     const ts = nnum(o.ts, -1); if (ts < 0 || ts === rp.lastTs) return; // nothing new (a keep-alive)
+    if (ts < rp.lastTs && ts > rp.lastTs - 5000) return; // an older update that arrived late: the newer one already counted
     rp.lastTs = ts;
     const now = performance.now(), off = now - ts;
     rp.off = rp.off === null || Math.abs(off - rp.off) > 60000 ? off : Math.min(rp.off + 0.05, off);
     if (rp.lastRecv) rp.gap = rp.gap * 0.9 + (Math.min(1000, now - rp.lastRecv) / 1000) * 0.1;
+    // how much later than the quickest delivery this update came (the network's wobble): sets how far back we play
+    // (skipped right after our own tablet was busy, e.g. building the island: updates then arrive in a bunch, which says
+    // nothing about the network; and one very late update only counts a little)
+    if (now - this.frameAt < 90) {
+      const late = Math.min(Math.max(0, off - rp.off), rp.lateA + 4 * rp.lateD + 40);
+      rp.lateA += (late - rp.lateA) * 0.08; rp.lateD += (Math.abs(late - rp.lateA) - rp.lateD) * 0.08;
+    }
     rp.lastRecv = now;
     const nm = cleanName(o.n) || rp.name, lk = Array.isArray(o.lk) ? o.lk.slice(0, 3) : null, mi = nnum(o.mi) | 0;
     if (nm !== rp.name || JSON.stringify(lk) !== JSON.stringify(rp.lk)) { rp.name = nm; rp.lk = lk; this.changed(); }
@@ -5611,19 +5664,21 @@ class Net {
   // ---------- every frame ----------
   update(dt) {
     if (!this.game) return;
-    const now = performance.now();
-    // play friends back a little in the past (enough to cover the gaps between their updates)
-    let d = 0.11; for (const rp of this.peers.values()) d = Math.max(d, Math.min(0.42, rp.gap * 1.7 + 0.05));
-    this.delay = damp(this.delay, d, 1.5, dt);
+    const now = performance.now(); this.frameAt = now;
+    // play friends back a little in the past: just enough to cover the gap between their updates plus how much the
+    // network wobbles (measured all the time), so movement stays smooth without waiting longer than it has to
+    const NT = window.__netTune || NET_TUNE; let d = 0.04; for (const rp of this.peers.values()) d = Math.max(d, Math.min(NT.cap, rp.gap * NT.g + (NT.a * rp.lateA + NT.d * rp.lateD + NT.c) / 1000));
+    this.delay = damp(this.delay, d, d > this.delay ? 4 : 1, dt);
     const want = now / 1000 - this.delay;
-    if (Math.abs(this.simT - want) > 0.35) this.simT = want; else this.simT += (want - this.simT) * Math.min(1, dt * 3);
+    // (a firm pull: on a slow tablet the physics can fall behind the clock, and friends must not drift further into the past)
+    if (Math.abs(this.simT - want) > 0.35) this.simT = want; else this.simT += (want - this.simT) * Math.min(1, dt * 12);
     if (!this.isHost) { const H = this.hostPeer(); if (H && H.mt >= 0) { const est = H.mt + (now - H.mtAt) / 1000; if (Math.abs(this.clk - est) > 0.6) this.clk = est; else this.clk += (est - this.clk) * Math.min(1, dt * 2); } }
     for (const rp of [...this.peers.values()]) if (rp.lastRecv && now - rp.lastRecv > 25000) this.dropPeer(rp.pid, true);
     if (!this.game) return;
     if (!this.isHost) { this.followHost(); if (!this.game) return; }
     this.syncPuppets(); this.applyInbox(); this.updateHonors(); this.checkGrips(); this.updateCars(); this.updateProps();
     if (this.isHost) this.lobbyPresence();
-    this.sendT -= dt; if (this.sendT <= 0) { this.sendT = NET_SEND; this.publish(); }
+    this.sendT -= dt; if (this.sendT <= 0) { this.sendT = this.kind === 'peer' ? NET_SEND_FAST : NET_SEND; this.publish(); }
   }
   preStep(h) {
     this.simT += h; this.clk += h;
@@ -5815,6 +5870,25 @@ const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const PLAYER_COLORS = ['#ffc93c', '#2ec4d6', '#ff5e8a', '#7bd84b'];
 const CPU_NAMES = ['Biscuit', 'Noodle', 'Pickle', 'Waffles', 'Mochi', 'Pudding', 'Nugget', 'Bubbles', 'Muffin', 'Taco', 'Sprout', 'Jellybean'];
+// full screen: the browser's Fullscreen API where it exists (iPad Safari, desktop, Android); otherwise (iPhone, or the game shown
+// inside another page) we explain the Home Screen app, which always opens full screen
+const FS = {
+  supported() { const d = document, e = d.documentElement; return !!((d.fullscreenEnabled || d.webkitFullscreenEnabled) && (e.requestFullscreen || e.webkitRequestFullscreen)); },
+  active() { const d = document; return !!(d.fullscreenElement || d.webkitFullscreenElement); },
+  app() { try { return !!(navigator.standalone || matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches); } catch (e) { return false; } },
+  ios() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); },
+  framed() { try { return window.self !== window.top; } catch (e) { return true; } },
+  async toggle() {
+    const d = document, e = d.documentElement;
+    try {
+      if (this.active()) await (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+      else if (e.requestFullscreen) await e.requestFullscreen({ navigationUI: 'hide' });
+      else if (e.webkitRequestFullscreen) e.webkitRequestFullscreen();
+      return true;
+    } catch (err) { return false; }
+  },
+  label() { return this.active() ? 'Exit full screen' : 'Full screen'; },
+};
 class UI {
   constructor(game) {
     this.g = game; this.root = $('#ui'); this.screen = null; this.backFn = null;
@@ -5826,16 +5900,28 @@ class UI {
     this.close();
     const el = document.createElement('div'); el.className = 'screen ' + cls; el.innerHTML = html; this.root.appendChild(el); this.screen = el; this.backFn = back; this.screenName = name;
     el.addEventListener('click', (e) => { if (e.target.closest('button')) this.g.audio.click(); });
+    const hole = el.querySelector('.stage-hole'); if (hole) hole.addEventListener('pointerdown', (e) => this.g.stageTap && this.g.stageTap(e.clientX, e.clientY));
+    this._sr = null;
     setTimeout(() => { const f = el.querySelector('[data-autofocus]') || el.querySelector('button'); if (f && this.g.input.lastDevice !== 'touch') f.focus({ preventScroll: true }); }, 30);
     return el;
   }
   close() {
     if (this.netFn) { this.g.net.listeners.delete(this.netFn); this.netFn = null; }
+    this._sr = null;
     if (this.screen) { this.screen.remove(); this.screen = null; this.backFn = null; } this.screenName = '';
   }
   // live updates from the online room while a screen is open
   watchNet(fn) { if (this.netFn) this.g.net.listeners.delete(this.netFn); this.netFn = fn; this.g.net.listeners.add(fn); fn(); }
   get open() { return !!this.screen; }
+  // where the animals should stand on screen: the empty "stage hole" a menu leaves, else the whole screen
+  stageRect() {
+    const now = performance.now(), W = innerWidth, H = innerHeight;
+    if (this._sr && now - this._srT < 400 && this._srW === W && this._srH === H) return this._sr;
+    let r = { x0: 0, y0: 0, x1: W, y1: H, hole: false };
+    const h = this.screen && this.screen.querySelector('.stage-hole');
+    if (h) { const b = h.getBoundingClientRect(); if (b.width > 24 && b.height > 24) r = { x0: b.left, y0: b.top, x1: b.right, y1: b.bottom, hole: true }; }
+    this._sr = r; this._srT = now; this._srW = W; this._srH = H; return r;
+  }
   back() { if (this.backFn) this.backFn(); }
   // gamepad / keyboard menu navigation
   nav(dt) {
@@ -5867,14 +5953,17 @@ class UI {
       <div class="title-wrap">
         <div class="title-top"><h1 class="logo" aria-label="Flop Island">${word('FLOP', 0)}${word('ISLAND', 4)}</h1>
         <p class="tagline">Wobbly animals. A sunny island. Big floppy brawls.</p></div>
-        <div></div>
+        <div class="stage-hole" aria-hidden="true"></div>
         <div class="title-bottom"><div class="menu-btns">
           <button class="btn big" id="bIsland" data-autofocus>Explore the Island</button>
           <button class="btn leaf big" id="bOnline">Play Online with Friends</button>
           <button class="btn pink" id="bBrawl">Brawl Party</button>
           <button class="btn teal" id="bDress">Dress Up</button>
-          <button class="btn ghost" id="bHelp">How to Play</button>
-          <button class="btn ghost" id="bSound">${s.music ? 'Music: On' : 'Music: Off'}</button>
+        </div>
+        <div class="menu-mini">
+          <button class="btn small ghost" id="bHelp">How to Play</button>
+          <button class="btn small ghost" id="bSound">${s.music ? 'Music: On' : 'Music: Off'}</button>
+          ${FS.app() ? '' : `<button class="btn small ghost" id="bFull">${FS.label()}</button>`}
         </div>
         <div class="title-foot"><span class="chip"><span class="ico coin"></span>${s.coins} coins</span><span class="chip"><span class="ico duck"></span>${(s.ducks || []).length}/16 ducks</span></div></div>
       </div>`, 'title-screen');
@@ -5885,6 +5974,21 @@ class UI {
     $('#bDress', el).onclick = () => this.g.startDress('title');
     $('#bHelp', el).onclick = () => this.help(() => this.title());
     $('#bSound', el).onclick = (e) => { s.music = !s.music; this.g.audio.setMusic(s.music); this.g.persist(); e.target.textContent = s.music ? 'Music: On' : 'Music: Off'; };
+    if ($('#bFull', el)) $('#bFull', el).onclick = () => this.fullScreen(() => this.title());
+  }
+  fullScreen(back) {
+    if (FS.supported()) { FS.toggle().then((ok) => { if (!ok) this.fullScreenHelp(back); }); return; }
+    this.fullScreenHelp(back);
+  }
+  fullScreenHelp(back) {
+    const ios = FS.ios(), framed = FS.framed();
+    const how = framed && !ios ? '<p class="say">Full screen is not allowed inside this window. Open the game on its own page (in Safari or Chrome) and tap <b>Full screen</b> there.</p>'
+      : ios ? `<ol class="steps"><li>Open the game in <b>Safari</b>.</li><li>Tap <b>Share</b> <span class="kbd">⬆</span> (on the newest iPadOS tap <b>•••</b> first).</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>Flop Island</b> from the new icon: it fills the whole screen, every time.</li></ol>${framed ? '<p class="note">Inside the Claude app the game stays in its window: open its own page in Safari for this.</p>' : ''}`
+      : '<p class="say">This browser does not allow full screen for games. Try Chrome, Edge or Safari.</p>';
+    const el = this.show(`<div class="card" role="dialog" aria-label="Full screen" style="width:min(540px,100%)"><h2>Full screen</h2>
+      <p class="lead">${ios ? 'On an iPad or iPhone, the Home Screen app is the full-screen way to play.' : 'Make the game fill the whole screen.'}</p>${how}
+      <div class="row" style="margin-top:12px"><button class="btn" id="fsOk" data-autofocus>OK</button></div></div>`, '', back, 'fullscreen');
+    $('#fsOk', el).onclick = back;
   }
   help(back) {
     const el = this.show(`<div class="card" role="dialog" aria-label="How to play">
@@ -5916,12 +6020,12 @@ class UI {
   }
   brawlSetup(back) {
     const g = this.g, cfg = g.brawlCfg;
-    const el = this.show(`<div class="card" role="dialog" aria-label="Brawl party setup">
+    const el = this.show(`<div class="stage-split"><div class="stage-hole" aria-hidden="true"></div><div class="card" role="dialog" aria-label="Brawl party setup">
       <h2>Brawl Party</h2>
       <p class="lead">Last animal standing wins the round. Throw everyone else off!</p>
       ${this.brawlOpts(cfg)}
       <p class="note">Want to brawl with friends? Each of you can join from your own tablet with <b>Play Online with Friends</b>.</p>
-      <div class="row" style="margin-top:8px"><button class="btn pink" id="go" data-autofocus>Start Brawl</button><button class="btn ghost" id="bk">Back</button></div></div>`, '', back);
+      <div class="card-foot"><button class="btn pink" id="go" data-autofocus>Start Brawl</button><button class="btn ghost" id="bk">Back</button></div></div></div>`, this.g.mode === 'title' ? 'stage' : '', back, 'setup');
     this.wireBrawlOpts(el, cfg, 1, 7);
     $('#go', el).onclick = () => { cfg.cpu = clamp(cfg.cpu, 1, 7); g.startBrawl(); };
     $('#bk', el).onclick = back;
@@ -5952,13 +6056,12 @@ class UI {
   }
   wardrobe(back) {
     const g = this.g, s = g.save;
-    const el = this.show(`<div class="card" role="dialog" aria-label="Wardrobe">
+    const el = this.show(`<div class="stage-split"><div class="stage-hole" aria-hidden="true"></div><div class="card" role="dialog" aria-label="Wardrobe">
       <h2>Dress Up</h2><p class="lead">Pick an animal, a fur colour and any hat you own.</p>
       <div class="field"><span class="lbl">Animal</span><div class="swatches" id="sp"></div></div>
       <div class="field"><span class="lbl">Fur colour</span><div class="swatches" id="cl"></div></div>
       <div class="field"><span class="lbl">Hat</span><div class="swatches" id="ht"></div></div>
-      <div class="row"><button class="btn leaf" id="done" data-autofocus>Looks great</button></div></div>`, 'clear side', back);
-    el.classList.add('side-panel'); el.classList.remove('screen');
+      <div class="card-foot"><button class="btn leaf" id="done" data-autofocus>Looks great</button></div></div></div>`, 'stage', back, 'dress');
     const sp = $('#sp', el), cl = $('#cl', el), ht = $('#ht', el);
     const render = () => {
       sp.innerHTML = SPECIES_KEYS.map((k) => `<button class="btn small ${s.species === k ? '' : 'ghost'}" data-s="${k}" aria-pressed="${s.species === k}">${SPECIES[k].name}</button>`).join('');
@@ -6001,6 +6104,7 @@ class UI {
         <button class="btn ghost" id="hlp">Controls</button>
         <div class="row"><button class="btn small ghost" id="mus">${s.music ? 'Music: On' : 'Music: Off'}</button><button class="btn small ghost" id="sfx">${s.sfx ? 'Sounds: On' : 'Sounds: Off'}</button></div>
         <button class="btn ghost" id="camb">Camera settings</button>
+        ${FS.app() ? '' : `<button class="btn ghost" id="fsb">${FS.label()}</button>`}
         ${g.mode === 'island' ? `<button class="btn ghost" id="jrn">Missions</button>${g.mission ? '<button class="btn ghost" id="stopm">Stop this mission</button>' : ''}` : ''}
         ${g.net.active ? (g.net.isHost ? '<button class="btn teal" id="room">Everyone back to the room</button>' : '') + '<button class="btn pink" id="leave">Leave the online game</button>'
           : (g.mode === 'brawl' ? '<button class="btn teal" id="isl">Go to the Island</button>' : '') + '<button class="btn pink" id="quit">Quit to Title</button>'}
@@ -6008,6 +6112,7 @@ class UI {
     $('#res', el).onclick = () => g.togglePause();
     $('#hlp', el).onclick = () => this.help(() => this.pause());
     $('#camb', el).onclick = () => this.cameraSettings(() => this.pause());
+    if ($('#fsb', el)) $('#fsb', el).onclick = () => this.fullScreen(() => this.pause());
     if ($('#jrn', el)) $('#jrn', el).onclick = () => this.journal(() => this.pause());
     if ($('#stopm', el)) $('#stopm', el).onclick = () => { g.endMission(false); this.pause(); };
     $('#mus', el).onclick = (e) => { s.music = !s.music; g.audio.setMusic(s.music); g.persist(); e.target.textContent = s.music ? 'Music: On' : 'Music: Off'; };
@@ -6121,7 +6226,7 @@ class UI {
   }
   online(back, msg) {
     const g = this.g, net = g.net, s = g.save;
-    const el = this.show(`<div class="card" role="dialog" aria-label="Play online" style="width:min(620px,100%)">
+    const el = this.show(`<div class="stage-split"><div class="stage-hole" aria-hidden="true"></div><div class="card" role="dialog" aria-label="Play online">
       <h2>Play Online</h2>
       <p class="lead">Every friend plays on their own tablet. One of you hosts a game, and the others join it.</p>
       <p class="note bad" id="onMsg" ${msg ? '' : 'hidden'}>${esc(msg || '')}</p>
@@ -6130,7 +6235,7 @@ class UI {
       <div class="field"><span class="lbl">Join a friend's game</span><div class="games" id="onGames"></div>
         <div class="row join-row"><input id="onCode" class="txt code" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="CODE" aria-label="Room code"><button class="btn teal" id="onJoin">Join</button></div></div>
       <p class="note" id="onStatus" aria-live="polite"></p>
-      <div class="row"><button class="btn ghost" id="onBack">Back</button></div></div>`, '', back, 'online');
+      <div class="row"><button class="btn ghost" id="onBack">Back</button></div></div></div>`, this.g.mode === 'title' ? 'stage' : '', back, 'online');
     const nick = $('#nick', el), code = $('#onCode', el), games = $('#onGames', el), status = $('#onStatus', el), msgEl = $('#onMsg', el);
     nick.oninput = () => { s.nick = cleanName(nick.value); g.persist(); };
     code.oninput = () => { const v = code.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4); if (v !== code.value) code.value = v; };
@@ -6156,14 +6261,14 @@ class UI {
   room() {
     const g = this.g, net = g.net;
     if (!net.active) { this.online(() => this.title()); return; }
-    const el = this.show(`<div class="card room-card" role="dialog" aria-label="Online room" style="width:min(700px,100%)">
+    const el = this.show(`<div class="stage-split wide-card"><div class="stage-hole" aria-hidden="true"></div><div class="card room-card" role="dialog" aria-label="Online room">
       <div class="room-head"><div><h2>Online Room</h2><p class="lead" id="rmLead"></p></div>
         <div class="code-box"><small>Room code</small><b>${esc(net.code)}</b></div></div>
       <div class="lbl" style="margin-top:6px">Players <span id="rmCount"></span></div>
       <div class="pchips" id="rmPlayers"></div>
       <p class="note" id="rmHint"></p>
       <div id="rmHost"></div>
-      <div class="card-foot"><span id="rmGoBox"></span><button class="btn teal" id="rmLook">Change my look</button><button class="btn ghost" id="rmLeave">Leave</button></div></div>`, '', null, 'room');
+      <div class="card-foot"><span id="rmGoBox"></span><button class="btn teal" id="rmLook">Change my look</button><button class="btn ghost" id="rmLeave">Leave</button></div></div></div>`, this.g.mode === 'title' ? 'stage' : '', null, 'room');
     const cfg = g.netCfg, lead = $('#rmLead', el), list = $('#rmPlayers', el), hostBox = $('#rmHost', el), goBox = $('#rmGoBox', el);
     $('#rmLook', el).onclick = () => g.startDress('room');
     $('#rmLeave', el).onclick = async () => { await net.leave(); this.online(() => this.title()); };
@@ -6319,7 +6424,7 @@ class CameraRig {
     const key = mode + (g.player && g.player.driving ? ':car' : '');
     if (key !== this.modeKey) { if (this.modeKey && mode === 'island') { /* smooth transition between on-foot and car */ } else this.cutPending = true; this.modeKey = key; }
     if (mode === 'island' && g.player) this.updateFollow(dt);
-    else if (mode === 'dress') this.updateDress(dt);
+    else if ((mode === 'title' || mode === 'dress') && g.level && g.level.kind === 'stage') this.updateShowcase(dt);
     else this.updateArena(dt);
     this.finish(dt);
   }
@@ -6339,31 +6444,40 @@ class CameraRig {
     // teleport / respawn detection -> hard cut, never swoop across the map
     if (raw.distanceTo(this.lastRaw) > 7) this.cutPending = true;
     this.lastRaw.copy(raw);
-    // vertical dead zone while jumping (no bobbing), full follow on long falls / climbs
+    // vertical: calm for small hops (no bobbing), but big jumps, trampolines and the cannon are followed up into the air
     const grounded = car ? true : (p.grounded || p.swimming || p.state === 'climb' || p.ladderT > 0 || p.grippingStatic());
     if (grounded) { this.groundY = raw.y; this.airT = 0; } else this.airT += dt;
     let ty = raw.y;
-    if (!grounded && this.airT < 1.1 && raw.y > this.groundY) ty = this.groundY + (raw.y - this.groundY) * 0.35;
+    const air = raw.y - this.groundY;
+    if (!grounded && air > 0) ty = this.groundY + (air <= 2.5 ? air * 0.35 : 0.875 + (air - 2.5) * 0.92);
     if (raw.y < this.groundY - 0.4) this.groundY = raw.y;
     // look-ahead in the travel direction
     const vel = car ? car.body.vel : p.torso.vel;
     let lx = vel.x * (car ? 0.22 : 0.12), lz = vel.z * (car ? 0.22 : 0.12); const ll = Math.hypot(lx, lz), lmax = car ? 4 : 1.2; if (ll > lmax) { lx *= lmax / ll; lz *= lmax / ll; }
     if (ragdoll) { lx = 0; lz = 0; }
-    // orbit input
+    // orbit input (turn it yourself any time; it starts following again a moment after you let go)
     const [dx, dy] = this.orbitInput();
-    if (Math.abs(dx) + Math.abs(dy) > 1e-5) this.manualT = car ? 1.6 : 2.5;
+    if (Math.abs(dx) + Math.abs(dy) > 1e-5) this.manualT = car ? 1.2 : 1.6;
     this.yaw -= dx; this.pitch = clamp(this.pitch + dy, -0.3, 1.3);
     if (!g.ui.open) this.zoom = clamp(this.zoom + g.input.mouse.wheel * 0.9, 3.5, 18);
     this.manualT -= dt;
-    // auto-center behind the player / car
-    const fwdIn = p.input.moveX * Math.sin(this.lookYaw) + p.input.moveZ * Math.cos(this.lookYaw);
-    if (S.autoCenter && this.manualT <= 0 && !ragdoll) {
+    // follow: the camera swings round behind the animal as it runs, in any direction. Turning is capped at about
+    // 60 degrees a second (running sideways makes a wide curve, not a spin), and running straight at the camera shows
+    // your animal's face for a moment before it swings round.
+    if (S.autoCenter && this.manualT <= 0 && !ragdoll && !g.ui.open) {
       if (car) {
         const f = _cr3.set(0, 0, 1).applyQuat(car.body.q); const heading = Math.atan2(f.x, f.z);
         this.carT = (this.carT || 0) + dt;
-        if (Math.abs(car.speed) > 1.5 || this.carT < 1.2) { this.yaw = dampAngle(this.yaw, heading + PI, this.carT < 1.2 ? 4 : 2.4, dt); this.pitch = damp(this.pitch, 0.3, 1.2, dt); }
-      } else if (Math.hypot(p.input.moveX, p.input.moveZ) > 0.2 && fwdIn > 0.25 && !p.grippingStatic()) {
-        this.yaw = dampAngle(this.yaw, p.yaw + PI, 0.6, dt); this.pitch = damp(this.pitch, 0.36, 0.4, dt);
+        if (Math.abs(car.speed) > 1.5 || this.carT < 1.2) { this.yaw = dampAngle(this.yaw, heading + PI, this.carT < 1.2 ? 4 : 2.4 + Math.min(1.5, Math.abs(car.speed) * 0.06), dt); this.pitch = damp(this.pitch, 0.3, 1.2, dt); }
+      } else if (!p.grippingStatic() && !(p.ladderT > 0) && p.state === 'normal') {
+        const vx = vel.x - p.groundVel.x, vz = vel.z - p.groundVel.z, hs = Math.hypot(vx, vz);
+        if (hs > 1.5 && Math.hypot(p.input.moveX, p.input.moveZ) > 0.15) {
+          const want = Math.atan2(-vx, -vz), df = wrapAngle(want - this.yaw), ad = Math.abs(df);
+          this.backT = ad > 2.5 ? (this.backT || 0) + dt : 0;
+          const w = ad > 2.5 ? (this.backT > 1.1 ? 1.8 : 0) : Math.min(1.1, ad * 1.2);
+          this.yaw += Math.sign(df) * Math.min(ad, w * dt * Math.min(1, hs / 6));
+          this.pitch = damp(this.pitch, 0.36, 0.5, dt);
+        } else this.backT = 0;
       }
     }
     if (g.ui.open && !g.paused && !car) { this.yaw = dampAngle(this.yaw, p.yaw, 1.6, dt); this.pitch = damp(this.pitch, 0.2, 2, dt); }
@@ -6436,17 +6550,34 @@ class CameraRig {
     for (let i = 0; i < 7; i++) { const m = (lo + hi) / 2; if (W.pointInStatic(_cr4.copy(pivot).addScaled(d, m), 0.15)) hi = m; else lo = m; }
     pos.copy(pivot).addScaled(d, lo * 0.95);
   }
-  // ---------- dressing room ----------
-  updateDress(dt) {
-    const g = this.g, p = g.player; if (!p) return;
-    const tgt = _cr1.copy(p.torso.pos).add(_cr2.set(0, 0.45, 0));
-    const az = 0.25 + Math.sin(g.time * 0.25) * 0.2, d = 4.6, narrow = g.gfx.w / g.gfx.h < 1, side = narrow ? 0 : 1.25;
-    const rx = Math.cos(az), rz = -Math.sin(az);
-    const pos = _cr3.set(tgt.x + Math.sin(az) * d + rx * side, tgt.y + 0.9, tgt.z + Math.cos(az) * d + rz * side);
-    const k = this.cutPending ? 1 : 1 - Math.exp(-5 * dt);
-    this.pos.lerpVectors(this.pos, pos, k); this.target.copy(tgt).add(_cr2.set(rx * side, narrow ? -0.9 : 0, rz * side));
-    this.lookYaw = az + PI; this.fov = 0.85; this.playerAlpha = 1;
-    g.gfx.shadowFocus.set(0, 0, 0); g.gfx.shadowRadius = 12;
+  // ---------- the stage (title, dress up, online room): frame the animals inside the screen's free area ----------
+  // The menus leave a "stage hole" (an empty box in the layout). The animals are fitted into that box, so they are
+  // never hidden behind a card whatever the screen shape: left of the menu on a wide screen, above it on a tall one.
+  updateShowcase(dt) {
+    const g = this.g, ups = g.stageSubjects ? g.stageSubjects() : [];
+    let minX = 1e9, maxX = -1e9, z = 0, n = 0;
+    for (const ch of ups) { if (!ch.inWorld) continue; const p = ch.torso.pos; minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); z += p.z; n++; }
+    if (!n) { minX = maxX = 0; } else z /= n;
+    // the box the animals should fill, as fractions of the screen
+    const W = Math.max(1, innerWidth), H = Math.max(1, innerHeight), r = g.ui.stageRect();
+    const fw = clamp((r.x1 - r.x0) / W, 0.12, 1), fh = clamp((r.y1 - r.y0) / H, 0.12, 1);
+    const sx = clamp((r.x0 + r.x1) / 2 / W, 0, 1), sy = clamp((r.y0 + r.y1) / 2 / H, 0, 1);
+    const fov = 0.72, tanV = Math.tan(fov / 2), aspect = W / H;
+    const hS = 2.75, wS = (maxX - minX) + 1.7; // feet to hat tip, and side to side with the arms
+    const want = clamp(Math.max(hS / (0.84 * fh * 2 * tanV), wS / (0.9 * fw * 2 * tanV * aspect)), 2.4, 40);
+    const d = this.cutPending || !this.showD ? want : damp(this.showD, want, 3, dt); this.showD = d;
+    // stand in front of the animals, then turn the camera so they land in the box (turning, not sliding, keeps the
+    // balloon arch behind them in the picture)
+    const yaw = Math.sin(g.time * 0.21) * 0.13, pitch = 0.1, C = _cr1.set((minX + maxX) / 2, 1.22, z);
+    const dir = (yw, pt, out) => out.set(-Math.sin(yw) * Math.cos(pt), -Math.sin(pt), -Math.cos(yw) * Math.cos(pt));
+    const pos = _cr3.copy(C).addScaled(dir(yaw, pitch, _crF), -d);
+    const nx = (sx - 0.5) * 2, ny = (0.5 - sy) * 2;
+    const vy = yaw + Math.atan(nx * tanV * aspect), vp = pitch + Math.atan(ny * tanV);
+    const tgt = _cr4.copy(pos).addScaled(dir(vy, vp, _crF), d);
+    if (this.cutPending) { this.pos.copy(pos); this.target.copy(tgt); }
+    else { const k = 1 - Math.exp(-6 * dt); this.pos.lerpVectors(this.pos, pos, k); this.target.lerpVectors(this.target, tgt, k); }
+    this.lookYaw = yaw + PI; this.fov = fov; this.playerAlpha = 1;
+    g.gfx.shadowFocus.set(C.x, 0, C.z); g.gfx.shadowRadius = 10 + (maxX - minX);
   }
   // ---------- shared arena camera (keeps everyone on screen) ----------
   updateArena(dt) {
@@ -6510,13 +6641,26 @@ function defaultSave() { return { coins: 0, hats: ['none', 'party'], hat: 'party
 class StageLevel {
   constructor(game) { this.game = game; this.kind = 'stage'; this.waterY = -999; }
   build() {
-    const G = this.game, B = (this.B = new Builder(G));
+    const G = this.game, B = (this.B = new Builder(G)), P5 = ['#ffc93c', '#2ec4d6', '#7bd84b', '#ff5e8a', '#b48cff'];
     Object.assign(G.gfx.env, { fogDen: 0.01, fogStart: 20 });
-    B.cyl(0, -0.5, 0, 4.2, 1, { c: col('#fff7e8') });
-    B.vis(gTorus(4.2, 0.2, 48, 8), { p: [0, 0, 0], c: col('#ff5e8a') });
-    for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; B.vis(gSphere(0.35, 10, 8), { p: [Math.sin(a) * 4.2, 0.15, Math.cos(a) * 4.2], c: col(['#ffc93c', '#2ec4d6', '#7bd84b', '#ff5e8a', '#b48cff'][i % 5]) }); }
+    B.cyl(0, -0.5, 0, 4.6, 1, { c: col('#fff7e8') });
+    B.vis(gTorus(4.6, 0.2, 48, 8), { p: [0, 0, 0], c: col('#ff5e8a') });
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; B.vis(gSphere(0.32, 10, 8), { p: [Math.sin(a) * 4.6, 0.15, Math.cos(a) * 4.6], c: col(P5[i % 5]) }); }
     B.box(0, -2, 0, 80, 2, 80, { c: col('#bfe6ff') });
-    const r = mulberry32(2); for (let i = 0; i < 18; i++) { const a = r() * TAU, d = 12 + r() * 20; B.vis(gSphere(1 + r() * 1.5, 12, 8), { p: [Math.sin(a) * d, r() * 6 + 1, Math.cos(a) * d], s: [1, 1.2, 1], c: col(['#ffc93c', '#2ec4d6', '#7bd84b', '#ff5e8a', '#b48cff'][i % 5]) }); }
+    // a balloon arch behind the animals
+    for (let i = 0; i <= 26; i++) {
+      const a = i / 26 * PI, x = Math.cos(a) * 5.3, y = Math.sin(a) * 5.5, z = -3.3;
+      B.vis(gSphere(0.44, 12, 10), { p: [x, y, z], c: col(P5[i % 5]) });
+      B.vis(gSphere(0.36, 10, 8), { p: [x * 1.05, y * 1.04 + 0.12, z - 0.4], c: col(P5[(i + 2) % 5]) });
+    }
+    // balloons on strings, further back
+    const r = mulberry32(2);
+    for (let i = 0; i < 16; i++) {
+      const x = (r() - 0.5) * 34, z = -9 - r() * 16, y = 3 + r() * 7, R = 0.6 + r() * 0.4, c = col(P5[i % 5]);
+      B.vis(gSphere(R, 14, 10), { p: [x, y, z], s: [1, 1.18, 1], c });
+      B.vis(gCone(0.13, 0.2, 6), { p: [x, y - R * 1.18, z], q: Q(PI, 0, 0), c });
+      B.vis(gCyl(0.015, 0.015, 2.6, 4), { p: [x, y - R * 1.2 - 1.3, z], c: col('#ffffff') });
+    }
     B.finish();
   }
 }
@@ -6612,19 +6756,17 @@ class Game {
   }
   // ---------------- modes ----------------
   startTitle(keepUi) {
-    if (!keepUi) this.ui.close(); this.paused = false; this.mode = 'title';
-    this.newWorld(); this.level = new ArenaLevel(this, choose(['cake', 'rooftop', 'iceberg'])); this.level.build();
-    for (let i = 0; i < 5; i++) { const c = this.addChar({ name: CPU_NAMES[i], species: SPECIES_KEYS[(i * 2 + 1) % 9], hat: choose(SHOP_HATS), isBot: true, tagColor: '#ffffff' }); this.bots.push(new BrawlBot(this, c, 1)); }
-    this.respawnAll(); this.fighting = true; this.titleT = 0;
+    if (!keepUi) this.ui.close(); this.paused = false;
+    this.enterStage(); this.mode = 'title'; this.fighting = false; this.titleT = 0;
+    this.syncLineup();
     this.ui.setHud('title');
     if (this.net.active && this.net.md && this.net.md.k === 'room') this.ui.room(); else if (!keepUi) this.ui.title();
     this.audio.playMusic('menu');
   }
   startDress(from) {
-    this.ui.close(); this.paused = false; this.mode = 'dress';
-    this.newWorld(); this.level = new StageLevel(this); this.level.build();
-    const s = this.save; const p = this.addChar({ name: s.name, species: s.species, color: s.color, hat: s.hat });
-    p.spawn(new V3(0, 1.1, 0), 0); this.player = p; this.players = [{ src: 'none', char: p }];
+    this.ui.close(); this.paused = false;
+    this.enterStage(); this.mode = 'dress';
+    this.syncLineup();
     this.ui.setHud('dress');
     this.ui.wardrobe(() => (from === 'island' ? this.startIsland() : from === 'room' && this.net.active ? this.enterRoom() : this.startTitle()));
   }
@@ -6943,7 +7085,7 @@ class Game {
       const tr0 = performance.now();
       if (!window.__noRender) this.gfx.render(); // (tests switch drawing off to run two tablets at full speed)
       this.prof = { logic: tr0 - tf0, render: performance.now() - tr0 };
-      this.ui.updateTags(this.chars, this.mode === 'brawl' ? 'all' : this.mode === 'island' ? 'island' : '');
+      this.ui.updateTags(this.chars, this.mode === 'brawl' ? 'all' : this.mode === 'island' ? 'island' : this.mode === 'title' && this.lineup && this.lineup.length > 1 ? 'all' : '');
       this.minimap.update(dt);
     }
     this.autoQuality(dt);
@@ -6956,7 +7098,7 @@ class Game {
     for (let i = 0; i < n; i++) {
       this.input.poll(); this.time += dt; this.readPlayers();
       for (const b of this.bots) b.update(dt); for (const q of this.npcs) q.update(dt); this.net.update(dt);
-      if (this.mode === 'island') this.updateIsland(dt); else if (this.mode === 'brawl') this.updateBrawl(dt); else if (this.mode === 'title') this.updateTitle(dt);
+      if (this.mode === 'island') this.updateIsland(dt); else if (this.mode === 'brawl') this.updateBrawl(dt); else if (this.mode === 'title') this.updateTitle(dt); else if (this.mode === 'dress') this.updateDress(dt);
       for (const c of this.chars) c.update(dt); for (const car of this.cars) car.update(dt);
       this.world.step(dt); if (this.level.update) this.level.update(dt); this.particles.update(dt);
       this.rig.update(dt); this.input.endFrame();
@@ -6970,13 +7112,8 @@ class Game {
       if (avg > 0.028 && P.level < 2) { P.level++; if (P.level === 1) { this.gfx.scaleQ = 0.75; this.gfx.dpr = Math.min(this.gfx.dpr, 1.5); } else { this.gfx.scaleQ = 0.6; } this.gfx.resize(); }
     }
   }
-  updateTitle(dt) {
-    this.titleT += dt;
-    for (const c of this.chars) { if (!c.eliminated && this.level.isOut(c)) { c.eliminated = true; c.outT = 0; } if (c.eliminated) { c.outT += dt; if (c.outT > 1.5 && c.inWorld) c.removeFromWorld(); } }
-    const alive = this.chars.filter((c) => !c.eliminated);
-    if (alive.length <= 1) { this.titleT2 = (this.titleT2 || 0) + dt; if (this.titleT2 > 2.5) { this.titleT2 = 0; this.respawnAll(); this.rig.cut(); } }
-  }
-  updateDress(dt) { const p = this.player; if (p) { p.yaw = Math.sin(this.time * 0.4) * 0.6; if (Math.random() < dt * 0.25 && p.grounded) p.doJump(); } }
+  updateTitle(dt) { this.titleT += dt; this.updateStage(dt); }
+  updateDress(dt) { this.updateStage(dt); }
   updateBrawl(dt) {
     if (this.brawl && this.brawl.online) return this.updateBrawlOnline(dt);
     const B = this.brawl, L = this.level;
@@ -7289,6 +7426,90 @@ Object.assign(Game.prototype, {
   },
 });
 
+// ===== the stage: your animal (and, in an online room, every friend's animal) stands on a little stage before a game =====
+// a small hop that keeps everyone in the picture (a full jump would fly out of the frame)
+function stageHop(ch, v) {
+  if (!ch.inWorld || !ch.grounded || ch.state !== 'normal') return;
+  for (const b of ch.bodies) b.vel.y = Math.max(b.vel.y, v * (b === ch.torso ? 1 : 0.9));
+  ch.jumpLock = 0.18; ch.coyote = 0; ch.grounded = false; ch.airT = 0.01; ch.squash = -0.15;
+}
+Object.assign(Game.prototype, {
+  // build the stage world unless we are already standing on it
+  enterStage() {
+    if (this.level && this.level.kind === 'stage' && this.world && (this.mode === 'title' || this.mode === 'dress')) return false;
+    this.newWorld(); this.level = new StageLevel(this); this.level.build(); this.lineup = []; this.rig.cut();
+    return true;
+  },
+  // who should be on the stage: just you, or everyone in the online room (host first, like the player list)
+  lineupWanted() {
+    const s = this.save, net = this.net;
+    const me = { key: 'me', name: net.active ? net.myName() : '', species: s.species, color: s.color, hat: s.hat, tag: '#ffc93c', self: true };
+    if (!(net.active && net.md && net.md.k === 'room')) return [me];
+    return net.players().map((p) => {
+      if (p.self) return Object.assign(me, { tag: p.color });
+      const rp = net.peers.get(p.pid), lk = rp ? net.lookOf(rp, 0) : { species: 'pup', color: null, hat: 'none' };
+      return { key: p.pid, name: p.name, species: lk.species, color: lk.color, hat: lk.hat, tag: p.color, self: false };
+    });
+  },
+  syncLineup() {
+    if (!this.level || this.level.kind !== 'stage') return;
+    const want = this.lineupWanted(), L = this.lineup || (this.lineup = []);
+    for (let i = L.length - 1; i >= 0; i--) if (!want.some((w) => w.key === L[i].key)) { this.removeChar(L[i].ch); L.splice(i, 1); }
+    const n = want.length;
+    want.forEach((w, i) => {
+      const x = (i - (n - 1) / 2) * 1.95;
+      let e = L.find((q) => q.key === w.key);
+      if (!e) {
+        const ch = this.addChar({ name: w.name || 'You', species: w.species, color: w.color, hat: w.hat, tagColor: w.tag });
+        ch.spawn(new V3(x, 1.15, 0), 0); ch.happyT = 0.5;
+        e = { key: w.key, ch, sig: '', hopT: rand(2, 5), phase: rand(0, TAU) }; L.push(e);
+      }
+      const ch = e.ch, sig = w.species + '|' + (w.color || '') + '|' + w.hat;
+      if (e.sig && e.sig !== sig) { // a new look: swap it on and do a happy hop
+        ch.species = w.species; ch.color = w.color; ch.hat = w.hat;
+        const v = this.views.get(ch); if (v) v.rebuild();
+        ch.happyT = 1.4; stageHop(ch, 5.5);
+        this.particles.confetti(ch.head.pos.clone().add(new V3(0, 0.6, 0)), 26, 3.5);
+      }
+      e.sig = sig; e.x = x; e.self = w.self; ch.name = w.name || 'You'; ch.tagColor = w.tag;
+      if (w.self) this.player = ch;
+    });
+  },
+  // the animals the camera keeps in view: everyone on the title, only you while you dress up
+  stageSubjects() {
+    const L = this.lineup || [];
+    if (this.mode === 'dress') { const me = L.find((e) => e.self); return me ? [me.ch] : []; }
+    return L.map((e) => e.ch);
+  },
+  // idle life on the stage: stay on your spot, face the camera, sway, and hop now and then
+  updateStage(dt) {
+    this.lineupT = (this.lineupT || 0) - dt;
+    if (this.lineupT <= 0) { this.lineupT = 0.3; this.syncLineup(); }
+    for (const e of this.lineup || []) {
+      const ch = e.ch, inp = ch.input; inp.reset();
+      if (!ch.inWorld) continue;
+      const p = ch.torso.pos, dx = e.x - p.x, dz = -p.z, d = Math.hypot(dx, dz);
+      if (p.y < -3 || d > 7) { ch.spawn(new V3(e.x, 1.15, 0), 0); continue; }
+      if (ch.state !== 'normal') continue;
+      if (d > 0.45) { inp.moveX = dx / d * 0.45; inp.moveZ = dz / d * 0.45; continue; }
+      ch.yaw = dampAngle(ch.yaw, Math.sin(this.time * 0.5 + e.phase) * 0.3, 3, dt);
+      e.hopT -= dt; if (e.hopT <= 0) { e.hopT = rand(3.5, 7.5); stageHop(ch, 4.4); ch.happyT = 0.45; }
+    }
+  },
+  // tapping an animal on the stage makes it jump for joy
+  stageTap(cx, cy) {
+    let best = null, bd = 140;
+    for (const e of this.lineup || []) {
+      if (!e.ch.inWorld) continue;
+      const s = this.gfx.project(e.ch.torso.pos.clone().add(new V3(0, 0.5, 0)), {}); if (!s.visible) continue;
+      const dd = Math.hypot(s.x - cx, s.y - cy); if (dd < bd) { bd = dd; best = e; }
+    }
+    if (!best) return;
+    const ch = best.ch; ch.happyT = 1.5; stageHop(ch, 6.2);
+    this.voice(ch, 'wee'); this.particles.confetti(ch.head.pos.clone().add(new V3(0, 0.5, 0)), 18, 3);
+  },
+});
+
 // ===== boot =====
 function boot() {
   let game;
@@ -7298,6 +7519,9 @@ function boot() {
     console.error(e); return;
   }
   window.__game = game; window.__fi = { V3, Quat, makeCrate, makeBall };
+  // full screen labels follow the real state (Esc or a swipe can leave full screen at any time)
+  const fsSync = () => { for (const id of ['#bFull', '#fsb']) { const b = $(id); if (b) b.textContent = FS.label(); } setTimeout(() => game.gfx.resize(), 60); };
+  document.addEventListener('fullscreenchange', fsSync); document.addEventListener('webkitfullscreenchange', fsSync);
   if (window.claude && window.claude.hot && window.claude.hot.snapshot) { try { window.claude.hot.snapshot(() => ({ save: game.save })); } catch (e) { } }
   const go = () => { $('#loading').remove(); game.startTitle(); };
   const loop = (t) => { if (!window.__pauseLoop) { try { game.frame(t); } catch (e) { console.error(e); showErr(e); } } requestAnimationFrame(loop); };
