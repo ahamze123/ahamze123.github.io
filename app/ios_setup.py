@@ -77,9 +77,24 @@ if 'BBStorePlugin.swift' not in s:
     assert m, 'the Sources phase in project.pbxproj'
     s = s[:m.end()] + ''.join('%s%s /* %s in Sources */,\n' % (m.group(1), b, f) for f, r, b in OWN) + s[m.end():]
     open(pj, 'w').write(s)
+# the app's screen is our BBViewController: newer Capacitor templates make it in SceneDelegate.swift, older ones in
+# Main.storyboard (both are changed when they are there)
+used = []
+sd = os.path.join(APP, 'SceneDelegate.swift')
+if os.path.exists(sd):
+    t = open(sd).read()
+    t = t.replace('rootViewController = CAPBridgeViewController()', 'rootViewController = BBViewController()')
+    if 'BBViewController()' in t:
+        open(sd, 'w').write(t)
+        used.append('SceneDelegate')
+    elif 'CAPBridgeViewController' in t:
+        raise SystemExit('SceneDelegate.swift: could not point it at BBViewController')
 sb = os.path.join(APP, 'Base.lproj', 'Main.storyboard')
-t = open(sb).read()
-t = t.replace('customClass="CAPBridgeViewController" customModule="Capacitor"', 'customClass="BBViewController" customModule="App" customModuleProvider="target"')
-assert 'customClass="BBViewController"' in t, 'Main.storyboard'
-open(sb, 'w').write(t)
-print('BBStore plugin added')
+if os.path.exists(sb):
+    t = open(sb).read()
+    t = t.replace('customClass="CAPBridgeViewController" customModule="Capacitor"', 'customClass="BBViewController" customModule="App" customModuleProvider="target"')
+    if 'customClass="BBViewController"' in t:
+        open(sb, 'w').write(t)
+        used.append('Main.storyboard')
+assert used, 'neither SceneDelegate.swift nor Main.storyboard makes the app screen'
+print('BBStore plugin added (' + ', '.join(used) + ')')
