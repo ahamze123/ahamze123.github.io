@@ -1,7 +1,7 @@
 {
  "name": "Flop Island",
  "short_name": "Flop Island",
- "description": "Flop Island: wobbly fuzzy animals, a sunny island full of jobs and missions, and big floppy brawls. Play online with friends, each on their own tablet.",
+ "description": "Flop Island: wobbly fuzzy animals, a big sunny island with a story, jobs, homes, pets and a trip to the Moon, and floppy brawls in 13 arenas. Play online with up to 8 friends, each on their own tablet.",
  "start_url": "./",
  "scope": "./",
  "display": "fullscreen",
