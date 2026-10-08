@@ -1297,38 +1297,42 @@ void main(){
   if (vFA.x > 0.5) { vec3 fn = cross(dFdx(vPos), dFdy(vPos)); float fl = length(fn); if (fl > 1e-14) { fn /= fl; N = dot(fn, N) < 0.0 ? -fn : fn; } }
   if (!gl_FrontFacing) N = -N;
   float fz = clamp((uFuzz - 0.5) * 2.0, 0.0, 1.0), ao = vFA.y;
-  if (uFuzz > 0.5) {
+  if (uFuzz > 0.5) { // plush: a fine, even pile (no blotches or dark patches)
     float camD = length(uCamPos - vPos);
-    float k = (1.0 - smoothstep(6.0, 22.0, camD)) * 0.55 * fz;
+    float k = (1.0 - smoothstep(5.0, 18.0, camD)) * 0.17 * fz;
 #if HQ
-    vec3 q = vObj * 26.0; // (fur sits still on a moving animal)
+    vec3 q = vObj * 50.0; // (fur sits still on a moving animal)
 #else
-    vec3 q = vPos * 26.0;
+    vec3 q = vPos * 50.0;
 #endif
     vec3 g = vec3(fnoise(q) - 0.5, fnoise(q + 17.3) - 0.5, fnoise(q + 41.7) - 0.5);
     N = normalize(N + g * k);
-    albedo *= 0.92 + 0.16 * fnoise(q * 0.3462);
+    albedo *= 0.985 + 0.03 * fnoise(q * 0.37);
+    albedo = max(mix(vec3(dot(albedo, vec3(0.2126, 0.7152, 0.0722))), albedo, 1.0 + 0.12 * fz), 0.0); // (the soft fill light pales colours a little: keep them rich)
   }
   vec3 V = normalize(uCamPos - vPos);
   vec3 c, glow = vec3(0.0);
 #if HQ
   if (uOccOn > 0.5) { // soft occlusion from the animal's body and head (round "spheres"), and from the ground below its feet
+    // (only a faint, tight shade where head meets body: a dark ring there reads like a seam)
     float occ = 0.0;
-    for (int i = 0; i < 2; i++) { vec3 d = uOcc[i].xyz - vPos; float l2 = dot(d, d), r2 = uOcc[i].w * uOcc[i].w; occ += clamp(dot(N, d) * inversesqrt(max(l2, 1e-6)), 0.0, 1.0) * r2 / max(l2, r2); }
-    occ += (1.0 - smoothstep(0.0, 0.4, vPos.y - uOccY)) * clamp(0.6 - 0.6 * N.y, 0.0, 1.0);
-    ao *= 1.0 - clamp(occ, 0.0, 1.0) * 0.55;
+    for (int i = 0; i < 2; i++) { vec3 d = uOcc[i].xyz - vPos; float l2 = dot(d, d), r2 = uOcc[i].w * uOcc[i].w, f = r2 / max(l2, r2); occ += clamp(dot(N, d) * inversesqrt(max(l2, 1e-6)), 0.0, 1.0) * f * f; }
+    float gocc = (1.0 - smoothstep(0.0, 0.4, vPos.y - uOccY)) * clamp(0.6 - 0.6 * N.y, 0.0, 1.0);
+    ao *= (1.0 - clamp(occ, 0.0, 1.0) * 0.14) * (1.0 - gocc * 0.4);
   }
 #endif
   if (uUnlit > 0.5) { c = albedo; }
   else {
     float ndl = dot(N, uSunDir);
     float sh = uShadowOn > 0.5 ? shadowF() : 1.0;
+    sh = mix(sh, 1.0, 0.4 * fz); // (soft toys: shadows on the fur stay gentle)
     float fr = pow(1.0 - max(dot(N, V), 0.0), 2.2);
     vec3 H = normalize(uSunDir + V); float nh = max(dot(N, H), 0.0);
 #if HQ
-    float direct = smoothstep(-0.15 - 0.2 * fz, 0.55, ndl) * sh;
+    float direct = smoothstep(-0.15 - 0.35 * fz, 0.55, ndl) * sh;
     vec3 hemi = mix(uGndCol, uSkyCol, N.y * 0.5 + 0.5);
     hemi += uGndCol * uSunCol * 0.1 * (1.0 - abs(N.y)); // sunlight bounced off the ground fills the shady sides
+    hemi = mix(hemi, (uSkyCol + uGndCol) * 0.5, 0.4 * fz) * (1.0 + 0.06 * fz); // plush toys: a soft, even fill all round (no dark undersides)
     c = albedo * (hemi * ao + uSunCol * direct * (0.4 + 0.6 * ao));
     // plush: light scatters in the fluff, so the edge of the shadow glows warm and saturated
     float term = smoothstep(-0.3, 0.0, ndl) * (1.0 - smoothstep(0.0, 0.35, ndl));
@@ -1340,16 +1344,17 @@ void main(){
     glow += uSunCol * pow(nh, 200.0) * uSpec * sh * 0.35;
     // fur rim: a soft bright halo round the animal, stronger against the light
     float back = 0.65 + 0.7 * max(dot(-V, uSunDir), 0.0) * sh;
-    c += (albedo * 0.9 + 0.08) * fr * uFuzz * (0.45 + 0.55 * direct) * back;
+    c += (mix(albedo, vec3(1.0), 0.15) * 0.9 + 0.07) * fr * uFuzz * (0.5 + 0.5 * direct) * back; // (a light, silky sheen)
     c += uSkyCol * fr * fr * fz * 0.35 * ao;
 #else
-    float direct = smoothstep(-0.15, 0.55, ndl) * sh;
+    float direct = smoothstep(-0.15 - 0.35 * fz, 0.55, ndl) * sh;
     vec3 hemi = mix(uGndCol, uSkyCol, N.y * 0.5 + 0.5);
+    hemi = mix(hemi, (uSkyCol + uGndCol) * 0.5, 0.4 * fz) * (1.0 + 0.06 * fz);
     c = albedo * (hemi * ao + uSunCol * direct);
     c += uSunCol * pow(nh, 48.0) * uSpec * sh;
-    c += (albedo * 0.9 + 0.08) * fr * uFuzz * (0.45 + 0.55 * direct);
+    c += (mix(albedo, vec3(1.0), 0.15) * 0.9 + 0.07) * fr * uFuzz * (0.5 + 0.5 * direct);
 #endif
-    c *= 1.0 - uFuzz * 0.10 * (1.0 - fr);
+    c *= 1.0 - uFuzz * 0.03 * (1.0 - fr);
   }
   c += uEmis;
   float ff = fogF(vPos) * uFogOn;
@@ -3261,6 +3266,7 @@ class Character {
   constructor(world, opts = {}) {
     this.world = world; this.id = ++_charId;
     this.name = opts.name || 'Buddy'; this.species = opts.species || 'pup'; this.color = opts.color || null; this.hat = opts.hat || 'none'; this.outfit = cleanOutfit(opts.outfit);
+    this.grumpy = !!opts.grumpy; // (looks only: a grumpy face, brows and a pout - the Grumble Gang; 61_charview.js)
     this.isBot = !!opts.isBot; this.playerIndex = opts.playerIndex ?? -1; this.tagColor = opts.tagColor || '#ffffff';
     this.input = new InputState();
     const own = this.id;
@@ -4236,10 +4242,13 @@ const HATS = {
 };
 const HAT_KEYS = Object.keys(HATS);
 // ---- more animals plug in here (see 61b_*.js): SPECIES[key] = {name, color, belly, accent}; SPECIES_KEYS.push(key);
-// SPECIES_EXTRA[key] = { body(b, k), head(b, k), eyes: {x, y, z, s}, mouth: [x, y, z] | null, limb: '#hex', paw: '#hex',
-//   noCheeks: bool, voice: number }. k = {bc, belly, ac, dark, light, white, black, pink, col, shade, mixCol} (colours are
-// linear [r,g,b] from col('#hex')). Body frame: the bean from y -0.56 to 0.59 (widest 0.43 at y -0.14), +z is forward.
-// Head frame: a 0.42 ball at 0,0,0 (eyes at about y 0.05, z 0.38), +z forward.
+// SPECIES_EXTRA[key] = { body(b, k), head(b, k), eyes: {x, y, z?, s}, face: { nose: [x, y, z], muzzle?: [[centre], [radii]],
+//   mouth: {x, y, w, k, kind: 'u' | 'w'} | null }, belly: {rx, ry, y} | false, limb: '#hex', paw: '#hex', noCheeks: bool,
+//   voice: number }. k = {bc, belly, tummy, ac, dark, light, white, black, ink, pink, col, shade, mixCol} (colours are linear
+// [r,g,b] from col('#hex')). Body frame: the bean from y -0.56 to 0.59 (widest 0.43 at y -0.14), +z is forward.
+// Head frame: an egg 0.42 wide at 0,0,0 (eyes at about y -0.02, z 0.37: low and wide apart, a baby face), +z forward.
+// The mouth (a smile; a laughing open mouth when hit) and the eyes are drawn by the view from face.mouth / eyes; face.muzzle
+// is the snout ball the mouth sits on. See FACES and the plush look (TOY) below.
 const SPECIES_EXTRA = {};
 // ---- more hats: HATS[key] = { name, price, reward? }; HAT_KEYS.push(key) (always append: online looks send hat numbers);
 // HAT_EXTRA[key] = { build(b, species) } adds the hat to a GeoBuilder (hat frame: sits on top of the head, y = 0 is the crown);
@@ -4257,7 +4266,16 @@ const emptyOutfit = () => ({ face: null, neck: null, top: null, back: null });
 function cleanOutfit(o) { const r = emptyOutfit(); if (o && typeof o === 'object') for (const k of OUTFIT_SLOTS) if (OUTFITS[o[k]] && OUTFITS[o[k]].slot === k) r[k] = o[k]; return r; }
 function speciesKit(bodyCol, sp) {
   const S = SPECIES[sp] || SPECIES.pup, bc = col(bodyCol), white = col('#ffffff');
-  return { bc, belly: col(S.belly), ac: col(S.accent), dark: shade(bc, 0.72), light: mixCol(bc, white, 0.55), white, black: col('#1b1720'), pink: col('#ff8fa8'), col, shade, mixCol };
+  return { bc, belly: col(S.belly), tummy: toyTummy(bodyCol, sp), ac: col(S.accent), dark: shade(bc, 0.72), light: mixCol(bc, white, 0.55), white, black: col('#1b1720'), ink: col('#33262e'), pink: col('#ff8fa8'), col, shade, mixCol };
+}
+const colLum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+// the tummy: the animal's own belly colour in its own colours, a lighter tint of the fur otherwise; white animals get a soft
+// cream one (white on white would not show)
+function toyTummy(bodyCol, sp) {
+  const S = SPECIES[sp] || SPECIES.pup, bc = col(bodyCol), own = String(bodyCol).toLowerCase() === String(S.color).toLowerCase();
+  let t = own ? col(S.belly) : mixCol(bc, col('#ffffff'), 0.6);
+  if (colLum(bc) > 0.72 && colLum(t) - colLum(bc) < 0.15) t = mixCol(bc, col('#ffc9b8'), 0.55);
+  return t;
 }
 const SHOP_HATS = HAT_KEYS.filter((k) => !HATS[k].reward); // (prize hats stay special: CPU animals don't wear them)
 
@@ -4288,108 +4306,233 @@ const _meshCache = new Map();
 function cachedMesh(gfx, key, build) { let m = _meshCache.get(key); if (!m || m.gl !== gfx.gl) { m = build(); m._cached = true; _meshCache.set(key, m); } return m; }
 function shade(c, k) { return [c[0] * k, c[1] * k, c[2] * k]; }
 
+// ===== the plush toy look (visual only: the physics bodies stay as they are) =====
+// The head is drawn TOY.head times its physics size (its eyes, mouth, face clothes and hat with it). The body is drawn a bit
+// rounder (TOY.bx) and longer (TOY.by, stretched downward from y TOY.by0, so less leg shows), its clothes with it. Legs and
+// arms are short chubby tubes (radius TOY.leg / TOY.arm) with big round paws (TOY.hand). Faces: big round glossy eyes set low
+// and wide apart, a little smile, soft pink cheeks.
+const TOY = { head: 1.12, bx: 1.06, by: 1.07, by0: 0.5, leg: 0.16, arm: 0.13, hand: 0.17 };
+const TOY_EYE = { rx: 0.08, ry: 0.09, rz: 0.042 }; // an eye's half sizes (times eyes.s)
+const HEAD_RX = 0.42, HEAD_RY = 0.42 * 0.93, HEAD_RZ = 0.42 * 0.97; // the head egg (head frame, before TOY.head)
+const headZ = (x, y) => HEAD_RZ * Math.sqrt(Math.max(0, 1 - (x / HEAD_RX) ** 2 - (y / HEAD_RY) ** 2));
+const P3A = (v) => [v.x, v.y, v.z];
+// faces (head frame, before TOY.head): eyes {x, y, s} (the right eye, sitting on the head), muzzle: the snout ball
+// [[centre], [radii]], nose: [x, y, z] (clothes put a clown nose there), cheeks: [x, y], mouth: {x, y, w: half width, k: how
+// far its corners rise, kind: 'u' smile | 'w' cat smile, open: [half width, depth] of the laughing mouth} or null (a beak)
+const FACES = {
+  pup: { eyes: { x: 0.17, y: -0.02, s: 1 }, muzzle: [[0, -0.2, 0.29], [0.155, 0.105, 0.135]], nose: [0, -0.13, 0.4], mouth: { x: 0, y: -0.222, w: 0.042, k: 0.02 } },
+  kitty: { eyes: { x: 0.17, y: -0.02, s: 1.04 }, nose: [0, -0.105, 0.388], mouth: { x: 0, y: -0.158, w: 0.044, k: 0.018, kind: 'w' } },
+  bunny: { eyes: { x: 0.17, y: -0.02, s: 1 }, nose: [0, -0.11, 0.386], mouth: { x: 0, y: -0.163, w: 0.04, k: 0.016, kind: 'w' } },
+  bear: { eyes: { x: 0.17, y: -0.02, s: 0.98 }, muzzle: [[0, -0.195, 0.29], [0.145, 0.1, 0.125]], nose: [0, -0.128, 0.395], mouth: { x: 0, y: -0.215, w: 0.04, k: 0.019 } },
+  panda: { eyes: { x: 0.17, y: -0.025, s: 0.95 }, muzzle: [[0, -0.195, 0.29], [0.145, 0.1, 0.125]], nose: [0, -0.128, 0.395], mouth: { x: 0, y: -0.215, w: 0.04, k: 0.019 } },
+  duck: { eyes: { x: 0.165, y: 0.05, s: 0.95 }, muzzle: [[0, -0.115, 0.37], [0.17, 0.062, 0.162]], nose: [0, -0.1, 0.53], beak: true, cheeks: [0.27, -0.04], mouth: { x: 0, y: -0.128, w: 0.07, k: 0.02, open: [0.06, 0.05] } },
+  frog: { eyes: { x: 0.18, y: 0.33, z: 0.23, s: 1 }, nose: [0, -0.02, 0.405], cheeks: [0.28, -0.1], mouth: { x: 0, y: -0.085, w: 0.15, k: 0.05, open: [0.085, 0.07] } },
+  piggy: { eyes: { x: 0.18, y: 0.025, s: 1 }, muzzle: [[0, -0.105, 0.36], [0.11, 0.09, 0.1]], nose: [0, -0.105, 0.46], mouth: { x: 0, y: -0.245, w: 0.04, k: 0.017 } },
+  fox: { eyes: { x: 0.17, y: -0.02, s: 1 }, muzzle: [[0, -0.19, 0.28], [0.17, 0.115, 0.155]], nose: [0, -0.128, 0.418], mouth: { x: 0, y: -0.225, w: 0.042, k: 0.019 } },
+};
+function toyFace(sp) { const X = SPECIES_EXTRA[sp]; return (X && X.face) || FACES[sp] || FACES.pup; }
+// the front of the face at (x, y): the head or the snout, whichever is in front -> { p, n } (lifted `off` along n)
+function faceAt(sp, x, y, off = 0) {
+  const M = toyFace(sp).muzzle;
+  let z = headZ(x, y), nx = x / (HEAD_RX * HEAD_RX), ny = y / (HEAD_RY * HEAD_RY), nz = z / (HEAD_RZ * HEAD_RZ);
+  if (M) {
+    const [c, r] = M, q = 1 - ((x - c[0]) / r[0]) ** 2 - ((y - c[1]) / r[1]) ** 2;
+    if (q > 0) { const zm = c[2] + r[2] * Math.sqrt(q); if (zm > z) { z = zm; nx = (x - c[0]) / (r[0] * r[0]); ny = (y - c[1]) / (r[1] * r[1]); nz = (zm - c[2]) / (r[2] * r[2]); } }
+  }
+  const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+  return { p: new V3(x + nx * off, y + ny * off, z + nz * off), n: new V3(nx, ny, nz) };
+}
+// a soft patch that lies on a surface (front skin only: its edge fades into the fur, so it needs no sides): an ellipse
+// rx x ry in rings round its middle; map(u, v, off) -> {p, n} (see LOOKS_KIT.gDecal). It stands base + `lift` off the surface
+// in the middle, less toward its edge (where it has the fur's colour), so the faceted surface never shows through on a curve.
+function gSoftPatch(rx, ry, map, lift, n = 24, rings = 4, base = 0) {
+  const g = geo();
+  const put = (u, v, t) => { const s = map(u, v, base + lift * (0.4 + 0.6 * (1 - t * t))); g.p.push(s.p.x, s.p.y, s.p.z); g.n.push(s.n.x, s.n.y, s.n.z); g.u.push(0, 0); };
+  put(0, 0, 0);
+  for (let r = 1; r <= rings; r++) { const t = r / rings; for (let i = 0; i < n; i++) put(Math.cos(i / n * TAU) * rx * t, Math.sin(i / n * TAU) * ry * t, t); }
+  for (let i = 0; i < n; i++) { const j = (i + 1) % n; g.i.push(0, 1 + i, 1 + j); for (let r = 1; r < rings; r++) { const a = 1 + (r - 1) * n + i, b = 1 + (r - 1) * n + j; g.i.push(a, a + n, b + n, a, b + n, b); } }
+  return LOOKS_KIT.orient(g);
+}
+// soft pink cheeks: round blushes that fade into the fur (base: the colour they fade into)
+function toyCheeks(b, k, sp, o = {}) { // (o.off: how far up the face patch it lies on stands)
+  const F = toyFace(sp), [x, y] = o.at || F.cheeks || [0.27, -0.13], rx = o.rx || 0.088, ry = o.ry || 0.058, base = o.base || k.bc;
+  const pinkC = mixCol(k.pink, base, 0.15);
+  for (const sx of [-1, 1]) {
+    const cx = sx * x, map = (u, v, off) => faceAt(sp, cx + u, y + v, off);
+    b.add(gSoftPatch(rx, ry, map, 0.005, 22, 4, o.off || 0), { c: (X, Y) => mixCol(pinkC, base, smoothstep(0.3, 1.0, Math.hypot((X - cx) / rx, (Y - y) / ry))) });
+  }
+}
+// a round button nose with a little shine
+function toyNose(b, p, c, r = 0.048, w = 1.35) {
+  b.add(gSphere(r, 12, 10), { p, s: [w, 0.85, 0.8], c });
+  b.add(gSphere(r * 0.34, 7, 5), { p: [p[0] - r * 0.38, p[1] + r * 0.4, p[2] + r * 0.6], s: [1.35, 0.8, 0.5], c: [1.3, 1.3, 1.36] });
+}
+// the tummy: a neat oval of lighter fur with a soft edge (rx: half width round the body, ry: half height, y: its middle)
+function toyBelly(b, k, o = {}) {
+  const { bodyPt, bodyR } = LOOKS_KIT, ru = o.rx ?? 0.25, rv = o.ry ?? 0.3, y0 = o.y ?? -0.17, c = o.c || k.tummy, base = o.base || k.bc;
+  const map = (u, v, off) => { const y = y0 + v; return bodyPt(y, u / Math.max(0.05, bodyR(y)), off); };
+  b.add(gSoftPatch(ru, rv, map, 0.008, 32, 5), { c: (X, Y, Z) => mixCol(c, base, smoothstep(0.62, 1.0, Math.hypot(Math.atan2(X, Z) * bodyR(Y) / ru, (Y - y0) / rv))) });
+}
+
 function buildBodyMesh(gfx, sp, bodyCol) {
-  const b = new GeoBuilder(), S = SPECIES[sp];
-  const bc = col(bodyCol), belly = col(sp === 'panda' ? '#ffffff' : S.belly);
-  b.add(gLathe(beanProfile(), 24), { c: (x, y) => shade(bc, 0.78 + 0.22 * smoothstep(-0.56, -0.1, y)) });
-  if (sp === 'panda') { b.add(gSphere(0.4, 16, 10), { p: [0, 0.2, 0.0], s: [1.04, 0.42, 1.04], c: col('#2b2b33') }); }
-  b.add(gSphere(0.32, 16, 12), { p: [0, -0.06, 0.2], s: [1, 1.15, 0.62], c: belly });
+  const b = new GeoBuilder(), S = SPECIES[sp], X = SPECIES_EXTRA[sp], k = speciesKit(bodyCol, sp), bc = k.bc;
+  b.add(gLathe(beanProfile(), 24), { c: (x, y) => shade(bc, 0.92 + 0.08 * smoothstep(-0.56, -0.1, y)) });
+  if (sp === 'panda') b.add(gSphere(0.4, 24, 12), { p: [0, 0.2, 0.0], s: [1.04, 0.42, 1.04], c: col('#3d3b47') });
+  if (!X || X.belly !== false) toyBelly(b, k, Object.assign(sp === 'panda' ? { y: -0.23, ry: 0.25 } : {}, X && X.belly));
   // tails
-  const ac = col(S.accent), dark = shade(bc, 0.8);
-  if (sp === 'pup') b.add(gCapsule(0.07, 0.2, 8), { p: [0, -0.1, -0.44], q: Q(-0.9, 0, 0), c: bc });
-  if (sp === 'kitty') { for (let i = 0; i < 4; i++) b.add(gCapsule(0.06, 0.14, 8), { p: [0, -0.25 + i * 0.13, -0.47 - Math.sin(i * 0.6) * 0.08], q: Q(-0.4 + i * 0.25, 0, 0), c: i === 3 ? shade(bc, 0.75) : bc }); }
-  if (sp === 'bunny' || sp === 'panda') b.add(gSphere(0.13, 10, 8), { p: [0, -0.3, -0.42], c: col('#ffffff') });
-  if (sp === 'bear') b.add(gSphere(0.09, 10, 8), { p: [0, -0.3, -0.42], c: dark });
-  if (sp === 'duck') b.add(gCone(0.14, 0.26, 8), { p: [0, -0.2, -0.45], q: Q(-2.0, 0, 0), c: bc });
-  if (sp === 'piggy') b.add(gTorus(0.07, 0.025, 12, 6, TAU * 0.85), { p: [0, -0.18, -0.46], q: Q(0, 0, PI / 2), c: col('#e8788f') });
-  if (sp === 'fox') { b.add(gSphere(0.2, 12, 8), { p: [0, -0.18, -0.52], q: Q(-0.6, 0, 0), s: [0.75, 0.75, 1.6], c: bc }); b.add(gSphere(0.12, 10, 8), { p: [0, -0.02, -0.76], q: Q(-0.6, 0, 0), s: [0.9, 0.9, 1.2], c: col('#ffffff') }); }
-  const X = SPECIES_EXTRA[sp]; if (X && X.body) X.body(b, speciesKit(bodyCol, sp));
+  const ac = col(S.accent), dark = shade(bc, 0.85);
+  if (sp === 'pup') b.add(gCapsule(0.075, 0.2, 10), { p: [0, -0.1, -0.44], q: Q(-0.9, 0, 0), c: bc });
+  if (sp === 'kitty') { for (let i = 0; i < 4; i++) b.add(gCapsule(0.065, 0.14, 10), { p: [0, -0.25 + i * 0.13, -0.47 - Math.sin(i * 0.6) * 0.08], q: Q(-0.4 + i * 0.25, 0, 0), c: i === 3 ? mixCol(bc, k.white, 0.5) : bc }); }
+  if (sp === 'bunny' || sp === 'panda') b.add(gSphere(0.13, 12, 10), { p: [0, -0.3, -0.42], c: col('#ffffff') });
+  if (sp === 'bear') b.add(gSphere(0.095, 12, 10), { p: [0, -0.3, -0.42], c: dark });
+  if (sp === 'duck') b.add(LOOKS_KIT.gSpike(0.14, 0.24, 12), { p: [0, -0.24, -0.36], q: Q(-2.0, 0, 0), s: [1, 1, 0.7], c: bc });
+  if (sp === 'piggy') b.add(gTorus(0.07, 0.028, 14, 8, TAU * 0.85), { p: [0, -0.18, -0.46], q: Q(0, 0, PI / 2), c: col('#f08aa2') });
+  if (sp === 'fox') { b.add(gSphere(0.2, 14, 10), { p: [0, -0.18, -0.52], q: Q(-0.6, 0, 0), s: [0.78, 0.78, 1.6], c: bc }); b.add(gSphere(0.12, 12, 8), { p: [0, -0.02, -0.76], q: Q(-0.6, 0, 0), s: [0.95, 0.95, 1.2], c: col('#ffffff') }); }
+  if (X && X.body) X.body(b, k);
   return b.mesh(gfx);
 }
 function buildHeadMesh(gfx, sp, bodyCol) {
-  const b = new GeoBuilder(), S = SPECIES[sp];
-  const bc = col(bodyCol), ac = col(S.accent), white = col('#ffffff'), black = col('#1b1720'), pink = col('#ff8fa8'), dark = shade(bc, 0.72), light = mixCol(bc, white, 0.55);
+  const b = new GeoBuilder(), S = SPECIES[sp], X = SPECIES_EXTRA[sp], k = speciesKit(bodyCol, sp), F = toyFace(sp);
+  const { bc, white, pink, ink } = k, ac = col(S.accent), light = mixCol(bc, white, 0.6), { gSpike, qUp } = LOOKS_KIT;
   b.add(gSphere(0.42, 22, 16), { s: [1, 0.93, 0.97], c: bc });
-  const X = SPECIES_EXTRA[sp];
-  if (sp !== 'frog' && sp !== 'duck' && !(X && X.noCheeks)) for (const sx of [-1, 1]) b.add(gSphere(0.07, 10, 8), { p: [sx * 0.26, -0.09, 0.3], s: [1.25, 0.7, 0.4], q: Q(0, sx * 0.7, 0), c: mixCol(pink, bc, 0.25) });
-  if (X && X.head) X.head(b, speciesKit(bodyCol, sp));
+  if (!(X && X.noCheeks)) toyCheeks(b, k, sp);
+  if (X && X.head) X.head(b, k);
+  const muzzle = (c) => { const [p, r] = F.muzzle; b.add(gSphere(1, 18, 12), { p, s: r, c }); };
+  const spike = (base, dir, r, h, c, s = [1, 1, 1]) => b.add(gSpike(r, h, 14), { p: base, q: qUp(new V3(dir[0], dir[1], dir[2])), s, c });
   switch (sp) {
     case 'pup':
-      b.add(gSphere(0.17, 14, 10), { p: [0, -0.1, 0.33], s: [1.15, 0.8, 0.85], c: light });
-      b.add(gSphere(0.065, 10, 8), { p: [0, -0.04, 0.47], s: [1.35, 0.9, 0.9], c: black });
-      for (const sx of [-1, 1]) b.add(gSphere(0.2, 12, 10), { p: [sx * 0.37, 0.02, -0.02], s: [0.5, 1.05, 0.3], q: Q(0, sx * 0.25, sx * 0.4), c: col(S.accent) });
+      muzzle(light); toyNose(b, F.nose, ink, 0.05);
+      for (const sx of [-1, 1]) b.add(gSphere(0.2, 16, 12), { p: [sx * 0.37, -0.01, -0.02], s: [0.5, 1.05, 0.32], q: Q(0, sx * 0.25, sx * 0.42), c: ac });
       break;
     case 'kitty':
-      for (const sx of [-1, 1]) { b.add(gCone(0.14, 0.27, 10), { p: [sx * 0.21, 0.37, -0.02], q: Q(0, 0, -sx * 0.38), c: bc }); b.add(gCone(0.08, 0.17, 8), { p: [sx * 0.2, 0.36, 0.035], q: Q(0, 0, -sx * 0.38), c: pink }); }
-      b.add(gSphere(0.04, 8, 6), { p: [0, -0.05, 0.42], s: [1.3, 0.8, 0.8], c: pink });
-      for (const sx of [-1, 1]) for (let k = -1; k <= 1; k++) b.add(gBox(0.22, 0.012, 0.012), { p: [sx * 0.28, -0.08 + k * 0.03, 0.33], q: Q(0, -sx * 0.35, sx * k * 0.18), c: col('#4a4550') });
+      for (const sx of [-1, 1]) { spike([sx * 0.2, 0.27, -0.03], [sx * 0.4, 0.92, 0.02], 0.145, 0.26, bc, [1, 1, 0.62]); spike([sx * 0.205, 0.285, 0.0], [sx * 0.4, 0.92, 0.06], 0.085, 0.18, mixCol(pink, white, 0.25), [1, 1, 0.4]); }
+      toyNose(b, F.nose, mixCol(pink, ink, 0.12), 0.034, 1.4);
+      for (const sx of [-1, 1]) for (const kk of [-1, 1]) { const y = -0.125 + kk * 0.022, p0 = faceAt(sp, sx * 0.2, y, 0.003).p, p1 = faceAt(sp, sx * 0.33, y + kk * 0.03 + 0.008, 0.012).p; b.add(LOOKS_KIT.gTube([p0, p1], (t) => 0.0055 - 0.002 * t, 5), { c: mixCol(bc, ink, 0.55) }); }
       break;
     case 'bunny':
-      for (const sx of [-1, 1]) { b.add(gCapsule(0.085, 0.4, 10), { p: [sx * 0.13, 0.62, -0.03], q: Q(-0.1, 0, -sx * 0.16), s: [1, 1, 0.55], c: bc }); b.add(gCapsule(0.05, 0.32, 8), { p: [sx * 0.13, 0.62, 0.0], q: Q(-0.1, 0, -sx * 0.16), s: [1, 1, 0.3], c: pink }); }
-      b.add(gSphere(0.045, 8, 6), { p: [0, -0.06, 0.42], c: pink });
-      b.add(gBox(0.09, 0.075, 0.03), { p: [0, -0.18, 0.39], q: Q(0.3, 0, 0), c: white });
+      for (const sx of [-1, 1]) { b.add(gCapsule(0.09, 0.4, 12), { p: [sx * 0.14, 0.62, -0.03], q: Q(-0.1, 0, -sx * 0.2), s: [1, 1, 0.55], c: bc }); b.add(gCapsule(0.055, 0.32, 10), { p: [sx * 0.14, 0.62, 0.0], q: Q(-0.1, 0, -sx * 0.2), s: [1, 1, 0.3], c: mixCol(pink, white, 0.25) }); }
+      toyNose(b, F.nose, mixCol(pink, ink, 0.1), 0.038, 1.3);
       break;
     case 'bear': case 'panda': {
-      const earC = sp === 'panda' ? col('#2b2b33') : bc;
-      for (const sx of [-1, 1]) { b.add(gSphere(0.13, 12, 10), { p: [sx * 0.28, 0.31, -0.05], s: [1, 1, 0.6], c: earC }); if (sp === 'bear') b.add(gSphere(0.075, 10, 8), { p: [sx * 0.28, 0.31, 0.0], s: [1, 1, 0.4], c: dark }); }
-      if (sp === 'panda') for (const sx of [-1, 1]) b.add(gSphere(0.1, 12, 8), { p: [sx * 0.15, 0.04, 0.34], s: [0.9, 1.25, 0.5], q: Q(0, sx * 0.4, sx * 0.4), c: col('#2b2b33') });
-      b.add(gSphere(0.15, 14, 10), { p: [0, -0.11, 0.33], s: [1.15, 0.8, 0.8], c: sp === 'panda' ? white : light });
-      b.add(gSphere(0.055, 10, 8), { p: [0, -0.05, 0.46], s: [1.4, 0.9, 0.9], c: black });
+      const P = sp === 'panda', earC = P ? col('#3d3b47') : bc;
+      for (const sx of [-1, 1]) { b.add(gSphere(0.135, 14, 12), { p: [sx * 0.28, 0.31, -0.05], s: [1, 1, 0.62], c: earC }); if (!P) b.add(gSphere(0.08, 12, 10), { p: [sx * 0.28, 0.305, 0.012], s: [1, 1, 0.42], c: mixCol(light, pink, 0.3) }); }
+      if (P) { // soft droopy patches round the eyes
+        const L = eyeLayout(sp), { gDecal } = LOOKS_KIT;
+        for (const sx of [-1, 1]) {
+          const cx = sx * (L.x + 0.022), cy = L.y - 0.03, a = sx * 0.62, poly = [];
+          for (let i = 0; i < 40; i++) { const t = i / 40 * TAU, ex = Math.cos(t) * 0.098, ey = Math.sin(t) * (t > PI ? 0.165 : 0.125); poly.push([ex * Math.cos(a) - ey * Math.sin(a), ex * Math.sin(a) + ey * Math.cos(a)]); }
+          b.add(gDecal(poly, (u, v, off) => faceAt(sp, cx + u, cy + v, off), 0.002, 0.006, 4), { c: col('#3d3b47') });
+        }
+      }
+      muzzle(P ? white : light); toyNose(b, F.nose, P ? col('#3d3b47') : ink, 0.046);
       break;
     }
-    case 'duck':
-      b.add(gSphere(0.18, 14, 10), { p: [0, -0.1, 0.38], s: [1.0, 0.32, 0.85], c: col('#ff9320') });
-      b.add(gSphere(0.15, 14, 10), { p: [0, -0.16, 0.36], s: [0.9, 0.25, 0.75], c: col('#f07f10') });
-      for (let k = -1; k <= 1; k++) b.add(gCone(0.05, 0.2, 8), { p: [k * 0.05, 0.43, 0.02], q: Q(-0.3, 0, -k * 0.5), c: bc });
+    case 'duck': {
+      const o1 = col('#ffa035'), o2 = col('#f58a1c');
+      b.add(gSphere(0.18, 18, 12), { p: [0, -0.112, 0.375], s: [1, 0.34, 0.9], c: o1 });
+      b.add(gSphere(0.15, 16, 10), { p: [0, -0.155, 0.36], s: [0.92, 0.26, 0.8], c: o2 });
+      for (let i = -1; i <= 1; i++) spike([i * 0.05, 0.35, 0.02], [-i * 0.45, 1, -0.25], 0.05, 0.17, bc);
       break;
+    }
     case 'frog':
-      b.add(gTorus(0.2, 0.018, 14, 6, PI * 0.9), { p: [0, -0.06, 0.32], q: Q(0, 0, PI + PI * 0.05), s: [1, 0.45, 1], c: col('#3d6b2c') });
-      for (const sx of [-1, 1]) b.add(gSphere(0.15, 14, 10), { p: [sx * 0.18, 0.3, 0.1], c: bc });
-      for (const sx of [-1, 1]) b.add(gSphere(0.065, 10, 8), { p: [sx * 0.27, -0.1, 0.3], s: [1.2, 0.7, 0.4], q: Q(0, sx * 0.7, 0), c: pink });
+      for (const sx of [-1, 1]) b.add(gSphere(0.15, 16, 12), { p: [sx * 0.18, 0.3, 0.1], c: bc });
       break;
-    case 'piggy':
-      b.add(gCyl(0.13, 0.14, 0.12, 16), { p: [0, -0.07, 0.4], q: Q(PI / 2, 0, 0), c: col('#ff9cb2') });
-      for (const sx of [-1, 1]) b.add(gSphere(0.025, 8, 6), { p: [sx * 0.045, -0.07, 0.47], s: [1, 1.4, 0.6], c: col('#b4506a') });
-      for (const sx of [-1, 1]) b.add(gCone(0.1, 0.2, 8), { p: [sx * 0.25, 0.33, 0.04], q: Q(0.7, 0, -sx * 0.4), c: bc });
+    case 'piggy': {
+      const sn = col('#ff9db4'), [c0] = F.muzzle;
+      b.add(gLathe([[0.0001, 0], [0.085, 0], [0.104, 0.014], [0.112, 0.045], [0.11, 0.08], [0.1, 0.1], [0.08, 0.112], [0.0001, 0.115]], 22), { p: [c0[0], c0[1], 0.345], q: Q(PI / 2, 0, 0), s: [1, 1, 0.82], c: sn });
+      for (const sx of [-1, 1]) b.add(gSphere(0.022, 10, 8), { p: [sx * 0.036, c0[1] - 0.004, 0.46], s: [0.9, 1.25, 0.45], c: col('#c95c78') });
+      for (const sx of [-1, 1]) spike([sx * 0.24, 0.29, 0.02], [sx * 0.5, 0.75, 0.45], 0.105, 0.17, bc, [1, 1, 0.5]);
       break;
+    }
     case 'fox':
-      for (const sx of [-1, 1]) { b.add(gCone(0.16, 0.34, 10), { p: [sx * 0.23, 0.38, -0.03], q: Q(0, 0, -sx * 0.32), s: [1, 1, 0.65], c: bc }); b.add(gCone(0.07, 0.13, 8), { p: [sx * 0.29, 0.52, -0.03], q: Q(0, 0, -sx * 0.32), s: [1, 1, 0.7], c: col(S.accent) }); }
-      b.add(gSphere(0.18, 14, 10), { p: [0, -0.12, 0.3], s: [1.1, 0.75, 0.95], c: white });
-      b.add(gSphere(0.05, 10, 8), { p: [0, -0.06, 0.47], s: [1.3, 0.9, 0.9], c: black });
+      for (const sx of [-1, 1]) {
+        spike([sx * 0.21, 0.27, -0.03], [sx * 0.36, 0.93, 0.0], 0.155, 0.31, bc, [1, 1, 0.6]);
+        spike([sx * 0.215, 0.29, 0.005], [sx * 0.36, 0.93, 0.04], 0.085, 0.2, mixCol(white, pink, 0.3), [1, 1, 0.38]);
+      }
+      muzzle(white); toyNose(b, F.nose, ink, 0.044);
       break;
   }
   return b.mesh(gfx);
 }
-function eyeLayout(sp) { // [x,y,z] of right eye (mirror for left), scale
-  const X = SPECIES_EXTRA[sp]; if (X && X.eyes) return X.eyes;
-  if (sp === 'frog') return { x: 0.18, y: 0.33, z: 0.23, s: 0.95 };
-  if (sp === 'duck') return { x: 0.16, y: 0.1, z: 0.37, s: 1 };
-  if (sp === 'panda') return { x: 0.15, y: 0.05, z: 0.385, s: 0.82 };
-  return { x: 0.15, y: 0.05, z: 0.38, s: 1 };
+// the right eye {x, y, z, s} (mirror x for the left one); z: on the head unless the animal says
+function eyeLayout(sp) {
+  const X = SPECIES_EXTRA[sp], L = (X && X.eyes) || toyFace(sp).eyes;
+  return L.z !== undefined ? L : { x: L.x, y: L.y, z: headZ(L.x, L.y), s: L.s ?? 1 };
 }
+// where an eye sits (sx: 1 right, -1 left): centre p, the way it faces n (a frog's sit on balls on top of its head)
+function eyeSpot(sp, sx) {
+  const L = eyeLayout(sp);
+  if (sp === 'frog') { const c = new V3(sx * 0.18, 0.3, 0.1), n = new V3(sx * 0.17, 0.26, 1).normalize(); return { p: c.clone().addScaled(n, 0.15), n, ball: [c, 0.15] }; }
+  const x = sx * L.x, n = new V3(x / HEAD_RX ** 2, L.y / HEAD_RY ** 2, L.z / HEAD_RZ ** 2).normalize();
+  n.x *= 0.6; n.y *= 0.6; n.z = n.z * 0.6 + 0.4; n.normalize(); // (eyes look a little more forward than the head curves)
+  return { p: new V3(x, L.y, L.z), n };
+}
+// the surface round an eye: (u, v) across / up from its centre -> a point lifted `off` off it (closed eyes are drawn on it)
+function eyeSurf(sp, sx) {
+  const E = eyeSpot(sp, sx);
+  if (E.ball) { const [c, R] = E.ball; return (u, v, off) => { const x = E.p.x + u, y = E.p.y + v, n = new V3(x - c.x, y - c.y, Math.sqrt(Math.max(0, R * R - (x - c.x) ** 2 - (y - c.y) ** 2))).normalize(); return c.clone().addScaled(n, R + off); }; }
+  return (u, v, off) => { const x = E.p.x + u, y = E.p.y + v, z = headZ(x, y); return new V3(x, y, z).addScaled(new V3(x / HEAD_RX ** 2, y / HEAD_RY ** 2, z / HEAD_RZ ** 2).normalize(), off); };
+}
+// eyes: 'open' (big glossy ones: dark navy fading to warm plum at the bottom, a big soft shine and a small sparkle), 'happy'
+// (^ ^), 'sleep' (u u) and 'ko' (dizzy swirls)
 function buildEyesMesh(gfx, sp, kind) {
   return cachedMesh(gfx, 'eyes:' + sp + ':' + kind, () => {
-    const b = new GeoBuilder(), L = eyeLayout(sp), black = col('#1b1720'), white = col('#ffffff');
+    const b = new GeoBuilder(), L = eyeLayout(sp), s = L.s || 1, rx = TOY_EYE.rx * s, ry = TOY_EYE.ry * s, rz = TOY_EYE.rz * s;
+    const top = col('#1b1822'), bot = col('#4f3a3e'), ink = col('#2e2232'), glint = [1.55, 1.55, 1.6], { gTube, qFace } = LOOKS_KIT;
     for (const sx of [-1, 1]) {
-      const x = sx * L.x, s = L.s;
+      const E = eyeSpot(sp, sx), q = qFace(E.n);
       if (kind === 'open') {
-        if (sp === 'frog') b.add(gSphere(0.1, 12, 8), { p: [x, L.y - 0.01, L.z + 0.03], s: [0.75 * s, 1 * s, 0.4 * s], c: white });
-        b.add(gSphere(0.07, 14, 10), { p: [x, L.y, L.z + (sp === 'frog' ? 0.06 : 0)], s: [1 * s, 1.35 * s, 0.55 * s], q: Q(-0.15, sx * 0.35, 0), c: black });
-        b.add(gSphere(0.022, 8, 6), { p: [x + 0.02, L.y + 0.04 * s, L.z + 0.04 + (sp === 'frog' ? 0.06 : 0)], c: white });
-      } else if (kind === 'ko') {
-        for (const r of [0.75, -0.75]) b.add(gBox(0.15, 0.03, 0.03), { p: [x, L.y, L.z + 0.03 + (sp === 'frog' ? 0.06 : 0)], q: Q(0, sx * 0.35, r), c: black });
-      } else if (kind === 'happy') {
-        b.add(gTorus(0.05, 0.016, 10, 6, PI), { p: [x, L.y - 0.02, L.z + 0.02 + (sp === 'frog' ? 0.06 : 0)], q: Q(0, sx * 0.35, 0), c: black });
+        // (the eye ball sits deep, so its rim is well inside the head: only its glossy dome shows, cleanly edged)
+        const ez = rz * 1.45, ex = rx * 1.06, ey = ry * 1.06, c0 = E.p.clone().addScaled(E.n, -rz * 0.75);
+        if (sp === 'frog') b.add(gSphere(1, 16, 10), { p: P3A(E.p.clone().addScaled(E.n, -0.012)), q, s: [rx * 1.3, ry * 1.25, 0.02], c: col('#ffffff') });
+        b.add(gSphere(1, 16, 12), { p: P3A(c0), q, s: [ex, ey, ez], c: (X, Y) => mixCol(bot, top, smoothstep(-0.8, 0.5, (Y - c0.y) / ry)) });
+        const dot = (u, v, r, sy, c, lift = 0) => { const w = ez * Math.sqrt(Math.max(0, 1 - (u / ex) ** 2 - (v / ey) ** 2)) + lift, p = new V3(u, v, w).applyQuat(q).add(c0); b.add(gSphere(1, 10, 8), { p: P3A(p), q, s: [r, r * sy, r * 0.32], c }); };
+        dot(-0.3 * rx, 0.34 * ry, 0.044 * s, 1.06, mixCol(top, glint, 0.42)); // (a soft glow round the big shine)
+        dot(-0.3 * rx, 0.34 * ry, 0.031 * s, 1.08, glint, 0.002); dot(0.38 * rx, -0.4 * ry, 0.0135 * s, 1, glint);
+      } else {
+        const S = eyeSurf(sp, sx), pts = [], lift = 0.018;
+        if (kind === 'happy') for (let i = 0; i <= 16; i++) { const a = lerp(-1.25, 1.25, i / 16); pts.push(S(Math.sin(a) * rx * 0.95, Math.cos(a) * ry * 0.72 - ry * 0.3, lift)); }
+        else if (kind === 'sleep') for (let i = 0; i <= 16; i++) { const a = lerp(-1.2, 1.2, i / 16); pts.push(S(Math.sin(a) * rx * 0.9, -Math.cos(a) * ry * 0.42 + ry * 0.02, lift)); }
+        else for (let i = 0; i <= 34; i++) { const t = i / 34, a = t * 2.3 * TAU, r = (0.1 + 0.9 * t) * rx * 0.85; pts.push(S(sx * Math.cos(a) * r, Math.sin(a) * r * ry / rx, lift)); }
+        b.add(gTube(pts, kind === 'ko' ? 0.0085 * s : (t) => (0.0095 + 0.0045 * Math.sin(t * PI)) * s, 7), { c: ink });
       }
     }
     return b.mesh(gfx);
   });
 }
-function buildMouthMesh(gfx, kind) {
-  return cachedMesh(gfx, 'mouth:' + kind, () => {
-    const b = new GeoBuilder();
-    if (kind === 'smile') b.add(gTorus(0.055, 0.014, 12, 6, PI), { q: Q(0, 0, PI), c: col('#3a1f28') });
-    else b.add(gSphere(0.055, 10, 8), { s: [0.9, 1.1, 0.4], c: col('#5a1f30') });
+// the mouth on this animal's face: 'smile' (a little "u", or a cat's "w") or 'open' (laughing: a "D" with a pink tongue)
+function buildMouthMesh(gfx, sp, kind) {
+  return cachedMesh(gfx, 'mouth:' + sp + ':' + kind, () => {
+    const b = new GeoBuilder(), F = toyFace(sp), M = F.mouth, lift = F.lift || 0, { gTube, gDecal, ellipsePoly } = LOOKS_KIT;
+    if (!M) { b.add(gSphere(0.001, 4, 3)); return b.mesh(gfx); }
+    const at = (u, v, off) => faceAt(sp, M.x + u, M.y + v, off + lift); // (lift: over a face patch)
+    if (kind === 'smile') {
+      const pts = [];
+      for (let i = 0; i <= 16; i++) { const t = i / 16 * 2 - 1, u = M.kind === 'w' ? Math.abs(t) * 2 - 1 : t; pts.push(at(t * M.w, M.k * u * u, 0.007).p); }
+      b.add(gTube(pts, (t) => 0.0088 + 0.0032 * Math.sin(t * PI), 6), { c: col('#40202d') });
+    } else if (kind === 'pout') { // a grumpy little pout (Boss Grumble and his gang)
+      const pts = [];
+      for (let i = 0; i <= 14; i++) { const t = i / 14 * 2 - 1; pts.push(at(t * M.w * 0.78, M.k * (0.55 - 1.05 * t * t), 0.007).p); }
+      b.add(gTube(pts, (t) => 0.0092 + 0.0035 * Math.sin(t * PI), 7), { c: col('#40202d') });
+    } else {
+      const [w, h] = M.open || [M.w * 1.2, M.w * 1.15], poly = [];
+      for (let i = 0; i <= 18; i++) { const a = i / 18 * PI; poly.push([Math.cos(a) * w, -Math.sin(a) * h]); } // the round bottom
+      for (let i = 1; i < 10; i++) { const u = -w + i / 10 * 2 * w; poly.push([u, 0.004 + 0.014 * (u / w) ** 2]); } // the top lip
+      b.add(gDecal(poly, at, 0.003, 0.006, 3), { c: col('#6e2639') });
+      b.add(gDecal(ellipsePoly(w * 0.6, h * 0.36, 22, 0, -h * 0.62), at, 0.008, 0.003, 2), { c: col('#ff8aa4') });
+    }
+    return b.mesh(gfx);
+  });
+}
+// grumpy brows: two chunky soft brows that dip toward the nose (funny-grumpy, the eyes stay big and round)
+function buildBrowsMesh(gfx, sp) {
+  return cachedMesh(gfx, 'brows:' + sp, () => {
+    const b = new GeoBuilder(), L = eyeLayout(sp), s = L.s || 1, rx = TOY_EYE.rx * s, ry = TOY_EYE.ry * s;
+    for (const sx of [-1, 1]) {
+      const S = eyeSurf(sp, sx), pts = [];
+      for (let i = 0; i <= 10; i++) { const t = i / 10; pts.push(S(lerp(-sx * rx * 0.95, sx * rx * 1.05, t), ry * (lerp(1.0, 1.42, t) + 0.12 * Math.sin(t * PI)), 0.02)); }
+      b.add(LOOKS_KIT.gTube(pts, (t) => (0.016 + 0.007 * Math.sin(t * PI)) * s, 8), { c: col('#3a2c36') });
+    }
     return b.mesh(gfx);
   });
 }
@@ -4512,11 +4655,15 @@ function buildHatMesh(gfx, hat, sp) {
 function propellerMesh(gfx) { return cachedMesh(gfx, 'propeller', () => { const b = new GeoBuilder(); b.add(gBox(0.5, 0.015, 0.08), { c: col('#ff5e8a') }); b.add(gBox(0.08, 0.015, 0.5), { c: col('#3fa0ff') }); return b.mesh(gfx); }); }
 function starMesh(gfx) { return cachedMesh(gfx, 'star', () => { const b = new GeoBuilder(); b.add(gStar(0.5, 0.22, 0.14), { c: col('#ffd84d') }); return b.mesh(gfx); }); }
 function unitCylMesh(gfx) { return cachedMesh(gfx, 'ucyl', () => { const b = new GeoBuilder(); b.add(gCyl(1, 1, 1, 12, false, 0)); return b.mesh(gfx); }); }
-function limbMesh(gfx) { return cachedMesh(gfx, 'limb', () => { const b = new GeoBuilder(); b.add(gCyl(0.82, 1, 1, 16, false, 0)); b.add(gSphere(1, 14, 8), { s: [1, 0.12, 1] }); return b.mesh(gfx); }); }
+// a chubby arm / leg: a soft tube 1 long up y (drawn scaled radius, length, radius), rounded at the shoulder / hip end and a
+// little thinner toward the paw
+function limbMesh(gfx) { return cachedMesh(gfx, 'limb2', () => { const b = new GeoBuilder(); b.add(gLathe([[0.0001, -0.11], [0.45, -0.098], [0.74, -0.07], [0.92, -0.035], [1.0, 0.0], [1.03, 0.25], [1.0, 0.55], [0.93, 0.8], [0.86, 1.0]], 14)); return b.mesh(gfx); }); }
 function unitSphereMesh(gfx) { return cachedMesh(gfx, 'usph', () => { const b = new GeoBuilder(); b.add(gSphere(1, 16, 12)); return b.mesh(gfx); }); }
-function footMesh(gfx) { return cachedMesh(gfx, 'foot', () => { const b = new GeoBuilder(); b.add(gSphere(1, 14, 10), { s: [0.15, 0.1, 0.2], p: [0, 0.04, 0.05] }); return b.mesh(gfx); }); }
+function pawMesh(gfx) { return cachedMesh(gfx, 'paw', () => { const b = new GeoBuilder(); b.add(gSphere(1, 14, 10), { s: [1, 0.94, 0.94] }); return b.mesh(gfx); }); }
+// a big round foot, a little longer than wide (origin: 2 cm above the ground under the leg)
+function footMesh(gfx) { return cachedMesh(gfx, 'foot2', () => { const b = new GeoBuilder(); b.add(gSphere(1, 16, 10), { s: [0.155, 0.112, 0.19], p: [0, 0.072, 0.045] }); return b.mesh(gfx); }); }
 
-const _vq = new Quat(), _vq2 = new Quat(), _vp = new V3(), _vp2 = new V3(), _vp3 = new V3(), _vup = new V3(0, 1, 0), _vd = new V3();
+const _vq = new Quat(), _vq2 = new Quat(), _vp = new V3(), _vp2 = new V3(), _vp3 = new V3(), _vp4 = new V3(), _vup = new V3(0, 1, 0), _vd = new V3();
 class CharView {
   constructor(gfx, ch) {
     this.gfx = gfx; this.ch = ch;
@@ -4534,19 +4681,21 @@ class CharView {
     const fuzz = 0.9;
     this.body = add(cachedMesh(gfx, 'body:' + key, () => buildBodyMesh(gfx, sp, bodyCol)), { fuzz, spec: 0.05 });
     this.head = add(cachedMesh(gfx, 'head:' + key, () => buildHeadMesh(gfx, sp, bodyCol)), { fuzz, spec: 0.05 });
-    this.eyes = add(buildEyesMesh(gfx, sp, 'open'), { spec: 0.6, cast: false });
-    this.eyesKO = add(buildEyesMesh(gfx, sp, 'ko'), { cast: false });
-    this.eyesHappy = add(buildEyesMesh(gfx, sp, 'happy'), { cast: false });
-    this.mouth = add(buildMouthMesh(gfx, 'smile'), { cast: false });
-    this.mouthO = add(buildMouthMesh(gfx, 'o'), { cast: false });
+    this.eyes = add(buildEyesMesh(gfx, sp, 'open'), { spec: 0.75, cast: false });
+    this.eyesKO = add(buildEyesMesh(gfx, sp, 'ko'), { spec: 0.3, cast: false });
+    this.eyesHappy = add(buildEyesMesh(gfx, sp, 'happy'), { spec: 0.3, cast: false });
+    this.eyesSleep = add(buildEyesMesh(gfx, sp, 'sleep'), { spec: 0.3, cast: false });
+    this.grumpy = !!ch.grumpy; // (a grumpy face: brows and a pout)
+    this.mouth = add(buildMouthMesh(gfx, sp, this.grumpy ? 'pout' : 'smile'), { spec: 0.2, cast: false });
+    this.brows = this.grumpy ? add(buildBrowsMesh(gfx, sp), { spec: 0.1, cast: false }) : null;
+    this.mouthO = add(buildMouthMesh(gfx, sp, 'open'), { spec: 0.35, cast: false });
     const X = SPECIES_EXTRA[sp], O = (this.outfit = cleanOutfit(ch.outfit));
-    const limb = X && X.limb ? col(X.limb) : sp === 'panda' ? col('#2b2b33') : col(bodyCol);
-    const paw = X && X.paw ? col(X.paw) : sp === 'duck' ? col('#ff9320') : shade(limb, 0.88);
+    const limb = toyLimbCol(sp, bodyCol), paw = toyPawCol(sp, limb);
     const sleeve = O.top && OUTFITS[O.top].sleeves ? col(OUTFITS[O.top].sleeves) : limb;
-    this.arms = [0, 1].map(() => add(limbMesh(gfx), { tint: sleeve, fuzz: sleeve === limb ? 0.6 : 0.15 }));
-    this.handsR = [0, 1].map(() => add(unitSphereMesh(gfx), { tint: shade(limb, 0.95), fuzz }));
-    this.legs = [0, 1].map(() => add(limbMesh(gfx), { tint: limb, fuzz: 0.6 }));
-    this.feet = [0, 1].map(() => add(footMesh(gfx), { tint: paw, fuzz: 0.5 }));
+    this.arms = [0, 1].map(() => add(limbMesh(gfx), { tint: sleeve, fuzz: sleeve === limb ? 0.85 : 0.15 }));
+    this.handsR = [0, 1].map(() => add(pawMesh(gfx), { tint: limb, fuzz }));
+    this.legs = [0, 1].map(() => add(limbMesh(gfx), { tint: limb, fuzz: 0.85 }));
+    this.feet = [0, 1].map(() => add(footMesh(gfx), { tint: paw, fuzz: 0.8 }));
     this.hatObj = ch.hat && ch.hat !== 'none' ? add(buildHatMesh(gfx, ch.hat, ch.species), { spec: ch.hat === 'crown' || ch.hat === 'halo' ? 0.9 : 0.25, emis: ch.hat === 'halo' ? [0.5, 0.42, 0.1] : [0, 0, 0] }) : null;
     this.prop = ch.hat === 'propeller' ? add(propellerMesh(gfx), {}) : null;
     this.stars = [0, 1, 2].map(() => add(starMesh(gfx), { cast: false, emis: [0.35, 0.3, 0.05], spec: 0.5 }));
@@ -4559,24 +4708,40 @@ class CharView {
     }
     this.xid = this.xid || (CharView.nextX = ((CharView.nextX || 0) % 250) + 1); for (const o of this.objs) o.xid = this.xid; // (stencil tag for the x-ray pass)
     this.occ = this.occ || new Float32Array([0, -1e4, 0, 0.42, 0, -1e4, 0, 0.4, -1e4]); for (const o of this.objs) o.occ = this.occ; // (body + head spheres, ground: soft creases, 30_gfx.js)
-    this.mouthLayout = X ? (X.mouth === undefined ? [0, -0.15, 0.405] : X.mouth) : sp === 'pup' || sp === 'bear' || sp === 'panda' ? [0, -0.2, 0.43] : sp === 'fox' ? [0, -0.2, 0.43] : sp === 'duck' ? [0, -0.26, 0.38] : sp === 'piggy' ? [0, -0.2, 0.38] : sp === 'frog' ? null : [0, -0.15, 0.405];
+    this.eyeY = eyeLayout(sp).y;
+    this.mouthLayout = toyFace(sp).mouth || null;
+    this.faceObjs = [this.eyesKO, this.eyesHappy, this.eyesSleep, this.mouth, this.mouthO]; if (this.brows) this.faceObjs.push(this.brows); // (they ride on the head)
   }
   dispose() { for (const o of this.objs) this.gfx.remove(o); this.objs = []; }
   setOcc(b, h, gy) { const O = this.occ; O[0] = b.x; O[1] = b.y; O[2] = b.z; O[4] = h.x; O[5] = h.y; O[6] = h.z; O[8] = gy; }
   setAlpha(a) { a = a < 0.04 ? 0 : a; if (this._alpha === a) return; this._alpha = a; for (const o of this.objs) { o.alpha = a; o.hiddenByCam = a === 0; } }
   setVisible(v) { for (const o of this.objs) o.visible = v; }
+  // the body (or a piece of clothing on it) at torso position p, turn q, squash (sx, sy, sz): drawn rounder and longer than
+  // the physics body (TOY), stretched downward from y TOY.by0
+  bodyTRS(o, p, q, sx = 1, sy = 1, sz = 1) { o.setTRS(_vp4.set(0, TOY.by0 * (1 - TOY.by) * sy, 0).applyQuat(q).add(p), q, sx * TOY.bx, sy * TOY.by, sz * TOY.bx); }
+  // the head and everything on it (face clothes, eyes, mouth) at head centre hp, turn hq, squash (sx, sy, sz); the open eyes
+  // blink about their own middle
+  placeHead(hp, hq, sx = 1, sy = 1, sz = 1) {
+    const H = TOY.head, hx = sx * H, hy = sy * H, hz = sz * H, bl = this.blink > 0 ? 0.12 : 1;
+    this.head.setTRS(hp, hq, hx, hy, hz);
+    for (const w of this.wear) if (w.head) w.obj.setTRS(hp, hq, hx, hy, hz);
+    this.eyes.setTRS(_vp4.set(0, this.eyeY * hy * (1 - bl), 0).applyQuat(hq).add(hp), hq, hx, hy * bl, hz);
+    for (const o of this.faceObjs) o.setTRS(hp, hq, hx, hy, hz);
+  }
   update(dt, alpha) {
     const ch = this.ch, gfx = this.gfx;
     this.t += dt;
     if (!ch.inWorld && !ch.driving) { this.setVisible(false); return; }
+    if (!!ch.grumpy !== this.grumpy) this.rebuild();
     if (ch.driving) { this.updateSeated(dt); return; }
     for (const o of this.objs) o.visible = true;
+    this.eyesSleep.visible = false;
     const T = ch.torso, H = ch.head;
     const tp = this.ip.torso.lerpVectors(T.prevPos, T.pos, alpha);
     const tq = this.iq.copy(T.prevQ).slerp(T.q, alpha);
     const sq = ch.squash;
     // body
-    this.body.setTRS(tp, tq, 1 + sq * 0.5, 1 - sq, 1 + sq * 0.5);
+    this.bodyTRS(this.body, tp, tq, 1 + sq * 0.5, 1 - sq, 1 + sq * 0.5);
     // a soft contact shadow on the ground below (30_gfx.js; fades as the animal leaves the ground)
     const gd = ch.groundDist; if (gd < 1.6 && !ch.swimming && this._alpha > 0 && gfx.addBlob) { const n = ch.grounded ? ch.groundNormal : _vup; gfx.addBlob(tp.x, T.pos.y - gd, tp.z, n.x, n.y, n.z, 0.62, 1 - smoothstep(1.05, 1.6, gd)); }
     // head: orientation follows torso, bent toward actual head offset
@@ -4587,39 +4752,35 @@ class CharView {
     _vq.setFromUnitVectors(tup, _vd);
     const hq = _vq2.multiplyQuats(_vq, tq);
     const hpos = _vp3.copy(neck).addScaled(_vd, 0.3);
-    this.head.setTRS(hpos, hq, 1 + sq * 0.3, 1 - sq * 0.5, 1 + sq * 0.3);
-    this.setOcc(tp, hpos, gd < 1.6 ? T.pos.y - gd : -1e4);
-    for (const w of this.wear) { if (w.head) w.obj.setTRS(hpos, hq, 1 + sq * 0.3, 1 - sq * 0.5, 1 + sq * 0.3); else w.obj.setTRS(tp, tq, 1 + sq * 0.5, 1 - sq, 1 + sq * 0.5); }
-    // eyes / expression
+    // eyes / expression (blink first: placeHead squeezes the open eyes)
     this.blinkT -= dt; if (this.blinkT < 0) { this.blink = 0.13; this.blinkT = rand(2, 5); }
     this.blink -= dt;
+    this.placeHead(hpos, hq, 1 + sq * 0.3, 1 - sq * 0.5, 1 + sq * 0.3);
+    this.setOcc(tp, hpos, gd < 1.6 ? T.pos.y - gd : -1e4);
+    for (const w of this.wear) if (!w.head) this.bodyTRS(w.obj, tp, tq, 1 + sq * 0.5, 1 - sq, 1 + sq * 0.5);
     const ko = ch.state === 'ko';
     const happy = ch.happyT > 0; if (ch.happyT > 0) ch.happyT -= dt;
-    const eyeS = this.blink > 0 ? 0.12 : 1;
     this.eyes.visible = !ko && !happy; this.eyesKO.visible = ko; this.eyesHappy.visible = happy && !ko;
-    this.eyes.setTRS(hpos, hq, 1, eyeS, 1); this.eyesKO.setTRS(hpos, hq); this.eyesHappy.setTRS(hpos, hq);
-    if (ch.lastHitT < 0.4 || ch.thrownT > 0 || ch.state === 'dropkick' || ch.punchT[0] > 0.1 || ch.punchT[1] > 0.1 || ko) this.mouthOpenT = 0.25;
+    // the mouth opens (a laughing "D") when hit, thrown, punching, kicking, knocked out, happy, cheering or laughing
+    const E = (ch.mv | 0) - MV.EMOTE;
+    if (ch.lastHitT < 0.4 || ch.thrownT > 0 || ch.state === 'dropkick' || ch.punchT[0] > 0.1 || ch.punchT[1] > 0.1 || ko || happy || E === 2 || E === 4 || ch.mv === MV.VICTORY) this.mouthOpenT = 0.25;
     this.mouthOpenT -= dt;
-    const ml = this.mouthLayout;
-    if (ml) {
-      const mp = _vp.set(ml[0], ml[1], ml[2]).applyQuat(hq).add(hpos);
-      this.mouth.visible = this.mouthOpenT <= 0; this.mouthO.visible = this.mouthOpenT > 0;
-      this.mouth.setTRS(mp, hq); this.mouthO.setTRS(mp, hq);
-    } else { this.mouth.visible = false; this.mouthO.visible = false; }
-    // hat
+    if (this.mouthLayout) { this.mouth.visible = this.mouthOpenT <= 0; this.mouthO.visible = this.mouthOpenT > 0; }
+    else { this.mouth.visible = false; this.mouthO.visible = false; }
+    // hat (it grows with the head)
     if (this.hatObj) {
-      const hatP = _vp.set(0, 0.37, -0.02).applyQuat(hq).add(hpos);
+      const HS = TOY.head, hatP = _vp.set(0, 0.37 * HS, -0.02 * HS).applyQuat(hq).add(hpos);
       const hatQ = _vq.multiplyQuats(hq, _vq.setEuler(-0.12, 0, 0.08));
-      if (ch.hat === 'headphones') this.hatObj.setTRS(hatP.set(0, 0.37, 0).applyQuat(hq).add(hpos), hq);
-      else this.hatObj.setTRS(hatP, hatQ);
-      if (this.prop) { const pp = _vp2.set(0, 0.36, 0).applyQuat(hatQ).add(hatP); const spin = this.t * (8 + Math.min(20, T.vel.length() * 3)); this.prop.setTRS(pp, _vq2.multiplyQuats(hatQ, _vq2.setYaw(spin))); }
+      if (ch.hat === 'headphones') this.hatObj.setTRS(hatP.set(0, 0.37 * HS, 0).applyQuat(hq).add(hpos), hq, HS, HS, HS);
+      else this.hatObj.setTRS(hatP, hatQ, HS, HS, HS);
+      if (this.prop) { const pp = _vp2.set(0, 0.36 * HS, 0).applyQuat(hatQ).add(hatP); const spin = this.t * (8 + Math.min(20, T.vel.length() * 3)); this.prop.setTRS(pp, _vq2.multiplyQuats(hatQ, _vq2.setYaw(spin)), HS, HS, HS); }
     }
     // KO stars
     for (let i = 0; i < 3; i++) {
       const s = this.stars[i]; s.visible = ko || ch.daze > 70;
       if (!s.visible) continue;
-      const a = this.t * 4 + i * TAU / 3;
-      s.setTRS(_vp.set(hpos.x + Math.cos(a) * 0.42, hpos.y + 0.55 + Math.sin(this.t * 6 + i) * 0.05, hpos.z + Math.sin(a) * 0.42), _vq.setYaw(this.t * 3 + i), 0.22, 0.22, 0.22);
+      const a = this.t * 4 + i * TAU / 3, R = 0.42 * TOY.head;
+      s.setTRS(_vp.set(hpos.x + Math.cos(a) * R, hpos.y + 0.58 * TOY.head + Math.sin(this.t * 6 + i) * 0.05, hpos.z + Math.sin(a) * R), _vq.setYaw(this.t * 3 + i), 0.22, 0.22, 0.22);
     }
     // arms
     for (let i = 0; i < 2; i++) {
@@ -4628,8 +4789,8 @@ class CharView {
       const sh = _vp.copy(ch.shoulders[i]).applyQuat(tq).add(tp);
       _vd.subVectors(hpI, sh); const len = Math.max(0.05, _vd.length()); _vd.scale(1 / len);
       _vq.setFromUnitVectors(_vup, _vd);
-      this.arms[i].setTRS(sh, _vq, 0.105, len, 0.105);
-      this.handsR[i].setTRS(hpI, _vq, 0.16, 0.16, 0.16);
+      this.arms[i].setTRS(sh, _vq, TOY.arm, len, TOY.arm);
+      this.handsR[i].setTRS(hpI, _vq, TOY.hand, TOY.hand, TOY.hand);
     }
     // legs (procedural, in torso frame)
     const sp = Math.hypot(T.vel.x - ch.groundVel.x, T.vel.z - ch.groundVel.z);
@@ -4642,12 +4803,12 @@ class CharView {
       else if (ko) { fx = side * 0.24; fy = -0.92; fz = 0.06; }
       else if (ch.swimming) { fy = -0.8; fz = Math.sin(ph * 2) * 0.25; }
       else if (!ch.grounded) { fy = -0.82 + Math.sin(this.t * 9 + i) * 0.04; fz = 0.12 * side * Math.sin(this.t * 7); }
-      else { fz = Math.sin(ph) * 0.3 * walkAmt + 0.04; fy = -0.97 + Math.max(0, Math.cos(ph)) * 0.17 * walkAmt; fy = -(ch.groundDist) + 0.02 + Math.max(0, Math.cos(ph)) * 0.17 * walkAmt; }
+      else { fz = Math.sin(ph) * 0.3 * walkAmt + 0.04; fy = -(ch.groundDist) + 0.02 + Math.max(0, Math.cos(ph)) * 0.17 * walkAmt; }
       const hip = _vp.set(side * 0.19, -0.36, 0.02).applyQuat(tq).add(tp);
       const foot = _vp2.set(fx, Math.max(fy, -1.25), fz).applyQuat(tq).add(tp);
       _vd.subVectors(foot, hip); const len = Math.max(0.05, _vd.length()); _vd.scale(1 / len);
       _vq.setFromUnitVectors(_vup, _vd);
-      this.legs[i].setTRS(hip, _vq, 0.12, len, 0.12);
+      this.legs[i].setTRS(hip, _vq, TOY.leg, len, TOY.leg);
       // foot orientation = torso yaw frame
       this.feet[i].setTRS(foot, tq);
     }
@@ -4655,22 +4816,25 @@ class CharView {
   updateSeated(dt) {
     const ch = this.ch, car = ch.driving;
     for (const o of this.objs) o.visible = false;
-    this.body.visible = this.head.visible = this.eyes.visible = true; if (this.hatObj) this.hatObj.visible = true; if (this.prop) this.prop.visible = true;
+    this.body.visible = this.head.visible = this.eyes.visible = true; if (this.hatObj) this.hatObj.visible = true; if (this.prop) this.prop.visible = true; if (this.brows) this.brows.visible = true;
     this.mouth.visible = !!this.mouthLayout;
-    const seat = car.seatWorld(_vp, ch), q = car.body.q;
-    this.body.setTRS(seat, q, 1, 0.85, 1);
-    const hpos = _vp3.set(0, 0.72, 0).applyQuat(q).add(seat);
-    this.head.setTRS(hpos, q); this.setOcc(seat, hpos, -1e4);
-    for (const w of this.wear) { w.obj.visible = true; if (w.head) w.obj.setTRS(hpos, q); else w.obj.setTRS(seat, q, 1, 0.85, 1); } this.eyes.setTRS(hpos, q, 1, this.blink > 0 ? 0.12 : 1, 1);
     this.blinkT -= dt; if (this.blinkT < 0) { this.blink = 0.13; this.blinkT = rand(2, 5); } this.blink -= dt;
-    if (this.mouthLayout) { const ml = this.mouthLayout; this.mouth.setTRS(_vp2.set(ml[0], ml[1], ml[2]).applyQuat(q).add(hpos), q); }
-    if (this.hatObj) { const hp = _vp2.set(0, 0.37, -0.02).applyQuat(q).add(hpos); this.hatObj.setTRS(hp, q); if (this.prop) this.prop.setTRS(_vp.set(0, 0.36, 0).applyQuat(q).add(hp), _vq.multiplyQuats(q, _vq.setYaw(this.t * 14))); }
+    const seat = car.seatWorld(_vp, ch), q = car.body.q;
+    this.bodyTRS(this.body, seat, q, 1, 0.85, 1);
+    const hpos = _vp3.set(0, 0.72, 0).applyQuat(q).add(seat);
+    this.placeHead(hpos, q); this.setOcc(seat, hpos, -1e4);
+    for (const w of this.wear) { w.obj.visible = true; if (!w.head) this.bodyTRS(w.obj, seat, q, 1, 0.85, 1); }
+    if (this.hatObj) { const HS = TOY.head, hp = _vp2.set(0, 0.37 * HS, -0.02 * HS).applyQuat(q).add(hpos); this.hatObj.setTRS(hp, q, HS, HS, HS); if (this.prop) this.prop.setTRS(_vp.set(0, 0.36 * HS, 0).applyQuat(q).add(hp), _vq.multiplyQuats(q, _vq.setYaw(this.t * 14)), HS, HS, HS); }
   }
 }
+// arm and leg colours (also the riders' limbs on bikes and jet skis, 70b_vehicles.js)
+function toyLimbCol(sp, bodyCol) { const X = SPECIES_EXTRA[sp]; return X && X.limb ? col(X.limb) : sp === 'panda' ? col('#3d3b47') : col(bodyCol); }
+function toyPawCol(sp, limb) { const X = SPECIES_EXTRA[sp]; return X && X.paw ? col(X.paw) : sp === 'duck' ? col('#ff9a2e') : shade(limb, 0.93); }
 
 // ===== eight more fuzzy animals: dino, shark, penguin, cow, raccoon, monkey, unicorn, lion =====
 // Same toy build as the first nine (the shared bean body and round head); everything else is added on top.
-// SPECIES_EXTRA[key].face = { nose: [x, y, z], muzzle?: [[centre], [radii]], beak? } tells face clothes where the nose is.
+// SPECIES_EXTRA[key].face = { nose: [x, y, z], muzzle?: [[centre], [radii]], beak?, cheeks?: [x, y], lift?, mouth } places the
+// nose (face clothes use it), the snout ball the mouth sits on, the cheeks and the smile (see FACES in 61_charview.js).
 // LOOKS_KIT holds small shape helpers that the clothes in 61c_outfits.js use too: points on the body / head, thin "decal"
 // patches that hug the fur (spots, masks, badges), tubes along a curve (tails, straps), two-sided sheets (capes, wings).
 const LOOKS_KIT = (() => {
@@ -4696,9 +4860,9 @@ const LOOKS_KIT = (() => {
     const z = HZ * Math.sqrt(Math.max(0, 1 - (x / HX) ** 2 - (y / HY) ** 2)), n = v3(x / (HX * HX), y / (HY * HY), z / (HZ * HZ)).normalize();
     return { p: v3(x + n.x * off, y + n.y * off, z + n.z * off), n };
   }
-  // The shared belly ball in buildBodyMesh pokes up to 1 cm out of the bean around y 0..0.15 (a pale "shelf" on the chest).
-  // The new animals cover it with a skin of their own fur (gBodyCover); coverOff is how far that skin stands out.
-  const coverOff = (y, a) => 0.0135 * smoothstep(-0.045, 0.015, y) * smoothstep(0.195, 0.135, y) * smoothstep(1.15, 0.575, Math.abs(a));
+  // (The bean used to carry a belly ball that poked out of it; a skin of fur hid it on the newer animals. Every animal now has
+  // a soft tummy patch instead (toyBelly, 61_charview.js), so there is nothing to cover: coverOff is 0.)
+  const coverOff = () => 0;
   // surface maps for decals: (u, v) are about metres across / up the surface around a centre point
   const bodyMap = (a0, y0) => (u, v, off) => { const y = y0 + v; return bodyPt(y, a0 + u / Math.max(0.05, bodyR(y)), off); };
   const bodyMapC = (a0, y0) => (u, v, off) => { const y = y0 + v, a = a0 + u / Math.max(0.05, bodyR(y)); return bodyPt(y, a, off + coverOff(y, a)); }; // on top of the cover
@@ -4881,213 +5045,199 @@ const LOOKS_KIT = (() => {
 })();
 
 {
-  const { v3, bodyPt, headPt, headAt, bodyMapC, headMap, gBodyCover, gDecal, curve, gTube, gEllPatch, gSpike, paint, qUp, ellipsePoly, blobPoly, unionPoly, strokePoly } = LOOKS_KIT;
+  const { v3, bodyPt, headPt, headAt, bodyMapC, headMap, gDecal, curve, gTube, gEllPatch, gSpike, paint, qUp, ellipsePoly, blobPoly, unionPoly, strokePoly } = LOOKS_KIT;
   const addSpecies = (key, S, X) => {
     if (SPECIES[key]) return;
-    const body = X.body; X.body = (b, k) => { b.add(gBodyCover(), { c: k.bc }); if (body) body(b, k); }; // (hides the belly-ball bump)
     SPECIES[key] = S; SPECIES_KEYS.push(key); SPECIES_EXTRA[key] = X;
   };
   const P3 = (v) => [v.x, v.y, v.z];
   const spike = (b, p, d, r, h, c, s = [1, 1, 1]) => b.add(gSpike(r, h), { p: P3(p), q: qUp(d), s, c });
-  const blush = (b, k, x, y, z, yaw = 0.7) => { for (const sx of [-1, 1]) b.add(gSphere(0.07, 10, 8), { p: [sx * x, y, z], s: [1.25, 0.7, 0.4], q: Q(0, sx * yaw, 0), c: mixCol(k.pink, k.bc, 0.25) }); };
-  const belly = (b, c, rx = 0.24, ry = 0.32, y = -0.15) => b.add(gDecal(ellipsePoly(rx, ry, 30), bodyMapC(0, y), 0.003, 0.01), { c });
+  const snout = (b, F, c) => { const [p, r] = F.muzzle; b.add(gSphere(1, 18, 12), { p, s: r, c }); }; // the snout ball the mouth sits on
+  const onFace = (sp, cx, cy) => (u, v, off) => faceAt(sp, cx + u, cy + v, off); // a decal map round (cx, cy) on the face
+  const nostrils = (b, sp, dx, y, r, c) => { for (const sx of [-1, 1]) b.add(gSphere(r, 10, 8), { p: P3(faceAt(sp, sx * dx, y, -0.003).p), s: [0.95, 1.2, 0.5], c }); };
 
-  // ---------------- Dino: green, soft orange back spikes, chunky tail ----------------
+  // ---------------- Dino: green, soft orange back bumps, chunky tail ----------------
+  const DINO = { nose: [0, -0.1, 0.45], muzzle: [[0, -0.175, 0.27], [0.22, 0.14, 0.18]], cheeks: [0.29, -0.07], mouth: { x: 0, y: -0.222, w: 0.06, k: 0.024 } };
   addSpecies('dino', { name: 'Dino', color: '#62c47a', belly: '#f6efb2', accent: '#ffb84d' }, {
     body(b, k) {
-      belly(b, k.belly, 0.24, 0.31, -0.16);
-      for (const [y, s] of [[0.47, 0.72], [0.31, 0.95], [0.12, 1.08], [-0.08, 1.02], [-0.26, 0.8]]) { const P = bodyPt(y, PI, -0.015); spike(b, P.p, P.n.clone().add(v3(0, 0.35, 0)), 0.09 * s, 0.16 * s, k.ac, [0.42, 1, 1]); }
+      const bump = mixCol(k.ac, k.white, 0.2);
+      for (const [y, s] of [[0.47, 0.72], [0.31, 0.92], [0.12, 1.0], [-0.08, 0.95], [-0.26, 0.78]]) { const P = bodyPt(y, PI, -0.02); spike(b, P.p, P.n.clone().add(v3(0, 0.3, 0)), 0.088 * s, 0.11 * s, bump, [0.62, 1, 1]); }
       const tp = curve([[0, -0.2, -0.28], [0, -0.33, -0.52], [0, -0.42, -0.72], [0, -0.45, -0.88]], 6);
-      b.add(gTube(tp, (t) => lerp(0.17, 0.05, Math.pow(t, 0.85)), 12), { c: k.bc });
-      for (const [i, s] of [[7, 0.8], [12, 0.6]]) { const p = tp[i], r = lerp(0.17, 0.05, Math.pow(i / (tp.length - 1), 0.85)); spike(b, v3(p.x, p.y + r * 0.8, p.z), v3(0, 1, -0.45), 0.075 * s, 0.13 * s, k.ac, [0.42, 1, 1]); }
+      b.add(gTube(tp, (t) => lerp(0.17, 0.065, Math.pow(t, 0.85)), 12), { c: k.bc });
+      for (const [i, s] of [[7, 0.8], [12, 0.62]]) { const p = tp[i], r = lerp(0.17, 0.065, Math.pow(i / (tp.length - 1), 0.85)); spike(b, v3(p.x, p.y + r * 0.8, p.z), v3(0, 1, -0.45), 0.072 * s, 0.09 * s, bump, [0.62, 1, 1]); }
     },
     head(b, k) {
-      b.add(gSphere(0.2, 18, 12), { p: [0, -0.13, 0.26], s: [1.3, 0.85, 1.05], c: mixCol(k.bc, k.belly, 0.4) }); // round snout
-      for (const sx of [-1, 1]) b.add(gSphere(0.022, 8, 6), { p: [sx * 0.065, -0.075, 0.455], s: [1, 0.75, 0.5], c: shade(k.bc, 0.45) });
-      blush(b, k, 0.28, -0.02, 0.29, 0.75);
-      for (const [e, s] of [[0.32, 0.85], [-0.02, 0.95], [-0.36, 0.8]]) { const P = headPt(PI, e, -0.012); spike(b, P.p, P.n.clone().add(v3(0, 0.3, 0)), 0.075 * s, 0.13 * s, k.ac, [0.42, 1, 1]); }
+      snout(b, DINO, mixCol(k.bc, k.belly, 0.45));
+      nostrils(b, 'dino', 0.06, -0.1, 0.019, shade(k.bc, 0.6));
+      const bump = mixCol(k.ac, k.white, 0.2);
+      for (const [e, s] of [[0.32, 0.85], [-0.02, 0.95], [-0.36, 0.8]]) { const P = headPt(PI, e, -0.01); spike(b, P.p, P.n.clone().add(v3(0, 0.3, 0)), 0.07 * s, 0.09 * s, bump, [0.62, 1, 1]); }
     },
-    eyes: { x: 0.155, y: 0.1, z: 0.366, s: 1.05 }, mouth: [0, -0.17, 0.462], noCheeks: true, voice: 0.78,
-    face: { nose: [0, -0.075, 0.465], muzzle: [[0, -0.13, 0.26], [0.26, 0.17, 0.21]] },
+    eyes: { x: 0.17, y: 0.005, s: 1.02 }, face: DINO, voice: 0.78,
   });
 
-  // ---------------- Shark: blue-grey, back fin, tail fin, white tummy and a cheeky toothy grin ----------------
+  // ---------------- Shark: blue-grey, a soft round back fin, tail fin, white tummy and a big happy smile ----------------
+  const SHARK = { nose: [0, -0.06, 0.405], lift: 0.006, mouth: { x: 0, y: -0.158, w: 0.085, k: 0.03, open: [0.075, 0.06] } };
   addSpecies('shark', { name: 'Shark', color: '#7d9bb7', belly: '#f3f7fb', accent: '#5f7f9c' }, {
     body(b, k) {
-      belly(b, k.belly, 0.26, 0.34, -0.14);
       const P = bodyPt(0.2, PI, -0.03);
-      b.add(gSpike(0.17, 0.42, 14), { p: P3(P.p), q: qUp(v3(0, 1, -0.72)), s: [0.32, 1, 1], c: k.bc });
+      b.add(gSpike(0.17, 0.3, 14), { p: P3(P.p), q: qUp(v3(0, 1, -0.62)), s: [0.46, 1, 1], c: k.bc });
       const tp = curve([[0, -0.2, -0.3], [0, -0.29, -0.5], [0, -0.32, -0.66]], 5);
-      b.add(gTube(tp, (t) => lerp(0.15, 0.07, t), 12), { c: k.bc });
+      b.add(gTube(tp, (t) => lerp(0.15, 0.08, t), 12), { c: k.bc });
       const e = tp[tp.length - 1];
-      b.add(gSpike(0.11, 0.36, 12), { p: [e.x, e.y + 0.01, e.z + 0.02], q: qUp(v3(0, 1, -0.6)), s: [0.32, 1, 1], c: k.bc });
-      b.add(gSpike(0.09, 0.25, 10), { p: [e.x, e.y - 0.01, e.z + 0.02], q: qUp(v3(0, -1, -0.65)), s: [0.32, 1, 1], c: k.bc });
-      for (const sx of [-1, 1]) for (let i = 0; i < 3; i++) b.add(gDecal(strokePoly(0.008, -0.045, -0.008, 0.045, 0.016), bodyMapC(sx * (0.95 + i * 0.15), 0.4), 0.003, 0.006, 2), { c: shade(k.bc, 0.62) }); // gills
+      b.add(gSpike(0.11, 0.28, 12), { p: [e.x, e.y + 0.01, e.z + 0.02], q: qUp(v3(0, 1, -0.6)), s: [0.45, 1, 1], c: k.bc });
+      b.add(gSpike(0.09, 0.2, 10), { p: [e.x, e.y - 0.01, e.z + 0.02], q: qUp(v3(0, -1, -0.65)), s: [0.45, 1, 1], c: k.bc });
+      for (const sx of [-1, 1]) for (let i = 0; i < 3; i++) b.add(gDecal(strokePoly(0.008, -0.04, -0.008, 0.04, 0.016), bodyMapC(sx * (0.95 + i * 0.15), 0.4), 0.003, 0.004, 2), { c: shade(k.bc, 0.86) }); // gills
     },
     head(b, k) {
-      const W = k.belly;
-      b.add(gEllPatch(0.425, 0.396, 0.413, (ph) => 1.8 + 0.85 * smoothstep(1.3, 2.7, Math.abs(ph)), PI, -PI, PI, 36, 8), { c: W }); // white lower face
-      // the grin: a wide "D" mouth with little teeth and a tongue
-      const m = []; for (let i = 0; i <= 16; i++) { const a = PI + i / 16 * PI; m.push([Math.cos(a) * 0.13, Math.sin(a) * 0.075 + 0.02]); }
-      const map = headMap(0, -0.42);
-      b.add(gDecal(m, map, 0.008, 0.008), { c: col('#5a1f30') });
-      b.add(gDecal(ellipsePoly(0.05, 0.022, 16, 0, -0.03), map, 0.016, 0.004), { c: col('#ff8aa6') });
-      for (let i = -2; i <= 2; i++) { const u = i * 0.044; b.add(gDecal([[u - 0.02, 0.02], [u + 0.02, 0.02], [u, -0.012]], map, 0.016, 0.006, 2), { c: col('#ffffff') }); }
-      blush(b, k, 0.25, -0.12, 0.31, 0.75);
+      b.add(gEllPatch(0.425, 0.396, 0.413, (ph) => 1.8 + 0.85 * smoothstep(1.3, 2.7, Math.abs(ph)), PI, -PI, PI, 36, 8), { c: k.belly }); // white lower face
+      toyCheeks(b, k, 'shark', { at: [0.265, -0.125], base: k.belly, off: 0.005 });
     },
-    eyes: { x: 0.165, y: 0.07, z: 0.37, s: 1 }, mouth: null, noCheeks: true, voice: 0.85,
-    face: { nose: [0, -0.06, 0.405] },
+    eyes: { x: 0.18, y: 0.015, s: 1 }, face: SHARK, noCheeks: true, belly: { rx: 0.26, ry: 0.34, y: -0.14 }, voice: 0.85,
   });
 
   // ---------------- Penguin: dark with a white tummy and face, orange beak and feet ----------------
+  const PENGUIN = { nose: [0, -0.095, 0.53], beak: true, mouth: null };
   addSpecies('penguin', { name: 'Penguin', color: '#363a4f', belly: '#ffffff', accent: '#ffa62b' }, {
     body(b, k) {
-      belly(b, col('#ffffff'), 0.29, 0.4, -0.13);
       const P = bodyPt(-0.42, PI, -0.03);
       b.add(gSpike(0.11, 0.17, 10), { p: P3(P.p), q: qUp(v3(0, -0.45, -1)), s: [1, 1, 0.42], c: k.bc });
     },
     head(b, k) {
-      const face = unionPoly([{ x: -0.12, y: 0.05, rx: 0.15, ry: 0.155 }, { x: 0.12, y: 0.05, rx: 0.15, ry: 0.155 }, { x: 0, y: -0.1, rx: 0.285, ry: 0.19 }], 0, -0.04, 56);
-      b.add(gDecal(face, headMap(0, 0), 0.003, 0.01), { c: col('#ffffff') });
-      b.add(gSpike(0.072, 0.15, 14), { p: [0, -0.06, 0.385], q: qUp(v3(0, -0.12, 1)), s: [1.3, 1, 0.72], c: col('#ffa62b') });
-      b.add(gSpike(0.05, 0.09, 12), { p: [0, -0.1, 0.38], q: qUp(v3(0, -0.3, 1)), s: [1.2, 1, 0.6], c: col('#f08a10') });
+      const W = col('#ffffff'), face = unionPoly([{ x: -0.145, y: 0.0, rx: 0.16, ry: 0.165 }, { x: 0.145, y: 0.0, rx: 0.16, ry: 0.165 }, { x: 0, y: -0.14, rx: 0.285, ry: 0.19 }], 0, -0.05, 56);
+      b.add(gDecal(face, headMap(0, 0), 0.003, 0.01), { c: W });
+      toyCheeks(b, k, 'penguin', { at: [0.24, -0.11], base: W, off: 0.013 });
+      b.add(gSpike(0.068, 0.14, 14), { p: [0, -0.088, 0.385], q: qUp(v3(0, -0.14, 1)), s: [1.3, 1, 0.72], c: col('#ffab35') });
+      b.add(gSpike(0.048, 0.085, 12), { p: [0, -0.122, 0.375], q: qUp(v3(0, -0.32, 1)), s: [1.2, 1, 0.6], c: col('#f5901a') });
     },
-    eyes: { x: 0.13, y: 0.05, z: 0.385, s: 1 }, mouth: null, paw: '#ffa62b', voice: 1.3,
-    face: { nose: [0, -0.078, 0.534], beak: true },
+    eyes: { x: 0.145, y: 0.0, s: 1 }, face: PENGUIN, noCheeks: true, belly: { rx: 0.29, ry: 0.37, y: -0.115 }, paw: '#ffa62b', voice: 1.3,
   });
 
-  // ---------------- Cow: white with black spots, pink muzzle, little horns and floppy ears ----------------
+  // ---------------- Cow: white with soft spots, pink muzzle, little horns and floppy ears ----------------
+  const COW = { nose: [0, -0.15, 0.44], muzzle: [[0, -0.2, 0.27], [0.215, 0.135, 0.17]], cheeks: [0.29, -0.08], mouth: { x: 0, y: -0.262, w: 0.045, k: 0.02 } };
   addSpecies('cow', { name: 'Cow', color: '#f8f4ee', belly: '#ffffff', accent: '#3b3238' }, {
     body(b, k) {
-      for (const [a, y, r, seed] of [[0.8, 0.1, 0.13, 1], [-1.05, -0.28, 0.15, 2], [2.45, 0.2, 0.15, 3], [-2.3, -0.06, 0.16, 4], [PI, -0.36, 0.12, 5], [1.75, -0.36, 0.1, 6], [-0.42, 0.33, 0.075, 7]]) b.add(gDecal(blobPoly(r, 24, seed, 0.32), bodyMapC(a, y), 0.003, 0.01), { c: k.ac });
+      const spot = mixCol(k.ac, k.bc, 0.12);
+      for (const [a, y, r, seed] of [[0.8, 0.1, 0.13, 1], [-1.05, -0.28, 0.15, 2], [2.45, 0.2, 0.15, 3], [-2.3, -0.06, 0.16, 4], [PI, -0.36, 0.12, 5], [1.75, -0.36, 0.1, 6], [-0.42, 0.33, 0.075, 7]]) b.add(gDecal(blobPoly(r, 24, seed, 0.2), bodyMapC(a, y), 0.003, 0.01), { c: spot });
       const tp = curve([[0, -0.24, -0.4], [0.03, -0.34, -0.53], [0.06, -0.5, -0.59], [0.08, -0.62, -0.58]], 5);
-      b.add(gTube(tp, 0.03, 8), { c: k.bc });
-      const e = tp[tp.length - 1]; b.add(gSphere(0.06, 10, 8), { p: [e.x, e.y - 0.04, e.z], s: [1, 1.45, 1], c: k.ac });
+      b.add(gTube(tp, 0.034, 8), { c: k.bc });
+      const e = tp[tp.length - 1]; b.add(gSphere(0.065, 12, 10), { p: [e.x, e.y - 0.04, e.z], s: [1, 1.4, 1], c: spot });
     },
     head(b, k) {
-      const pinkM = col('#ffb6c3');
-      b.add(gSphere(0.2, 18, 12), { p: [0, -0.15, 0.27], s: [1.25, 0.82, 1.0], c: pinkM });
-      for (const sx of [-1, 1]) b.add(gSphere(0.03, 8, 6), { p: [sx * 0.075, -0.12, 0.457], s: [0.8, 1.15, 0.5], q: Q(0.2, sx * 0.35, 0), c: col('#c45e74') });
-      for (const sx of [-1, 1]) { const P = headPt(sx * 1.45, 0.55, -0.025); spike(b, P.p, v3(sx * 0.75, 0.68, 0.05), 0.05, 0.15, col('#fff0c8')); }
+      const pinkM = col('#ffc0cc');
+      snout(b, COW, pinkM);
+      nostrils(b, 'cow', 0.07, -0.16, 0.028, col('#d97d92'));
+      for (const sx of [-1, 1]) { const P = headPt(sx * 1.45, 0.55, -0.025); spike(b, P.p, v3(sx * 0.75, 0.68, 0.05), 0.055, 0.13, col('#fff0c8')); }
       for (const sx of [-1, 1]) {
-        b.add(gSphere(0.12, 14, 10), { p: [sx * 0.44, 0.06, -0.03], s: [1.25, 0.55, 0.42], q: Q(0, 0, sx * -0.28), c: k.bc });
-        b.add(gSphere(0.09, 12, 8), { p: [sx * 0.46, 0.054, 0.004], s: [1.15, 0.45, 0.3], q: Q(0, 0, sx * -0.28), c: pinkM });
+        b.add(gSphere(0.12, 14, 10), { p: [sx * 0.44, 0.04, -0.03], s: [1.25, 0.58, 0.44], q: Q(0, 0, sx * -0.3), c: k.bc });
+        b.add(gSphere(0.09, 12, 8), { p: [sx * 0.46, 0.034, 0.004], s: [1.15, 0.48, 0.3], q: Q(0, 0, sx * -0.3), c: pinkM });
       }
-      b.add(gDecal(blobPoly(0.1, 22, 9, 0.3), headMap(-0.98, 0.52), 0.003, 0.01), { c: k.ac });
-      blush(b, k, 0.28, -0.04, 0.29, 0.75);
+      b.add(gDecal(blobPoly(0.1, 22, 9, 0.2), headMap(-0.98, 0.56), 0.003, 0.01), { c: mixCol(k.ac, k.bc, 0.12) });
     },
-    eyes: { x: 0.15, y: 0.06, z: 0.38, s: 1 }, mouth: [0, -0.245, 0.432], noCheeks: true, paw: '#5b4a45', voice: 0.7,
-    face: { nose: [0, -0.12, 0.47], muzzle: [[0, -0.15, 0.27], [0.25, 0.164, 0.2]] },
+    eyes: { x: 0.17, y: 0.0, s: 1 }, face: COW, paw: '#6b5a55', voice: 0.7,
   });
 
-  // ---------------- Raccoon: grey, black bandit mask, striped tail, round ears ----------------
-  const maskPoly = [];
-  for (let i = 0; i <= 16; i++) { const u = 0.33 - i / 16 * 0.66, s = Math.abs(u) / 0.33; maskPoly.push([u, 0.08 - 0.05 * s * s * s + 0.012 * Math.sin(s * PI)]); }
-  for (let i = 1; i < 16; i++) { const u = -0.33 + i / 16 * 0.66, s = Math.abs(u) / 0.33; maskPoly.push([u, -0.085 + 0.065 * Math.exp(-((u / 0.05) ** 2)) + 0.07 * s ** 4]); }
+  // ---------------- Raccoon: grey, a soft dark mask round the eyes, striped tail, round ears ----------------
+  const RACCOON = { nose: [0, -0.13, 0.4], muzzle: [[0, -0.2, 0.29], [0.15, 0.1, 0.13]], cheeks: [0.27, -0.175], mouth: { x: 0, y: -0.222, w: 0.04, k: 0.019 } };
+  const MASK = unionPoly([{ x: -0.168, y: -0.012, rx: 0.13, ry: 0.112 }, { x: 0.168, y: -0.012, rx: 0.13, ry: 0.112 }, { x: 0, y: 0.0, rx: 0.12, ry: 0.045 }], 0, -0.01, 72);
   addSpecies('raccoon', { name: 'Raccoon', color: '#9c99a6', belly: '#e9e6ef', accent: '#37333e' }, {
     body(b, k) {
-      belly(b, k.belly, 0.23, 0.31, -0.16);
-      const tp = curve([[0, -0.27, -0.36], [0, -0.38, -0.58], [0, -0.3, -0.8], [0, -0.08, -0.92], [0, 0.13, -0.9]], 10);
-      b.add(gTube(tp, (t) => 0.1 + 0.05 * Math.sin(Math.min(1, t * 1.25) * PI) - 0.035 * t, 12, { col: (t) => (Math.floor(t * 7) % 2 || t > 0.86 ? k.ac : k.bc) }), {});
+      const tp = curve([[0, -0.27, -0.36], [0, -0.38, -0.58], [0, -0.3, -0.8], [0, -0.08, -0.92], [0, 0.13, -0.9]], 10), ring = mixCol(k.ac, k.bc, 0.25);
+      b.add(gTube(tp, (t) => 0.1 + 0.05 * Math.sin(Math.min(1, t * 1.25) * PI) - 0.035 * t, 12, { col: (t) => (Math.floor(t * 7) % 2 || t > 0.86 ? ring : k.bc) }), {});
     },
     head(b, k) {
       const lt = col('#f1eef5');
-      b.add(gDecal(maskPoly, headMap(0, 0.13), 0.003, 0.011), { c: k.ac });
-      for (const sx of [-1, 1]) { const P = headAt(sx * 0.15, 0.06); b.add(gSphere(0.09, 16, 10), { p: [P.p.x, P.p.y, P.p.z - 0.006], s: [1, 1.22, 0.42], q: Q(-0.15, sx * 0.35, 0), c: col('#ffffff') }); }
-      for (const sx of [-1, 1]) b.add(gDecal(ellipsePoly(0.055, 0.028, 16), headMap(sx * 0.4, 0.5), 0.003, 0.008), { c: lt });
-      b.add(gSphere(0.16, 16, 10), { p: [0, -0.12, 0.31], s: [1.15, 0.8, 0.9], c: lt });
-      b.add(gSphere(0.05, 10, 8), { p: [0, -0.06, 0.452], s: [1.35, 0.9, 0.9], c: col('#1b1720') });
+      b.add(gDecal(MASK, onFace('raccoon', 0, -0.01), 0.002, 0.008, 4), { c: mixCol(k.ac, k.bc, 0.22) });
+      for (const sx of [-1, 1]) b.add(gDecal(ellipsePoly(0.06, 0.03, 16), headMap(sx * 0.42, 0.42), 0.003, 0.006), { c: lt });
+      snout(b, RACCOON, lt); toyNose(b, RACCOON.nose, k.ink, 0.046);
       for (const sx of [-1, 1]) {
         b.add(gSphere(0.12, 14, 10), { p: [sx * 0.31, 0.25, -0.07], s: [1, 1.05, 0.45], q: Q(0, sx * 0.2, -sx * 0.45), c: k.bc });
-        b.add(gSphere(0.075, 10, 8), { p: [sx * 0.318, 0.245, -0.036], s: [1, 1.05, 0.3], q: Q(0, sx * 0.2, -sx * 0.45), c: k.ac });
+        b.add(gSphere(0.075, 10, 8), { p: [sx * 0.318, 0.245, -0.036], s: [1, 1.05, 0.3], q: Q(0, sx * 0.2, -sx * 0.45), c: mixCol(lt, k.pink, 0.25) });
       }
     },
-    eyes: { x: 0.15, y: 0.06, z: 0.38, s: 0.95 }, mouth: [0, -0.2, 0.425], paw: '#3c3842', voice: 1.2,
-    face: { nose: [0, -0.06, 0.47], muzzle: [[0, -0.12, 0.31], [0.184, 0.128, 0.144]] },
+    eyes: { x: 0.168, y: -0.012, s: 0.98 }, face: RACCOON, paw: '#4a4652', voice: 1.2,
   });
 
-  // ---------------- Monkey: brown, light face, big round ears, curly tail ----------------
+  // ---------------- Monkey: brown, light heart-shaped face, big round ears, curly tail ----------------
+  const MONKEY = { nose: [0, -0.14, 0.43], muzzle: [[0, -0.2, 0.27], [0.2, 0.125, 0.165]], mouth: { x: 0, y: -0.25, w: 0.05, k: 0.021 } };
   addSpecies('monkey', { name: 'Monkey', color: '#a5704a', belly: '#f2d1ab', accent: '#f2d1ab' }, {
     body(b, k) {
-      belly(b, k.belly, 0.23, 0.3, -0.16);
       const pts = curve([[0, -0.3, -0.38], [0, -0.43, -0.56], [0, -0.36, -0.75], [0, -0.12, -0.84]], 6);
       const C = v3(0, -0.03, -0.75);
       for (let i = 1; i <= 22; i++) { const s = i / 22, th = s * 1.75 * PI, r = 0.09 * (1 - 0.6 * s); pts.push(v3(0, C.y + Math.sin(th) * r, C.z - Math.cos(th) * r)); }
-      b.add(gTube(pts, 0.036, 9), { c: k.bc });
+      b.add(gTube(pts, 0.04, 9), { c: k.bc });
     },
     head(b, k) {
       const F = k.belly;
-      b.add(gDecal(unionPoly([{ x: -0.12, y: 0.05, rx: 0.135, ry: 0.15 }, { x: 0.12, y: 0.05, rx: 0.135, ry: 0.15 }], 0, 0.04, 48), headMap(0, 0), 0.003, 0.01), { c: F });
-      b.add(gSphere(0.2, 18, 12), { p: [0, -0.12, 0.27], s: [1.3, 0.8, 0.95], c: F });
-      for (const sx of [-1, 1]) b.add(gSphere(0.018, 8, 6), { p: [sx * 0.035, -0.07, 0.448], s: [1, 0.8, 0.5], c: col('#6a4430') });
+      b.add(gDecal(unionPoly([{ x: -0.155, y: 0.0, rx: 0.145, ry: 0.155 }, { x: 0.155, y: 0.0, rx: 0.145, ry: 0.155 }, { x: 0, y: -0.045, rx: 0.1, ry: 0.09 }], 0, -0.01, 56), headMap(0, 0), 0.003, 0.01), { c: F });
+      snout(b, MONKEY, F);
+      nostrils(b, 'monkey', 0.036, -0.14, 0.017, col('#8a5a40'));
+      toyCheeks(b, k, 'monkey', { at: [0.215, -0.1], rx: 0.07, ry: 0.048, base: F, off: 0.013 });
       for (const sx of [-1, 1]) {
         const q = Q(0, -sx * 0.35, 0), n = v3(sx, 0, 0).applyQuat(q);
-        b.add(gSphere(0.15, 16, 10), { p: [sx * 0.45, 0.04, -0.02], s: [0.38, 1, 1], q, c: k.bc });
-        b.add(gSphere(0.1, 14, 8), { p: [sx * 0.45 + n.x * 0.03, 0.04, -0.02 + n.z * 0.03], s: [0.3, 1, 1], q, c: F });
+        b.add(gSphere(0.15, 16, 12), { p: [sx * 0.45, 0.02, -0.02], s: [0.38, 1, 1], q, c: k.bc });
+        b.add(gSphere(0.1, 14, 10), { p: [sx * 0.45 + n.x * 0.03, 0.02, -0.02 + n.z * 0.03], s: [0.3, 1, 1], q, c: mixCol(F, k.pink, 0.2) });
       }
-      blush(b, k, 0.28, -0.03, 0.29, 0.75);
     },
-    eyes: { x: 0.12, y: 0.05, z: 0.386, s: 1 }, mouth: [0, -0.19, 0.443], noCheeks: true, paw: '#e9c29a', voice: 1.3,
-    face: { nose: [0, -0.07, 0.455], muzzle: [[0, -0.12, 0.27], [0.26, 0.16, 0.19]] },
+    eyes: { x: 0.155, y: 0.0, s: 1 }, face: MONKEY, noCheeks: true, paw: '#e9c29a', voice: 1.3,
   });
 
-  // ---------------- Unicorn: white, pastel rainbow mane and tail, golden horn ----------------
+  // ---------------- Unicorn: white, pastel rainbow mane and tail, a pastel swirly horn ----------------
   const RAINBOW = ['#ffaacb', '#ffc99a', '#fff2a0', '#b8f0b0', '#a6dcff', '#cbb6ff'].map(col);
+  const UNICORN = { nose: [0, -0.15, 0.43], muzzle: [[0, -0.205, 0.285], [0.16, 0.11, 0.14]], cheeks: [0.28, -0.12], mouth: { x: 0, y: -0.245, w: 0.04, k: 0.017 } };
   addSpecies('unicorn', { name: 'Unicorn', color: '#fbf8ff', belly: '#ffffff', accent: '#ffd36b' }, {
     body(b, k) {
       RAINBOW.forEach((c, i) => { const s = (i - 2.5) / 2.5, tp = curve([[s * 0.05, -0.24, -0.37], [s * 0.1, -0.2, -0.6], [s * 0.16, -0.38, -0.76], [s * 0.2, -0.62, -0.72]], 6); b.add(gTube(tp, (t) => 0.06 * (1 - 0.55 * t) + 0.012, 9), { c }); });
     },
     head(b, k) {
-      const G1 = col('#ffcc4a'), G2 = col('#fff1b8');
-      b.add(paint(gSpike(0.062, 0.27, 16), (x, y, z) => ((((Math.atan2(x, z) / TAU + y * 9) % 1) + 1) % 1 < 0.5 ? G1 : G2)), { p: [0, 0.15, 0.345], q: qUp(v3(0, 0.77, 0.64)) });
+      const G1 = col('#ffc2dc'), G2 = col('#fff4cf'), G3 = col('#d9c8ff');
+      b.add(paint(gSpike(0.064, 0.26, 16), (x, y, z) => { const t = ((((Math.atan2(x, z) / TAU + y * 9) % 1) + 1) % 1) * 3; return t < 1 ? G1 : t < 2 ? G2 : G3; }), { p: [0, 0.16, 0.34], q: qUp(v3(0, 0.77, 0.64)) });
       // the mane: soft wavy locks from behind one ear, round the back, to behind the other (kept below hat level)
       const locks = [[1.85, 0.3, -0.7], [2.12, 0.36, -0.82], [2.4, 0.42, -0.95], [2.66, 0.46, -0.88], [2.92, 0.48, -1.0], [-3.1, 0.48, -0.9], [-2.84, 0.47, -1.0], [-2.58, 0.44, -0.86], [-2.3, 0.4, -0.95], [-2.03, 0.34, -0.78], [-1.78, 0.3, -0.66]];
       locks.forEach(([a, e0, e1], i) => {
         const pts = [];
         for (let s = 0; s <= 10; s++) { const t = s / 10; pts.push(headPt(a + Math.sin(t * 5 + i * 1.7) * 0.07 * t, lerp(e0, e1, t), 0.03 + 0.07 * t * t).p); }
-        b.add(gTube(pts, (t) => 0.078 * (1 - 0.5 * t), 10), { c: RAINBOW[i % 6] });
+        b.add(gTube(pts, (t) => 0.08 * (1 - 0.45 * t), 10), { c: RAINBOW[i % 6] });
       });
       for (const sx of [-1, 1]) {
         const P = headPt(sx * 1.32, 0.48, -0.02), d = v3(sx * 0.72, 0.7, 0.02);
-        spike(b, P.p, d, 0.075, 0.18, k.bc, [1, 1, 0.5]);
-        spike(b, v3(P.p.x, P.p.y + 0.012, P.p.z + 0.024), d, 0.045, 0.12, col('#ffc4d8'), [1, 1, 0.32]);
+        spike(b, P.p, d, 0.078, 0.17, k.bc, [1, 1, 0.5]);
+        spike(b, v3(P.p.x, P.p.y + 0.012, P.p.z + 0.024), d, 0.047, 0.115, col('#ffc4d8'), [1, 1, 0.32]);
       }
-      b.add(gSphere(0.17, 16, 12), { p: [0, -0.13, 0.3], s: [1.2, 0.82, 0.9], c: col('#ffeaf2') });
-      for (const sx of [-1, 1]) b.add(gSphere(0.016, 8, 6), { p: [sx * 0.05, -0.1, 0.448], s: [1, 1.4, 0.5], c: col('#e27a9c') });
-      for (const sx of [-1, 1]) for (const ph of [0.3, 0.72, 1.14]) {
-        const e0 = [sx * (0.15 + Math.cos(ph) * 0.072), 0.05 + Math.sin(ph) * 0.097], e1 = [e0[0] + sx * Math.cos(ph) * 0.05, e0[1] + Math.sin(ph) * 0.05];
-        b.add(gTube([headAt(e0[0], e0[1], 0.012).p, headAt(e1[0], e1[1], 0.014).p], (t) => 0.009 - 0.004 * t, 6), { c: col('#2a2233') });
+      snout(b, UNICORN, col('#ffeaf2'));
+      nostrils(b, 'unicorn', 0.05, -0.17, 0.016, col('#e892b0'));
+      // three soft lashes at the top outer edge of each eye
+      const L = eyeLayout('unicorn'), rx = TOY_EYE.rx * L.s, ry = TOY_EYE.ry * L.s;
+      for (const sx of [-1, 1]) for (const ph of [0.35, 0.72, 1.08]) {
+        const e0 = [sx * (L.x + Math.cos(ph) * rx * 0.95), L.y + Math.sin(ph) * ry * 0.95], e1 = [e0[0] + sx * Math.cos(ph) * 0.045, e0[1] + Math.sin(ph) * 0.04];
+        b.add(gTube([headAt(e0[0], e0[1], 0.014).p, headAt(e1[0], e1[1], 0.018).p], (t) => 0.0085 - 0.0035 * t, 6), { c: col('#3a2f45') });
       }
     },
-    eyes: { x: 0.15, y: 0.05, z: 0.38, s: 1 }, mouth: [0, -0.21, 0.425], paw: '#cdb8ff', voice: 1.4,
-    face: { nose: [0, -0.1, 0.455], muzzle: [[0, -0.13, 0.3], [0.204, 0.139, 0.153]] },
+    eyes: { x: 0.17, y: -0.01, s: 1 }, face: UNICORN, paw: '#cdb8ff', voice: 1.4,
   });
 
-  // ---------------- Lion: golden, big fluffy mane (kept low on top, so hats still sit on the head) ----------------
-  // mane tufts round the face [angle from the top, size], then puffs at the back [x, y, z, r]
+  // ---------------- Lion: golden, a big soft fluffy mane (kept low on top, so hats still sit on the head) ----------------
   // mane tufts round the face [angle from the top, size] and over the back of the head [pitch, yaws, size]
-  const MANE_RING = [[0.62, 0.12], [0.98, 0.15], [1.34, 0.15], [1.7, 0.145], [2.06, 0.135], [2.4, 0.115]];
-  const MANE_ROWS = [[0.38, [1.75, 2.3, 2.85], 0.12], [0.0, [1.75, 2.25, 2.75, PI], 0.13], [-0.4, [1.6, 2.1, 2.6, 3.05], 0.13], [-0.78, [1.7, 2.3, 2.9], 0.12]];
+  const MANE_RING = [[0.62, 0.125], [0.98, 0.155], [1.34, 0.155], [1.7, 0.15], [2.06, 0.14], [2.4, 0.12]];
+  const MANE_ROWS = [[0.38, [1.75, 2.3, 2.85], 0.125], [0.0, [1.75, 2.25, 2.75, PI], 0.135], [-0.4, [1.6, 2.1, 2.6, 3.05], 0.135], [-0.78, [1.7, 2.3, 2.9], 0.125]];
+  const LION = { nose: [0, -0.13, 0.41], muzzle: [[0, -0.2, 0.29], [0.17, 0.115, 0.145]], cheeks: [0.27, -0.13], mouth: { x: 0, y: -0.232, w: 0.042, k: 0.017, kind: 'w' } };
   addSpecies('lion', { name: 'Lion', color: '#dca055', belly: '#fff1cf', accent: '#b9622b' }, {
     body(b, k) {
-      belly(b, k.belly, 0.23, 0.31, -0.16);
       const tp = curve([[0, -0.3, -0.38], [0, -0.44, -0.58], [0, -0.36, -0.8], [0, -0.14, -0.9]], 6);
-      b.add(gTube(tp, 0.034, 8), { c: k.bc });
-      const e = tp[tp.length - 1]; b.add(gSphere(0.085, 12, 10), { p: [e.x, e.y + 0.035, e.z], s: [1, 1.3, 1], c: k.ac });
+      b.add(gTube(tp, 0.038, 8), { c: k.bc });
+      const e = tp[tp.length - 1]; b.add(gSphere(0.09, 14, 10), { p: [e.x, e.y + 0.035, e.z], s: [1, 1.3, 1], c: mixCol(k.ac, k.bc, 0.3) });
     },
     head(b, k) {
-      const M2 = shade(k.ac, 0.82);
-      MANE_RING.forEach(([f, r], i) => { for (const sx of [-1, 1]) { const d = v3(sx * Math.sin(f), Math.cos(f), 0), y = Math.min(0.17, Math.cos(f) * 0.4 - 0.02); b.add(gSphere(r, 14, 10), { p: [sx * Math.sin(f) * 0.43, y, -0.1 - 0.06 * Math.max(0, Math.cos(f))], q: qUp(d), s: [0.85, 1.3, 0.85], c: i % 2 ? M2 : k.ac }); } });
+      const M1 = mixCol(k.ac, k.bc, 0.42), M2 = mixCol(k.ac, k.bc, 0.3); // (two close shades: one soft fluffy mane, not polka dots)
+      MANE_RING.forEach(([f, r], i) => { for (const sx of [-1, 1]) { const d = v3(sx * Math.sin(f), Math.cos(f), 0), y = Math.min(0.17, Math.cos(f) * 0.4 - 0.02); b.add(gSphere(r, 14, 10), { p: [sx * Math.sin(f) * 0.43, y, -0.1 - 0.06 * Math.max(0, Math.cos(f))], q: qUp(d), s: [0.88, 1.3, 0.88], c: i % 2 ? M2 : M1 }); } });
       MANE_ROWS.forEach(([e, yaws, r], j) => yaws.forEach((a, i) => {
-        for (const sx of a === PI ? [1] : [-1, 1]) { const d = v3(0.43 * Math.cos(e) * Math.sin(sx * a), 0.4 * Math.sin(e), 0.42 * Math.cos(e) * Math.cos(sx * a)), p = v3(0, -0.02, -0.04).add(d).addScaled(d.clone().normalize(), 0.02); b.add(gSphere(r, 14, 10), { p: P3(p), q: qUp(d), s: [0.9, 1.35, 0.9], c: (i + j) % 2 ? M2 : k.ac }); }
+        for (const sx of a === PI ? [1] : [-1, 1]) { const d = v3(0.43 * Math.cos(e) * Math.sin(sx * a), 0.4 * Math.sin(e), 0.42 * Math.cos(e) * Math.cos(sx * a)), p = v3(0, -0.02, -0.04).add(d).addScaled(d.clone().normalize(), 0.02); b.add(gSphere(r, 14, 10), { p: P3(p), q: qUp(d), s: [0.92, 1.32, 0.92], c: (i + j) % 2 ? M2 : M1 }); }
       }));
-      b.add(gSphere(0.16, 16, 12), { p: [0, -0.13, 0.3], s: [1.3, 0.85, 0.95], c: col('#fff3d6') });
-      b.add(gSphere(0.05, 12, 8), { p: [0, -0.065, 0.452], s: [1.5, 0.95, 0.9], c: col('#6a3b2c') });
-      for (const sx of [-1, 1]) for (const [x, y] of [[0.08, -0.13], [0.125, -0.115], [0.115, -0.165]]) { const z = 0.3 + 0.152 * Math.sqrt(Math.max(0, 1 - (x / 0.208) ** 2 - ((y + 0.13) / 0.136) ** 2)); b.add(gSphere(0.011, 6, 5), { p: [sx * x, y, z], c: col('#8a5a3c') }); }
-      for (const sx of [-1, 1]) { b.add(gSphere(0.09, 12, 10), { p: [sx * 0.3, 0.24, -0.03], s: [1, 1, 0.55], c: k.bc }); b.add(gSphere(0.055, 10, 8), { p: [sx * 0.305, 0.235, 0.0], s: [1, 1, 0.4], c: shade(k.ac, 0.95) }); }
+      snout(b, LION, col('#fff3d6'));
+      toyNose(b, LION.nose, col('#7a4636'), 0.046, 1.45);
+      for (const sx of [-1, 1]) for (const [x, y] of [[0.08, -0.2], [0.115, -0.185], [0.105, -0.225]]) b.add(gSphere(0.0105, 6, 5), { p: P3(faceAt('lion', sx * x, y, 0.001).p), c: col('#b08060') });
+      for (const sx of [-1, 1]) { b.add(gSphere(0.09, 12, 10), { p: [sx * 0.3, 0.24, -0.03], s: [1, 1, 0.55], c: k.bc }); b.add(gSphere(0.055, 10, 8), { p: [sx * 0.305, 0.235, 0.0], s: [1, 1, 0.4], c: mixCol(k.belly, k.pink, 0.3) }); }
     },
-    eyes: { x: 0.15, y: 0.05, z: 0.38, s: 1 }, mouth: [0, -0.21, 0.425], paw: '#ffe3ad', voice: 0.68,
-    face: { nose: [0, -0.065, 0.475], muzzle: [[0, -0.13, 0.3], [0.208, 0.136, 0.152]] },
+    eyes: { x: 0.17, y: -0.01, s: 1 }, face: LION, paw: '#ffe3ad', voice: 0.68,
   });
 }
 
@@ -5210,13 +5360,7 @@ const LOOKS_KIT = (() => {
   }
 
   // ---------------- faces: where the eyes and the nose are ----------------
-  const FACE = {
-    pup: { nose: [0, -0.04, 0.47], muzzle: [[0, -0.1, 0.33], [0.196, 0.136, 0.145]] }, kitty: { nose: [0, -0.05, 0.42] }, bunny: { nose: [0, -0.06, 0.425] },
-    bear: { nose: [0, -0.05, 0.46], muzzle: [[0, -0.11, 0.33], [0.173, 0.12, 0.12]] }, panda: { nose: [0, -0.05, 0.46], muzzle: [[0, -0.11, 0.33], [0.173, 0.12, 0.12]] },
-    duck: { nose: [0, -0.1, 0.53], beak: true }, frog: { nose: [0, -0.02, 0.405] }, piggy: { nose: [0, -0.07, 0.465], muzzle: [[0, -0.07, 0.38], [0.15, 0.15, 0.09]] },
-    fox: { nose: [0, -0.06, 0.475], muzzle: [[0, -0.12, 0.3], [0.198, 0.135, 0.171]] },
-  };
-  const faceOf = (sp) => (SPECIES_EXTRA[sp] && SPECIES_EXTRA[sp].face) || FACE[sp] || { nose: [0, -0.05, 0.42] };
+  const faceOf = (sp) => (SPECIES_EXTRA[sp] && SPECIES_EXTRA[sp].face) || FACES[sp] || { nose: [0, -0.05, 0.42] }; // (FACES: 61_charview.js)
   const eyeOf = (sp) => { const L = eyeLayout(sp), s = L.s || 1, frog = sp === 'frog'; return { x: L.x, y: L.y, z: L.z, s, frog, front: L.z + (frog ? 0.1 : 0.04 * s) }; };
   const pitchOf = (y) => Math.asin(clamp(y / HY, -0.99, 0.99));
   const eyeAngles = (E) => { const e = pitchOf(E.y); return { a: Math.asin(clamp(E.x / (0.42 * Math.cos(e)), -1, 1)), e }; };
@@ -5965,12 +6109,12 @@ function poseView(v, ch, dt) {
         if (mv === MV.SLAM || (!ch.grounded && mv !== MV.LIE && mv !== MV.CRAWL)) foot.y = Math.min(foot.y, tp.y - 0.25);
       }
       const d = _xv3.subVectors(foot, hip); let len = d.length(); if (len > 1.05) { d.scale(1.05 / len); len = 1.05; foot.copy(hip).add(d); } len = Math.max(0.05, len); d.scale(1 / len);
-      v.legs[i].setTRS(hip, _xq2.setFromUnitVectors(_xup, d), 0.12, len, 0.12);
+      v.legs[i].setTRS(hip, _xq2.setFromUnitVectors(_xup, d), TOY.leg, len, TOY.leg);
       v.feet[i].setTRS(foot, mode === 'torso' ? tq : yq);
     }
   }
-  // sleeping: eyes shut
-  if (E === 7) { const H = headPose(v, ch); v.eyes.visible = true; v.eyesHappy.visible = false; v.eyes.setTRS(H.p, H.q, 1, 0.1, 1); }
+  // sleeping: eyes shut, peacefully (u u), and a little smile
+  if (E === 7) { v.eyes.visible = v.eyesHappy.visible = v.eyesKO.visible = false; v.eyesSleep.visible = true; if (v.mouthLayout) { v.mouth.visible = true; v.mouthO.visible = false; } }
   // little effects as it goes on
   const g = MOVES_GAME; if (!g || !g.ui || !g.audio) return;
   v._fxT = (v._fxT || 0) - dt;
@@ -5989,12 +6133,6 @@ function poseStartFx(v, ch, mv) {
   else if (E === 2) { g.particles.confetti(above(0.5), 14, 3); if (near) g.audio.cheer(); }
   else if (E === 3) { g.particles.sparkle(ch.hands[0].pos, 5); g.particles.sparkle(ch.hands[1].pos, 5); g.voice(ch, 'hup'); }
   else if (E === 4) { g.ui.pop3d(above(), 'HA HA!', 'hi'); if (near) g.audio.laughS(pitch); }
-}
-function headPose(v, ch) {
-  const tp = v.ip.torso, tq = v.iq, sq = ch.squash, hp = v.ip.head;
-  const neck = _xv1.set(0, 0.52 * (1 - sq), 0).applyQuat(tq).add(tp), tup = _xv2.set(0, 1, 0).applyQuat(tq), d = _xv3.subVectors(hp, neck).normalize();
-  const q = _xq2.setFromUnitVectors(tup, d); q.multiplyQuats(q, tq);
-  return { p: neck.addScaled(d, 0.3), q };
 }
 
 // ===== a friend's animal from another tablet, played back from network snapshots =====
@@ -6591,14 +6729,13 @@ class VehRider {
     const sig = ch ? ch.species + '|' + (ch.color || '') + '|' + JSON.stringify(ch.outfit || {}) : '';
     if (sig === this.sig) return; this.dispose(); this.sig = sig; if (!ch) return;
     const gfx = this.gfx, sp = ch.species, S = SPECIES[sp] || SPECIES.pup, X = SPECIES_EXTRA[sp], bodyCol = ch.color || S.color, O = cleanOutfit(ch.outfit);
-    const limb = X && X.limb ? col(X.limb) : sp === 'panda' ? col('#2b2b33') : col(bodyCol);
-    const paw = X && X.paw ? col(X.paw) : sp === 'duck' ? col('#ff9320') : shade(limb, 0.88);
+    const limb = toyLimbCol(sp, bodyCol), paw = toyPawCol(sp, limb); // (the same plush limbs as CharView, 61_charview.js)
     const sleeve = O.top && OUTFITS[O.top] && OUTFITS[O.top].sleeves ? col(OUTFITS[O.top].sleeves) : limb;
     const mk = (mesh, o) => { const r = new RObj(mesh, o); r.visible = false; gfx.add(r); this.objs.push(r); return r; };
-    this.legs = [0, 1].map(() => mk(limbMesh(gfx), { tint: limb, fuzz: 0.6 }));
-    this.feet = [0, 1].map(() => mk(footMesh(gfx), { tint: paw, fuzz: 0.5 }));
-    this.arms = [0, 1].map(() => mk(limbMesh(gfx), { tint: sleeve, fuzz: sleeve === limb ? 0.6 : 0.15 }));
-    this.hands = [0, 1].map(() => mk(unitSphereMesh(gfx), { tint: shade(limb, 0.95), fuzz: 0.9 }));
+    this.legs = [0, 1].map(() => mk(limbMesh(gfx), { tint: limb, fuzz: 0.85 }));
+    this.feet = [0, 1].map(() => mk(footMesh(gfx), { tint: paw, fuzz: 0.8 }));
+    this.arms = [0, 1].map(() => mk(limbMesh(gfx), { tint: sleeve, fuzz: sleeve === limb ? 0.85 : 0.15 }));
+    this.hands = [0, 1].map(() => mk(pawMesh(gfx), { tint: limb, fuzz: 0.9 }));
   }
   hide() { for (const o of this.objs) o.visible = false; }
   dispose() { for (const o of this.objs) this.gfx.remove(o); this.objs = []; this.sig = null; }
@@ -6607,11 +6744,11 @@ class VehRider {
     if (!this.objs.length) return;
     for (let i = 0; i < 2; i++) {
       const side = i === 0 ? 1 : -1;
-      vehLimb(this.legs[i], _vr1.set(side * 0.19, -0.3, 0.02).applyQuat(q).add(seat), feet[i], 0.12);
+      vehLimb(this.legs[i], _vr1.set(side * 0.19, -0.3, 0.02).applyQuat(q).add(seat), feet[i], TOY.leg);
       this.feet[i].setTRS(feet[i], q); this.feet[i].visible = true;
       if (!hands) { this.arms[i].visible = this.hands[i].visible = false; continue; }
-      vehLimb(this.arms[i], _vr1.set(side * 0.4, 0.26, 0.03).applyQuat(q).add(seat), hands[i], 0.105);
-      this.hands[i].setTRS(hands[i], q, 0.16, 0.16, 0.16); this.hands[i].visible = true;
+      vehLimb(this.arms[i], _vr1.set(side * 0.4, 0.26, 0.03).applyQuat(q).add(seat), hands[i], TOY.arm);
+      this.hands[i].setTRS(hands[i], q, TOY.hand, TOY.hand, TOY.hand); this.hands[i].visible = true;
     }
   }
 }
@@ -14326,7 +14463,7 @@ const MISSIONS = [
     steps: [{ text: 'Put 5 coconuts in the juice basket', count: (g, M) => `${g.stats.coconuts - M.c0}/5`, target: (g) => (mHolding(g, 'coconut') ? g.level.basket : mNearest(g, g.props.filter((p) => p.kind === 'coconut'), (p) => p.body.pos) || mNearest(g, g.level.palms, (p) => p.top)), check: (g, M) => g.stats.coconuts - M.c0 >= 5 }] },
   { id: 'thief', giver: 'police', title: 'Stop That Thief!', reward: { hat: 'police', coins: 40 },
     intro: "Sneaky Sam swiped the town cake! Catch him (a few punches slow him down), grab him and drop him in the jail cell by my station.",
-    setup: (g, M) => { M.thief = g.addChar({ name: 'Sneaky Sam', species: 'fox', color: '#3f4a5c', hat: 'beanie', isBot: true }); const p = new V3(14, g.level.h(14, -4) + 1.2, -4); M.thief.spawn(p, 0); g.npcs.push((M.ai = new ThiefAI(g, M.thief))); },
+    setup: (g, M) => { M.thief = g.addChar({ name: 'Sneaky Sam', species: 'fox', color: '#3f4a5c', hat: 'beanie', isBot: true, grumpy: true }); const p = new V3(14, g.level.h(14, -4) + 1.2, -4); M.thief.spawn(p, 0); g.npcs.push((M.ai = new ThiefAI(g, M.thief))); },
     cleanup: (g, M) => { if (M.thief) { const i = g.npcs.indexOf(M.ai); if (i >= 0) g.npcs.splice(i, 1); g.removeChar(M.thief); } },
     steps: [{ text: 'Catch Sneaky Sam and put him in jail', target: (g, M) => (mHeldChar(g, M.thief) ? g.level.spots.jail : M.thief.torso.pos), check: (g, M) => { const j = g.level.spots.jail, p = M.thief.torso.pos; return M.thief.inWorld && Math.hypot(p.x - j.x, p.z - j.z) < 2.1 && Math.abs(p.y - j.y - 1) < 2; } }] },
   { id: 'pizza', giver: 'pizza', title: 'Pizza Rush', limit: 75, reward: { hat: 'pizza', coins: 30 },
@@ -14929,7 +15066,7 @@ const JOBS = [
     blurb: 'A robber is loose! Catch them (a few punches help), grab them and drop them in jail.',
     start(g, J) {
       const L = g.level, s = jobSpot(L, choose(JOB_TOWN_SPOTS));
-      J.rob = g.addChar({ name: choose(['Sticky Stan', 'Masked Max', 'Sly Sue', 'Fiddly Fred']), species: choose(['fox', 'piggy', 'frog', 'duck']), color: '#3f4a5c', hat: 'beanie', isBot: true });
+      J.rob = g.addChar({ name: choose(['Sticky Stan', 'Masked Max', 'Sly Sue', 'Fiddly Fred']), species: choose(['fox', 'piggy', 'frog', 'duck']), color: '#3f4a5c', hat: 'beanie', isBot: true, grumpy: true });
       J.rob.spawn(new V3(s.x, s.y + 1.2, s.z), 0); g.npcs.push((J.ai = new ThiefAI(g, J.rob)));
       g.ui.toast(`${J.rob.name} is up to no good. Catch them!`);
     },
@@ -15325,8 +15462,9 @@ const ANIMAL_RULES = {
   cow: { job: 'carrot', rank: 1 }, penguin: { job: 'lifeguard', rank: 1 }, dino: { job: 'miner', rank: 1 }, shark: { job: 'lifeguard', rank: 2 },
   monkey: { level: 10 }, lion: { level: 20 }, unicorn: { level: 30 },
 };
+const ALL_ANIMALS_OPEN = true; // every animal is ready from the start (the kids asked for it); false brings back the rules below
 function animalRule(sp) {
-  if (START_ANIMALS.includes(sp)) return { start: true };
+  if (ALL_ANIMALS_OPEN || START_ANIMALS.includes(sp)) return { start: true };
   if (ANIMAL_RULES[sp]) return ANIMAL_RULES[sp];
   const extra = SPECIES_KEYS.filter((k) => !START_ANIMALS.includes(k) && !ANIMAL_RULES[k]); // animals nobody told us about
   return { level: Math.min(50, 12 + 4 * Math.max(0, extra.indexOf(sp))) };
@@ -19198,7 +19336,7 @@ Object.assign(Game.prototype, {
   spawnGrumble() {
     const L = this.level, friendly = !!this.save.story.boss, G = GANG.grumble;
     const home = friendly ? new V3(-5.5, L.h(-5.5, 13.5), 13.5) : new V3(-5.5, L.h(-5.5, -31.5), -31.5);
-    const ch = this.addChar({ name: G.name, species: G.species, color: G.color, hat: friendly ? 'party' : 'grumblecap', outfit: G.outfit, isBot: true, tagColor: friendly ? '#ffd1e3' : '#ffc4c4' });
+    const ch = this.addChar({ name: G.name, species: G.species, color: G.color, hat: friendly ? 'party' : 'grumblecap', outfit: G.outfit, isBot: true, tagColor: friendly ? '#ffd1e3' : '#ffc4c4', grumpy: !friendly });
     ch.spawn(new V3(home.x, home.y + 1.1, home.z), 0); ch.giver = 'grumble';
     this.npcs.push(new GiverNPC(this, ch, home, 'grumble'));
     const mark = new RObj(bangMesh(this.gfx), { emis: [0.6, 0.45, 0.05], spec: 0.6, cast: false }); mark.visible = false; this.gfx.add(mark);
@@ -19251,9 +19389,9 @@ Object.assign(Game.prototype, {
     const s = this.save, me = this.addChar({ name: s.name, species: s.species, color: s.color, hat: s.hat, outfit: s.outfit, tagColor: PLAYER_COLORS[0], playerIndex: 0 });
     me.netEid = 0; this.players.push({ src: 'p1', char: me }); this.player = me;
     const gr = GANG.grumble, sam = GANG.sam, pi = GANG.pinch;
-    const boss = this.addChar({ name: gr.name, species: gr.species, color: gr.color, hat: 'grumblecap', outfit: gr.outfit, isBot: true, tagColor: '#ff6b6b' });
-    const a = this.addChar({ name: sam.name, species: sam.species, color: sam.color, hat: 'beanie', isBot: true, tagColor: '#d9c8ff' });
-    const b = this.addChar({ name: pi.name, species: pi.species, color: pi.color, hat: 'beanie', isBot: true, tagColor: '#c8e6ff' });
+    const boss = this.addChar({ name: gr.name, species: gr.species, color: gr.color, hat: 'grumblecap', outfit: gr.outfit, isBot: true, tagColor: '#ff6b6b', grumpy: true });
+    const a = this.addChar({ name: sam.name, species: sam.species, color: sam.color, hat: 'beanie', isBot: true, tagColor: '#d9c8ff', grumpy: true });
+    const b = this.addChar({ name: pi.name, species: pi.species, color: pi.color, hat: 'beanie', isBot: true, tagColor: '#c8e6ff', grumpy: true });
     [boss, a, b].forEach((c, i) => (c.netEid = i + 1));
     this.bots.push(new GangBot(this, boss, 1), new GangBot(this, a, 0), new GangBot(this, b, 0));
     makeBoss(this, boss);
