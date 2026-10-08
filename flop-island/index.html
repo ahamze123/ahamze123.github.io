@@ -213,6 +213,7 @@ body.touch #hint { display: none; }
 .map-bus:focus-visible { outline: 4px solid var(--sea); outline-offset: 2px; }
 .map-bus.here { background: var(--paper); cursor: default; }
 .map-bus.dot { width: 16px; height: 16px; padding: 0; box-shadow: none; }
+.map-bus:not(.dot):not(.here)::after { content: ''; position: absolute; inset: -9px -6px; } /* (a finger-sized tap area round the slim bus stop buttons: 6 px more above and below) */
 .map-bang { position: absolute; transform: translate(-50%, -50%); font-family: var(--font-display); font-size: clamp(16px, 2.4vw, 22px); color: #ffd84d; -webkit-text-stroke: 0.22em var(--ink); paint-order: stroke fill; pointer-events: none; }
 .flash { position: fixed; inset: 0; background: #fff7e8; z-index: 40; pointer-events: none; animation: flash 0.7s ease-out forwards; }
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
@@ -253,6 +254,7 @@ body.touch #hint { display: none; }
 .card-foot { position: sticky; bottom: -22px; margin: 16px -24px -22px; padding: 12px 24px 16px; background: var(--paper); border-top: 3px dashed #e4d7c2; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; z-index: 1; }
 .card-foot:empty { display: none; }
 .waiting { font-family: var(--font-display); font-size: 20px; margin: 14px 0 4px; }
+.row.res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .res-grid > .btn { width: 100%; min-width: 0; padding-left: 10px; padding-right: 10px; } .res-grid > .btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .waiting::after { content: ""; display: inline-block; width: 10px; height: 10px; margin-left: 10px; border-radius: 50%; background: var(--bubble); animation: blip 1s ease-in-out infinite; }
 @keyframes blip { 50% { transform: scale(0.4); opacity: 0.4; } }
 /* touch */
@@ -1199,92 +1201,187 @@ function rayHF(o, ux, uy, uz, maxT, hf, nOut) {
   return null;
 }
 
-// ===== WebGL2 renderer: soft toy-like lighting, shadows, fog, water, sky, instanced particles =====
-const SH_COMMON = `
-vec3 tonemap(vec3 x){ x *= uExposure; const float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14; x = clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0); float l = dot(x, vec3(0.2126, 0.7152, 0.0722)); x = clamp(mix(vec3(l), x, 1.16), 0.0, 1.0); return pow(x, vec3(1.0/2.2)); }
-vec3 applyFog(vec3 c, vec3 p){ float d = length(p - uCamPos); float f = 1.0 - exp(-pow(max(d - uFogStart, 0.0) * uFogDen, 1.6)); return mix(c, uFogCol, clamp(f, 0.0, 1.0)); }
-`;
+// ===== WebGL2 renderer: soft toy-like lighting, shadows, fog, water, sky, instanced particles, post (bloom + vignette) =====
+// Quality (gfx.setQuality, from Game.autoQuality): 0 = high and 1 = medium draw the full look (softer shadows, plush rim and
+// sheen light, contact shadows under the animals, sea sparkles and caustics, sun-tinted haze, bloom on lamps / coins /
+// glints, a soft vignette); 2 = lowest draws the simple shaders and no post effects (about the cost of the original look).
+// The scene is drawn into our own 4x-MSAA framebuffer and resolved. With post on, the scene buffer stores colours at half
+// scale, so light "brighter than white" (emissives, glints, the sun, stars) survives into the bloom.
+// Vertices are packed (24 bytes: position, 10-bit normal, 8-bit colour + baked occlusion, half-float UVs) with 16-bit indices
+// where they fit. gFlat() geometry stays indexed: its facets are shaded from screen-space derivatives (normal.w flags it).
 const SH_UNI = `
-uniform vec3 uCamPos, uSunDir, uSunCol, uSkyCol, uGndCol, uFogCol; uniform float uFogDen, uFogStart, uExposure, uTime;
+uniform vec3 uCamPos, uSunDir, uSunCol, uSkyCol, uGndCol, uFogCol, uSunGlow; uniform float uFogDen, uFogStart, uExposure, uTime;
+uniform vec4 uGrade; uniform vec3 uLift, uGain;
 `;
-const VS_MAIN = `#version 300 es
-layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec3 aCol; layout(location=3) in vec2 aUV;
+const SH_COMMON = `
+vec3 tonemap(vec3 x){ x *= uExposure; const float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14; x = clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0); float l = dot(x, vec3(0.2126, 0.7152, 0.0722)); x = clamp(mix(vec3(l), x, 1.16), 0.0, 1.0); x = pow(x, vec3(1.0/2.2));
+  l = dot(x, vec3(0.2126, 0.7152, 0.0722)); x = mix(vec3(l), x, uGrade.x); x = (x - 0.5) * uGrade.y + 0.5; return clamp(uLift + x * (uGain - uLift), 0.0, 1.0); }
+float fogF(vec3 p){ float d = length(p - uCamPos); float f = 1.0 - exp(-pow(max(d - uFogStart, 0.0) * uFogDen, 1.6));
+#if HQ
+  f *= 1.0 - 0.38 * smoothstep(7.0, 42.0, p.y); // hill tops and the mountain stand out of the sea haze
+#endif
+  return clamp(f, 0.0, 1.0); }
+vec3 fogC(vec3 p){
+#if HQ
+  vec3 dv = normalize(p - uCamPos); float s = max(dot(dv, uSunDir), 0.0); // the haze glows toward the sun, like the sky does
+  return uFogCol + uSunGlow * (pow(s, 24.0) * 0.35 + pow(s, 4.0) * 0.08);
+#else
+  return uFogCol;
+#endif
+}
+vec3 applyFog(vec3 c, vec3 p){ return mix(c, fogC(p), fogF(p)); }
+uniform float uDither;
+vec4 outc(vec3 tm, vec3 glow, float a){
+#if HQ
+  // half scale: 1..2 is "brighter than white" for the bloom (on an 8-bit scene buffer a little dither hides the steps)
+  float dn = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)))) - 0.5;
+  return vec4((tm + glow) * 0.5 + dn * uDither, a);
+#else
+  return vec4(tm, a);
+#endif
+}
+`;
+const VS_MAIN = `
+layout(location=0) in vec3 aPos; layout(location=1) in vec4 aNrm; layout(location=2) in vec4 aCol; layout(location=3) in vec2 aUV;
 uniform mat4 uVP, uModel, uLightVP; uniform mat3 uNMat; uniform float uWind, uTime; uniform vec2 uUVScroll;
-out vec3 vPos; out vec3 vNrm; out vec3 vCol; out vec2 vUV; out vec4 vLight;
+out vec3 vPos; out vec3 vNrm; out vec3 vCol; out vec2 vUV; out vec4 vLight; out vec2 vFA; out vec3 vObj;
 void main(){
   vec4 wp = uModel * vec4(aPos, 1.0);
   if (uWind > 0.0) { float k = max(aPos.y, 0.0) * uWind; wp.x += sin(uTime * 1.7 + wp.x * 0.35 + wp.z * 0.2) * k * 0.05; wp.z += cos(uTime * 1.3 + wp.z * 0.3 + wp.x * 0.1) * k * 0.05; }
-  vPos = wp.xyz; vNrm = normalize(uNMat * aNrm); vCol = aCol; vUV = aUV + uUVScroll * uTime;
+  vPos = wp.xyz; vNrm = normalize(uNMat * aNrm.xyz); vCol = aCol.rgb * aCol.rgb * 2.0; vUV = aUV + uUVScroll * uTime;
+  vFA = vec2(aNrm.w, aCol.a); vObj = aPos * length(uModel[0].xyz);
   vLight = uLightVP * vec4(wp.xyz + vNrm * 0.05, 1.0);
   gl_Position = uVP * wp;
 }`;
-const FS_MAIN = `#version 300 es
+const FS_MAIN = `
 precision highp float; precision highp sampler2DShadow;
-in vec3 vPos; in vec3 vNrm; in vec3 vCol; in vec2 vUV; in vec4 vLight;
+in vec3 vPos; in vec3 vNrm; in vec3 vCol; in vec2 vUV; in vec4 vLight; in vec2 vFA; in vec3 vObj;
 ${SH_UNI}
-uniform vec3 uTint, uEmis; uniform float uFuzz, uSpec, uUseMap, uShadowOn, uAlpha, uShadowTexel, uUnlit;
+uniform vec3 uTint, uEmis; uniform float uFuzz, uSpec, uUseMap, uShadowOn, uAlpha, uShadowTexel, uUnlit, uFogOn, uGlow;
+uniform vec4 uOcc[2]; uniform float uOccOn, uOccY; // (an animal's own body and head shade its creases; uOccY: the ground under it)
+uniform float uDetail; // (ground: soft patches of lighter and darker grass close by)
 uniform sampler2DShadow uShadow; uniform sampler2D uMap;
 out vec4 frag;
 ${SH_COMMON}
 float shadowF(){
   vec3 p = vLight.xyz / vLight.w * 0.5 + 0.5;
   if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;
-  float s = 0.0; float t = uShadowTexel;
-  s += texture(uShadow, vec3(p.xy + vec2(-1.0,-1.0)*t, p.z - 0.0012));
-  s += texture(uShadow, vec3(p.xy + vec2( 1.0,-1.0)*t, p.z - 0.0012));
-  s += texture(uShadow, vec3(p.xy + vec2(-1.0, 1.0)*t, p.z - 0.0012));
-  s += texture(uShadow, vec3(p.xy + vec2( 1.0, 1.0)*t, p.z - 0.0012));
-  s += texture(uShadow, vec3(p.xy, p.z - 0.0012)) * 2.0;
+  float s = 0.0, t = uShadowTexel, z = p.z - 0.0012;
+#if HQ
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) s += texture(uShadow, vec3(p.xy + vec2(float(i), float(j)) * t * 1.6, z));
+  s /= 9.0;
+#else
+  s += texture(uShadow, vec3(p.xy + vec2(-1.0,-1.0)*t, z)); s += texture(uShadow, vec3(p.xy + vec2( 1.0,-1.0)*t, z));
+  s += texture(uShadow, vec3(p.xy + vec2(-1.0, 1.0)*t, z)); s += texture(uShadow, vec3(p.xy + vec2( 1.0, 1.0)*t, z));
+  s += texture(uShadow, vec3(p.xy, z)) * 2.0; s /= 6.0;
+#endif
   float edge = smoothstep(0.0, 0.06, min(min(p.x, 1.0 - p.x), min(p.y, 1.0 - p.y)));
-  return mix(1.0, s / 6.0, edge);
+  return mix(1.0, s, edge);
 }
 float fhash(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float fnoise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(mix(fhash(i), fhash(i + vec3(1,0,0)), f.x), mix(fhash(i + vec3(0,1,0)), fhash(i + vec3(1,1,0)), f.x), f.y),
              mix(mix(fhash(i + vec3(0,0,1)), fhash(i + vec3(1,0,1)), f.x), mix(fhash(i + vec3(0,1,1)), fhash(i + vec3(1,1,1)), f.x), f.y), f.z); }
+float vhash(vec2 p){ p = fract(p * vec2(0.1031, 0.1030)); p += dot(p, p.yx + 33.33); return fract((p.x + p.y) * p.x); }
+float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(vhash(i), vhash(i + vec2(1.0, 0.0)), f.x), mix(vhash(i + vec2(0.0, 1.0)), vhash(i + vec2(1.0, 1.0)), f.x), f.y); }
 void main(){
   vec3 albedo = vCol * uTint;
   if (uUseMap > 0.5) { vec4 tx = texture(uMap, vUV); albedo *= tx.rgb; }
-  vec3 N = normalize(vNrm); if (!gl_FrontFacing) N = -N;
+#if HQ
+  if (uDetail > 0.0) {
+    float cd = length(uCamPos - vPos), n1 = vnoise(vPos.xz * 0.45), n2 = vnoise(vPos.xz * 2.3 + 7.1) * (1.0 - smoothstep(14.0, 36.0, cd));
+    albedo *= 1.0 + ((n1 - 0.5) * 0.22 + (n2 - 0.5) * 0.12) * uDetail;
+  }
+#endif
+  vec3 N = normalize(vNrm);
+  if (vFA.x > 0.5) { vec3 fn = cross(dFdx(vPos), dFdy(vPos)); float fl = length(fn); if (fl > 1e-14) { fn /= fl; N = dot(fn, N) < 0.0 ? -fn : fn; } }
+  if (!gl_FrontFacing) N = -N;
+  float fz = clamp((uFuzz - 0.5) * 2.0, 0.0, 1.0), ao = vFA.y;
   if (uFuzz > 0.5) {
     float camD = length(uCamPos - vPos);
-    float k = (1.0 - smoothstep(6.0, 22.0, camD)) * 0.55 * clamp((uFuzz - 0.5) * 2.0, 0.0, 1.0);
+    float k = (1.0 - smoothstep(6.0, 22.0, camD)) * 0.55 * fz;
+#if HQ
+    vec3 q = vObj * 26.0; // (fur sits still on a moving animal)
+#else
     vec3 q = vPos * 26.0;
+#endif
     vec3 g = vec3(fnoise(q) - 0.5, fnoise(q + 17.3) - 0.5, fnoise(q + 41.7) - 0.5);
     N = normalize(N + g * k);
-    albedo *= 0.92 + 0.16 * fnoise(vPos * 9.0);
+    albedo *= 0.92 + 0.16 * fnoise(q * 0.3462);
   }
   vec3 V = normalize(uCamPos - vPos);
-  vec3 c;
+  vec3 c, glow = vec3(0.0);
+#if HQ
+  if (uOccOn > 0.5) { // soft occlusion from the animal's body and head (round "spheres"), and from the ground below its feet
+    float occ = 0.0;
+    for (int i = 0; i < 2; i++) { vec3 d = uOcc[i].xyz - vPos; float l2 = dot(d, d), r2 = uOcc[i].w * uOcc[i].w; occ += clamp(dot(N, d) * inversesqrt(max(l2, 1e-6)), 0.0, 1.0) * r2 / max(l2, r2); }
+    occ += (1.0 - smoothstep(0.0, 0.4, vPos.y - uOccY)) * clamp(0.6 - 0.6 * N.y, 0.0, 1.0);
+    ao *= 1.0 - clamp(occ, 0.0, 1.0) * 0.55;
+  }
+#endif
   if (uUnlit > 0.5) { c = albedo; }
   else {
     float ndl = dot(N, uSunDir);
     float sh = uShadowOn > 0.5 ? shadowF() : 1.0;
+    float fr = pow(1.0 - max(dot(N, V), 0.0), 2.2);
+    vec3 H = normalize(uSunDir + V); float nh = max(dot(N, H), 0.0);
+#if HQ
+    float direct = smoothstep(-0.15 - 0.2 * fz, 0.55, ndl) * sh;
+    vec3 hemi = mix(uGndCol, uSkyCol, N.y * 0.5 + 0.5);
+    hemi += uGndCol * uSunCol * 0.1 * (1.0 - abs(N.y)); // sunlight bounced off the ground fills the shady sides
+    c = albedo * (hemi * ao + uSunCol * direct * (0.4 + 0.6 * ao));
+    // plush: light scatters in the fluff, so the edge of the shadow glows warm and saturated
+    float term = smoothstep(-0.3, 0.0, ndl) * (1.0 - smoothstep(0.0, 0.35, ndl));
+    c += albedo * albedo * uSunCol * term * 0.18 * fz;
+    // toy plastic: a broad soft highlight with a sharp core, and the sky caught along the edges
+    float sp = (pow(nh, 48.0) + 0.1 * pow(nh, 8.0)) * uSpec * sh;
+    c += uSunCol * sp;
+    c += uSkyCol * pow(1.0 - max(dot(N, V), 0.0), 4.0) * uSpec * 0.7 * ao;
+    glow += uSunCol * pow(nh, 200.0) * uSpec * sh * 0.35;
+    // fur rim: a soft bright halo round the animal, stronger against the light
+    float back = 0.65 + 0.7 * max(dot(-V, uSunDir), 0.0) * sh;
+    c += (albedo * 0.9 + 0.08) * fr * uFuzz * (0.45 + 0.55 * direct) * back;
+    c += uSkyCol * fr * fr * fz * 0.35 * ao;
+#else
     float direct = smoothstep(-0.15, 0.55, ndl) * sh;
     vec3 hemi = mix(uGndCol, uSkyCol, N.y * 0.5 + 0.5);
-    c = albedo * (hemi + uSunCol * direct);
-    vec3 H = normalize(uSunDir + V);
-    c += uSunCol * pow(max(dot(N, H), 0.0), 48.0) * uSpec * sh;
-    float fr = pow(1.0 - max(dot(N, V), 0.0), 2.2);
+    c = albedo * (hemi * ao + uSunCol * direct);
+    c += uSunCol * pow(nh, 48.0) * uSpec * sh;
     c += (albedo * 0.9 + 0.08) * fr * uFuzz * (0.45 + 0.55 * direct);
+#endif
     c *= 1.0 - uFuzz * 0.10 * (1.0 - fr);
   }
   c += uEmis;
-  c = applyFog(c, vPos);
-  frag = vec4(tonemap(c), uAlpha);
+  float ff = fogF(vPos) * uFogOn;
+  c = mix(c, fogC(vPos), ff);
+#if HQ
+  // only real lights bloom (lamps, candles, fair bulbs: strong emissive; stars, the moon: very bright unlit), not things
+  // that are just made bright (waterfalls, clouds)
+  float el = dot(uEmis, vec3(0.2126, 0.7152, 0.0722));
+  glow += uEmis * (max(el - 0.7, 0.0) / max(el, 0.001)) * 1.2;
+  if (uUnlit > 0.5) glow += c * smoothstep(0.75, 1.35, dot(c, vec3(0.2126, 0.7152, 0.0722))) * 0.5;
+  glow *= uGlow * (1.0 - ff) * uAlpha; // (see-through things glow faintly: beams, halos)
+#endif
+  frag = outc(tonemap(c), glow, uAlpha);
 }`;
-const FS_XRAY = `#version 300 es
+const FS_XRAY = `
 precision highp float;
-in vec3 vPos; in vec3 vNrm; in vec3 vCol; in vec2 vUV; in vec4 vLight;
+in vec3 vPos; in vec3 vNrm; in vec3 vCol; in vec2 vUV; in vec4 vLight; in vec2 vFA; in vec3 vObj;
 uniform vec3 uTint, uCamPos; uniform float uAlpha;
 out vec4 frag;
-void main(){ vec3 N = normalize(vNrm); vec3 V = normalize(uCamPos - vPos); float rim = pow(1.0 - abs(dot(N, V)), 1.6); frag = vec4(uTint * (0.6 + 0.55 * rim), uAlpha * (0.38 + 0.55 * rim)); }`;
-const VS_DEPTH = `#version 300 es
+void main(){ vec3 N = normalize(vNrm); vec3 V = normalize(uCamPos - vPos); float rim = pow(1.0 - abs(dot(N, V)), 1.6);
+#if HQ
+  frag = vec4(uTint * (0.6 + 0.55 * rim) * 0.5, uAlpha * (0.38 + 0.55 * rim));
+#else
+  frag = vec4(uTint * (0.6 + 0.55 * rim), uAlpha * (0.38 + 0.55 * rim));
+#endif
+}`;
+const VS_DEPTH = `
 layout(location=0) in vec3 aPos; uniform mat4 uLightVP, uModel;
 void main(){ gl_Position = uLightVP * uModel * vec4(aPos, 1.0); }`;
-const FS_DEPTH = `#version 300 es
+const FS_DEPTH = `
 precision mediump float; void main(){}`;
-const VS_INST = `#version 300 es
+const VS_INST = `
 layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm;
 layout(location=4) in vec4 iPosScale; layout(location=5) in vec4 iRot; layout(location=6) in vec4 iCol;
 uniform mat4 uVP;
@@ -1295,7 +1392,7 @@ void main(){
   vPos = p; vNrm = qrot(iRot, aNrm); vCol = iCol;
   gl_Position = uVP * vec4(p, 1.0);
 }`;
-const FS_INST = `#version 300 es
+const FS_INST = `
 precision highp float;
 in vec3 vPos; in vec3 vNrm; in vec4 vCol;
 ${SH_UNI}
@@ -1306,16 +1403,62 @@ void main(){
   float ndl = dot(N, uSunDir);
   vec3 hemi = mix(uGndCol, uSkyCol, N.y * 0.5 + 0.5);
   vec3 c = vCol.rgb * (hemi + uSunCol * smoothstep(-0.15, 0.55, ndl));
-  c = mix(c, vCol.rgb * 1.6, step(1.5, vCol.a));
-  c = applyFog(c, vPos);
-  frag = vec4(tonemap(c), 1.0);
+  float gl = step(1.5, vCol.a);
+  vec3 glow = vec3(0.0);
+#if HQ
+  vec3 V = normalize(uCamPos - vPos), H = normalize(uSunDir + V);
+  float sp = pow(max(dot(N, H), 0.0), 40.0);
+  c += uSunCol * sp * 0.35; // confetti flashes as it tumbles
+  glow = (vCol.rgb * 0.3 + uSunCol * sp * 0.15) * gl;
+#endif
+  c = mix(c, vCol.rgb * 1.6, gl);
+  float ff = fogF(vPos);
+  c = mix(c, fogC(vPos), ff);
+  frag = outc(tonemap(c), glow * (1.0 - ff), 1.0);
 }`;
-const VS_SKY = `#version 300 es
+// soft round particles (dust puffs, splashes, snow, fireflies): camera-facing discs shaded like little cotton balls
+const VS_SPRITE = `
+layout(location=0) in vec2 aCorner; layout(location=4) in vec4 iPosScale; layout(location=5) in vec4 iRot; layout(location=6) in vec4 iCol;
+uniform mat4 uVP; uniform vec3 uCamR, uCamU; uniform float uSize;
+out vec2 vQ; out vec4 vCol; out vec3 vPos;
+void main(){ float s = iPosScale.w * 1.2 * uSize; vec3 p = iPosScale.xyz + (uCamR * aCorner.x + uCamU * aCorner.y) * s; vQ = aCorner; vCol = iCol; vPos = p; gl_Position = uVP * vec4(p, 1.0); }`;
+const FS_SPRITE = `
+precision highp float;
+in vec2 vQ; in vec4 vCol; in vec3 vPos;
+${SH_UNI}
+uniform vec3 uCamR, uCamU, uCamF;
+out vec4 frag;
+${SH_COMMON}
+void main(){
+  float r2 = dot(vQ, vQ); if (r2 > 1.0) discard;
+  vec3 N = normalize(uCamR * vQ.x + uCamU * vQ.y - uCamF * sqrt(1.0 - r2));
+  float gl = step(1.5, vCol.a);
+  vec3 hemi = mix(uGndCol, uSkyCol, N.y * 0.5 + 0.5);
+  vec3 c = vCol.rgb * (hemi * 1.1 + uSunCol * smoothstep(-0.35, 0.75, dot(N, uSunDir)) * 0.85);
+  c = mix(c, vCol.rgb * 1.6, gl);
+  vec3 glow = vCol.rgb * gl * 0.6;
+  float ff = fogF(vPos);
+  c = mix(c, fogC(vPos), ff);
+  float a = 1.0 - smoothstep(0.35, 1.0, r2);
+  vec4 o = outc(tonemap(c), glow * (1.0 - ff), 1.0);
+  frag = vec4(o.rgb * a, a);
+}`;
+// soft contact shadows under the animals: ground-hugging discs that darken whatever is below them
+const VS_BLOB = `
+layout(location=0) in vec2 aCorner; layout(location=4) in vec4 iPR; layout(location=5) in vec4 iNS;
+uniform mat4 uVP; out vec2 vQ; out float vS;
+void main(){ vec3 n = normalize(iNS.xyz); vec3 t = normalize(abs(n.y) < 0.99 ? cross(n, vec3(0.0, 0.0, 1.0)) : vec3(1.0, 0.0, 0.0)); vec3 b = cross(n, t);
+  vec3 p = iPR.xyz + (t * aCorner.x + b * aCorner.y) * iPR.w + n * 0.04; vQ = aCorner; vS = iNS.w; gl_Position = uVP * vec4(p, 1.0); }`;
+const FS_BLOB = `
+precision highp float;
+in vec2 vQ; in float vS; uniform vec3 uBlobCol; out vec4 frag;
+void main(){ float r2 = dot(vQ, vQ); float a = 1.0 - smoothstep(0.0, 1.0, r2); a *= a * vS; frag = vec4(mix(vec3(1.0), uBlobCol, a), 1.0); }`;
+const VS_SKY = `
 const vec2 P[3] = vec2[3](vec2(-1.0,-1.0), vec2(3.0,-1.0), vec2(-1.0,3.0));
 out vec2 vNdc; void main(){ vNdc = P[gl_VertexID]; gl_Position = vec4(P[gl_VertexID], 0.9999, 1.0); }`;
-const FS_SKY = `#version 300 es
+const FS_SKY = `
 precision highp float;
-in vec2 vNdc; uniform mat4 uInvVP; uniform vec3 uZenith, uHorizon, uSunGlow;
+in vec2 vNdc; uniform mat4 uInvVP; uniform vec3 uZenith, uHorizon;
 ${SH_UNI}
 out vec4 frag;
 ${SH_COMMON}
@@ -1323,12 +1466,20 @@ void main(){
   vec4 p = uInvVP * vec4(vNdc, 1.0, 1.0); vec3 dir = normalize(p.xyz / p.w - uCamPos);
   float h = dir.y;
   vec3 c = mix(uHorizon, uZenith, smoothstep(-0.02, 0.55, h));
+#if HQ
+  c = mix(c, uZenith * 0.9, smoothstep(0.45, 1.0, h) * 0.3); // a deeper blue overhead
+  c += uHorizon * 0.1 * exp(-abs(h) * 14.0);                  // and a luminous band along the horizon
+#endif
   c = mix(c, uFogCol, smoothstep(0.05, -0.12, h));
-  float s = max(dot(dir, uSunDir), 0.0);
-  c += uSunGlow * (pow(s, 900.0) * 6.0 + pow(s, 24.0) * 0.35 + pow(s, 4.0) * 0.08);
-  frag = vec4(tonemap(c), 1.0);
+  float s = max(dot(dir, uSunDir), 0.0), disc = pow(s, 900.0);
+  c += uSunGlow * (disc * 6.0 + pow(s, 24.0) * 0.35 + pow(s, 4.0) * 0.08);
+  vec3 glow = vec3(0.0);
+#if HQ
+  glow = uSunGlow * (disc * 1.4 + pow(s, 90.0) * 0.18);
+#endif
+  frag = outc(tonemap(c), glow, 1.0);
 }`;
-const VS_WATER = `#version 300 es
+const VS_WATER = `
 layout(location=0) in vec3 aPos;
 uniform mat4 uVP; uniform float uTime, uWaterY, uWaveAmp;
 out vec3 vPos; out vec3 vNrm;
@@ -1345,11 +1496,11 @@ void main(){
   vNrm = normalize(vec3(-g.x * uWaveAmp, 1.0, -g.y * uWaveAmp));
   gl_Position = uVP * vec4(vPos, 1.0);
 }`;
-const FS_WATER = `#version 300 es
+const FS_WATER = `
 precision highp float;
 in vec3 vPos; in vec3 vNrm;
 ${SH_UNI}
-uniform sampler2D uDepth; uniform vec4 uDepthRect; uniform vec3 uShallow, uDeep, uZenith; uniform float uWaterY, uDepthOff;
+uniform sampler2D uDepth; uniform vec4 uDepthRect; uniform vec3 uShallow, uDeep, uZenith, uHorizon; uniform float uWaterY, uDepthOff;
 out vec4 frag;
 ${SH_COMMON}
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -1361,11 +1512,32 @@ void main(){
   vec3 N = normalize(vNrm + vec3(noise(vPos.xz * 0.9 + uTime * 0.6) - 0.5, 0.0, noise(vPos.zx * 0.8 - uTime * 0.5) - 0.5) * 0.18);
   vec3 V = normalize(uCamPos - vPos);
   vec3 base = mix(uShallow, uDeep, smoothstep(0.2, 7.0, depth));
+  float camD = length(uCamPos - vPos);
+#if HQ
+  // sunny ripples of light on the sand under shallow water
+  vec2 cq = vPos.xz * 0.75;
+  float ca = noise(cq + vec2(uTime * 0.31, uTime * 0.17)), cb = noise(cq * 1.41 + vec2(-uTime * 0.23, uTime * 0.27) + 7.3);
+  float caus = pow(1.0 - abs(ca - cb), 7.0) * smoothstep(0.05, 0.5, depth) * (1.0 - smoothstep(0.8, 3.5, depth)) * (1.0 - smoothstep(30.0, 70.0, camD));
+  base += uSunCol * caus * 0.16;
+#endif
   float fres = pow(1.0 - max(dot(N, V), 0.0), 4.0);
   vec3 c = base * (0.55 + 0.45 * uSunCol * max(dot(N, uSunDir), 0.0)) + uSkyCol * 0.06;
-  c = mix(c, uZenith * 1.1, fres * 0.55);
   vec3 R = reflect(-V, N);
-  c += uSunCol * pow(max(dot(R, uSunDir), 0.0), 220.0) * 2.5;
+#if HQ
+  c = mix(c, mix(uHorizon, uZenith, smoothstep(-0.05, 0.6, R.y)) * 1.08, fres * 0.6);
+#else
+  c = mix(c, uZenith * 1.1, fres * 0.55);
+#endif
+  float gli = pow(max(dot(R, uSunDir), 0.0), 220.0);
+  c += uSunCol * gli * 2.5;
+  vec3 glow = vec3(0.0);
+#if HQ
+  // little twinkles where the ripples catch the sun
+  float tw = noise(vPos.xz * 2.3 + vec2(uTime * 0.7, -uTime * 0.4)) * noise(vPos.zx * 2.9 - vec2(uTime * 0.5, uTime * 0.6) + 3.1);
+  float spk = smoothstep(0.62, 0.86, tw) * pow(max(dot(R, uSunDir), 0.0), 5.0) * (1.0 - smoothstep(25.0, 60.0, camD)) * smoothstep(0.6, 1.5, depth);
+  c += uSunCol * spk * 0.8;
+  glow = uSunCol * (gli * 0.5 + spk * 0.45);
+#endif
   float n = noise(vPos.xz * 1.3 + vec2(uTime * 0.4, -uTime * 0.3));
   float foamBand = smoothstep(0.9, 0.0, depth + (n - 0.5) * 0.5) ;
   float ripple = smoothstep(0.45, 0.6, sin(depth * 9.0 - uTime * 2.2 + n * 3.0) * 0.5 + 0.5) * smoothstep(2.2, 0.4, depth);
@@ -1373,26 +1545,99 @@ void main(){
   c = mix(c, vec3(0.95, 0.98, 1.0), foam * 0.85);
   float a = mix(0.72, 0.94, smoothstep(0.0, 3.0, depth));
   a = max(a, foam * 0.9);
-  c = applyFog(c, vPos);
-  frag = vec4(tonemap(c), a);
+  float ff = fogF(vPos);
+  c = mix(c, fogC(vPos), ff);
+  frag = outc(tonemap(c), glow * (1.0 - ff) * (1.0 - foam), a);
 }`;
+// ---- post: bloom from the "brighter than white" part, soft vignette, dither ----
+const VS_FULL = `
+const vec2 P[3] = vec2[3](vec2(-1.0,-1.0), vec2(3.0,-1.0), vec2(-1.0,3.0));
+out vec2 vUV; void main(){ vec2 p = P[gl_VertexID]; vUV = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
+const FS_PRE = `
+precision highp float;
+uniform sampler2D uSrc; uniform float uSoft; out vec4 frag;
+void main(){ ivec2 p = ivec2(gl_FragCoord.xy) * 2, mx = textureSize(uSrc, 0) - 1; vec3 s = vec3(0.0);
+  for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) { vec3 c = texelFetch(uSrc, min(p + ivec2(i, j), mx), 0).rgb * 2.0; s += max(c - 1.0, 0.0) + max(c - 0.82, 0.0) * uSoft; }
+  frag = vec4(min(s * 0.25, vec3(1.0)), 1.0); }`;
+const FS_DOWN = `
+precision highp float;
+in vec2 vUV; uniform sampler2D uSrc; out vec4 frag;
+void main(){ vec2 t = 1.0 / vec2(textureSize(uSrc, 0));
+  frag = vec4((texture(uSrc, vUV + vec2(-t.x, -t.y)).rgb + texture(uSrc, vUV + vec2(t.x, -t.y)).rgb + texture(uSrc, vUV + vec2(-t.x, t.y)).rgb + texture(uSrc, vUV + vec2(t.x, t.y)).rgb) * 0.25, 1.0); }`;
+const FS_BLUR = `
+precision highp float;
+in vec2 vUV; uniform sampler2D uSrc; uniform vec2 uDir; out vec4 frag;
+void main(){ vec3 c = texture(uSrc, vUV).rgb * 0.2270270270;
+  c += (texture(uSrc, vUV + uDir * 1.3846153846).rgb + texture(uSrc, vUV - uDir * 1.3846153846).rgb) * 0.3162162162;
+  c += (texture(uSrc, vUV + uDir * 3.2307692308).rgb + texture(uSrc, vUV - uDir * 3.2307692308).rgb) * 0.0702702703;
+  frag = vec4(c, 1.0); }`;
+const FS_COMP = `
+precision highp float;
+in vec2 vUV; uniform sampler2D uScene, uBloom, uBloom2; uniform float uBloomK, uVig; uniform vec3 uVigCol; uniform vec2 uAspect; out vec4 frag;
+void main(){
+  vec3 c = min(texture(uScene, vUV).rgb * 2.0, vec3(1.0));
+  c += (texture(uBloom, vUV).rgb * 0.75 + texture(uBloom2, vUV).rgb * 0.6) * uBloomK;
+  float v = smoothstep(0.42, 1.05, length((vUV - 0.5) * uAspect));
+  c *= mix(vec3(1.0), uVigCol, v * uVig);
+  c += (fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)))) - 0.5) / 255.0;
+  frag = vec4(c, 1.0);
+}`;
+const FS_COPY = `
+precision highp float;
+in vec2 vUV; uniform sampler2D uScene; out vec4 frag;
+void main(){ frag = vec4(texture(uScene, vUV).rgb, 1.0); }`;
+
+// ---- packed vertices ----
+const _h32 = new Float32Array(1), _hu32 = new Uint32Array(_h32.buffer);
+function f2h(v) { // float32 -> float16 bits
+  _h32[0] = v; const x = _hu32[0], s = (x >>> 16) & 0x8000, e = ((x >>> 23) & 0xff) - 112, m = x & 0x7fffff;
+  if (e <= 0) { if (e < -10) return s; const mm = m | 0x800000, sh = 14 - e; return s | ((mm + (1 << (sh - 1))) >> sh); }
+  if (e >= 31) return s | 0x7c00;
+  return (s | (e << 10) | (m >> 13)) + ((m >> 12) & 1);
+}
+const _sn10 = (v) => Math.round((v > 1 ? 1 : v < -1 ? -1 : v) * 511) & 1023;
+const _enc8 = (v) => Math.round(Math.sqrt((v > 2 ? 2 : v < 0 ? 0 : v) * 0.5) * 255); // colours 0..2, square-root encoded
 
 class Mesh {
-  constructor(gfx, g) {
+  // g: {p, n, c?, u?, i, f? (per-vertex flat flags) | flat (all flat)}; opts: { noUV, groundAO(x, z) -> ground height }
+  constructor(gfx, g, opts = {}) {
     const gl = gfx.gl; this.gl = gl;
+    const P = g.p, Nn = g.n, C = g.c, U = g.u, F = g.f, n = (P.length / 3) | 0, flatAll = !!g.flat, gAO = opts.groundAO;
+    const hasC = !!(C && C.length >= n * 3), hasU = !opts.noUV && !!(U && U.length >= n * 2);
+    let uvMax = 0; if (hasU) for (let k = 0; k < n * 2; k++) { const a = U[k] < 0 ? -U[k] : U[k]; if (a > uvMax) uvMax = a; }
+    const uvF = hasU && uvMax > 4, S = 20 + (hasU ? (uvF ? 8 : 4) : 0); // (big texture repeats keep full float UVs)
+    const buf = new ArrayBuffer(Math.max(1, n) * S), f32 = new Float32Array(buf), u32 = new Uint32Array(buf), u8 = new Uint8Array(buf), u16 = new Uint16Array(buf);
+    let mnx = Infinity, mny = Infinity, mnz = Infinity, mxx = -Infinity, mxy = -Infinity, mxz = -Infinity;
+    for (let i = 0, o = 0, k3 = 0; i < n; i++, o += S, k3 += 3) {
+      const o4 = o >> 2, x = P[k3], y = P[k3 + 1], z = P[k3 + 2];
+      f32[o4] = x; f32[o4 + 1] = y; f32[o4 + 2] = z;
+      if (x < mnx) mnx = x; if (y < mny) mny = y; if (z < mnz) mnz = z; if (x > mxx) mxx = x; if (y > mxy) mxy = y; if (z > mxz) mxz = z;
+      const ny = Nn[k3 + 1];
+      u32[o4 + 3] = (_sn10(Nn[k3]) | (_sn10(ny) << 10) | (_sn10(Nn[k3 + 2]) << 20) | ((flatAll || (F && F[i]) ? 1 : 0) << 30)) >>> 0;
+      if (hasC) { u8[o + 16] = _enc8(C[k3]); u8[o + 17] = _enc8(C[k3 + 1]); u8[o + 18] = _enc8(C[k3 + 2]); } else { u8[o + 16] = u8[o + 17] = u8[o + 18] = 180; }
+      let ao = 255;
+      if (gAO) { // contact shadow: darker where scenery meets the ground (less on faces that look up)
+        const above = y - gAO(x, z);
+        if (above < 2 && above > -0.6) { const t = above > 0 ? above / 2 : 0, occ = (1 - t) * (1 - t) * (1 - (ny > 0 ? ny : 0) * 0.85); ao = Math.round((1 - 0.6 * occ) * 255); }
+      }
+      u8[o + 19] = ao;
+      if (hasU) { if (uvF) { f32[o4 + 5] = U[i * 2]; f32[o4 + 6] = U[i * 2 + 1]; } else { u16[(o >> 1) + 10] = f2h(U[i * 2]); u16[(o >> 1) + 11] = f2h(U[i * 2 + 1]); } }
+    }
+    const I = g.i, big = n > 65535, idx = big ? (I instanceof Uint32Array ? I : new Uint32Array(I)) : (I instanceof Uint16Array ? I : new Uint16Array(I));
     this.vao = gl.createVertexArray(); gl.bindVertexArray(this.vao);
-    const buf = (data, loc, size) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); return b; };
-    const n = g.p.length / 3;
-    this.bufs = [buf(toF32(g.p), 0, 3), buf(toF32(g.n), 1, 3), buf(toF32(g.c && g.c.length ? g.c : new Float32Array(n * 3).fill(1)), 2, 3), buf(toF32(g.u && g.u.length ? g.u : new Float32Array(n * 2)), 3, 2)];
-    this.ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g.i instanceof Uint32Array ? g.i : new Uint32Array(g.i), gl.STATIC_DRAW);
-    this.count = g.i.length;
+    const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, S, 0);
+    gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 4, gl.INT_2_10_10_10_REV, true, S, 12);
+    gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.UNSIGNED_BYTE, true, S, 16);
+    if (hasU) { gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 2, uvF ? gl.FLOAT : gl.HALF_FLOAT, false, S, 20); }
+    this.ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+    this.bufs = [vb]; this.count = I.length; this.itype = big ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+    this.bytes = buf.byteLength + idx.byteLength; gfx.meshBytes = (gfx.meshBytes || 0) + this.bytes;
     gl.bindVertexArray(null);
     // bounding sphere
-    let cx = 0, cy = 0, cz = 0, mnx = Infinity, mny = Infinity, mnz = Infinity, mxx = -Infinity, mxy = -Infinity, mxz = -Infinity;
-    for (let i = 0; i < g.p.length; i += 3) { const x = g.p[i], y = g.p[i + 1], z = g.p[i + 2]; if (x < mnx) mnx = x; if (y < mny) mny = y; if (z < mnz) mnz = z; if (x > mxx) mxx = x; if (y > mxy) mxy = y; if (z > mxz) mxz = z; }
-    cx = (mnx + mxx) / 2; cy = (mny + mxy) / 2; cz = (mnz + mxz) / 2;
-    let r = 0; for (let i = 0; i < g.p.length; i += 3) { const dx = g.p[i] - cx, dy = g.p[i + 1] - cy, dz = g.p[i + 2] - cz; r = Math.max(r, dx * dx + dy * dy + dz * dz); }
-    this.center = [cx, cy, cz]; this.radius = Math.sqrt(r);
+    const cx = (mnx + mxx) / 2, cy = (mny + mxy) / 2, cz = (mnz + mxz) / 2;
+    let r = 0; for (let i = 0; i < n * 3; i += 3) { const dx = P[i] - cx, dy = P[i + 1] - cy, dz = P[i + 2] - cz, d = dx * dx + dy * dy + dz * dz; if (d > r) r = d; }
+    this.center = n ? [cx, cy, cz] : [0, 0, 0]; this.radius = Math.sqrt(r);
   }
   dispose() { const gl = this.gl; for (const b of this.bufs) gl.deleteBuffer(b); gl.deleteBuffer(this.ib); gl.deleteVertexArray(this.vao); }
 }
@@ -1404,7 +1649,7 @@ class RObj {
     this.mesh = mesh; this.model = m4.create(); this.nmat = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
     this.tint = o.tint || [1, 1, 1]; this.emis = o.emis || [0, 0, 0]; this.fuzz = o.fuzz ?? 0; this.spec = o.spec ?? 0.15;
     this.cast = o.cast ?? true; this.visible = true; this.map = o.map || null; this.wind = o.wind || 0; this.alpha = o.alpha ?? 1; this.unlit = !!o.unlit; this.layer = o.layer || 0;
-    this.noCull = !!o.noCull;
+    this.noCull = !!o.noCull; this.noFog = !!o.noFog; this.glow = o.glow ?? 1; this.detail = o.detail || 0; // (glow: how much its light blooms, 0 = none; detail: ground texture)
   }
   setTRS(p, q, sx = 1, sy = 1, sz = 1) {
     m4.compose(this.model, p, q, sx, sy, sz);
@@ -1419,11 +1664,16 @@ class RObj {
 class GFX {
   constructor(canvas) {
     this.canvas = canvas;
-    const gl = canvas.getContext('webgl2', { antialias: true, alpha: false, stencil: true, powerPreference: 'high-performance', preserveDrawingBuffer: false });
+    // (no canvas MSAA / depth: the scene has its own multisampled framebuffer, resolved and post-processed into the canvas)
+    const gl = canvas.getContext('webgl2', { antialias: false, depth: false, stencil: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
     if (!gl) throw new Error('WebGL2 not available');
     this.gl = gl;
-    this.pMain = this.program(VS_MAIN, FS_MAIN); this.pDepth = this.program(VS_DEPTH, FS_DEPTH); this.pInst = this.program(VS_INST, FS_INST);
-    this.pSky = this.program(VS_SKY, FS_SKY); this.pWater = this.program(VS_WATER, FS_WATER); this.pXray = this.program(VS_MAIN, FS_XRAY); this.xray = [];
+    // a software rasterizer (no GPU: SwiftShader, llvmpipe) starts on the lowest quality; the game can still raise it
+    let rn = ''; try { const ext = gl.getExtension('WEBGL_debug_renderer_info'); rn = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || ''); } catch (e) { }
+    this.software = /swiftshader|llvmpipe|softpipe|software/i.test(rn);
+    this.progs = {}; this.minQ = this.quality = this.software ? 2 : 0; this.use(!this.software);
+    this.pDepth = this.program(VS_DEPTH, FS_DEPTH, false);
+    this.xray = [];
     this.shadowSize = 2048; this.shadowOn = true; this.initShadow();
     this.view = m4.create(); this.proj = m4.create(); this.vp = m4.create(); this.invVP = m4.create(); this.lightVP = m4.create(); this.lightView = m4.create(); this.lightProj = m4.create();
     this.cam = { pos: new V3(0, 10, 20), target: new V3(), fov: 0.85, near: 0.3, far: 600 };
@@ -1431,17 +1681,36 @@ class GFX {
       sunDir: new V3(0.45, 0.8, 0.35).normalize(), sunCol: col('#fff1d6').map((v) => v * 2.3), skyCol: col('#a8d8ff').map((v) => v * 0.62), gndCol: col('#c8b08a').map((v) => v * 0.42),
       fogCol: col('#cfeaff'), fogDen: 0.006, fogStart: 30, exposure: 1.0, zenith: col('#3f9cf0'), horizon: col('#cdeeff'), sunGlow: col('#fff3c4'),
       shallow: col('#3fe0d0'), deep: col('#0b62a8'),
+      // colour grade (after tone mapping): saturation, contrast, shadows pulled toward lift, whites toward gain; post: bloom, vignette
+      gradeSat: 1.1, gradeCon: 1.06, lift: [0.0, 0.004, 0.02], gain: [1.0, 0.995, 0.975], bloom: 1, bloomSoft: 0.08, vignette: 0.24, vigCol: [0.78, 0.74, 0.9], blobCol: [0.5, 0.5, 0.62],
     };
-    this.objs = []; this.statics = []; this.water = null; this.inst = []; this.pools = []; this.time = 0;
+    this.objs = []; this.statics = []; this.water = null; this.inst = []; this.sprites = []; this.pools = []; this.time = 0;
+    this.blobs = new Float32Array(48 * 8); this.nBlobs = 0;
     this.shadowFocus = new V3(); this.shadowRadius = 24; this.planes = new Float32Array(24);
     this.whiteTex = this.makeTex(1, 1, new Uint8Array([255, 255, 255, 255]), { keep: true });
     this.dpr = Math.min(window.devicePixelRatio || 1, 2); this.scaleQ = 1;
+    this.initTargets(); this.initQuads();
     this.resize();
     this.stats = { draws: 0 };
   }
-  program(vs, fs) {
-    const gl = this.gl;
-    const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error('Shader: ' + gl.getShaderInfoLog(s) + '\n' + src.split('\n').map((l, i) => i + 1 + ': ' + l).join('\n')); return s; };
+  // ---- quality: 0 high, 1 medium (the full look), 2 lowest (simple shaders, no post effects) ----
+  setQuality(q) { q = clamp(Math.max(q | 0, this.minQ), 0, 2); if (q === this.quality) return; this.quality = q; this.use(q < 2); this._tsig = ''; } // (minQ: the best a software rasterizer may use)
+  use(hq) {
+    this.post = hq; const k = hq ? 'hq' : 'lq';
+    if (!this.progs[k]) {
+      const P = (vs, fs) => this.program(vs, fs, hq);
+      this.progs[k] = { main: P(VS_MAIN, FS_MAIN), xray: P(VS_MAIN, FS_XRAY), inst: P(VS_INST, FS_INST), sky: P(VS_SKY, FS_SKY), water: P(VS_WATER, FS_WATER), sprite: P(VS_SPRITE, FS_SPRITE), blob: P(VS_BLOB, FS_BLOB) };
+    }
+    const S = this.progs[k];
+    this.pMain = S.main; this.pXray = S.xray; this.pInst = S.inst; this.pSky = S.sky; this.pWater = S.water; this.pSprite = S.sprite; this.pBlob = S.blob;
+  }
+  postProgs() {
+    if (!this.pp) { const P = (fs) => this.program(VS_FULL, fs, false); this.pp = { pre: P(FS_PRE), down: P(FS_DOWN), blur: P(FS_BLUR), comp: P(FS_COMP), copy: P(FS_COPY) }; }
+    return this.pp;
+  }
+  program(vs, fs, hq) {
+    const gl = this.gl, head = '#version 300 es\n#define HQ ' + (hq ? 1 : 0) + '\n';
+    const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, head + src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error('Shader: ' + gl.getShaderInfoLog(s) + '\n' + (head + src).split('\n').map((l, i) => i + 1 + ': ' + l).join('\n')); return s; };
     const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error('Link: ' + gl.getProgramInfoLog(p));
     const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
@@ -1459,6 +1728,64 @@ class GFX {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.shadowTex, 0);
     gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+  // ---- the scene framebuffer (multisampled), its resolve texture and the small bloom textures ----
+  initTargets() {
+    const gl = this.gl, ok = (fmt) => { try { const s = gl.getInternalformatParameter(gl.RENDERBUFFER, fmt, gl.SAMPLES); return s && s.length ? Math.max(...s) : 0; } catch (e) { return 0; } };
+    // 10-bit colour keeps the half-scale "brighter than white" encoding smooth; 8-bit is the fallback
+    const s10 = ok(gl.RGB10_A2), s8 = ok(gl.RGBA8);
+    this.fmtHQ = s10 >= 4 || s8 < 4 ? gl.RGB10_A2 : gl.RGBA8; this.sHQ = Math.min(4, this.fmtHQ === gl.RGB10_A2 ? s10 : s8); this.sLQ = Math.min(4, s8);
+    this.T = { fbMS: gl.createFramebuffer(), rbC: gl.createRenderbuffer(), rbD: gl.createRenderbuffer(), texR: null, bl: [] };
+    this._tsig = '';
+  }
+  makeRT(w, h, fmt, type) {
+    const gl = this.gl, t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, fmt, w, h, 0, gl.RGBA, type, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    return { t, fb, w, h };
+  }
+  ensureTargets() {
+    const gl = this.gl, w = this.w, h = this.h, sig = w + 'x' + h + (this.post ? 'p' : '');
+    if (sig === this._tsig) return;
+    if (!this._tsig || this._tsig.endsWith('p') !== this.post) { this.colFmt = this.post ? this.fmtHQ : gl.RGBA8; this.samples = this.post ? this.sHQ : this.sLQ; } // (lowest quality: plain 8-bit)
+    this._tsig = sig;
+    const T = this.T, f10 = this.colFmt === gl.RGB10_A2, type = f10 ? gl.UNSIGNED_INT_2_10_10_10_REV : gl.UNSIGNED_BYTE;
+    if (T.texR) { gl.deleteTexture(T.texR.t); gl.deleteFramebuffer(T.texR.fb); }
+    for (const b of T.bl) { gl.deleteTexture(b.t); gl.deleteFramebuffer(b.fb); }
+    T.bl = [];
+    T.texR = this.makeRT(w, h, this.colFmt, type);
+    const ms = this.samples > 0;
+    gl.bindRenderbuffer(gl.RENDERBUFFER, T.rbD);
+    if (ms) gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.samples, gl.DEPTH24_STENCIL8, w, h); else gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, w, h);
+    if (ms) {
+      gl.bindRenderbuffer(gl.RENDERBUFFER, T.rbC); gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.samples, this.colFmt, w, h);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, T.fbMS);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, T.rbC);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, T.rbD);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { this.samples = this.sHQ = this.sLQ = 0; this._tsig = 'x'; gl.bindFramebuffer(gl.FRAMEBUFFER, null); return this.ensureTargets(); }
+      this.sceneFB = T.fbMS;
+    } else {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, T.texR.fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, T.rbD);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE && f10) { this.colFmt = this.fmtHQ = gl.RGBA8; this._tsig = 'x'; gl.bindFramebuffer(gl.FRAMEBUFFER, null); return this.ensureTargets(); }
+      this.sceneFB = T.texR.fb;
+    }
+    if (this.post) { // bloom: half-size bright pass, then quarter and eighth size blurs
+      const hw = Math.max(1, Math.ceil(w / 2)), hh = Math.max(1, Math.ceil(h / 2)), qw = Math.max(1, Math.ceil(w / 4)), qh = Math.max(1, Math.ceil(h / 4)), ew = Math.max(1, Math.ceil(w / 8)), eh = Math.max(1, Math.ceil(h / 8));
+      T.bl = [this.makeRT(hw, hh, gl.RGBA8, gl.UNSIGNED_BYTE), this.makeRT(qw, qh, gl.RGBA8, gl.UNSIGNED_BYTE), this.makeRT(qw, qh, gl.RGBA8, gl.UNSIGNED_BYTE), this.makeRT(ew, eh, gl.RGBA8, gl.UNSIGNED_BYTE), this.makeRT(ew, eh, gl.RGBA8, gl.UNSIGNED_BYTE)];
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+  // a unit quad (instanced sprites and contact shadows) and the contact-shadow instance buffer
+  initQuads() {
+    const gl = this.gl;
+    this.quadBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    this.blobVao = gl.createVertexArray(); gl.bindVertexArray(this.blobVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    this.blobBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.blobBuf); gl.bufferData(gl.ARRAY_BUFFER, this.blobs.byteLength, gl.DYNAMIC_DRAW);
+    for (let k = 0; k < 2; k++) { gl.enableVertexAttribArray(4 + k); gl.vertexAttribPointer(4 + k, 4, gl.FLOAT, false, 32, k * 16); gl.vertexAttribDivisor(4 + k, 1); }
+    gl.bindVertexArray(null);
   }
   makeTex(w, h, data, opts = {}) {
     const gl = this.gl, t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -1489,28 +1816,26 @@ class GFX {
   remove(o) { const i = this.objs.indexOf(o); if (i >= 0) this.objs.splice(i, 1); }
   clearScene() {
     const gl = this.gl, seen = new Set();
-    for (const o of this.statics.concat(this.objs)) { const m = o.mesh; if (m && m._owned && !m._cached && !seen.has(m)) { seen.add(m); m.dispose(); } }
+    for (const L of [this.statics, this.objs]) for (const o of L) { const m = o.mesh; if (m && m._owned && !m._cached && !seen.has(m)) { seen.add(m); m.dispose(); this.meshBytes -= m.bytes || 0; } }
     for (const t of this.sceneTex || []) gl.deleteTexture(t);
     this.sceneTex = [];
     if (this.water) { gl.deleteVertexArray(this.water.vao); gl.deleteTexture(this.water.tex); for (const b of this.water.bufs || []) gl.deleteBuffer(b); }
-    for (const I of this.inst) { gl.deleteVertexArray(I.vao); for (const b of I.bufs || []) gl.deleteBuffer(b); }
+    for (const I of this.inst.concat(this.sprites)) { gl.deleteVertexArray(I.vao); for (const b of I.bufs || []) gl.deleteBuffer(b); }
     for (const pl of this.pools) { gl.deleteVertexArray(pl.vao); for (const b of pl.bufs) gl.deleteBuffer(b); }
-    this.objs = []; this.statics = []; this.water = null; this.inst = []; this.xray = []; this.pools = [];
+    this.objs = []; this.statics = []; this.water = null; this.inst = []; this.sprites = []; this.xray = []; this.pools = []; this.nBlobs = 0;
   }
   // ---- water ----
   setWater(o) { // {y, size, depthFn(x,z), rect:[x0,z0,w,h], res}
     const gl = this.gl;
     if (!o) { this.water = null; return; }
-    const N = 160, S = o.size || 420, p = [], idx = [];
+    const N = 160, S = o.size || 420, p = new Float32Array((N + 1) * (N + 1) * 3), idx = new Uint32Array(N * N * 6);
     // concentric grid: denser near center
-    for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) {
-      let u = i / N * 2 - 1, v = j / N * 2 - 1; const k = (a) => Math.sign(a) * Math.pow(Math.abs(a), 1.8);
-      p.push(k(u) * S + (o.cx || 0), 0, k(v) * S + (o.cz || 0));
-    }
-    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const a = j * (N + 1) + i, b = a + 1, c2 = a + N + 1, d = c2 + 1; idx.push(a, c2, b, b, c2, d); }
+    const k = (a) => Math.sign(a) * Math.pow(Math.abs(a), 1.8);
+    for (let j = 0, q = 0; j <= N; j++) for (let i = 0; i <= N; i++, q += 3) { const u = i / N * 2 - 1, v = j / N * 2 - 1; p[q] = k(u) * S + (o.cx || 0); p[q + 2] = k(v) * S + (o.cz || 0); }
+    for (let j = 0, q = 0; j < N; j++) for (let i = 0; i < N; i++, q += 6) { const a = j * (N + 1) + i, b = a + 1, c2 = a + N + 1, d = c2 + 1; idx[q] = a; idx[q + 1] = c2; idx[q + 2] = b; idx[q + 3] = b; idx[q + 4] = c2; idx[q + 5] = d; }
     const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(p), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), gl.STATIC_DRAW);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, p, gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
     gl.bindVertexArray(null);
     this._wbufs = [b, ib];
     const R = o.res || 128, rect = o.rect || [-100, -100, 200, 200], d = new Float32Array(R * R);
@@ -1525,23 +1850,33 @@ class GFX {
     for (let j = 1; j < N; j++) for (let i = 0; i < M; i++) { const a = 1 + (j - 1) * M + i, b = 1 + (j - 1) * M + (i + 1) % M, c = a + M, d = b + M; idx.push(a, b, c, b, d, c); }
     const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
     const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(p), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), gl.STATIC_DRAW);
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
     gl.bindVertexArray(null);
     this.pools.push({ vao, count: idx.length, y, bufs: [b, ib] });
   }
-  // ---- instanced particles ----
-  makeInstanced(geo, max) {
+  // ---- instanced particles: 3D shapes, or { sprite: true } soft round discs (12 floats each: pos, scale, quat, rgb, glow) ----
+  makeInstanced(geo, max, opts = {}) {
     const gl = this.gl;
     const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-    const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geo.p), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-    const nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geo.n), gl.STATIC_DRAW); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-    const data = new Float32Array(max * 12);
-    const ib = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, data.byteLength, gl.DYNAMIC_DRAW);
+    const data = new Float32Array(max * 12), bufs = [];
+    let n = 0;
+    if (opts.sprite) { gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0); }
+    else {
+      const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geo.p), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+      const nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geo.n), gl.STATIC_DRAW); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+      bufs.push(vb, nb); n = geo.i.length;
+    }
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, data.byteLength, gl.DYNAMIC_DRAW); bufs.push(ib);
     for (let k = 0; k < 3; k++) { gl.enableVertexAttribArray(4 + k); gl.vertexAttribPointer(4 + k, 4, gl.FLOAT, false, 48, k * 16); gl.vertexAttribDivisor(4 + k, 1); }
-    const eb = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, eb); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(geo.i), gl.STATIC_DRAW);
+    if (!opts.sprite) { const eb = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, eb); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(geo.i), gl.STATIC_DRAW); bufs.push(eb); }
     gl.bindVertexArray(null);
-    const inst = { vao, ib, data, max, count: 0, n: geo.i.length, bufs: [vb, nb, ib, eb] };
-    this.inst.push(inst); return inst;
+    const inst = { vao, ib, data, max, count: 0, n, bufs, sprite: !!opts.sprite, size: opts.size || 1 };
+    (opts.sprite ? this.sprites : this.inst).push(inst); return inst;
+  }
+  // a soft contact shadow this frame (point on the ground, its normal, radius, strength 0..1); drawn on quality 0-1
+  addBlob(x, y, z, nx, ny, nz, r, s) {
+    if (this.nBlobs >= 48 || s <= 0.01) return; const o = this.nBlobs++ * 8, B = this.blobs;
+    B[o] = x; B[o + 1] = y; B[o + 2] = z; B[o + 3] = r; B[o + 4] = nx; B[o + 5] = ny; B[o + 6] = nz; B[o + 7] = s;
   }
   // ---- frame ----
   updateCamera() {
@@ -1568,7 +1903,7 @@ class GFX {
     // transform bounding sphere center
     const c = mesh.center, m = model;
     const x = m[0] * c[0] + m[4] * c[1] + m[8] * c[2] + m[12], y = m[1] * c[0] + m[5] * c[1] + m[9] * c[2] + m[13], z = m[2] * c[0] + m[6] * c[1] + m[10] * c[2] + m[14];
-    const s = Math.max(Math.hypot(m[0], m[1], m[2]), Math.hypot(m[4], m[5], m[6]), Math.hypot(m[8], m[9], m[10]));
+    const s = Math.sqrt(Math.max(m[0] * m[0] + m[1] * m[1] + m[2] * m[2], m[4] * m[4] + m[5] * m[5] + m[6] * m[6], m[8] * m[8] + m[9] * m[9] + m[10] * m[10]));
     const r = mesh.radius * s, P = this.planes;
     for (let i = 0; i < 6; i++) if (P[i * 4] * x + P[i * 4 + 1] * y + P[i * 4 + 2] * z + P[i * 4 + 3] < -r) return false;
     return true;
@@ -1576,7 +1911,7 @@ class GFX {
   inShadowRange(model, mesh) {
     const c = mesh.center, m = model, f = this.shadowFocus;
     const x = m[0] * c[0] + m[4] * c[1] + m[8] * c[2] + m[12], z = m[2] * c[0] + m[6] * c[1] + m[10] * c[2] + m[14];
-    const s = Math.max(Math.hypot(m[0], m[1], m[2]), Math.hypot(m[4], m[5], m[6]));
+    const s = Math.sqrt(Math.max(m[0] * m[0] + m[1] * m[1] + m[2] * m[2], m[4] * m[4] + m[5] * m[5] + m[6] * m[6]));
     const R = this.shadowRadius * 1.6 + mesh.radius * s;
     return Math.abs(x - f.x) < R && Math.abs(z - f.z) < R;
   }
@@ -1588,37 +1923,42 @@ class GFX {
     if (u.uSkyCol) gl.uniform3fv(u.uSkyCol, e.skyCol);
     if (u.uGndCol) gl.uniform3fv(u.uGndCol, e.gndCol);
     if (u.uFogCol) gl.uniform3fv(u.uFogCol, e.fogCol);
+    if (u.uSunGlow) gl.uniform3fv(u.uSunGlow, e.sunGlow);
     if (u.uFogDen) gl.uniform1f(u.uFogDen, e.fogDen);
     if (u.uFogStart) gl.uniform1f(u.uFogStart, e.fogStart);
     if (u.uExposure) gl.uniform1f(u.uExposure, e.exposure);
     if (u.uTime) gl.uniform1f(u.uTime, this.time);
     if (u.uVP) gl.uniformMatrix4fv(u.uVP, false, this.vp);
+    if (u.uGrade) gl.uniform4f(u.uGrade, e.gradeSat ?? 1, e.gradeCon ?? 1, 0, 0);
+    if (u.uLift) gl.uniform3fv(u.uLift, e.lift || [0, 0, 0]);
+    if (u.uGain) gl.uniform3fv(u.uGain, e.gain || [1, 1, 1]);
+    if (u.uDither) gl.uniform1f(u.uDither, this.colFmt === gl.RGBA8 ? 1 / 255 : 0);
   }
   render() {
-    const gl = this.gl; this.resize(); this.updateCamera();
+    const gl = this.gl; this.resize(); this.updateCamera(); this.ensureTargets();
     let draws = 0;
-    const all = this.statics.concat(this.objs);
+    const L0 = this.statics, L1 = this.objs;
     // shadow pass
     if (this.shadowOn) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFB); gl.viewport(0, 0, this.shadowSize, this.shadowSize);
       gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
       gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK); gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3);
       const pd = this.pDepth; gl.useProgram(pd.p); gl.uniformMatrix4fv(pd.u.uLightVP, false, this.lightVP);
-      for (const o of all) {
+      for (const L of [L0, L1]) for (const o of L) {
         if (!o.visible || !o.cast || o.alpha < 1) continue;
         if (!this.inShadowRange(o.model, o.mesh)) continue;
-        gl.uniformMatrix4fv(pd.u.uModel, false, o.model); gl.bindVertexArray(o.mesh.vao); gl.drawElements(gl.TRIANGLES, o.mesh.count, gl.UNSIGNED_INT, 0); draws++;
+        gl.uniformMatrix4fv(pd.u.uModel, false, o.model); gl.bindVertexArray(o.mesh.vao); gl.drawElements(gl.TRIANGLES, o.mesh.count, o.mesh.itype, 0); draws++;
       }
       gl.disable(gl.POLYGON_OFFSET_FILL);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.sceneFB);
     gl.viewport(0, 0, this.w, this.h);
-    gl.clearColor(0.5, 0.7, 0.9, 1); gl.clearStencil(0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+    gl.clearColor(0.5, 0.7, 0.9, 1); gl.clearStencil(0); gl.depthMask(true); gl.stencilMask(0xff); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
     // sky
     gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.disable(gl.CULL_FACE);
     const ps = this.pSky; gl.useProgram(ps.p); this.setCommon(ps);
-    gl.uniformMatrix4fv(ps.u.uInvVP, false, this.invVP); gl.uniform3fv(ps.u.uZenith, this.env.zenith); gl.uniform3fv(ps.u.uHorizon, this.env.horizon); gl.uniform3fv(ps.u.uSunGlow, this.env.sunGlow);
-    gl.bindVertexArray(null); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.uniformMatrix4fv(ps.u.uInvVP, false, this.invVP); gl.uniform3fv(ps.u.uZenith, this.env.zenith); gl.uniform3fv(ps.u.uHorizon, this.env.horizon);
+    gl.bindVertexArray(null); gl.drawArrays(gl.TRIANGLES, 0, 3); draws++;
     // opaque
     gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK);
     const pm = this.pMain; gl.useProgram(pm.p); this.setCommon(pm);
@@ -1626,11 +1966,11 @@ class GFX {
     gl.uniformMatrix4fv(u.uLightVP, false, this.lightVP); gl.uniform1f(u.uShadowOn, this.shadowOn ? 1 : 0); gl.uniform1f(u.uShadowTexel, 1.1 / this.shadowSize);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.shadowTex); gl.uniform1i(u.uShadow, 0);
     gl.uniform1i(u.uMap, 1);
-    let lastMap = -1, lastX = -1;
-    const trans = [];
+    let lastMap = -1, lastX = -1; this._uc = { sx: NaN, sy: NaN, tint: [NaN, NaN, NaN], emis: [NaN, NaN, NaN], fuzz: NaN, spec: NaN, wind: NaN, alpha: NaN, unlit: NaN, fog: NaN, glow: NaN, detail: NaN, occ: 0, occOn: NaN, map: NaN };
+    const trans = this._trans || (this._trans = []); trans.length = 0;
     // the stencil remembers which animal owns each pixel, so the x-ray outline never shows an animal through itself
     gl.enable(gl.STENCIL_TEST); gl.stencilMask(0xff); gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-    for (const o of all) {
+    for (const L of [L0, L1]) for (const o of L) {
       if (!o.visible || o.alpha <= 0) continue;
       if (!o.noCull && !this.inFrustum(o.model, o.mesh)) continue;
       if (o.alpha < 1) { trans.push(o); continue; }
@@ -1638,17 +1978,26 @@ class GFX {
       this.drawObj(o, u, lastMap); lastMap = o.map; draws++;
     }
     gl.disable(gl.STENCIL_TEST);
+    // soft contact shadows under the animals (multiplied onto what is already drawn)
+    if (this.nBlobs && this.post) {
+      const pb = this.pBlob; gl.useProgram(pb.p); gl.uniformMatrix4fv(pb.u.uVP, false, this.vp); gl.uniform3fv(pb.u.uBlobCol, this.env.blobCol);
+      gl.bindVertexArray(this.blobVao); gl.bindBuffer(gl.ARRAY_BUFFER, this.blobBuf); gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.blobs, 0, this.nBlobs * 8);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.DST_COLOR, gl.ZERO); gl.depthMask(false); gl.disable(gl.CULL_FACE); gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(-2, -4);
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.nBlobs); draws++;
+      gl.disable(gl.POLYGON_OFFSET_FILL); gl.disable(gl.BLEND); gl.depthMask(true); gl.enable(gl.CULL_FACE);
+    }
+    this.nBlobs = 0;
     // water
     if (this.water) {
       const w = this.water, pw = this.pWater; gl.useProgram(pw.p); this.setCommon(pw);
       gl.uniform1f(pw.u.uWaterY, w.y); gl.uniform1f(pw.u.uWaveAmp, w.amp);
-      gl.uniform3fv(pw.u.uShallow, this.env.shallow); gl.uniform3fv(pw.u.uDeep, this.env.deep); gl.uniform3fv(pw.u.uZenith, this.env.zenith);
+      gl.uniform3fv(pw.u.uShallow, this.env.shallow); gl.uniform3fv(pw.u.uDeep, this.env.deep); gl.uniform3fv(pw.u.uZenith, this.env.zenith); if (pw.u.uHorizon) gl.uniform3fv(pw.u.uHorizon, this.env.horizon);
       gl.uniform4f(pw.u.uDepthRect, w.rect[0], w.rect[1], w.rect[2], w.rect[3]);
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, w.tex); gl.uniform1i(pw.u.uDepth, 2);
       gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE);
       gl.uniform1f(pw.u.uDepthOff, 0);
       gl.bindVertexArray(w.vao); gl.drawElements(gl.TRIANGLES, w.count, gl.UNSIGNED_INT, 0); draws++;
-      for (const pl of this.pools) { gl.uniform1f(pw.u.uWaterY, pl.y); gl.uniform1f(pw.u.uWaveAmp, 0.25); gl.uniform1f(pw.u.uDepthOff, pl.y); gl.bindVertexArray(pl.vao); gl.drawElements(gl.TRIANGLES, pl.count, gl.UNSIGNED_INT, 0); draws++; }
+      for (const pl of this.pools) { gl.uniform1f(pw.u.uWaterY, pl.y); gl.uniform1f(pw.u.uWaveAmp, 0.25); gl.uniform1f(pw.u.uDepthOff, pl.y); gl.bindVertexArray(pl.vao); gl.drawElements(gl.TRIANGLES, pl.count, gl.UNSIGNED_SHORT, 0); draws++; }
       gl.depthMask(true); gl.disable(gl.BLEND); gl.enable(gl.CULL_FACE);
       gl.activeTexture(gl.TEXTURE0);
     }
@@ -1670,7 +2019,7 @@ class GFX {
         if (!o.visible) continue;
         gl.stencilFunc(gl.NOTEQUAL, o.xid || 0, 0xff);
         gl.uniformMatrix4fv(px.u.uModel, false, o.model); gl.uniformMatrix3fv(px.u.uNMat, false, o.nmat); gl.uniform3fv(px.u.uTint, colr); gl.uniform1f(px.u.uAlpha, 0.75);
-        gl.bindVertexArray(o.mesh.vao); gl.drawElements(gl.TRIANGLES, o.mesh.count, gl.UNSIGNED_INT, 0); draws++;
+        gl.bindVertexArray(o.mesh.vao); gl.drawElements(gl.TRIANGLES, o.mesh.count, o.mesh.itype, 0); draws++;
       }
       gl.depthFunc(gl.LESS); gl.disable(gl.POLYGON_OFFSET_FILL); gl.depthMask(true); gl.disable(gl.BLEND);
       gl.disable(gl.STENCIL_TEST); gl.stencilMask(0xff);
@@ -1680,19 +2029,85 @@ class GFX {
     for (const I of this.inst) {
       if (!I.count) continue;
       gl.bindVertexArray(I.vao); gl.bindBuffer(gl.ARRAY_BUFFER, I.ib); gl.bufferSubData(gl.ARRAY_BUFFER, 0, I.data, 0, I.count * 12);
-      gl.drawElementsInstanced(gl.TRIANGLES, I.n, gl.UNSIGNED_INT, 0, I.count); draws++;
+      gl.drawElementsInstanced(gl.TRIANGLES, I.n, gl.UNSIGNED_SHORT, 0, I.count); draws++;
+    }
+    // soft round particles (blended, drawn last)
+    if (this.sprites.some((I) => I.count)) {
+      const sp = this.pSprite; gl.useProgram(sp.p); this.setCommon(sp);
+      const v = this.view; gl.uniform3f(sp.u.uCamR, v[0], v[4], v[8]); gl.uniform3f(sp.u.uCamU, v[1], v[5], v[9]); gl.uniform3f(sp.u.uCamF, -v[2], -v[6], -v[10]);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE);
+      for (const I of this.sprites) {
+        if (!I.count) continue;
+        gl.uniform1f(sp.u.uSize, I.size); gl.bindVertexArray(I.vao); gl.bindBuffer(gl.ARRAY_BUFFER, I.ib); gl.bufferSubData(gl.ARRAY_BUFFER, 0, I.data, 0, I.count * 12);
+        gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, I.count); draws++;
+      }
+      gl.disable(gl.BLEND); gl.depthMask(true); gl.enable(gl.CULL_FACE);
     }
     gl.bindVertexArray(null);
+    draws += this.finishFrame();
     this.stats.draws = draws;
   }
+  // resolve the multisampled scene, then bloom + vignette into the canvas (or a plain copy on the lowest quality)
+  finishFrame() {
+    const gl = this.gl, T = this.T, w = this.w, h = this.h, PP = this.postProgs(), e = this.env;
+    let draws = 0;
+    gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND); gl.depthMask(false);
+    if (this.sceneFB !== T.texR.fb) {
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.sceneFB); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, T.texR.fb);
+      gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+      gl.invalidateFramebuffer(gl.READ_FRAMEBUFFER, [gl.COLOR_ATTACHMENT0, gl.DEPTH_STENCIL_ATTACHMENT]); // (tile GPUs never write the samples out)
+    }
+    const pass = (pr, fb, vw, vh, tex) => { gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.viewport(0, 0, vw, vh); gl.useProgram(pr.p); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(pr.u.uSrc ?? pr.u.uScene, 0); };
+    const B = T.bl, bloomOn = this.post && B.length && (e.bloom ?? 1) > 0;
+    if (bloomOn) {
+      pass(PP.pre, B[0].fb, B[0].w, B[0].h, T.texR.t); gl.uniform1f(PP.pre.u.uSoft, e.bloomSoft ?? 0.06); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      pass(PP.down, B[1].fb, B[1].w, B[1].h, B[0].t); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      pass(PP.blur, B[2].fb, B[2].w, B[2].h, B[1].t); gl.uniform2f(PP.blur.u.uDir, 1 / B[2].w, 0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      pass(PP.blur, B[1].fb, B[1].w, B[1].h, B[2].t); gl.uniform2f(PP.blur.u.uDir, 0, 1 / B[1].h); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      pass(PP.down, B[3].fb, B[3].w, B[3].h, B[1].t); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      pass(PP.blur, B[4].fb, B[4].w, B[4].h, B[3].t); gl.uniform2f(PP.blur.u.uDir, 1.5 / B[4].w, 0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      pass(PP.blur, B[3].fb, B[3].w, B[3].h, B[4].t); gl.uniform2f(PP.blur.u.uDir, 0, 1.5 / B[3].h); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      draws += 7;
+    }
+    if (this.post) {
+      const pc = PP.comp; pass(pc, null, w, h, T.texR.t);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bloomOn ? B[1].t : this.whiteTex); gl.uniform1i(pc.u.uBloom, 1);
+      gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, bloomOn ? B[3].t : this.whiteTex); gl.uniform1i(pc.u.uBloom2, 2);
+      gl.uniform1f(pc.u.uBloomK, bloomOn ? (e.bloom ?? 1) : 0); gl.uniform1f(pc.u.uVig, e.vignette ?? 0); gl.uniform3fv(pc.u.uVigCol, e.vigCol || [0.8, 0.8, 0.9]);
+      const a = w / h; gl.uniform2f(pc.u.uAspect, a > 1 ? a : 1, a > 1 ? 1 : 1 / a);
+      gl.drawArrays(gl.TRIANGLES, 0, 3); gl.activeTexture(gl.TEXTURE0);
+    } else { // lowest quality: just copy the picture into the canvas
+      if (this._blitOk !== false) {
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, T.texR.fb); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+        gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+        if (this._blitOk === undefined) this._blitOk = gl.getError() === gl.NO_ERROR; // (asked once: should a browser refuse the blit, draw the copy)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      }
+      if (this._blitOk === false) { pass(PP.copy, null, w, h, T.texR.t); gl.drawArrays(gl.TRIANGLES, 0, 3); }
+    }
+    gl.depthMask(true);
+    return draws + 1;
+  }
+  // per-object uniforms; values that did not change since the last object are not sent again (most scenery shares them)
   drawObj(o, u, lastMap) {
-    const gl = this.gl;
+    const gl = this.gl, C = this._uc;
     gl.uniformMatrix4fv(u.uModel, false, o.model); gl.uniformMatrix3fv(u.uNMat, false, o.nmat);
-    gl.uniform2f(u.uUVScroll, o.uvScroll ? o.uvScroll[0] : 0, o.uvScroll ? o.uvScroll[1] : 0);
-    gl.uniform3fv(u.uTint, o.tint); gl.uniform3fv(u.uEmis, o.emis); gl.uniform1f(u.uFuzz, o.fuzz); gl.uniform1f(u.uSpec, o.spec); gl.uniform1f(u.uWind, o.wind); gl.uniform1f(u.uAlpha, o.alpha); gl.uniform1f(u.uUnlit, o.unlit ? 1 : 0);
-    if (o.map) { if (o.map !== lastMap) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, o.map); gl.activeTexture(gl.TEXTURE0); } gl.uniform1f(u.uUseMap, 1); }
-    else gl.uniform1f(u.uUseMap, 0);
-    gl.bindVertexArray(o.mesh.vao); gl.drawElements(gl.TRIANGLES, o.mesh.count, gl.UNSIGNED_INT, 0);
+    const sx = o.uvScroll ? o.uvScroll[0] : 0, sy = o.uvScroll ? o.uvScroll[1] : 0; if (sx !== C.sx || sy !== C.sy) { gl.uniform2f(u.uUVScroll, sx, sy); C.sx = sx; C.sy = sy; }
+    const t = o.tint, e = o.emis, T = C.tint, E = C.emis;
+    if (t[0] !== T[0] || t[1] !== T[1] || t[2] !== T[2]) { gl.uniform3fv(u.uTint, t); T[0] = t[0]; T[1] = t[1]; T[2] = t[2]; }
+    if (e[0] !== E[0] || e[1] !== E[1] || e[2] !== E[2]) { gl.uniform3fv(u.uEmis, e); E[0] = e[0]; E[1] = e[1]; E[2] = e[2]; }
+    if (o.fuzz !== C.fuzz) { gl.uniform1f(u.uFuzz, o.fuzz); C.fuzz = o.fuzz; }
+    if (o.spec !== C.spec) { gl.uniform1f(u.uSpec, o.spec); C.spec = o.spec; }
+    if (o.wind !== C.wind) { gl.uniform1f(u.uWind, o.wind); C.wind = o.wind; }
+    if (o.alpha !== C.alpha) { gl.uniform1f(u.uAlpha, o.alpha); C.alpha = o.alpha; }
+    const ul = o.unlit ? 1 : 0; if (ul !== C.unlit) { gl.uniform1f(u.uUnlit, ul); C.unlit = ul; }
+    const fo = o.noFog ? 0 : 1; if (fo !== C.fog) { gl.uniform1f(u.uFogOn, fo); C.fog = fo; }
+    if (u.uGlow && o.glow !== C.glow) { gl.uniform1f(u.uGlow, o.glow); C.glow = o.glow; }
+    if (u.uDetail && o.detail !== C.detail) { gl.uniform1f(u.uDetail, o.detail); C.detail = o.detail; }
+    if (u.uOccOn) { const oc = o.occ || null; if (oc !== C.occ) { if (oc) { gl.uniform4fv(u.uOcc, oc, 0, 8); gl.uniform1f(u.uOccY, oc[8]); } const on = oc ? 1 : 0; if (on !== C.occOn) { gl.uniform1f(u.uOccOn, on); C.occOn = on; } C.occ = oc; } }
+    const um = o.map ? 1 : 0; if (o.map && o.map !== lastMap) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, o.map); gl.activeTexture(gl.TEXTURE0); }
+    if (um !== C.map) { gl.uniform1f(u.uUseMap, um); C.map = um; }
+    gl.bindVertexArray(o.mesh.vao); gl.drawElements(gl.TRIANGLES, o.mesh.count, o.mesh.itype, 0);
   }
   project(p, out) { // world -> screen px (css)
     const m = this.vp, x = p.x, y = p.y, z = p.z;
@@ -1778,6 +2193,14 @@ function gTorus(R, r, s1 = 20, s2 = 10, arc = TAU) {
   return g;
 }
 function gCone(r, h, seg = 14) { return gCyl(0.0001, r, h, seg, true); }
+// a flat disc facing up, built in rings (a colour function then paints soft radial gradients)
+function gDisc(radii, seg = 48) {
+  const g = geo(); g.p.push(0, 0, 0); g.n.push(0, 1, 0); g.u.push(0.5, 0.5);
+  for (const r of radii) for (let i = 0; i <= seg; i++) { const a = i / seg * TAU; g.p.push(Math.sin(a) * r, 0, Math.cos(a) * r); g.n.push(0, 1, 0); g.u.push(0.5 + Math.sin(a) / 2, 0.5 + Math.cos(a) / 2); }
+  for (let i = 0; i < seg; i++) g.i.push(0, 1 + i, 2 + i);
+  for (let j = 0; j < radii.length - 1; j++) for (let i = 0; i < seg; i++) { const a = 1 + j * (seg + 1) + i, b = a + seg + 1; g.i.push(a, b, b + 1, a, b + 1, a + 1); }
+  return g;
+}
 function gCapsule(r, h, seg = 12) {
   const prof = []; const n = 6;
   for (let i = 0; i <= n; i++) { const a = -PI / 2 + i / n * PI / 2; prof.push([Math.cos(a) * r, -h / 2 + Math.sin(a) * r]); }
@@ -1785,48 +2208,63 @@ function gCapsule(r, h, seg = 12) {
   prof[0][0] = 0.0001; prof[prof.length - 1][0] = 0.0001;
   return gLathe(prof, seg);
 }
-// flat-shaded copy (for low-poly look)
-function gFlat(g) {
-  const o = geo();
-  for (let k = 0; k < g.i.length; k += 3) {
-    const ia = g.i[k], ib = g.i[k + 1], ic = g.i[k + 2];
-    const A = [g.p[ia * 3], g.p[ia * 3 + 1], g.p[ia * 3 + 2]], B = [g.p[ib * 3], g.p[ib * 3 + 1], g.p[ib * 3 + 2]], C = [g.p[ic * 3], g.p[ic * 3 + 1], g.p[ic * 3 + 2]];
-    const ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2], vx = C[0] - A[0], vy = C[1] - A[1], vz = C[2] - A[2];
-    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
-    const base = o.p.length / 3;
-    for (const [P, idx] of [[A, ia], [B, ib], [C, ic]]) { o.p.push(...P); o.n.push(nx, ny, nz); if (g.c.length) o.c.push(g.c[idx * 3], g.c[idx * 3 + 1], g.c[idx * 3 + 2]); o.u.push(g.u[idx * 2] || 0, g.u[idx * 2 + 1] || 0); }
-    o.i.push(base, base + 1, base + 2);
-  }
-  return o;
-}
+// faceted look (low-poly): the geometry stays indexed and shared; the renderer shades each facet flat (screen-space
+// derivatives), so a faceted rock costs a third of the vertices a split copy would
+function gFlat(g) { return { p: g.p, n: g.n, c: g.c || [], u: g.u || [], i: g.i, flat: true }; }
 function gNoisy(g, amt, seed = 1) { const r = mulberry32(seed); const map = new Map(); for (let k = 0; k < g.p.length; k += 3) { const key = g.p[k].toFixed(3) + ',' + g.p[k + 1].toFixed(3) + ',' + g.p[k + 2].toFixed(3); let d = map.get(key); if (d === undefined) { d = 1 + (r() - 0.5) * 2 * amt; map.set(key, d); } g.p[k] *= d; g.p[k + 1] *= d; g.p[k + 2] *= d; } return g; }
-// transform & colorize then append into builder
+// transform & colorize then append into builder. Geometry grows in typed arrays (no garbage per vertex); builder.g gives
+// exact-length views { p, n, c, u, i, f } for code that reads it.
 const _gm = m4.create(), _gq = new Quat(), _gp = new V3();
 class GeoBuilder {
-  constructor() { this.g = geo(); }
+  constructor(cap = 128) { // (cap: room for this many vertices to start with)
+    this.nv = 0; this.ni = 0; this._P = new Float32Array(cap * 3); this._N = new Float32Array(cap * 3); this._C = new Float32Array(cap * 3); this._U = new Float32Array(cap * 2); this._I = new Uint32Array(cap * 3); this._F = null;
+    const B = this;
+    this.g = { get p() { return B._P.subarray(0, B.nv * 3); }, get n() { return B._N.subarray(0, B.nv * 3); }, get c() { return B._C.subarray(0, B.nv * 3); }, get u() { return B._U.subarray(0, B.nv * 2); },
+      get i() { return B._I.subarray(0, B.ni); }, get f() { return B._F ? B._F.subarray(0, B.nv) : undefined; } };
+  }
+  _room(nv, ni) {
+    if (nv * 3 > this._P.length) {
+      let cap = this._P.length / 3; while (cap < nv) cap *= 2;
+      const grow = (a, k) => { const b = new Float32Array(cap * k); b.set(a.subarray(0, this.nv * k)); return b; };
+      this._P = grow(this._P, 3); this._N = grow(this._N, 3); this._C = grow(this._C, 3); this._U = grow(this._U, 2);
+      if (this._F) { const f = new Uint8Array(cap); f.set(this._F.subarray(0, this.nv)); this._F = f; }
+    }
+    if (ni > this._I.length) { let cap = this._I.length; while (cap < ni) cap *= 2; const b = new Uint32Array(cap); b.set(this._I.subarray(0, this.ni)); this._I = b; }
+  }
   add(src, o = {}) {
-    const g = this.g, base = g.p.length / 3;
+    const SP = src.p, SN = src.n, SI = src.i, SU = src.u, nv = (SP.length / 3) | 0, base = this.nv, ib = this.ni;
+    this._room(base + nv, ib + SI.length);
     const p = o.p || [0, 0, 0], s = o.s ?? 1, q = o.q || _gq.identity();
     const sx = Array.isArray(s) ? s[0] : s, sy = Array.isArray(s) ? s[1] : s, sz = Array.isArray(s) ? s[2] : s;
     _gp.set(p[0], p[1], p[2]); m4.compose(_gm, _gp, q, sx, sy, sz);
-    const m = _gm, color = o.c || [1, 1, 1];
-    for (let k = 0; k < src.p.length; k += 3) {
-      const x = src.p[k], y = src.p[k + 1], z = src.p[k + 2];
-      g.p.push(m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]);
-      let nx = src.n[k] / sx, ny = src.n[k + 1] / sy, nz = src.n[k + 2] / sz;
-      const tx = m[0] / sx * nx + m[4] / sy * ny + m[8] / sz * nz, ty = m[1] / sx * nx + m[5] / sy * ny + m[9] / sz * nz, tz = m[2] / sx * nx + m[6] / sy * ny + m[10] / sz * nz;
-      const l = Math.hypot(tx, ty, tz) || 1; g.n.push(tx / l, ty / l, tz / l);
-      if (src.c && src.c.length && !o.c) g.c.push(src.c[k], src.c[k + 1], src.c[k + 2]);
-      else if (typeof color === 'function') { const cc = color(g.p[g.p.length - 3], g.p[g.p.length - 2], g.p[g.p.length - 1]); g.c.push(cc[0], cc[1], cc[2]); }
-      else g.c.push(color[0], color[1], color[2]);
+    const m = _gm, color = o.c || [1, 1, 1], fn = typeof color === 'function', sc = src.c && src.c.length && !o.c ? src.c : null;
+    const m0 = m[0] / sx, m1 = m[1] / sx, m2 = m[2] / sx, m4_ = m[4] / sy, m5 = m[5] / sy, m6 = m[6] / sy, m8 = m[8] / sz, m9 = m[9] / sz, m10 = m[10] / sz;
+    const GP = this._P, GN = this._N, GC = this._C, GU = this._U, GI = this._I;
+    const cr = fn ? 0 : color[0], cg = fn ? 0 : color[1], cb = fn ? 0 : color[2];
+    for (let k = 0, o3 = base * 3; k < nv * 3; k += 3, o3 += 3) {
+      const x = SP[k], y = SP[k + 1], z = SP[k + 2];
+      const wx = m[0] * x + m[4] * y + m[8] * z + m[12], wy = m[1] * x + m[5] * y + m[9] * z + m[13], wz = m[2] * x + m[6] * y + m[10] * z + m[14];
+      GP[o3] = wx; GP[o3 + 1] = wy; GP[o3 + 2] = wz;
+      const nx = SN[k] / sx, ny = SN[k + 1] / sy, nz = SN[k + 2] / sz;
+      const tx = m0 * nx + m4_ * ny + m8 * nz, ty = m1 * nx + m5 * ny + m9 * nz, tz = m2 * nx + m6 * ny + m10 * nz;
+      const l = Math.sqrt(tx * tx + ty * ty + tz * tz) || 1; GN[o3] = tx / l; GN[o3 + 1] = ty / l; GN[o3 + 2] = tz / l;
+      if (sc) { GC[o3] = sc[k]; GC[o3 + 1] = sc[k + 1]; GC[o3 + 2] = sc[k + 2]; }
+      else if (fn) { const cc = color(wx, wy, wz); GC[o3] = cc[0]; GC[o3 + 1] = cc[1]; GC[o3 + 2] = cc[2]; }
+      else { GC[o3] = cr; GC[o3 + 1] = cg; GC[o3 + 2] = cb; }
     }
-    if (src.u && src.u.length) for (let k = 0; k < src.u.length; k++) g.u.push(src.u[k]); else for (let k = 0; k < src.p.length / 3; k++) g.u.push(0, 0);
-    if (o.flip) for (let k = 0; k < src.i.length; k += 3) g.i.push(src.i[k] + base, src.i[k + 2] + base, src.i[k + 1] + base);
-    else for (let k = 0; k < src.i.length; k++) g.i.push(src.i[k] + base);
+    if (SU && SU.length >= nv * 2) { for (let k = 0, o2 = base * 2; k < nv * 2; k++) GU[o2 + k] = SU[k]; } else GU.fill(0, base * 2, (base + nv) * 2);
+    // facets: per-vertex flat flags (only kept once something faceted is in here)
+    if (src.flat || src.f || this._F) {
+      if (!this._F) this._F = new Uint8Array(this._P.length / 3);
+      const sf = src.f, v = src.flat ? 1 : 0; for (let k = 0; k < nv; k++) this._F[base + k] = sf ? sf[k] : v;
+    }
+    if (o.flip) for (let k = 0; k < SI.length; k += 3) { GI[ib + k] = SI[k] + base; GI[ib + k + 1] = SI[k + 2] + base; GI[ib + k + 2] = SI[k + 1] + base; }
+    else for (let k = 0; k < SI.length; k++) GI[ib + k] = SI[k] + base;
+    this.nv = base + nv; this.ni = ib + SI.length;
     return this;
   }
-  get empty() { return this.g.i.length === 0; }
-  mesh(gfx) { const m = new Mesh(gfx, this.g); m._owned = true; return m; }
+  get empty() { return this.ni === 0; }
+  mesh(gfx, opts) { const m = new Mesh(gfx, this.g, opts); m._owned = true; return m; }
 }
 const Q = (x = 0, y = 0, z = 0) => new Quat().setEuler(x, y, z);
 
@@ -1848,14 +2286,14 @@ const SKY_KEYS = (() => {
   const K = (h, o) => ({ h, zen: col(o.zen), hor: col(o.hor), fog: col(o.fog), glow: scaleCol(col(o.glow[0]), o.glow[1]), light: scaleCol(col(o.light[0]), o.light[1]),
     sky: scaleCol(col(o.sky[0]), o.sky[1]), gnd: scaleCol(col(o.gnd[0]), o.gnd[1]), sh: col(o.sh), dp: col(o.dp), den: o.den, st: o.st, ex: o.ex });
   const night = { zen: '#101d52', hor: '#2f4c94', fog: '#233b7a', glow: ['#8ea6ff', 0.55], light: ['#a9bfff', 0.62], sky: ['#5674d6', 0.46], gnd: ['#3c4080', 0.34], sh: '#1f6f96', dp: '#0a2a5e', den: 0.0040, st: 55, ex: 1.12 };
-  const day = { zen: '#3f9cf0', hor: '#cdeeff', fog: '#cfeaff', glow: ['#fff3c4', 1], light: ['#fff1d6', 2.3], sky: ['#a8d8ff', 0.62], gnd: ['#c8b08a', 0.42], sh: '#3fe0d0', dp: '#0b62a8', den: 0.0055, st: 45, ex: 1 };
+  const day = { zen: '#3f9cf0', hor: '#cdeeff', fog: '#cfeaff', glow: ['#fff3c4', 1], light: ['#fff1d6', 2.3], sky: ['#a8d8ff', 0.62], gnd: ['#c8b08a', 0.42], sh: '#3fe0d0', dp: '#0b62a8', den: 0.0047, st: 48, ex: 1 };
   return [
     K(0, night), K(3.8, night),
     K(4.6, { zen: '#1e2a68', hor: '#8a6aa8', fog: '#5a5096', glow: ['#ffa58a', 0.4], light: ['#a9bfff', 0.55], sky: ['#6a70c8', 0.6], gnd: ['#4a3f78', 0.46], sh: '#2a7aa0', dp: '#0e3366', den: 0.0045, st: 50, ex: 1.1 }),
     K(5.3, { zen: '#4c6fc4', hor: '#ffae7a', fog: '#f2b89a', glow: ['#ffa64d', 1.0], light: ['#ffb36e', 1.6], sky: ['#b6a8e6', 0.5], gnd: ['#b0806a', 0.36], sh: '#45c4cf', dp: '#16559e', den: 0.0058, st: 42, ex: 1.05 }),
-    K(6.2, { zen: '#3f8ee6', hor: '#ffd9b0', fog: '#f4dcc4', glow: ['#ffd890', 1.0], light: ['#ffdcae', 2.0], sky: ['#a8c8f0', 0.58], gnd: ['#c0a080', 0.4], sh: '#3fd6cf', dp: '#0d5ea6', den: 0.0056, st: 44, ex: 1 }),
+    K(6.2, { zen: '#3f8ee6', hor: '#ffd9b0', fog: '#f4dcc4', glow: ['#ffd890', 1.0], light: ['#ffdcae', 2.0], sky: ['#a8c8f0', 0.58], gnd: ['#c0a080', 0.4], sh: '#3fd6cf', dp: '#0d5ea6', den: 0.005, st: 46, ex: 1 }),
     K(8, day), K(16, Object.assign({}, day, { light: ['#fff0d2', 2.25] })),
-    K(17.6, { zen: '#4790e0', hor: '#ffe0b0', fog: '#f8dcc0', glow: ['#ffc870', 1.1], light: ['#ffd49a', 2.0], sky: ['#b8c8f0', 0.58], gnd: ['#c8a080', 0.42], sh: '#46d2c8', dp: '#0f5aa0', den: 0.0056, st: 44, ex: 1 }),
+    K(17.6, { zen: '#4790e0', hor: '#ffe0b0', fog: '#f8dcc0', glow: ['#ffc870', 1.1], light: ['#ffd49a', 2.0], sky: ['#b8c8f0', 0.58], gnd: ['#c8a080', 0.42], sh: '#46d2c8', dp: '#0f5aa0', den: 0.005, st: 46, ex: 1 }),
     K(18.6, { zen: '#5a68c8', hor: '#ff8f7a', fog: '#f4a0a0', glow: ['#ff8a50', 1.2], light: ['#ff9c6a', 1.6], sky: ['#c8a0d8', 0.52], gnd: ['#b07a7a', 0.38], sh: '#4fb6c8', dp: '#1a4a90', den: 0.006, st: 40, ex: 1.05 }),
     K(19.4, { zen: '#2a2f7a', hor: '#c070a0', fog: '#7a5a9e', glow: ['#ff7aa0', 0.35], light: ['#a9bfff', 0.55], sky: ['#7a70c8', 0.62], gnd: ['#503f78', 0.46], sh: '#2f7aa8', dp: '#123672', den: 0.0048, st: 48, ex: 1.1 }),
     K(20.3, { zen: '#15215c', hor: '#3a4f9a', fog: '#283e80', glow: ['#8ea6ff', 0.5], light: ['#a9bfff', 0.55], sky: ['#5a74d0', 0.52], gnd: ['#3a3c78', 0.38], sh: '#22709a', dp: '#0b2c60', den: 0.0042, st: 54, ex: 1.12 }),
@@ -1873,12 +2311,10 @@ function skySet3(o, a, k = 1) { o[0] = a[0] * k; o[1] = a[1] * k; o[2] = a[2] * 
 // the sun and moon walk from the east (+x) over the south (+z) to the west (-x); theta 0 = rising, PI = setting
 function skyArc(theta, tilt, out) { const s = Math.sin(theta); return out.set(Math.cos(theta), s * Math.cos(tilt), s * Math.sin(tilt)); }
 function skyClampElev(v, minY) { if (v.y >= minY) return v; const hl = Math.hypot(v.x, v.z) || 1, k = Math.sqrt(1 - minY * minY) / hl; v.x *= k; v.z *= k; v.y = minY; return v; }
-// the renderer hazes everything far away; things painted on the sky dome undo that haze so they keep their colour
+// the renderer hazes everything far away; things painted on the sky dome skip that haze so they keep their colour
 function skyFogF(env, d) { const u = Math.max(d - env.fogStart, 0) * env.fogDen; return 1 - Math.exp(-Math.pow(u, 1.6)); }
 function skyPaint(o, env, d, c, k = 1) {
-  const f = Math.min(skyFogF(env, d), 0.985), K = 1 / (1 - f), F = env.fogCol;
-  o.tint[0] = c[0] * k * K; o.tint[1] = c[1] * k * K; o.tint[2] = c[2] * k * K;
-  o.emis[0] = -F[0] * f * K; o.emis[1] = -F[1] * f * K; o.emis[2] = -F[2] * f * K;
+  o.noFog = true; o.tint[0] = c[0] * k; o.tint[1] = c[1] * k; o.tint[2] = c[2] * k; o.emis[0] = o.emis[1] = o.emis[2] = 0;
 }
 // every frame after the camera has moved (a hook the frame loop calls through game.views): things that sit round the camera
 function skyLateHooks(g) {
@@ -1960,7 +2396,7 @@ function skyCloudMesh(gfx, i) {
 // ---- night lights the island builders add (merged meshes, one draw each) ----
 function skyGlow(L) { return L.nightGlow || (L.nightGlow = { bulbs: new GeoBuilder(), halos: [new GeoBuilder(), new GeoBuilder()], windows: [new GeoBuilder(), new GeoBuilder(), new GeoBuilder()] }); }
 // a bulb, with two soft see-through shells round it for its glow
-function skyAddBulb(L, x, y, z, r = 0.3, c = '#fff4c2') { const N = skyGlow(L), hc = col('#ffe2a0'); N.bulbs.add(gSphere(r, 12, 8), { p: [x, y, z], c: col(c) }); N.halos[0].add(gSphere(r * 1.75, 12, 8), { p: [x, y, z], c: hc }); N.halos[1].add(gSphere(r * 3.0, 12, 8), { p: [x, y, z], c: hc }); }
+function skyAddBulb(L, x, y, z, r = 0.3, c = '#fff4c2') { const N = skyGlow(L), hc = col('#ffe2a0'); N.bulbs.add(gSphere(r, 12, 8), { p: [x, y, z], c: col(c) }); N.halos[0].add(gSphere(r * 1.75, 10, 6), { p: [x, y, z], c: hc }); N.halos[1].add(gSphere(r * 3.0, 10, 6), { p: [x, y, z], c: hc }); }
 const SKY_TOWN_LAMPS = [[-9, -2], [9, -2], [-9, 10], [9, 10], [0, 20], [0, 34], [20, 4]]; // the plaza's own lamps (80_island.js)
 // one toy lamp post (thin collider, the bulb glows after dusk)
 function skyLampPost(L, x, z) {
@@ -2102,6 +2538,12 @@ class SkySystem {
     skySet3(e.zenith, P.zen); skySet3(e.horizon, P.hor); skySet3(e.fogCol, P.fog);
     skySet3(e.shallow, P.sh, 1 - c * 0.3); skySet3(e.deep, P.dp, 1 - c * 0.25);
     e.fogDen = P.den * (1 + c * 0.9 + this.rain * 0.4); e.fogStart = P.st * (1 - c * 0.3); e.exposure = P.ex * (1 - c * 0.07);
+    // colour grade: warm whites by day, golden round sunrise and sunset, soft lifted blues at night (cosy, never black)
+    const gold = (1 - smoothstep(0.1, 0.5, this.sunDir.y)) * sunUp * (1 - c * 0.8); // (sunUp is 0 at night)
+    skySet3(e.lift, [0.0 + 0.03 * n, 0.004 + 0.03 * n + 0.004 * gold, 0.02 + 0.055 * n]);
+    skySet3(e.gain, [1 + 0.03 * gold - 0.03 * n, 0.995 - 0.01 * gold - 0.015 * n, 0.975 - 0.06 * gold + 0.02 * n]);
+    e.gradeSat = 1.1 + 0.05 * gold - 0.06 * n - 0.07 * c; e.gradeCon = 1.06 + 0.02 * gold - 0.05 * n - 0.03 * c;
+    e.bloom = 1 + 0.35 * n; e.vignette = 0.24 + 0.08 * n;
   }
   // everything this sky draws, made once per island
   attach(L) {
@@ -2114,20 +2556,21 @@ class SkySystem {
     const r = mulberry32(31);
     this.clouds = [];
     for (let i = 0; i < 14; i++) {
-      const o = new RObj(skyCloudMesh(gfx, i % 3), { cast: false, spec: 0, tint: [1, 1, 1], emis: [0.2, 0.2, 0.22] }); o.visible = false; gfx.add(o);
+      const o = new RObj(skyCloudMesh(gfx, i % 3), { cast: false, spec: 0, tint: [1, 1, 1], emis: [0.2, 0.2, 0.22], glow: 0 }); o.visible = false; gfx.add(o);
       this.clouds.push({ o, x: (r() - 0.5) * 440, z: (r() - 0.5) * 440, y: 44 + r() * 14, th: (i / 14) * 0.6, s: 1.05 + r() * 0.6, yaw: r() * TAU });
     }
     // the island's own fair-weather clouds (80_island.js) dim at night and grey in the rain
     this.fair = gfx.statics.filter((o) => !o.cast && o.emis && Math.abs(o.emis[0] - 0.25) < 1e-6 && Math.abs(o.emis[1] - 0.27) < 1e-6 && Math.abs(o.emis[2] - 0.3) < 1e-6);
+    for (const o of this.fair) o.glow = 0; // (bright, but not lights: no bloom)
     // lamps and windows
     const N = L && L.nightGlow;
     this.bulbs = N && !N.bulbs.empty ? gfx.add(new RObj(N.bulbs.mesh(gfx), { spec: 0.4, cast: false, emis: [0, 0, 0] })) : null;
     this.halos = N ? N.halos.filter((b) => !b.empty).map((b) => { const o = gfx.add(new RObj(b.mesh(gfx), { unlit: true, cast: false, alpha: 0, tint: [1.5, 1.15, 0.6] })); o.visible = false; return o; }) : [];
     this.windows = N ? N.windows.filter((b) => !b.empty).map((b) => { const o = gfx.add(new RObj(b.mesh(gfx), { unlit: true, cast: false, tint: [1, 1, 1] })); o.visible = false; return o; }) : [];
     // fireflies, rain and snow (instanced, drawn after everything else)
-    this.flies = gfx.makeInstanced(gSphere(1, 6, 4), 72);
+    this.flies = gfx.makeInstanced(gSphere(1, 6, 4), 72, { sprite: true });
     this.drops = gfx.makeInstanced(gBox(0.034, 0.9, 0.034), 760);
-    this.flakes = gfx.makeInstanced(gSphere(0.075, 6, 4), 520);
+    this.flakes = gfx.makeInstanced(gSphere(0.075, 6, 4), 520, { sprite: true, size: 0.075 });
     this.trees = g.world.bodies.filter((b) => b.userData && b.userData.tree).map((b) => b.pos);
     this.nearTrees = []; this.treeT = 0; this.splashT = 0;
     skyLateHooks(g).push((dt) => this.late(dt));
@@ -2370,6 +2813,160 @@ const SONGS = {
     melody: [[16, null, null, 19, null, null, 21, null], [19, null, 17, null, 16, null, null, null], [12, null, null, 14, null, 16, null, null], [14, null, null, null, 11, null, null, null]] },
 };
 
+// ===== recorded character voices =====
+// The voices are small mp3s made with the open Kokoro voice generator (tools/flopvoices in the website repo, run by a GitHub
+// workflow) and published next to the page as voice/<hash>.mp3, where <hash> is the FNV-1a (32 bit, hex) of "speaker|text".
+// game.say(who, text) plays one (the hooks that call it are in 98_voice_hooks.js):
+//   * one line at a time (a new line stops the old one) and the music ducks while somebody talks;
+//   * a file that is not there (404, or a page that is not a sound) is skipped silently and not asked for again, so a game
+//     without the voice folder is just as quiet as before; the "Voices" switch (save.voices, on unless it is false) mutes all of them;
+//   * the line plays through the game's own sound system (WebAudio, unlocked by the first tap like the sounds and the music, which
+//     is what iPad Safari wants). If the page may not fetch the files (another origin without CORS, a sandboxed frame) an <audio>
+//     element plays them instead (it gets unlocked by a tap too);
+//   * nothing here ever throws or blocks the game.
+// A page that knows which files it has can say so: window.FLOP_VOICES = 'hash,hash,...' (or an array). Lines that are not in
+// the list are then not even asked for.
+const VOX_DIR = 'voice/';
+function voxHash(s) {
+  let b; try { b = new TextEncoder().encode(s); } catch (e) { b = Array.from(unescape(encodeURIComponent(s)), (c) => c.charCodeAt(0)); }
+  let h = 0x811c9dc5; for (let i = 0; i < b.length; i++) { h ^= b[i]; h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+// 0.1 s of silence as a WAV data URI: played once during a tap, it lets an <audio> element play later on its own (iPad Safari)
+function voxSilence() {
+  const n = 800, b = new Uint8Array(44 + n).fill(128), w = (o, s) => { for (let i = 0; i < s.length; i++) b[o + i] = s.charCodeAt(i); }, d = (o, v, k) => { for (let i = 0; i < k; i++) b[o + i] = (v >>> (8 * i)) & 255; };
+  w(0, 'RIFF'); d(4, 36 + n, 4); w(8, 'WAVEfmt '); d(16, 16, 4); d(20, 1, 2); d(22, 1, 2); d(24, 8000, 4); d(28, 8000, 4); d(32, 1, 2); d(34, 8, 2); w(36, 'data'); d(40, n, 4);
+  let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  return 'data:audio/wav;base64,' + btoa(s);
+}
+class VoiceBox {
+  constructor() {
+    this.g = null; this.seq = 0; this.cur = null; this.cache = new Map(); this.missing = new Set(); this.mode = 'web'; this.el = null; this.wantEl = false; this.elOk = false; this.elBusy = false;
+    this.bus = null; this.wd = 0; this.have = null; this.haveSrc = undefined; this.tapped = false;
+    this.log = []; this.errs = []; this.stats = { asked: 0, played: 0, missing: 0, blocked: 0, skipped: 0 };
+    const tap = (e) => { if (e && e.isTrusted) { this.tapped = true; this.unlock(); } }; // (only a real tap or key counts: the browser lets nothing play before one)
+    try { for (const ev of ['pointerup', 'touchend', 'click', 'keydown']) addEventListener(ev, tap, { capture: true, passive: true }); } catch (e) { }
+    try { document.addEventListener('visibilitychange', () => { if (document.hidden) this.stop(); }); } catch (e) { }
+    try { if (location.protocol === 'file:') this.useEl(); } catch (e) { } // (a page opened from a disk may not fetch: it goes straight to the <audio> element)
+  }
+  audio() { const g = this.g || window.__game; return g && g.audio; }
+  get on() { const g = this.g || window.__game; return !(g && g.save && g.save.voices === false); }
+  note(ev, h, who, text) { const L = this.log; L.push({ ev, h, who, text: text && text.length > 40 ? text.slice(0, 40) + '...' : text }); if (L.length > 80) L.shift(); }
+  err(e) { if (this.errs.length < 20) this.errs.push(String(e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e)); }
+  // the optional list of the files the page has
+  haveSet() {
+    const src = window.FLOP_VOICES;
+    if (src !== this.haveSrc) { this.haveSrc = src; this.have = src ? new Set(Array.isArray(src) ? src : String(src).split(/[\s,]+/).filter(Boolean)) : null; }
+    return this.have;
+  }
+  // a tap: if an <audio> element is needed (the page could not fetch the files), it plays its silent clip now, so that it may play lines later
+  unlock() {
+    try {
+      if (!this.wantEl || this.elOk || this.elBusy) return;
+      const a = this.el || (this.el = new Audio()); this.elBusy = true;
+      a.onended = a.onerror = null; a.src = this.silence || (this.silence = voxSilence());
+      const fin = (ok) => { this.elBusy = false; if (ok) this.elOk = true; try { a.pause(); } catch (e) { } };
+      const p = a.play(); if (p && p.then) p.then(() => fin(true), () => fin(false)); else fin(true);
+    } catch (e) { this.elBusy = false; this.err(e); }
+  }
+  say(who, text, o) {
+    try {
+      if (!this.on || !who || text === undefined || text === null) return false;
+      text = String(text).trim(); if (!text) return false;
+      if (!this.tapped) { this.stats.blocked++; this.note('blocked', '', who, text); return false; } // (nobody has tapped yet: nothing could play, so nothing is asked for)
+      const h = voxHash(who + '|' + text), have = this.haveSet();
+      this.stop(); // (whatever was being said ends now, even when the new line has no recording)
+      if (this.missing.has(h) || (have && !have.has(h))) { this.stats.skipped++; this.note('skip', h, who, text); return false; }
+      this.stats.asked++;
+      const my = ++this.seq; this.cur = { h, my, screen: !!(o && o.screen), stop: null };
+      this.note('ask', h, who, text);
+      if (this.mode === 'el') this.playEl(h, my); else this.playWeb(h, my);
+      return true;
+    } catch (e) { this.err(e); return false; }
+  }
+  // warm up a line that is coming next (the next page of a story card)
+  prefetch(who, text) {
+    try {
+      if (!this.on || this.mode !== 'web' || !who || !text) return;
+      const A = this.audio(); if (!A || !A.ctx) return;
+      const h = voxHash(who + '|' + String(text).trim()), have = this.haveSet();
+      if (this.missing.has(h) || (have && !have.has(h))) return;
+      this.load(h).catch((e) => { if (e && (e.status || e.decode)) this.missing.add(h); });
+    } catch (e) { this.err(e); }
+  }
+  stop() {
+    try {
+      this.seq++; const c = this.cur; this.cur = null; clearTimeout(this.wd);
+      if (c && c.stop) c.stop();
+      if (this.el) { this.el.onended = this.el.onerror = null; if (!this.elBusy) this.el.pause(); }
+      this.duck(false);
+    } catch (e) { this.err(e); }
+  }
+  // a menu or card closed: the line it was reading stops with it
+  stopScreen() { if (this.cur && this.cur.screen) this.stop(); }
+  // ---- the WebAudio way ----
+  load(h) {
+    const hit = this.cache.get(h); if (hit) { this.cache.delete(h); this.cache.set(h, hit); return hit; }
+    const A = this.audio();
+    // (three ways to fail: an answer that is not OK = e.status, a file that is not a sound = e.decode, no answer at all = e.net)
+    const p = fetch(VOX_DIR + h + '.mp3').then((r) => { if (!r.ok) { const e = new Error('voice ' + r.status); e.status = r.status; throw e; } return r.arrayBuffer(); },
+      () => { const e = new Error('voice net'); e.net = true; throw e; })
+      .then((b) => new Promise((res, rej) => { const bad = () => { const e = new Error('voice decode'); e.decode = true; rej(e); }; try { const q = A.ctx.decodeAudioData(b, res, bad); if (q && q.catch) q.catch(bad); } catch (e) { bad(); } }));
+    this.cache.set(h, p); p.catch(() => this.cache.delete(h));
+    if (this.cache.size > 30) this.cache.delete(this.cache.keys().next().value);
+    return p;
+  }
+  playWeb(h, my) {
+    const A = this.audio(), AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { this.useEl(); return this.playEl(h, my); }
+    if (!A || !A.ctx) { this.stats.blocked++; this.note('blocked', h); return this.finish(my); } // (no tap yet)
+    if (A.ctx.state === 'suspended') { try { A.ctx.resume(); } catch (e) { } }
+    this.load(h).then((buf) => {
+      if (my !== this.seq || !this.cur) return;
+      if (A.ctx.state !== 'running') { this.stats.blocked++; this.note('blocked', h); return this.finish(my); }
+      const src = A.ctx.createBufferSource(); src.buffer = buf; src.connect(this.busNode(A));
+      this.cur.stop = () => { try { src.onended = null; src.stop(); } catch (e) { } };
+      src.onended = () => this.finish(my);
+      this.duck(true); src.start(); this.stats.played++; this.note('play', h);
+      this.watch(buf.duration + 1.5, my);
+    }).catch((e) => this.failed(h, e, my));
+  }
+  busNode(A) {
+    if (!this.bus || this.bus.context !== A.ctx) { this.bus = A.ctx.createGain(); this.bus.gain.value = 1; this.bus.connect(A.master); }
+    return this.bus;
+  }
+  failed(h, e, my) {
+    if (e && e.net) { // fetch itself failed (another origin without CORS, a frame that may not ask, no network): an <audio> element can still try
+      this.useEl(); this.note('fallback', h); if (my === this.seq) this.playEl(h, my); else this.finish(my); return;
+    }
+    this.missing.add(h); this.stats.missing++; this.note('missing', h); this.finish(my); // (not there, or not a sound)
+  }
+  // ---- the <audio> element way ----
+  useEl() { this.mode = 'el'; this.wantEl = true; }
+  playEl(h, my) {
+    try {
+      const a = this.el || (this.el = new Audio());
+      a.onended = () => this.finish(my);
+      a.onerror = () => { if (my === this.seq) { this.missing.add(h); this.stats.missing++; this.note('missing', h); this.finish(my); } };
+      a.src = VOX_DIR + h + '.mp3';
+      const p = a.play();
+      const ok = () => { if (my !== this.seq) { try { a.pause(); } catch (e) { } return; } this.duck(true); this.stats.played++; this.note('play', h); this.watch((a.duration > 0 && a.duration < 60 ? a.duration : 8) + 1.5, my); };
+      if (p && p.then) p.then(ok, (e) => { if (e && e.name === 'AbortError') return; this.stats.blocked++; this.note('blocked', h); this.finish(my); }); else ok();
+    } catch (e) { this.err(e); this.finish(my); }
+  }
+  // ---- the end of a line, and the music while somebody talks ----
+  finish(my) { if (my === this.seq && this.cur) { this.cur = null; clearTimeout(this.wd); this.duck(false); } }
+  watch(sec, my) { clearTimeout(this.wd); this.wd = setTimeout(() => this.finish(my), Math.max(2, sec) * 1000); }
+  duck(on) {
+    try {
+      const A = this.audio(); if (!A || !A.ctx || !A.mus) return;
+      if (!A.duckG || A.duckG.context !== A.ctx) { A.duckG = A.ctx.createGain(); A.mus.disconnect(); A.mus.connect(A.duckG); A.duckG.connect(A.master); } // (music -> duck -> master)
+      const t = A.ctx.currentTime, p = A.duckG.gain; p.cancelScheduledValues(t); p.setTargetAtTime(on ? 0.3 : 1, t, on ? 0.06 : 0.25);
+    } catch (e) { this.err(e); }
+  }
+}
+const VOX = new VoiceBox();
+
 // ===== input: keyboard, mouse, gamepads, touch =====
 const KB1 = { up: ['KeyW'], down: ['KeyS'], left: ['KeyA'], right: ['KeyD'], jump: ['Space'], punch: ['KeyF'], grab: ['KeyG'], kick: ['KeyH'], sprint: ['ShiftLeft'], use: ['KeyE'] };
 const KB1_SOLO = { punch: ['KeyJ'], grab: ['KeyK'], kick: ['KeyL'], up: ['ArrowUp'], down: ['ArrowDown'], left: ['ArrowLeft'], right: ['ArrowRight'], jump: ['Enter'] };
@@ -2445,7 +3042,7 @@ class Input {
     this.mouse = { l: false, r: false, lP: false, rP: false, lT: 0, rT: 0, dx: 0, dy: 0, wheel: 0, locked: false };
     this.pads = []; this.padPrev = [];
     this.touch = { on: false, mx: 0, my: 0, jump: false, jumpP: false, punch: false, punchP: false, grab: false, grabL: false, grabR: false, kickP: false, useP: false, duck: false, duckP: false, emoteP: false, grabTap: 0, camDX: 0, camDY: 0 };
-    this.lastDevice = 'kb';
+    this.lastDevice = 'kb'; this.touchT = -1e9; // (when a finger last touched the screen: the mouse events a tablet makes up after a tap are not a mouse)
     this.anyPressed = false;
     this.pro = false; // "pro hands": each hand on its own button (a setting, see the How to Play screen)
     this.wheel = new EmoteWheel();
@@ -2459,11 +3056,11 @@ class Input {
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
     addEventListener('blur', () => { this.keys.clear(); this.mouse.l = this.mouse.r = false; });
-    canvas.addEventListener('mousedown', (e) => { const now = performance.now(); if (e.button === 0) { this.mouse.l = true; this.mouse.lP = true; this.mouse.lT = now; } if (e.button === 2) { this.mouse.r = true; this.mouse.rP = true; this.mouse.rT = now; } this.lastDevice = 'kb'; this.anyPressed = true; });
+    canvas.addEventListener('mousedown', (e) => { const now = performance.now(); if (now - this.touchT < 1000) return; if (e.button === 0) { this.mouse.l = true; this.mouse.lP = true; this.mouse.lT = now; } if (e.button === 2) { this.mouse.r = true; this.mouse.rP = true; this.mouse.rT = now; } this.lastDevice = 'kb'; this.anyPressed = true; });
     addEventListener('mouseup', (e) => { if (e.button === 0) this.mouse.l = false; if (e.button === 2) this.mouse.r = false; });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     addEventListener('mousemove', (e) => { if (this.mouse.locked) { this.mouse.dx += e.movementX; this.mouse.dy += e.movementY; } else if (this.mouse.mid) { this.mouse.dx += e.movementX; this.mouse.dy += e.movementY; } });
-    canvas.addEventListener('mousedown', (e) => { if (e.button === 1) { this.mouse.mid = true; e.preventDefault(); } });
+    canvas.addEventListener('mousedown', (e) => { if (e.button === 1 && performance.now() - this.touchT >= 1000) { this.mouse.mid = true; e.preventDefault(); } });
     addEventListener('mouseup', (e) => { if (e.button === 1) this.mouse.mid = false; });
     canvas.addEventListener('wheel', (e) => { this.mouse.wheel += Math.sign(e.deltaY); e.preventDefault(); }, { passive: false });
     document.addEventListener('pointerlockchange', () => { this.mouse.locked = document.pointerLockElement === canvas; });
@@ -2624,6 +3221,7 @@ class Input {
     const onUp = (e) => { for (const p of e.changedTouches) { if (p.identifier === sid) { sid = null; t.mx = t.my = 0; knob.style.transform = ''; stick.classList.remove('on'); } if (p.identifier === camId) camId = null; } };
     this.canvas.addEventListener('touchstart', (e) => { this.enableTouch(); onDown(e); }, { passive: true });
     addEventListener('touchstart', () => this.enableTouch(), { passive: true, capture: true });
+    addEventListener('touchend', () => { this.touchT = performance.now(); }, { passive: true, capture: true });
     addEventListener('touchmove', onMove, { passive: false }); addEventListener('touchend', onUp); addEventListener('touchcancel', onUp);
     for (const b of el.querySelectorAll('.tb')) {
       const k = b.dataset.b, held = { jump: 'jump', grab: 'grab', grabL: 'grabL', grabR: 'grabR', punch: 'punch', duck: 'duck' }[k];
@@ -2633,7 +3231,7 @@ class Input {
       b.addEventListener('mousedown', down); b.addEventListener('mouseup', up); b.addEventListener('mouseleave', up);
     }
   }
-  enableTouch() { if (!this.touch.on) { this.touch.on = true; document.body.classList.add('touch'); } this.lastDevice = 'touch'; }
+  enableTouch() { if (!this.touch.on) { this.touch.on = true; document.body.classList.add('touch'); } this.lastDevice = 'touch'; this.touchT = performance.now(); }
 }
 
 // ===== wobbly character: physics + controller (no rendering) =====
@@ -3960,9 +4558,11 @@ class CharView {
       this.wear.push({ obj: add(mesh, { spec: it.spec ?? 0.2, fuzz: it.fuzz ?? 0.1, emis: it.emis || [0, 0, 0] }), head: slot === 'face' });
     }
     this.xid = this.xid || (CharView.nextX = ((CharView.nextX || 0) % 250) + 1); for (const o of this.objs) o.xid = this.xid; // (stencil tag for the x-ray pass)
+    this.occ = this.occ || new Float32Array([0, -1e4, 0, 0.42, 0, -1e4, 0, 0.4, -1e4]); for (const o of this.objs) o.occ = this.occ; // (body + head spheres, ground: soft creases, 30_gfx.js)
     this.mouthLayout = X ? (X.mouth === undefined ? [0, -0.15, 0.405] : X.mouth) : sp === 'pup' || sp === 'bear' || sp === 'panda' ? [0, -0.2, 0.43] : sp === 'fox' ? [0, -0.2, 0.43] : sp === 'duck' ? [0, -0.26, 0.38] : sp === 'piggy' ? [0, -0.2, 0.38] : sp === 'frog' ? null : [0, -0.15, 0.405];
   }
   dispose() { for (const o of this.objs) this.gfx.remove(o); this.objs = []; }
+  setOcc(b, h, gy) { const O = this.occ; O[0] = b.x; O[1] = b.y; O[2] = b.z; O[4] = h.x; O[5] = h.y; O[6] = h.z; O[8] = gy; }
   setAlpha(a) { a = a < 0.04 ? 0 : a; if (this._alpha === a) return; this._alpha = a; for (const o of this.objs) { o.alpha = a; o.hiddenByCam = a === 0; } }
   setVisible(v) { for (const o of this.objs) o.visible = v; }
   update(dt, alpha) {
@@ -3977,6 +4577,8 @@ class CharView {
     const sq = ch.squash;
     // body
     this.body.setTRS(tp, tq, 1 + sq * 0.5, 1 - sq, 1 + sq * 0.5);
+    // a soft contact shadow on the ground below (30_gfx.js; fades as the animal leaves the ground)
+    const gd = ch.groundDist; if (gd < 1.6 && !ch.swimming && this._alpha > 0 && gfx.addBlob) { const n = ch.grounded ? ch.groundNormal : _vup; gfx.addBlob(tp.x, T.pos.y - gd, tp.z, n.x, n.y, n.z, 0.62, 1 - smoothstep(1.05, 1.6, gd)); }
     // head: orientation follows torso, bent toward actual head offset
     const hp = this.ip.head.lerpVectors(H.prevPos, H.pos, alpha);
     const neck = _vp.set(0, 0.52 * (1 - sq), 0).applyQuat(tq).add(tp);
@@ -3986,6 +4588,7 @@ class CharView {
     const hq = _vq2.multiplyQuats(_vq, tq);
     const hpos = _vp3.copy(neck).addScaled(_vd, 0.3);
     this.head.setTRS(hpos, hq, 1 + sq * 0.3, 1 - sq * 0.5, 1 + sq * 0.3);
+    this.setOcc(tp, hpos, gd < 1.6 ? T.pos.y - gd : -1e4);
     for (const w of this.wear) { if (w.head) w.obj.setTRS(hpos, hq, 1 + sq * 0.3, 1 - sq * 0.5, 1 + sq * 0.3); else w.obj.setTRS(tp, tq, 1 + sq * 0.5, 1 - sq, 1 + sq * 0.5); }
     // eyes / expression
     this.blinkT -= dt; if (this.blinkT < 0) { this.blink = 0.13; this.blinkT = rand(2, 5); }
@@ -4057,7 +4660,7 @@ class CharView {
     const seat = car.seatWorld(_vp, ch), q = car.body.q;
     this.body.setTRS(seat, q, 1, 0.85, 1);
     const hpos = _vp3.set(0, 0.72, 0).applyQuat(q).add(seat);
-    this.head.setTRS(hpos, q);
+    this.head.setTRS(hpos, q); this.setOcc(seat, hpos, -1e4);
     for (const w of this.wear) { w.obj.visible = true; if (w.head) w.obj.setTRS(hpos, q); else w.obj.setTRS(seat, q, 1, 0.85, 1); } this.eyes.setTRS(hpos, q, 1, this.blink > 0 ? 0.12 : 1, 1);
     this.blinkT -= dt; if (this.blinkT < 0) { this.blink = 0.13; this.blinkT = rand(2, 5); } this.blink -= dt;
     if (this.mouthLayout) { const ml = this.mouthLayout; this.mouth.setTRS(_vp2.set(ml[0], ml[1], ml[2]).applyQuat(q).add(hpos), q); }
@@ -5600,7 +6203,7 @@ class Particles {
   constructor(gfx) {
     this.gfx = gfx;
     const flake = gBox(1, 0.12, 0.6); const ball = gSphere(1, 8, 6); const cube = gBox(1, 1, 1);
-    this.sets = [gfx.makeInstanced(flake, 700), gfx.makeInstanced(ball, 700), gfx.makeInstanced(cube, 300)];
+    this.sets = [gfx.makeInstanced(flake, 700), gfx.makeInstanced(ball, 700, { sprite: true }), gfx.makeInstanced(cube, 300)]; // (puffs and splashes: soft round sprites)
     this.parts = [];
   }
   add(kind, p, v, o = {}) {
@@ -5745,6 +6348,7 @@ class Car {
     this.R = this.st.R; this.rest = 0.5; this.k = 2600 * this.st.mass / 150; this.c = 260 * this.st.mass / 150;
     this.driver = null; this.throttle = 0; this.steer = 0; this.brake = 0; this.speed = 0; this.flipT = 0; this.honkT = 0;
     this.netId = -1; this.net = null; // net: a friend on another tablet is driving this car
+    this.home = p.clone(); this.homeYaw = yaw; this.lostT = 0;
     this.buildVisual();
     this._p = new V3(); this._q = new Quat();
   }
@@ -5881,6 +6485,20 @@ class Car {
     // auto-flip
     const up = _cv1.set(0, 1, 0).applyQuat(b.q);
     if (up.y < 0.35 && b.vel.length() < 3) { this.flipT += dt; if (this.flipT > 1.6) { const yaw = Math.atan2(_cv2.set(0, 0, 1).applyQuat(b.q).x, _cv2.z); b.q.setYaw(yaw); b.pos.y += 1.5; b.vel.set(0, 0, 0); b.angVel.set(0, 0, 0); this.flipT = 0; } } else this.flipT = 0;
+    this.sunkRescue(dt);
+  }
+  // left on the sea bed, out of reach (cars sink; an animal floats): back on its parking spot once nobody has been near it for
+  // 10 s, so a taxi or an ice cream van driven into the sea is there for the next job (the bus and the monster truck have
+  // their own rescue: 70b_vehicles_land.js)
+  sunkRescue(dt) {
+    const b = this.body, g = this.game, L = g.level, w = L && L.waterAt ? L.waterAt(b.pos.x, b.pos.z) : -999;
+    if (this.driver || b.pos.y > -2.5 || b.pos.y > w - 2) { this.lostT = 0; return; } // (under the sea, not just low: the Moon's craters are fine)
+    const p = g.player, pp = p ? (p.inWorld ? p.torso.pos : p.driving ? p.driving.body.pos : null) : null;
+    if (pp && pp.distanceTo(b.pos) < 9) { this.lostT = 0; return; }
+    if ((this.lostT += dt) < 10) return;
+    if (pp && pp.distanceToSq(this.home) < 9) return; for (const o of g.cars) if (o !== this && o.body.pos.distanceToSq(this.home) < 9) return; // (someone or something is on its spot)
+    this.lostT = 0; this.restT = 0; b.teleport(this.home, _cq2.setYaw(this.homeYaw)); // (restT: it settles on its wheels before it naps again)
+    if (g.audible && g.audible(this.home)) g.particles.puff(this.home.clone().add(_cv4.set(0, 1, 0)), 10, col('#ffffff'), 0.5, 1.5);
   }
   sync(alpha) {
     const b = this.body;
@@ -6870,6 +7488,7 @@ class VehCar extends Car {
     this.rest = rest; this.R = R; this.c *= dampK; this.home = b.pos.clone(); this.homeYaw = this.heading(); this.lostT = 0; this.depth = 0; if (this.wade === undefined) this.wade = 0.45; // (how deep it dares to go)
   }
   heading() { const f = _vk1.set(0, 0, 1).applyQuat(this.body.q); return Math.atan2(f.x, f.z); }
+  sunkRescue() {} // (its own rescue, below, also brings it back from far away)
   // on top of the car physics: the sea is a soft wall (the engine cuts out when driving into deeper water, wading slows you
   // down and the water pushes you back to the shore), and these big toys never lie on their roof or stand on their tail
   // against a wall: a steady push rights them
@@ -7538,7 +8157,7 @@ class Builder {
     this.chunks = new Map(); this.windChunks = new Map(); this.extra = []; this.ledges = (game.world.ledges = []);
     this.statics = [];
   }
-  chunk(x, z, wind) { const k = Math.floor(x / 36) + ':' + Math.floor(z / 36); const m = wind ? this.windChunks : this.chunks; let b = m.get(k); if (!b) m.set(k, (b = new GeoBuilder())); return b; }
+  chunk(x, z, wind) { const k = Math.floor(x / 36) + ':' + Math.floor(z / 36); const m = wind ? this.windChunks : this.chunks; let b = m.get(k); if (!b) m.set(k, (b = new GeoBuilder(2048))); return b; }
   vis(g, o) { const p = o.p || [0, 0, 0]; this.chunk(p[0], p[2], o.wind).add(g, o); }
   body(shape, x, y, z, q, data) {
     const b = new Body({ type: STATIC, friction: 0.8, restitution: 0.05 }); b.addShape(shape); b.pos.set(x, y, z); if (q) b.q.copy(q);
@@ -7571,9 +8190,25 @@ class Builder {
     if (o.ledge) { const n = 12; for (let i = 0; i < n; i++) { const a0 = i / n * TAU, a1 = (i + 1) / n * TAU; this.ledges.push({ a: new V3(x + Math.sin(a0) * r, y + h / 2, z + Math.cos(a0) * r), b: new V3(x + Math.sin(a1) * r, y + h / 2, z + Math.cos(a1) * r), n: new V3(Math.sin((a0 + a1) / 2), 0, Math.cos((a0 + a1) / 2)) }); } }
   }
   finish() {
-    for (const [, b] of this.chunks) if (!b.empty) this.gfx.statics.push(new RObj(b.mesh(this.gfx), { spec: 0.12 }));
-    for (const [, b] of this.windChunks) if (!b.empty) this.gfx.statics.push(new RObj(b.mesh(this.gfx), { spec: 0.08, wind: 1, fuzz: 0.15 }));
+    // (scenery is never textured, so no UVs; on a level with a heightfield it darkens softly where it meets the ground)
+    const L = this.game.level, o = { noUV: true, groundAO: L && L.hf ? hfHeightFn(L.hf) : null };
+    for (const [, b] of this.chunks) if (!b.empty) this.gfx.statics.push(new RObj(b.mesh(this.gfx, o), { spec: 0.12 }));
+    for (const [, b] of this.windChunks) if (!b.empty) this.gfx.statics.push(new RObj(b.mesh(this.gfx, o), { spec: 0.08, wind: 1, fuzz: 0.15 }));
+    // the pictures are on the GPU now: let the merged geometry go (scenery added after this was never drawn anyway)
+    for (const m of [this.chunks, this.windChunks]) for (const [, b] of m) this.doneV = (this.doneV || 0) + b.nv * 3;
+    this.chunks = new Map(); this.windChunks = new Map();
   }
+}
+// the ground height of a heightfield as the terrain mesh draws it (Heightfield.heightAt without the garbage, for big loops)
+function hfHeightFn(hf) {
+  const nx = hf.nx, nz = hf.nz, cell = hf.cell, x0 = hf.x0, z0 = hf.z0, H = hf.h;
+  return (x, z) => {
+    const fx = (x - x0) / cell, fz = (z - z0) / cell; let i = Math.floor(fx), j = Math.floor(fz);
+    if (i < 0) i = 0; if (j < 0) j = 0; if (i > nx - 2) i = nx - 2; if (j > nz - 2) j = nz - 2;
+    let u = fx - i, v = fz - j; u = u < 0 ? 0 : u > 1 ? 1 : u; v = v < 0 ? 0 : v > 1 ? 1 : v;
+    const h00 = H[i + j * nx], h10 = H[i + 1 + j * nx], h01 = H[i + (j + 1) * nx], h11 = H[i + 1 + (j + 1) * nx];
+    return u > v ? h00 + u * (h10 - h00) + v * (h11 - h10) : h00 + v * (h01 - h00) + u * (h11 - h01);
+  };
 }
 function gTriPrism(w, h, d) { // triangle in XY (base on y=0, apex at y=h), extruded along Z
   const g = geo(); const P = [[-w / 2, 0], [w / 2, 0], [0, h]];
@@ -7587,11 +8222,21 @@ function signTex(gfx, text, bg, fg, w = 512, h = 160) {
   return canvasTex(gfx, w, h, (g) => {
     g.fillStyle = bg; g.beginPath(); g.roundRect ? g.roundRect(6, 6, w - 12, h - 12, 28) : g.rect(6, 6, w - 12, h - 12); g.fill();
     g.lineWidth = 10; g.strokeStyle = '#2b1b3f'; g.stroke();
-    const font = (sz) => `900 ${sz}px "Titan One", "Arial Black", sans-serif`; let size = Math.floor(h * 0.52);
-    g.font = font(size); while (size > 12 && g.measureText(text).width > w - h * 0.45) { size -= 2; g.font = font(size); } // (long names shrink to fit)
+    const font = (sz) => `900 ${sz}px "Titan One", "Arial Black", sans-serif`;
+    fitFontSize(g, text, Math.floor(h * 0.52), 12, w - h * 0.45, font); // (long names shrink to fit)
     g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(text, w / 2, h / 2 + 4);
   });
+}
+// the font size a "shrink by 2 until it fits" loop ends on (size, size-2, ... stopping at min), found in a few measures
+function fitFontSize(g, text, size, min, maxW, font) {
+  g.font = font(size); const w0 = g.measureText(text).width;
+  if (size <= min || w0 <= maxW) return size;
+  const fits = (s) => { g.font = font(s); return g.measureText(text).width <= maxW; };
+  let s = Math.max(size - 2 * Math.max(1, Math.floor((size - size * maxW / w0) / 2)), size - 2 * Math.ceil((size - min) / 2)); // a guess on the same steps
+  while (s + 2 < size && fits(s + 2)) s += 2;
+  while (s > min && !fits(s)) s -= 2;
+  g.font = font(s); return s;
 }
 function addSign(game, text, p, yaw, w, h, bg = '#ffd84d', fg = '#2b1b3f', pitch = 0) {
   const tex = signTex(game.gfx, text, bg, fg);
@@ -7647,7 +8292,7 @@ const ISLAND = {
 };
 let _islandNoise = null, _raceCurve = null;
 function raceCurve() { if (_raceCurve) return _raceCurve; const R = ISLAND.race, pts = []; for (let i = 0; i <= 96; i++) { const a = i / 96 * TAU; pts.push([R.cx + Math.cos(a) * R.rx, R.cz + Math.sin(a) * R.rz]); } return (_raceCurve = pts); }
-function distToRace(x, z) { const P = raceCurve(); let best = 1e9; for (let i = 0; i < P.length - 1; i++) { const [ax, az] = P[i], [bx, bz] = P[i + 1]; const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz; const t = clamp(((x - ax) * dx + (z - az) * dz) / L, 0, 1); best = Math.min(best, Math.hypot(x - ax - dx * t, z - az - dz * t)); } return best; }
+function distToRace(x, z) { const RC = ISLAND.race, ox = Math.abs(x - RC.cx) - RC.rx, oz = Math.abs(z - RC.cz) - RC.rz; if (ox > 24 || oz > 24) return Math.max(ox, oz); /* (far away: a lower bound is all any test needs) */ const P = raceCurve(); let best = 1e9; for (let i = 0; i < P.length - 1; i++) { const [ax, az] = P[i], [bx, bz] = P[i + 1]; const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz; const t = clamp(((x - ax) * dx + (z - az) * dz) / L, 0, 1); best = Math.min(best, Math.hypot(x - ax - dx * t, z - az - dz * t)); } return best; }
 function segDist(x, z, ax, az, bx, bz) { const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1; const t = clamp(((x - ax) * dx + (z - az) * dz) / L, 0, 1); return Math.hypot(x - ax - dx * t, z - az - dz * t); }
 function landMask(x, z) {
   let m = 0;
@@ -7679,9 +8324,11 @@ function islandHeight(x, z) {
   return h + extra;
 }
 function islandWaterAt(x, z) { const P = ISLAND.pond; return Math.hypot(x - P.x, z - P.z) < P.r + 2.5 ? P.y : 0; }
-function distToPaths(x, z) {
-  let best = 1e9;
-  for (const [[ax, az], [bx, bz]] of ISLAND.paths) best = Math.min(best, segDist(x, z, ax, az, bx, bz));
+let _pathBox = null;
+function distToPaths(x, z) { // (only paths within 8 m are measured: every caller asks "closer than ~4 m?"; far away gives 99)
+  const PS = ISLAND.paths; if (!_pathBox || _pathBox.n !== PS.length) _pathBox = { n: PS.length, b: PS.map(([[ax, az], [bx, bz]]) => [ax, az, bx, bz, Math.min(ax, bx) - 8, Math.max(ax, bx) + 8, Math.min(az, bz) - 8, Math.max(az, bz) + 8]) };
+  let best = 99;
+  for (const s of _pathBox.b) if (x > s[4] && x < s[5] && z > s[6] && z < s[7]) { const d = segDist(x, z, s[0], s[1], s[2], s[3]); if (d < best) best = d; }
   return best;
 }
 
@@ -7702,11 +8349,12 @@ class IslandLevel {
     const ex0 = x0 + 4, ex1 = x0 + S - 4, ez0 = z0 + 4, ez1 = z0 + S - 4, mx = (ex0 + ex1) / 2, mz = (ez0 + ez1) / 2;
     B.box(mx, 0, ez0, S, 40, 2, { noVis: true }); B.box(mx, 0, ez1, S, 40, 2, { noVis: true }); B.box(ex0, 0, mz, 2, 40, S, { noVis: true }); B.box(ex1, 0, mz, 2, 40, S, { noVis: true });
     this.bound = 400; this.bounds = [ex0, ez0, ex1, ez1];
-    G.gfx.setWater({ y: 0, size: 900, cx: 0, cz: -20, rect: [x0 - 10, z0 - 10, S + 20, S + 20], res: 256, depthFn: (x, z) => -islandHeight(x, z) });
+    const hfh = hfHeightFn(hf); // (the sea's depth map follows the terrain as drawn, so the foam hugs the visible shore)
+    G.gfx.setWater({ y: 0, size: 900, cx: 0, cz: -20, rect: [x0 - 10, z0 - 10, S + 20, S + 20], res: 256, depthFn: (x, z) => -hfh(x, z) });
     // sky look
     Object.assign(G.gfx.env, { fogDen: 0.0055, fogStart: 45 });
     // (level.prof: milliseconds per part of the build, for keeping an eye on the island's loading time)
-    const prof = (this.prof = {}), kv = () => { let n = 0; for (const m of [B.chunks, B.windChunks]) for (const [, b] of m) n += b.g.p.length; return n / 3000; };
+    const prof = (this.prof = {}), kv = () => { let n = B.doneV || 0; for (const m of [B.chunks, B.windChunks]) for (const [, b] of m) n += b.g.p.length; return n / 3000; };
     const time = (k, f) => { // (tests may count GPU uploads in window.__glBytes: then the MB uploaded and static scenery vertices, in thousands, too)
       const t = performance.now(), b0 = window.__glBytes || 0, v0 = b0 ? kv() : 0; f(); prof[k] = (prof[k] || 0) + performance.now() - t;
       if (b0) { prof[k + ' MB'] = (window.__glBytes - b0) / 1e6; prof[k + ' kv'] = kv() - v0; }
@@ -7743,7 +8391,7 @@ class IslandLevel {
     this.mapGrid = { nx, cell, x0, z0, H, C: new Float32Array(g.c) }; // (the map is painted from the same colours)
     for (let j = 0; j < nx - 1; j++) for (let i = 0; i < nx - 1; i++) { const a = i + j * nx, b = a + 1, c = a + nx, d = c + 1; g.i.push(a, d, b, a, c, d); }
     const m = new Mesh(this.game.gfx, g); m._owned = true;
-    this.game.gfx.statics.push(new RObj(m, { spec: 0.04, noCull: true }));
+    this.game.gfx.statics.push(new RObj(m, { spec: 0.04, noCull: true, detail: 1 }));
   }
   house(x, z, wall, roof, name, color) {
     const B = this.B, y0 = this.h(x, z);
@@ -7790,7 +8438,7 @@ class IslandLevel {
     for (let i = 0; i < seg; i++) {
       const t = i / seg, a = lean * t * 1.6;
       const nx = px + Math.cos(dir) * Math.sin(a) * segL, ny = py + Math.cos(a) * segL, nz = pz + Math.sin(dir) * Math.sin(a) * segL;
-      B.vis(gCyl(0.22 * s * (1 - t * 0.35), 0.26 * s * (1 - t * 0.3), segL * 1.05, 8), { p: [(px + nx) / 2, (py + ny) / 2, (pz + nz) / 2], q: new Quat().setFromUnitVectors(new V3(0, 1, 0), new V3(nx - px, ny - py, nz - pz).normalize()), c: i % 2 ? PAL.trunk : shade(PAL.trunk, 1.15) });
+      B.vis(gCyl(0.22 * s * (1 - t * 0.35), 0.26 * s * (1 - t * 0.3), segL * 1.05, 8, i === seg - 1), { p: [(px + nx) / 2, (py + ny) / 2, (pz + nz) / 2], q: new Quat().setFromUnitVectors(new V3(0, 1, 0), new V3(nx - px, ny - py, nz - pz).normalize()), c: i % 2 ? PAL.trunk : shade(PAL.trunk, 1.15) });
       px = nx; py = ny; pz = nz;
     }
     const tb = this.B.body(cylShape(0.3 * s, seg * segL / 2), (x + px) / 2, (y + py) / 2, (z + pz) / 2, null, { palm: true });
@@ -7964,8 +8612,8 @@ class IslandLevel {
     const fc = ['#ff5e8a', '#ffd84d', '#ffffff', '#b48cff', '#ff9320'].map(col);
     for (let i = 0; i < 900; i++) {
       const x = X0 + 10 + r() * (S - 20), z = Z0 + 10 + r() * (S - 20), y = islandHeight(x, z); if (y < 2.2 || y > 12 || distToPaths(x, z) < 2.5 || Math.hypot(x, z - 4) < 10 || distToRace(x, z) < 6) continue;
-      if (i % 3) B.vis(gCone(0.18, 0.5, 4), { p: [x, y + 0.2, z], q: Q(rand(-0.3, 0.3), rand(0, 6), rand(-0.3, 0.3)), c: mixCol(PAL.grass2, PAL.leaf2, r()), wind: true });
-      else { B.vis(gCyl(0.02, 0.02, 0.4, 4), { p: [x, y + 0.2, z], c: PAL.grass2 }); B.vis(gSphere(0.1, 6, 4), { p: [x, y + 0.42, z], s: [1, 0.6, 1], c: choose(fc), wind: true }); }
+      if (i % 3) B.vis(gCyl(0.0001, 0.18, 0.5, 4, false), { p: [x, y + 0.2, z], q: Q(rand(-0.3, 0.3), rand(0, 6), rand(-0.3, 0.3)), c: mixCol(PAL.grass2, PAL.leaf2, r()), wind: true });
+      else { B.vis(gCyl(0.02, 0.02, 0.4, 4, false), { p: [x, y + 0.2, z], c: PAL.grass2 }); B.vis(gSphere(0.1, 6, 4), { p: [x, y + 0.42, z], s: [1, 0.6, 1], c: choose(fc), wind: true }); }
     }
     // clouds
     for (let i = 0; i < 26; i++) {
@@ -10201,6 +10849,29 @@ ARENA_DEFS.cove = {
   isOut(L, ch) { return ch.torso.pos.y < L.waterY + 0.1; },
   edgeInfo(L, p, out) { const r = Math.hypot(p.x, p.z) || 1e-3; out.set(p.x / r, 0, p.z / r); return L.R - r; },
 };
+
+// ===== a light colour grade per brawl arena (30_gfx.js: env.gradeSat / gradeCon / lift / gain, bloom, vignette) =====
+// Applied after an arena has set its own light. Mild on purpose: each arena keeps its colours, this only sets the mood
+// (warm sunsets and fairs, crisp ice, a touch more contrast where pale floors fill the screen). Missing arenas keep the default.
+const ARENA_GRADE = {
+  rooftop: { gradeCon: 1.1, gain: [1.04, 0.99, 0.95] },
+  iceberg: { gradeCon: 1.08, lift: [0.0, 0.01, 0.03], gain: [0.98, 1.0, 1.03] },
+  cake: { gradeSat: 1.14, gradeCon: 1.1 },
+  ferris: { gain: [1.04, 0.99, 0.95], bloom: 1.25 },
+  stormboat: { gradeCon: 1.08, lift: [0.0, 0.01, 0.035] },
+  windtunnel: { gradeCon: 1.1, gradeSat: 1.12 },
+  breakice: { gradeCon: 1.08, gain: [0.98, 1.0, 1.03] },
+  crocpond: { bloom: 1.3, lift: [0.0, 0.012, 0.03] },
+  fallbridge: { gradeCon: 1.08, gain: [1.04, 0.99, 0.94] },
+};
+{
+  const build0 = ArenaLevel.prototype.build;
+  ArenaLevel.prototype.build = function () {
+    build0.call(this);
+    const G = ARENA_GRADE[this.id], e = this.game.gfx.env;
+    if (G) for (const k in G) e[k] = Array.isArray(G[k]) ? G[k].slice() : G[k];
+  };
+}
 
 // ===== new island regions: farm, construction site, race track, mountain + waterfall + cave, beach resort, Wobble Run, town extras =====
 const FIELD_RECTS = [[-136, 18, 18, 12], [-112, 28, 16, 12], [-140, 38, 14, 10]]; // x, z, w, d (farm fields)
@@ -13232,8 +13903,8 @@ function scSign(game, text, p, yaw, w, h, bg = '#2b4c8f', fg = '#ffffff') {
   const tex = canvasTex(game.gfx, cw, ch, (g) => {
     g.fillStyle = bg; g.beginPath(); g.roundRect ? g.roundRect(bw / 2, bw / 2, cw - bw, ch - bw, r) : g.rect(bw / 2, bw / 2, cw - bw, ch - bw); g.fill();
     g.lineWidth = bw; g.strokeStyle = '#2b1b3f'; g.stroke();
-    const font = (s) => `900 ${s}px "Titan One", "Arial Black", sans-serif`; let size = Math.floor(ch * 0.58);
-    g.font = font(size); while (size > 10 && g.measureText(text).width > cw - ch * 0.7) { size -= 2; g.font = font(size); }
+    const font = (s) => `900 ${s}px "Titan One", "Arial Black", sans-serif`;
+    fitFontSize(g, text, Math.floor(ch * 0.58), 10, cw - ch * 0.7, font);
     g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, cw / 2, ch / 2 + ch * 0.04);
   });
   const b = new GeoBuilder(); b.add(gBox(w, h, 0.12));
@@ -14761,7 +15432,7 @@ const GIFT_KINDS = ['coins', 'hat', 'outfit', 'coins', 'hat', 'costume', 'coins'
 // ---------------- save migration (runs on every load) ----------------
 function migrateSave(s) {
   const first = !Array.isArray(s.seen); // a save from before jobs and the story (or a brand new one)
-  if (!s.jobs || typeof s.jobs !== 'object') s.jobs = {};
+  if (!s.jobs || typeof s.jobs !== 'object' || Array.isArray(s.jobs)) s.jobs = {};
   for (const k of ['gifts', 'costumes', 'grants', 'missions', 'hats', 'clothes']) if (!Array.isArray(s[k])) s[k] = [];
   storyState(s);
   if (!(typeof s.xp === 'number' && s.xp >= 0)) s.xp = 0;
@@ -15433,7 +16104,9 @@ class Net {
     for (const rp of this.peers.values()) {
       const same = can && rp.mi === this.loaded;
       for (const [eid, ent] of rp.ents) {
-        if (now - ent.seen > 1500) { if (ent.char) { g.removeChar(ent.char); ent.char = null; } rp.ents.delete(eid); continue; }
+        // an animal their updates stopped mentioning is gone; but when the whole tablet goes quiet for a moment (a slow frame, a
+        // Wi-Fi hiccup) its animals stay where they were for up to 6 s (Game.netAlive's limit), so a hiccup is not a fall
+        if (now - ent.seen > 1500 && (now - rp.lastRecv < 1000 || now - ent.seen > 6000)) { if (ent.char) { g.removeChar(ent.char); ent.char = null; } rp.ents.delete(eid); continue; }
         const L = ent.buf.last; if (!L) continue;
         if (!same) { if (ent.char) { g.removeChar(ent.char); ent.char = null; } continue; }
         const lk = this.lookOf(rp, eid), sig = lk.species + (lk.color || '') + lk.hat + JSON.stringify(lk.outfit);
@@ -15775,7 +16448,7 @@ class UI {
       </ul>
       <div class="row" style="margin-top:14px;align-items:center"><button class="btn small ghost" id="proH" aria-pressed="${!!this.g.save.proHands}">Pro hands: ${this.g.save.proHands ? 'On' : 'Off'}</button></div>
       <p class="note">Pro hands: each paw on its own button. Keyboard: F / J punch left / right, G / K grab left / right (or the left / right mouse button: click to punch, hold to grab). Gamepad: LT / RT punch, LB / RB grab, R3 ducks. Touch: GRAB L and GRAB R.</p>
-      <div class="row" style="margin-top:16px"><button class="btn" id="hb" data-autofocus>Got it</button></div></div>`, '', back);
+      <div class="card-foot"><button class="btn" id="hb" data-autofocus>Got it</button></div></div>`, '', back);
     $('#hb', el).onclick = back;
     $('#proH', el).onclick = (e) => { const s = this.g.save; s.proHands = !s.proHands; this.g.persist(); e.target.textContent = 'Pro hands: ' + (s.proHands ? 'On' : 'Off'); e.target.setAttribute('aria-pressed', String(s.proHands)); };
   }
@@ -15838,7 +16511,7 @@ class UI {
     const el = this.show(`<div class="card" role="dialog" aria-label="Hat shop">
       <h2>Hat Shop</h2><p class="lead">You have <b id="shopCoins">${s.coins}</b> coins. Deliveries, coconuts and golden ducks all pay.</p>
       <div class="items" id="items"></div>
-      <div class="row" style="margin-top:16px"><button class="btn" id="done" data-autofocus>Leave shop</button></div></div>`, '', back);
+      <div class="card-foot"><button class="btn" id="done" data-autofocus>Leave shop</button></div></div>`, '', back);
     const items = $('#items', el);
     const render = () => {
       $('#shopCoins', el).textContent = s.coins;
@@ -15909,13 +16582,14 @@ class UI {
   // the end of a Brawl Party game (every mode, offline and online): info = { title, lead, rows, groups (team games), online, host }
   brawlResults(info) {
     const g = this.g, net = g.net;
-    const row = (r) => `<div class="res ${r.win ? 'win' : ''}"><i class="dot" style="background:${r.color}"></i>${esc(r.name)}${r.me ? ' (you)' : ''}<span style="color:var(--muted);font-weight:700">${SPECIES[r.species] ? SPECIES[r.species].name : ''}</span><span class="crowns">${esc(r.stat)}</span></div>`;
+    const row = (r) => `<div class="res ${r.win ? 'win' : ''}"><i class="dot" style="background:${r.color}"></i>${esc(r.name)}${r.me && r.name !== 'You' ? ' (you)' : ''}<span style="color:var(--muted);font-weight:700">${SPECIES[r.species] ? SPECIES[r.species].name : ''}</span><span class="crowns">${esc(r.stat)}</span></div>`;
     const body = info.groups ? info.groups.map((G) => `<div class="res-team ${G.win ? 'win' : ''}"><h3><i class="dot" style="background:${G.color}"></i>${esc(G.name)} team<span class="sc">${G.score}</span></h3>${G.rows.map(row).join('')}</div>`).join('') : info.rows.map(row).join('');
     const el = this.show(`<div class="card" role="dialog" aria-label="Results" style="width:min(560px,100%)">
       <h2>${esc(info.title)}</h2><p class="lead">${esc(info.lead)}</p>
       <div class="results-list">${body}</div>
       <div class="row" id="resBtns"></div></div>`, '', null, 'results');
     const box = $('#resBtns', el);
+    if (!info.online || net.isHost) box.classList.add('res-grid'); // (two even columns: a lone button on its own line looked like a mistake)
     if (!info.online) {
       box.innerHTML = `<button class="btn pink" id="again" data-autofocus>Play Again</button><button class="btn teal" id="setup">Change Setup</button><button class="btn ghost" id="isl">Island</button><button class="btn ghost" id="menu">Title</button>`;
       $('#again', el).onclick = () => g.startBrawl();
@@ -15979,6 +16653,25 @@ class UI {
       : `<span class="map-bus dot" style="${pct(b.x, b.z)}" title="${esc(b.name)}"></span>`)).join('');
     if (g.missions) html += Object.keys(g.missions.givers).filter((k) => g.missions.available(k)).map((k) => { const v = g.missions.givers[k]; return `<span class="map-bang" style="${pct(v.home.x, v.home.z)}" title="${esc(GIVERS[k].name)}">!</span>`; }).join('');
     pins.innerHTML = html;
+    // names that would sit on each other or on a bus stop move a line up or down; a small one with no room left hides
+    {
+      const pr = pins.getBoundingClientRect(), H = pr.height, placed = [];
+      const rect = (e) => { const r = e.getBoundingClientRect(); return { l: r.left - pr.left, t: r.top - pr.top, r: r.right - pr.left, b: r.bottom - pr.top }; };
+      const hit = (a) => placed.some((b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1);
+      if (H > 50) {
+        for (const e of pins.querySelectorAll('.map-bus, .map-bang')) placed.push(rect(e));
+        const labels = [...pins.querySelectorAll('.map-label')].sort((a, b) => a.classList.contains('small') - b.classList.contains('small'));
+        for (const e of labels) {
+          const r0 = rect(e), h = r0.b - r0.t + 1, w = (r0.r - r0.l) * 0.6, top0 = parseFloat(e.style.top), left0 = parseFloat(e.style.left); let ok = false;
+          for (const [k, j] of [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]]) {
+            const r = { l: r0.l + j * w, r: r0.r + j * w, t: r0.t + k * h, b: r0.b + k * h }; if (r.t < 0 || r.b > H || r.l < 0 || r.r > pr.width || hit(r)) continue;
+            if (k) e.style.top = (top0 + k * h / H * 100).toFixed(2) + '%'; if (j) e.style.left = (left0 + j * w / pr.width * 100).toFixed(2) + '%';
+            placed.push(r); ok = true; break;
+          }
+          if (!ok) { if (e.classList.contains('small')) e.style.visibility = 'hidden'; else placed.push(r0); }
+        }
+      }
+    }
     pins.querySelectorAll('[data-bus]').forEach((b) => (b.onclick = () => { const st = L.busStops.find((x) => x.id === b.dataset.bus); if (st) g.busTravel(st); }));
     pins.querySelectorAll('[data-lock]').forEach((b) => (b.onclick = () => { const n = $('#mapNote', el), st = L.busStops.find((x) => x.id === b.dataset.lock); g.audio.fail(); if (n && st) n.innerHTML = `<b>${esc(st.name)}</b> is locked. ${esc(unlockHow('stop:' + st.id))} to open it!`; }));
     const draw = () => {
@@ -16095,6 +16788,12 @@ class UI {
     this.scorebar.hidden = mode !== 'brawl'; this.roundinfo.hidden = mode !== 'brawl'; this.job.hidden = true; this.prompt.hidden = true; this.announceEl.hidden = true;
     for (const [, e] of this.tagEls) e.remove(); this.tagEls.clear(); this.toasts.innerHTML = '';
     const hint = $('#hint'); if (hint) hint.hidden = true;
+  }
+  // with touch controls the brawl's score bar sits at the top and can take two rows: the "Watching ..." label and the toasts go
+  // under its real bottom (--sbb, read when the bar changes)
+  placeScorebar() {
+    const sb = this.scorebar; if (!sb || sb.hidden || !this.g.input.touch.on) return;
+    const b = Math.round(sb.getBoundingClientRect().bottom); if (b > 0 && b !== this._sbb) { this._sbb = b; this.hud.style.setProperty('--sbb', b + 'px'); }
   }
   // online games show the room code and how many friends are in it
   updateNetChip() {
@@ -16249,6 +16948,8 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 #bossbar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 62px); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 150px)); background: var(--paper); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink); padding: 5px 12px 8px; text-align: center; box-sizing: border-box; }
 #bossbar b { font-family: var(--font-display); font-weight: 400; font-size: 18px; color: #b8323a; letter-spacing: 0.5px; }
 #bossbar .hp { height: 16px; border-radius: 8px; background: #eadfcd; border: 3px solid var(--ink); overflow: hidden; margin-top: 3px; } #bossbar .hp i { display: block; height: 100%; background: linear-gradient(90deg, #ff5e5e, #ffb13d); transition: width 0.25s; }
+body.touch #hud.brawl #bossbar { top: calc(var(--sbb, 108px) + 8px); } /* (with touch controls the score bar is at the top: the boss bar goes under it) */
+#hud.brawl.has-boss #toasts { top: calc(env(safe-area-inset-top, 0px) + 138px); } body.touch #hud.brawl.has-boss #toasts { top: calc(var(--sbb, 108px) + 84px); }
 #bossbar.worn .hp i { background: #c9c0d6; } #bossbar.worn b::after { content: " · dizzy!"; color: var(--ink); }
 .tag.boss { font-size: 18px; padding: 2px 12px; background: #ff5e5e !important; color: #fff; border-width: 4px; }
 </style>`);
@@ -16285,7 +16986,7 @@ Object.assign(UI.prototype, {
     const g = this.g, all = station === 'plaza', list = all ? JOBS : JOBS.filter((j) => j.station === station);
     const el = this.show(`<div class="card" role="dialog" aria-label="Job board" style="width:min(700px,100%)"><h2>${all ? 'Job Center' : 'Job Board'}</h2>
       <p class="lead">${all ? 'Every job on the island. Tap <b>Show me</b> and follow the golden arrow.' : `${esc(JOB_STATIONS[station] || '')}: finish a job to get paid. Do it again and again to rank up!`}</p>
-      <div class="jobs-list" id="jl"></div><div class="row"><button class="btn ghost" id="jbClose">Close</button></div></div>`, '', () => this.close(), 'jobs');
+      <div class="jobs-list" id="jl"></div><div class="card-foot"><button class="btn ghost" id="jbClose">Close</button></div></div>`, '', () => this.close(), 'jobs');
     const box = $('#jl', el);
     const render = () => {
       const un = g.unlocks();
@@ -16316,7 +17017,7 @@ Object.assign(UI.prototype, {
     let tab = this._bookTab || 'story';
     const el = this.show(`<div class="card book" role="dialog" aria-label="Story Book"><h2>Story Book</h2>
       <div class="tabs" role="tablist" id="bkTabs">${tabs.map(([k, n]) => `<button class="tab" role="tab" data-t="${k}">${n}</button>`).join('')}</div>
-      <div id="bkBody"></div><div class="row" style="margin-top:14px"><button class="btn" id="bkBack" data-autofocus>Back</button></div></div>`, '', back, 'journal');
+      <div id="bkBody"></div><div class="card-foot"><button class="btn" id="bkBack" data-autofocus>Back</button></div></div>`, '', back, 'journal');
     const body = $('#bkBody', el), onIsland = g.mode === 'island' && g.level && g.level.kind === 'island';
     const go = (fn) => { if (onIsland) { if (g.paused) g.paused = false; this.close(); fn(); } else { fn(true); g.startIsland(); } };
     const render = () => {
@@ -16394,7 +17095,7 @@ Object.assign(UI.prototype, {
   clothesShop(back) {
     const g = this.g, s = g.save;
     const el = this.show(`<div class="side-panel"><div class="card" role="dialog" aria-label="Fluff and Stuff"><h2>Fluff &amp; Stuff</h2><p class="lead">Comfy clothes for fluffy friends. You have <b id="csCoins">${s.coins}</b> coins.</p><div id="csBody"></div>
-      <div class="row" style="margin-top:14px"><button class="btn" id="csDone" data-autofocus>Leave shop</button></div></div></div>`, 'clear', back, 'clothes');
+      <div class="card-foot"><button class="btn" id="csDone" data-autofocus>Leave shop</button></div></div></div>`, 'clear', back, 'clothes');
     const body = $('#csBody', el);
     const render = () => {
       $('#csCoins', el).textContent = s.coins;
@@ -16419,7 +17120,7 @@ Object.assign(UI.prototype, {
   carShop(back) {
     const g = this.g, s = g.save;
     const el = this.show(`<div class="card" role="dialog" aria-label="Car Shop" style="width:min(680px,100%)"><h2>Car Shop</h2><p class="lead">Special vehicles! Win them with jobs and the story, or buy them here. You have <b id="vsCoins">${s.coins}</b> coins.</p>
-      <div class="jobs-list" id="vsList"></div><div class="row"><button class="btn" id="vsDone" data-autofocus>Leave shop</button></div></div>`, '', back, 'carshop');
+      <div class="jobs-list" id="vsList"></div><div class="card-foot"><button class="btn" id="vsDone" data-autofocus>Leave shop</button></div></div>`, '', back, 'carshop');
     const box = $('#vsList', el);
     const render = () => {
       $('#vsCoins', el).textContent = s.coins; const un = g.unlocks();
@@ -16463,7 +17164,7 @@ Object.assign(UI.prototype, {
     $('#boNo', el).onclick = () => this.close();
   },
   bossBar(on) {
-    let el = $('#bossbar');
+    let el = $('#bossbar'); this.hud.classList.toggle('has-boss', !!on); // (toasts go under the bar)
     if (!on) { if (el) el.remove(); return; }
     if (!el) { el = document.createElement('div'); el.id = 'bossbar'; el.innerHTML = '<b>Boss Grumble</b><div class="hp"><i></i></div>'; this.hud.appendChild(el); }
     el._w = -1; el.classList.remove('worn');
@@ -16769,11 +17470,12 @@ class StageLevel {
   constructor(game) { this.game = game; this.kind = 'stage'; this.waterY = -999; }
   build() {
     const G = this.game, B = (this.B = new Builder(G)), P5 = ['#ffc93c', '#2ec4d6', '#7bd84b', '#ff5e8a', '#b48cff'];
-    Object.assign(G.gfx.env, { fogDen: 0.01, fogStart: 20 });
+    Object.assign(G.gfx.env, { fogDen: 0.01, fogStart: 20, vignette: 0.3 });
     B.cyl(0, -0.5, 0, 4.6, 1, { c: col('#fff7e8') });
     B.vis(gTorus(4.6, 0.2, 48, 8), { p: [0, 0, 0], c: col('#ff5e8a') });
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; B.vis(gSphere(0.32, 10, 8), { p: [Math.sin(a) * 4.6, 0.15, Math.cos(a) * 4.6], c: col(P5[i % 5]) }); }
     B.box(0, -2, 0, 80, 2, 80, { c: col('#bfe6ff') });
+    B.vis(gDisc([4.8, 8, 12, 17, 23, 30, 40], 64), { p: [0, -0.985, 0], c: (x, y, z) => mixCol(col('#e6f4ff'), col('#8fb8ea'), smoothstep(4.5, 36, Math.hypot(x, z))) }); // (a soft spotlight round the stage)
     // a balloon arch behind the animals
     for (let i = 0; i <= 26; i++) {
       const a = i / 26 * PI, x = Math.cos(a) * 5.3, y = Math.sin(a) * 5.5, z = -3.3;
@@ -16818,16 +17520,21 @@ class Game {
       if ((e.code === 'Escape' || e.code === 'KeyP') && (this.mode === 'island' || this.mode === 'brawl') && !this.ui.open) this.togglePause();
       else if (e.code === 'KeyM' && this.mode === 'island') { if (this.ui.screenName === 'map') this.ui.close(); else if (!this.ui.open) this.openMap(); }
     });
-    addEventListener('resize', () => this.gfx.resize());
+    addEventListener('resize', () => { this.gfx.resize(); this.ui.placeScorebar(); });
     document.addEventListener('visibilitychange', () => { if (document.hidden && (this.mode === 'island' || this.mode === 'brawl') && !this.paused && !this.ui.open) this.togglePause(); });
   }
   loadSave() {
-    let s = defaultSave();
-    try { const raw = localStorage.getItem(SAVE_KEY); if (raw) s = Object.assign(s, JSON.parse(raw)); } catch (e) { }
-    const hd = window.claude && window.claude.hot && window.claude.hot.data; if (hd && hd.save) s = Object.assign(s, hd.save);
-    if (!s.hats.includes('none')) s.hats.unshift('none'); if (!SPECIES[s.species]) s.species = 'pup'; if (!HATS[s.hat]) s.hat = 'none';
-    s.outfit = cleanOutfit(s.outfit); if (!Array.isArray(s.clothes)) s.clothes = [];
-    migrateSave(s); // jobs, story, unlocks, levels and gifts (86d_unlocks.js)
+    let s = defaultSave(), raw = null;
+    const obj = (o) => !!o && typeof o === 'object' && !Array.isArray(o);
+    try { raw = localStorage.getItem(SAVE_KEY); const o = raw ? JSON.parse(raw) : null; if (obj(o)) s = Object.assign(s, o); } catch (e) { }
+    const hd = window.claude && window.claude.hot && window.claude.hot.data; if (hd && obj(hd.save)) s = Object.assign(s, hd.save);
+    try { // (a save with odd values must never stop the game from starting)
+      for (const k of ['hats', 'ducks']) if (!Array.isArray(s[k])) s[k] = defaultSave()[k];
+      if (!Number.isFinite(s.coins)) s.coins = Math.max(0, Math.floor(+s.coins) || 0);
+      if (!s.hats.includes('none')) s.hats.unshift('none'); if (!SPECIES[s.species]) s.species = 'pup'; if (!HATS[s.hat]) s.hat = 'none';
+      s.outfit = cleanOutfit(s.outfit); if (!Array.isArray(s.clothes)) s.clothes = [];
+      migrateSave(s); // jobs, story, unlocks, levels and gifts (86d_unlocks.js)
+    } catch (e) { console.error(e); try { if (raw) localStorage.setItem(SAVE_KEY + '-broken', raw); } catch (e2) { } s = migrateSave(defaultSave()); }
     return s;
   }
   persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.save)); } catch (e) { } }
@@ -17020,7 +17727,7 @@ class Game {
     if (this.mode !== 'brawl' || !this.brawl) return;
     const B = this.brawl;
     if (B.online && !B.round) { this.ui.scorebar.innerHTML = ''; this.ui.roundinfo.textContent = `${BRAWL_MODES[B.mode].name} · Room ${this.net.code}`; return; }
-    this.modeScorebar();
+    this.modeScorebar(); this.ui.placeScorebar();
   }
   togglePause() {
     if (this.mode !== 'island' && this.mode !== 'brawl') return;
@@ -17185,7 +17892,7 @@ class Game {
       this.minimap.update(dt);
     }
     this.autoQuality(dt);
-    const te = this.input.touchEl; if (te) { const want = !(this.input.touch.on && (this.mode === 'island' || this.mode === 'brawl') && !this.ui.open && !this.paused); if (te.hidden !== want) te.hidden = want; }
+    const te = this.input.touchEl; if (te) { const want = !(this.input.touch.on && (this.mode === 'island' || this.mode === 'brawl') && !this.ui.open && !this.paused); if (te.hidden !== want) { te.hidden = want; if (!want) this.ui.placeScorebar(); } }
     this.input.endFrame();
   }
   // test helper: advance the game without rendering
@@ -17205,7 +17912,7 @@ class Game {
     const P = this.perf; P.t += dt; P.n++;
     if (P.t > 2.5) {
       const avg = P.t / P.n; P.t = 0; P.n = 0;
-      if (avg > 0.028 && P.level < 2) { P.level++; if (P.level === 1) { this.gfx.scaleQ = 0.75; this.gfx.dpr = Math.min(this.gfx.dpr, 1.5); } else { this.gfx.scaleQ = 0.6; } this.gfx.resize(); }
+      if (avg > 0.028 && P.level < 2) { P.level++; if (P.level === 1) { this.gfx.scaleQ = 0.75; this.gfx.dpr = Math.min(this.gfx.dpr, 1.5); } else { this.gfx.scaleQ = 0.6; } this.gfx.setQuality(P.level); this.gfx.resize(); }
     }
   }
   updateTitle(dt) { this.titleT += dt; this.updateStage(dt); }
@@ -17309,7 +18016,7 @@ class Game {
         best = d; const lock = this.vehicleLock(car); // special vehicles stay locked until you win or buy them (96b_game_jobs.js)
         if (lock) { prompt = lock.prompt; action = () => { this.input.exitLock(); this.ui.vehicleLocked(lock); }; continue; }
         prompt = car.promptText || car.driveLabel || 'Drive the car'; // (boats, planes, bikes... say what they are: 70b_vehicles*.js)
-        action = () => { if (car.enter(p)) { this.audio.engineStart(); if (car.hintText) this.ui.toast(car.hintText(this.input.lastDevice), 'good'); else this.ui.toast('W / S to drive, A / D to steer, Space to brake, F to honk.'); } };
+        action = () => { if (car.enter(p)) { this.audio.engineStart(); const dev = this.input.lastDevice; if (car.hintText) this.ui.toast(car.hintText(dev), 'good'); else this.ui.toast(dev === 'kb' ? 'W / S to drive, A / D to steer, Space to brake, F to honk.' : 'Push the stick to drive and steer. JUMP to brake, PUNCH to honk!'); } };
       }
       if (!action) for (const z of L.zones) { const d = Math.hypot(z.pos.x - pp.x, z.pos.z - pp.z); if (d < z.r && Math.abs(z.pos.y - pp.y) < 3 && d < best) { best = d; prompt = z.label; action = () => this.useZone(z); } }
     }
@@ -17628,7 +18335,7 @@ class MatchBall {
     this.predict(p, v, age, _mbS); b.pos.copy(_mbS.p); b.vel.copy(_mbS.v); b.wake();
     this.mark(rp.pid + '.0');
   }
-  inNet() { const F = this.g.level.field, p = this.body.pos; return Math.abs(p.x) > F.X + 0.25 && Math.abs(p.z) < F.goalW + 0.2 && p.y < F.goalH + 0.4; }
+  inNet() { return this.goalSide() !== 0; } // (only a ball that counts as a goal is held: one held short of the line stayed stuck there, no goal, forever)
   // +1 / -1: in the goal at that end, 0: not in a goal
   goalSide() { const F = this.g.level.field, p = this.body.pos; return Math.abs(p.x) > F.X + this.r * 0.85 && Math.abs(p.z) < F.goalW + 0.1 && p.y < F.goalH + 0.3 ? Math.sign(p.x) : 0; }
   outside() { const F = this.g.level.field, p = this.body.pos; return p.y < -3 || Math.abs(p.z) > F.Z + 1.2 || Math.abs(p.x) > F.X + F.goalD + 1.2 || (Math.abs(p.x) > F.X + 0.6 && (Math.abs(p.z) > F.goalW + 0.6 || p.y > F.goalH + 1.2)); }
@@ -17654,7 +18361,7 @@ class GoldRush {
     this.coins.set(id, c); return c;
   }
   drop(c) { this.g.gfx.remove(c.obj); this.coins.delete(c.id); this.gone.add(c.id); if (this.gone.size > 400) this.gone = new Set([...this.gone].slice(-200)); }
-  clear() { for (const c of [...this.coins.values()]) this.drop(c); this.req = []; }
+  clear() { for (const c of [...this.coins.values()]) this.drop(c); this.req = []; this.conf = []; }
   // host / offline: make coins
   spawnRain(n, v = 1) { const L = this.g.level; for (let i = 0; i < n; i++) { const [x, z] = L.coinSpot ? L.coinSpot(this.rng) : [this.rng() * 16 - 8, this.rng() * 16 - 8]; const y = this.groundAt(x, z); if (y === null) continue; this.add(this.nextId++, r2(x), r2(y), r2(z), v, r2(this.g.clock() + i * 0.12)); } }
   spill(p, n) { // knocked out: coins pop out all round the animal
@@ -17680,9 +18387,9 @@ class GoldRush {
     return false;
   }
   nearest(pos, ch) { let best = null, bd = 1e9; const now = this.g.clock(); for (const c of this.coins.values()) { if (c.mine) continue; const d = Math.hypot(c.x - pos.x, c.z - pos.z) - (c.v > 1 ? 3 : 0) + (now - c.t0 < 0 ? 4 : 0); if (d < bd) { bd = d; best = c; } } return best; }
-  collectFx(c, ch, mine) {
+  collectFx(c, ch, mine, noPop) {
     const g = this.g, p = this.pos(c, g.clock(), new V3());
-    g.particles.sparkle(p, c.v > 1 ? 18 : 8); if (mine || g.audible(p)) g.audio.coin(); if (mine) g.ui.pop3d(p, '+' + c.v, 'coin');
+    g.particles.sparkle(p, c.v > 1 ? 18 : 8); if (mine || g.audible(p)) g.audio.coin(); if (mine && !noPop) g.ui.pop3d(p, '+' + c.v, 'coin');
     if (ch) ch.happyT = Math.max(ch.happyT, 0.6);
   }
   // every frame on every tablet
@@ -17694,10 +18401,14 @@ class GoldRush {
       for (const c of this.coins.values()) {
         if (c.mine || !this.near(ch, c, now)) continue;
         if (auth) { const k = g.mkey(ch); B.wins.set(k, (B.wins.get(k) || 0) + c.v); this.collectFx(c, ch, ch === g.player); this.drop(c); g.renderScorebar(); break; }
-        c.mine = performance.now(); this.req.push([c.id, c.mine]); this.collectFx(c, ch, true); c.obj.visible = false; break; // (the host says if it counts)
+        c.mine = performance.now(); c.who = g.mkey(ch); c.w0 = B.wins.get(c.who) || 0; this.req.push([c.id, c.mine]); this.collectFx(c, ch, true, true); c.obj.visible = false; break; // (the host says if it counts: the "+1" waits for that)
       }
     }
-    if (!auth) { const t = performance.now(); this.req = this.req.filter((r) => t - r[1] < 2000); for (const c of this.coins.values()) if (c.mine && t - c.mine > 2500) c.mine = 0; }
+    if (!auth) {
+      const t = performance.now(); this.req = this.req.filter((r) => t - r[1] < 2000); for (const c of this.coins.values()) if (c.mine && t - c.mine > 2500) c.mine = 0;
+      // our pick-ups the host took off the list: "+1" once our score shows it (someone else got it first: nothing)
+      this.conf = (this.conf || []).filter((q) => { if ((B.wins.get(q.who) || 0) >= q.w0 + q.v) { g.ui.pop3d(q.p, '+' + q.v, 'coin'); return false; } return t - q.t < 2500; });
+    }
     if (auth && B.phase === 'f') { this.hostTick(dt); this.watch(); }
     // spin and bob
     for (const c of this.coins.values()) { if (c.mine) { c.obj.visible = false; continue; } c.obj.visible = now >= c.t0 - 0.05; this.pos(c, now, this._v); c.obj.setTRS(this._v, this._q.setYaw(now * 2.6 + c.id)); }
@@ -17732,7 +18443,7 @@ class GoldRush {
       if (!Array.isArray(e) || e.length < 6) continue; const id = nnum(e[0], -1) | 0; if (id < 0) continue; want.add(id);
       if (!this.coins.has(id) && !this.gone.has(id)) { const v = clamp(nnum(e[4], 1) | 0, 1, 9), f = (i) => clamp(nnum(e[i]), -80, 80); if (e.length >= 9) this.add(id, f(1), f(2), f(3), v, nnum(e[5]), f(6), f(7), f(8)); else this.add(id, f(1), f(2), f(3), v, nnum(e[5])); }
     }
-    for (const c of [...this.coins.values()]) if (!want.has(c.id)) { if (!c.mine && c.obj.visible) this.collectFx(c, null, false); this.drop(c); }
+    for (const c of [...this.coins.values()]) if (!want.has(c.id)) { if (c.mine) (this.conf || (this.conf = [])).push({ p: this.pos(c, this.g.clock(), new V3()), v: c.v, who: c.who, w0: c.w0, t: performance.now() }); else if (c.obj.visible) this.collectFx(c, null, false); this.drop(c); }
   }
 }
 
@@ -18013,6 +18724,8 @@ Object.assign(Game.prototype, {
       const ball = this.ball, side = ball.goalSide();
       if (side) { if (!B.pend || B.pend.side !== side) B.pend = { side, t: 0 }; B.pend.t += dt; if (B.pend.t >= (B.online ? 0.45 : 0.05)) return this.scoreGoal(side > 0 ? 0 : 1); }
       else { B.pend = null; if (ball.outside()) ball.throwIn(); }
+      // a ball that sits still for a long time (wedged where nobody can get at it) is thrown back in
+      if (!side && ball.body.vel.lengthSq() < 0.09) { B.stillT = (B.stillT || 0) + dt; if (B.stillT > 12) { B.stillT = 0; ball.throwIn(); } } else B.stillT = 0;
     } else if (B.mode === 'gold') {
       if (B.left <= 0) {
         let best = -1, top = []; for (const k of B.parts) { const v = B.wins.get(k) || 0; if (v > best) { best = v; top = [k]; } else if (v === best) top.push(k); }
@@ -18183,6 +18896,9 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 body.touch #watching { top: calc(env(safe-area-inset-top, 0px) + 136px); }
 #hud.watching #toasts { top: calc(env(safe-area-inset-top, 0px) + 116px); }
 body.touch #hud.watching #toasts { top: calc(env(safe-area-inset-top, 0px) + 186px); }
+body.touch #hud.brawl #watching { top: calc(var(--sbb, 116px) + 10px); }
+body.touch #hud.brawl #toasts { top: calc(var(--sbb, 116px) + 10px); }
+body.touch #hud.brawl.watching #toasts { top: calc(var(--sbb, 116px) + 60px); }
 .pcard.team .mem { display: inline-flex; gap: 3px; }
 .pcard.team .mem .m { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); }
 .pcard.team .mem .m.out { opacity: 0.3; }
@@ -18751,7 +19467,7 @@ function movesFrame(g) {
   weaponsTick(g, dt);
   // the champion keeps celebrating on the results screen
   const B = g.brawl;
-  if (B && g.mode === 'brawl' && B.phase === 'd' && B.champ) for (const c of roundWinners(g, B.champ)) if (c.inWorld && c.emoteK !== EMOTE_VICTORY) c.celebrate(true);
+  if (B && g.mode === 'brawl' && B.phase === 'd' && B.champ) for (const c of roundWinners(g, B.champ)) if (c.inWorld) { if (c.emoteK === EMOTE_VICTORY) c.emoteLoop = true; else c.celebrate(true); } // (the last round's pose just keeps going)
   mashHint(g);
 }
 // knocked out? tell the player that pressing buttons wakes them up sooner
@@ -18797,9 +19513,9 @@ Object.assign(Game.prototype, {
   // in the gaps of the front row, so every face shows
   stageSpots(n) {
     if (n <= 4) return Array.from({ length: n }, (_, i) => ({ x: (i - (n - 1) / 2) * 1.95, y: 0, z: 0 }));
-    const nb = Math.ceil(n / 2), nf = n - nb, sp = 1.8, out = [];
-    for (let i = 0; i < nb; i++) out.push({ x: (i - (nb - 1) / 2) * sp, y: 0.5, z: -1.3 });
-    for (let i = 0; i < nf; i++) out.push({ x: (i - (nf - 1) / 2) * sp + (nf === nb ? sp / 2 : 0), y: 0, z: 0.85 });
+    const nb = Math.ceil(n / 2), nf = n - nb, sp = 1.8, out = [], k = nf === nb ? sp / 4 : 0; // (rows of the same size: each moves a quarter step, so the front sits in the gaps and the group stays centred)
+    for (let i = 0; i < nb; i++) out.push({ x: (i - (nb - 1) / 2) * sp - k, y: 0.5, z: -1.3 });
+    for (let i = 0; i < nf; i++) out.push({ x: (i - (nf - 1) / 2) * sp + k, y: 0, z: 0.85 });
     return out;
   },
   stageRiser(on) { // a little step for the back row
@@ -19264,7 +19980,7 @@ Object.assign(Game.prototype, {
     const S = isleSave(this), done = back || (() => this.ui.close());
     const n = ISLE_FISH.filter((F) => S.fish[F.key] && S.fish[F.key].n > 0).length;
     const items = ISLE_FISH.map((F, k) => { const r = S.fish[F.key], got = !!(r && r.n > 0); return `<div class="fb ${got ? '' : 'no'}">${isleFishSvg(k, got)}<b>${got ? esc(F.name) : '???'}</b><span class="stars" aria-label="${['Common', 'Uncommon', 'Rare', 'Super rare'][F.tier]}">${'★'.repeat(F.tier + 1)}</span><span>${got ? `Best: ${r.best} cm · caught ${r.n}` : 'Not caught yet'}</span></div>`; }).join('');
-    const el = this.ui.show(`<div class="card" role="dialog" aria-label="Fish Book" style="width:min(780px,100%)"><h2>Fish Book</h2><p class="lead">${n} of ${ISLE_FISH.length} kinds caught${S.fishN ? ` · ${S.fishN} fish so far` : ''}. More stars = harder to catch.</p><div class="fishbook">${items}</div><div class="row"><button class="btn" id="fbOk" data-autofocus>Close</button></div></div>`, '', done, 'isle-fishbook');
+    const el = this.ui.show(`<div class="card" role="dialog" aria-label="Fish Book" style="width:min(780px,100%)"><h2>Fish Book</h2><p class="lead">${n} of ${ISLE_FISH.length} kinds caught${S.fishN ? ` · ${S.fishN} fish so far` : ''}. More stars = harder to catch.</p><div class="fishbook">${items}</div><div class="card-foot"><button class="btn" id="fbOk" data-autofocus>Close</button></div></div>`, '', done, 'isle-fishbook');
     $('#fbOk', el).onclick = done;
   },
   isleCabinet(kind) {
@@ -19710,6 +20426,205 @@ Object.assign(Game.prototype, {
     this.audio.playMusic('moon');
   },
 });
+
+// ===== recorded voices: where they speak (the player itself is 40b_voice.js) =====
+// Everything here wraps a method that already exists and adds a game.say(who, text) after it; if a wrapped method is missing the
+// hook is just skipped, and nothing in here can break the game (errors are swallowed and kept in VOX.errs for the tests).
+// voxLines() lists every line the game can say. test/v_collect.mjs writes it to tools/flopvoices/lines.json (website repo),
+// the file the voice generator (make.py) reads: run it again whenever a text changes or a new islander gets something to say.
+Game.prototype.say = function (who, text, o) { VOX.g = this; return VOX.say(who, text, o); };
+Game.prototype.hush = function () { VOX.stop(); };
+function voxWrap(proto, name, after, before) {
+  const orig = proto && proto[name]; if (typeof orig !== 'function') return;
+  proto[name] = function (...a) {
+    let pre; if (before) { try { pre = before.apply(this, a); } catch (e) { VOX.err(e); } }
+    const r = orig.apply(this, a);
+    try { after.call(this, r, a, pre); } catch (e) { VOX.err(e); }
+    return r;
+  };
+}
+// who says it: Boss Grumble is friendly once the festival is on (the same rule as his happy face on the story card)
+const voxWho = (g, who) => (who === 'grumble' && g.save && g.save.story && g.save.story.boss ? 'grumbleHappy' : who);
+// ---- the words that are not in a table of the game itself (the same sentences the screens show) ----
+const VOX_THANKS = "Thanks for all your help! You're a real Flop Island hero.";
+const VOX_LATER = "I might need help later. Come back after you've helped some other islanders!";
+// what a giver says while their mission is still locked behind the story ("I'll need your help in Chapter 2: ...")
+const voxLater = (c) => `I'll need your help in Chapter ${c + 1}: ${STORY[c].title}. Follow the story and come back!`;
+const VOX_CURATOR = [
+  'Welcome to the Museum! Treasures are buried all over Flop Island. Take this map, dig up the treasure and bring it here for my museum.',
+  'More treasure is buried out there! Take this map, dig up the treasure and bring it here for my museum.',
+  'Every single treasure is in the museum! You are the best treasure hunter on Flop Island.',
+];
+const VOX_FINN = "Catch me some fish and I'll buy them! Bring them in your arms. Bigger fish and rarer fish pay more coins.";
+const VOX_TACKLE = 'Fishing rods are free! Take one, walk to the water and cast your line.';
+const VOX_CABINETS = [
+  'Hide anywhere on Museum Isle for 60 seconds. Three seekers count to 10, then come looking. If one of them spots you up close, you are found!',
+  'Trash is raining into the yard next door! Grab it and feed it to the hungry bins: throw it in, or carry it close. You have 60 seconds.',
+  'Make your own playground! Spawn balls, crates, ramps, trampolines and cones in front of you, anywhere you like.',
+];
+const VOX_FURN_NOHOUSE = 'Beds, sofas, slides and more! But first you need a house to put them in. Look for the FOR SALE signs round the park.';
+const VOX_FURN_HELLO = 'Welcome to the Furniture Shop! Pick something cozy for your home.';
+const VOX_PETS = 'Welcome to the Pet Shop! A pet follows you everywhere and fetches balls you throw.';
+const VOX_HATS = 'Welcome to the Hat Shop! Pick a hat you like.';
+const VOX_CLOTHES = 'Welcome to Fluff and Stuff! Comfy clothes for fluffy friends.';
+const VOX_CARS = 'Welcome to the Car Shop! Win special vehicles with jobs and the story, or buy them here.';
+const VOX_JOBCENTER = 'Welcome to the Job Center! Tap a job to hear all about it.';
+const VOX_BOSS_OFFER = 'Ready to brawl me and my gang? Throw us all off the Spin Cake... if you can!';
+const VOX_BOSS_WIN = 'The Grumble Gang is beaten. Time for the Great Flop Festival!';
+const VOX_BOSS_LOSE = 'Do not give up! Punch him until he is dizzy, then grab him and throw him off.';
+const VOX_GIFT_CAP = 'Here, take my old cap. I do not need to be grumpy any more!';
+const VOX_ON = 'Voices are on!';
+// the announcer: the main text of ui.announce(text, sub) -> what is said
+const VOX_ANN = {
+  'BRAWL!': 'Brawl!', 'GO GO GO!': 'Go, go, go!', 'KICK OFF!': 'Kick off!', 'FACE OFF!': 'Face off!', 'GRAB THE GOLD!': 'Grab the gold!',
+  'Sudden wobble!': 'Sudden wobble!', 'Get ready!': 'Get ready!', 'Ready?': 'Ready?', 'GOAL!': 'Goal!', 'Draw!': 'Draw!', "Time's up!": "Time's up!",
+  'Gold Rush!': 'Gold Rush!', 'The baddies win!': 'The baddies win!',
+  'Boss Battle!': 'Boss battle!', 'You did it!': 'You did it!', 'Oh no!': 'Oh no!', 'Boss Grumble is dizzy!': 'Boss Grumble is dizzy!', 'He bounced back!': 'He bounced back!', 'He is worn out!': 'He is worn out!',
+  'GO!': 'Go!', 'Mission complete!': 'Mission complete!', 'Job done!': 'Job done!', 'Surprise!': 'Surprise!', 'Treasure!': 'Treasure!', 'Fish on!': 'Fish on!',
+  'Hide!': 'Hide!', 'Ready or not!': 'Ready or not!', 'Found you!': 'Found you!', 'You win!': 'You win!', 'Trash Zone!': 'Trash Zone!',
+};
+const VOX_COUNT = ['', 'One!', 'Two!', 'Three!'];
+const VOX_MOON = 'Welcome to the Moon! Can you find ten moon rocks?';
+const VOX_JOB_WHO = { depot: 'depotBoss', juice: 'vendor', pizza: 'pizza', farm: 'farmer', site: 'foreman', fire: 'firechief', police: 'police', beach: 'lifeguard', cave: 'guide', race: 'official', run: 'host' };
+const voxJobWho = (j) => VOX_JOB_WHO[j.station] || 'jobs';
+// what ui.announce(text, sub) says out loud, as [who, line] (or null)
+function voxAnnounceLine(g, text, sub) {
+  let m;
+  if (g._trip && !g._trip.done) { // the rocket's countdown
+    if (/^[123]$/.test(text)) return ['control', VOX_COUNT[+text]];
+    if (text === 'Blast off!') return ['control', 'Blast off!'];
+  }
+  if (text === 'The Moon!') return ['control', VOX_MOON];
+  if (text === 'Welcome home!') return sub === 'Flop Island' ? ['control', 'Welcome home!'] : ['mabel', 'Welcome home!'];
+  if (sub === 'New mission!') return ['announcer', 'New mission!'];
+  if (VOX_ANN[text]) return ['announcer', VOX_ANN[text]];
+  if ((m = /^Round (\d+)$/.exec(text))) return +m[1] >= 1 && +m[1] <= 9 ? ['announcer', 'Round ' + m[1] + '!'] : null;
+  if ((m = /^Wave (\d+)!$/.exec(text))) return +m[1] >= 1 && +m[1] <= 10 ? ['announcer', 'Wave ' + m[1] + '!'] : null;
+  if (/^Wave \d+ cleared!$/.test(text)) return ['announcer', 'Wave cleared!'];
+  if (TEAM_NAMES.some((n) => text === n + ' team wins!')) return ['announcer', text];
+  if (/ wins!$/.test(text) || / struck gold!$/.test(text)) return ['announcer', g.brawl && g.brawl.over ? 'Champion!' : 'We have a winner!'];
+  return null;
+}
+// ---- every line, as [{ who, text }] (lines of more than 220 characters are left out: they are read, not heard) ----
+function voxLines() {
+  const out = [], seen = new Set();
+  const add = (who, text) => { text = String(text === undefined || text === null ? '' : text).trim(); if (!who || !text || text === '...' || text.length > 220) return; const k = who + '|' + text; if (seen.has(k)) return; seen.add(k); out.push({ who, text }); };
+  // the story, page by page (Boss Grumble sounds friendly in the last chapter's ending, after the brawl)
+  STORY.forEach((C, ci) => {
+    for (const b of C.beats) for (const [w, t] of b.say) add(w, t);
+    for (const [w, t] of C.outro) add(ci === STORY.length - 1 && w === 'grumble' ? 'grumbleHappy' : w, t);
+  });
+  GRUMBLE_LINES.forEach((t) => add('grumble', t)); GRUMBLE_HAPPY.forEach((t) => add('grumbleHappy', t)); add('grumbleHappy', VOX_GIFT_CAP);
+  add('grumble', VOX_BOSS_OFFER); add('mayor', VOX_BOSS_WIN); add('coach', VOX_BOSS_LOSE);
+  // the islanders: what each offers, and what they say when there is nothing to do (or everything is done)
+  for (const m of MISSIONS) add(m.giver, m.intro);
+  for (const k of Object.keys(GIVERS)) { add(k, VOX_THANKS); add(k, VOX_LATER); }
+  for (const m of MISSIONS) { const c = storyChapterOf(m.id); if (c >= 0) add(m.giver, voxLater(c)); }
+  // the job boards
+  add('jobs', VOX_JOBCENTER); for (const j of JOBS) add(voxJobWho(j), j.blurb);
+  // Museum Isle
+  for (const t of VOX_CURATOR) add('curator', t);
+  for (const A of ISLE_ART) { add('curator', A.hint); add('curator', A.say); }
+  add('fisher', VOX_FINN); add('tackle', VOX_TACKLE); for (const t of VOX_CABINETS) add('announcer', t);
+  // Pine Hills
+  add('mabel', VOX_FURN_NOHOUSE); add('mabel', VOX_FURN_HELLO); add('waggles', VOX_PETS); for (const id of PH_HOUSE_IDS) add('mabel', PH_BY_ID[id].blurb);
+  // the shops
+  add('hatshop', VOX_HATS); add('clothes', VOX_CLOTHES); add('carshop', VOX_CARS);
+  // the Space Center rocket
+  for (let n = 3; n >= 1; n--) add('control', VOX_COUNT[n]); add('control', 'Blast off!'); add('control', VOX_MOON); add('control', 'Welcome home!');
+  // the announcer (brawls, missions, jobs, games): every text voxAnnounceLine can give
+  for (const k of Object.keys(VOX_ANN)) add('announcer', VOX_ANN[k]);
+  add('announcer', 'New mission!'); add('mabel', 'Welcome home!');
+  for (let n = 1; n <= 9; n++) add('announcer', 'Round ' + n + '!');
+  for (let n = 1; n <= 10; n++) add('announcer', 'Wave ' + n + '!');
+  add('announcer', 'Wave cleared!'); add('announcer', 'We have a winner!'); add('announcer', 'Champion!');
+  for (const n of TEAM_NAMES) add('announcer', n + ' team wins!');
+  for (const k of MODE_KEYS) add('announcer', BRAWL_MODES[k].intro);
+  add('narrator', VOX_ON);
+  return out;
+}
+// ---- the hooks ----
+// a story card: every page is read when it shows (and the next one is fetched while you listen)
+voxWrap(UI.prototype, 'storyCard', function (r, [lines]) {
+  const g = this.g, el = this.screen, ls = lines && lines.length ? lines : [['mayor', '...']]; let i = 0;
+  const speak = (k) => { const [who, t] = ls[k]; g.say(voxWho(g, who), t, { screen: true }); const nx = ls[k + 1]; if (nx) VOX.prefetch(voxWho(g, nx[0]), nx[1]); };
+  speak(0);
+  const nb = el && el.querySelector('#scNext'); if (!nb) return;
+  const prev = nb.onclick;
+  nb.onclick = function (e) { const more = i < ls.length - 1; const res = prev ? prev.call(this, e) : undefined; if (more) { i++; speak(i); } return res; };
+});
+// an islander's offer, or what they say when there is nothing to do
+voxWrap(UI.prototype, 'missionDialog', function (r, [key]) {
+  if (this.screenName !== 'talk') return;
+  const p = this.screen && this.screen.querySelector('p.say'); if (!p) return;
+  const t = p.textContent.replace(/^“/, '').replace(/”$/, '').trim();
+  if (t === VOX_THANKS || t === VOX_LATER || MISSIONS.some((m) => m.giver === key && (m.intro === t || (storyChapterOf(m.id) >= 0 && voxLater(storyChapterOf(m.id)) === t)))) this.g.say(key, t, { screen: true });
+});
+// a job board tells what its first job is about; tap any job to hear it (the Job Center says hello)
+voxWrap(UI.prototype, 'jobBoard', function (r, [station]) {
+  const g = this.g, el = this.screen; if (!el || this.screenName !== 'jobs') return;
+  const all = station === 'plaza', list = all ? JOBS : JOBS.filter((j) => j.station === station);
+  const tell = (j) => { if (j) g.say(voxJobWho(j), j.blurb, { screen: true }); };
+  if (all) g.say('jobs', VOX_JOBCENTER, { screen: true }); else { const un = g.unlocks(); tell(list.find((j) => un.has('job:' + j.id)) || list[0]); }
+  const box = el.querySelector('#jl');
+  if (box) box.addEventListener('click', (e) => { if (e.target.closest('button')) return; const row = e.target.closest('.jrow'); if (row) tell(list[[...box.children].indexOf(row)]); });
+});
+// Museum Isle: the curator, her treasure maps (the hint is read) and her thank-you when a treasure comes in; Finn, the tackle shop, the arcade
+voxWrap(Game.prototype, 'isleCurator', function () {
+  const p = this.ui.screen && this.ui.screen.querySelector('p.say'); if (!p) return;
+  const t = p.textContent.replace(/^“/, '').replace(/”$/, '').trim();
+  if (VOX_CURATOR.includes(t)) this.say('curator', t, { screen: true });
+});
+voxWrap(Game.prototype, 'isleMapCard', function (r, [i]) { const A = ISLE_ART[i]; if (A) this.say('curator', A.hint, { screen: true }); });
+voxWrap(Game.prototype, 'isleMarket', function (r, a, was) { if (was !== 'isle-fishbook') this.say('fisher', VOX_FINN, { screen: true }); }, function () { return this.ui.screenName; });
+voxWrap(Game.prototype, 'isleTackle', function (r, a, was) { if (was !== 'isle-fishbook') this.say('tackle', VOX_TACKLE, { screen: true }); }, function () { return this.ui.screenName; });
+voxWrap(Game.prototype, 'isleCabinet', function () {
+  const p = this.ui.screen && this.ui.screen.querySelector('p.lead'); if (!p) return;
+  const t = p.textContent.trim(); if (VOX_CABINETS.includes(t)) this.say('announcer', t, { screen: true });
+});
+voxWrap(UI.prototype, 'toast', function (r, [text]) { // "Curator Clara: "A crown for a mermaid queen!" +40 coins"
+  const m = /^Curator Clara: "(.+)" \+40 coins$/.exec(String(text)); if (m && ISLE_ART.some((A) => A.say === m[1])) this.g.say('curator', m[1]);
+});
+// Pine Hills: a house for sale, the Furniture Shop and the Pet Shop (said when they open, not each time a tab changes)
+voxWrap(Game.prototype, 'phBuyHouse', function (r, [id]) { const H = PH_BY_ID[id]; if (H && H.blurb) this.say('mabel', H.blurb, { screen: true }); });
+voxWrap(Game.prototype, 'phCatalog', function (r, [hid], was) {
+  if (was === 'phCat') return;
+  if (!PH_HOUSE_IDS.some((k) => phOwned(this, k))) this.say('mabel', VOX_FURN_NOHOUSE, { screen: true }); else if (!hid) this.say('mabel', VOX_FURN_HELLO, { screen: true });
+}, function () { return this.ui.screenName; });
+voxWrap(Game.prototype, 'phPetShop', function (r, a, was) { if (was !== 'phPets') this.say('waggles', VOX_PETS, { screen: true }); }, function () { return this.ui.screenName; });
+// the shops in town
+voxWrap(UI.prototype, 'shop', function () { this.g.say('hatshop', VOX_HATS, { screen: true }); });
+voxWrap(UI.prototype, 'clothesShop', function () { this.g.say('clothes', VOX_CLOTHES, { screen: true }); });
+voxWrap(UI.prototype, 'carShop', function () { this.g.say('carshop', VOX_CARS, { screen: true }); });
+// Boss Grumble's challenge, and what happens after the boss brawl
+voxWrap(UI.prototype, 'bossOffer', function () { this.g.say('grumble', VOX_BOSS_OFFER, { screen: true }); });
+voxWrap(UI.prototype, 'bossResult', function (r, [win]) { this.g.say(win ? 'mayor' : 'coach', win ? VOX_BOSS_WIN : VOX_BOSS_LOSE, { screen: true }); });
+// the Brawl Party: tap a game to hear what it is about
+voxWrap(UI.prototype, 'wireBrawlOpts', function (r, [el]) {
+  const g = this.g; if (!el) return;
+  el.querySelectorAll('#bModes .pick').forEach((b) => b.addEventListener('click', () => { const M = BRAWL_MODES[b.dataset.m]; if (M) g.say('announcer', M.intro, { screen: true }); }));
+});
+// the announcer: round numbers, BRAWL!, goals, winners, waves, missions, the rocket... (every tablet says its own, online too)
+voxWrap(UI.prototype, 'announce', function (r, [text, sub]) { const L = voxAnnounceLine(this.g, String(text), String(sub || '')); if (L) this.g.say(L[0], L[1]); });
+// a card or menu closing stops the line it was reading; a new world (title, island, brawl) starts quiet
+voxWrap(UI.prototype, 'close', function () { VOX.stopScreen(); });
+voxWrap(Game.prototype, 'newWorld', function () { VOX.stop(); });
+// the "Voices: On / Off" switch, next to Music and Sounds (title screen and pause menu)
+// (the little buttons of the title menu are five now: they sit three and two, so that no label is squeezed)
+document.head.insertAdjacentHTML('beforeend', '<style>.menu-mini .btn:first-child:nth-last-child(5), .menu-mini .btn:first-child:nth-last-child(5) ~ .btn { flex-basis: calc(33.333% - 10px); }</style>');
+const voxLabel = (g) => (g.save.voices === false ? 'Voices: Off' : 'Voices: On');
+function voxSwitch(ui, after) {
+  const el = ui.screen, anchor = el && el.querySelector(after); if (!anchor || el.querySelector('#bVoices')) return;
+  anchor.insertAdjacentHTML('afterend', `<button class="btn small ghost" id="bVoices">${voxLabel(ui.g)}</button>`);
+  el.querySelector('#bVoices').onclick = (e) => {
+    const g = ui.g, s = g.save; s.voices = s.voices === false; g.persist(); e.target.textContent = voxLabel(g);
+    if (s.voices === false) VOX.stop(); else g.say('narrator', VOX_ON);
+  };
+}
+voxWrap(UI.prototype, 'title', function () { voxSwitch(this, '#bSound'); });
+voxWrap(UI.prototype, 'pause', function () { voxSwitch(this, '#sfx'); });
+// for tests and tools (like window.__fi)
+window.__vox = { VOX, voxHash, voxLines, voxAnnounceLine, voxWho };
 
 // ===== boot =====
 function boot() {
