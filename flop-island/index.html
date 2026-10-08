@@ -3456,7 +3456,7 @@ class Character {
     // --- head spring (keeps head upright on the neck) ---
     {
       const tgt = _cv1.set(0, 0.82, 0).applyQuat(T.q).add(T.pos);
-      const lp = st === 'ko' || st === 'flop', kh = lp ? 25 : 300 * Math.max(0.25, bal), ch = lp ? 2 : 16;
+      const lp = st === 'ko' || st === 'flop', kh = lp ? 25 : 560 * Math.max(0.25, bal), ch = lp ? 2 : 44; // (firm and well damped: the head wobbles a little, it doesn't flail)
       T.velocityAt(tgt, _cv2);
       const F = _cv3.set((tgt.x - H.pos.x) * kh - (H.vel.x - _cv2.x) * ch, (tgt.y - H.pos.y) * kh - (H.vel.y - _cv2.y) * ch, (tgt.z - H.pos.z) * kh - (H.vel.z - _cv2.z) * ch);
       H.force.add(F); F.scale(-1); T.applyForce(F, tgt);
@@ -4749,6 +4749,8 @@ class CharView {
     const neck = _vp.set(0, 0.52 * (1 - sq), 0).applyQuat(tq).add(tp);
     const tup = _vp2.set(0, 1, 0).applyQuat(tq);
     _vd.subVectors(hp, neck).normalize();
+    // only part of the swing shows (a floppy knock-out shows it all): a gentle nod instead of a wild wobble
+    if (ch.state !== 'ko' && ch.state !== 'flop') _vd.lerpVectors(tup, _vd, 0.5).normalize();
     _vq.setFromUnitVectors(tup, _vd);
     const hq = _vq2.multiplyQuats(_vq, tq);
     const hpos = _vp3.copy(neck).addScaled(_vd, 0.3);
