@@ -3733,6 +3733,7 @@
    }
   },
   "trooper": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -3867,10 +3868,38 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12775-e138-7583-8f9e-1d168f4d5256/output/preview.png?Expires=1791922692&Signature=MepJPh-ALa~SSo72q2A0sfA4wcAPN6dKfx4uAIuxhDGNzkYQCrNnlDAx-e8G06HAAH-WEb~fozzjh7PhI0u5w0VUfFVKvklusms9xgL-4D1QXrx0ikFPyu5UDAqZmQ6lyiKXE~C6QmNk81yR2PWogzl0Tdj9HLK4vMyWZNAYMXyhaOktMaXSmI3oLuLQMGAN7nfknCvN4sg~OxgqSy~GaMqTadriwtKyvM1dr0ZIRXf3AbwOoURQTZwxbFBCvfpgzTiaghepcMkMBRrzLTH-ux6Rf2qgyXyzXzsZHUnEYs5HZtG4udy9AW-xOlHGueyi7ocQZK0gdIgyPIk7y4Ykhg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 2225176,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20718
+     },
+     "running": {
+      "bytes": 46844,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57452,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12777-7ab6-7478-8b50-9872744734d2",
     "made": "2026-10-10 20:18",
     "model": "01a12775-e138-7583-8f9e-1d168f4d5256",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "wanda": {
