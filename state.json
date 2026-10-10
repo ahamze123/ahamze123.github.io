@@ -3732,6 +3732,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "trooper": {},
   "uma": {
    "extra": {},
    "full": {
@@ -3791,6 +3792,23 @@
     "made": "2026-10-01 13:24",
     "model": "01a0f7a1-8ac1-76b6-a5eb-e2fe7b2246d8",
     "status": "SUCCEEDED"
+   }
+  },
+  "volt": {
+   "model": {
+    "id": "01a12775-e138-7583-8f9e-1d168f4d5256",
+    "made": "2026-10-10 20:16",
+    "run": 20,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
    }
   },
   "wanda": {
