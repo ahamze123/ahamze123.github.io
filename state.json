@@ -5060,6 +5060,15 @@
    "limit": 20,
    "run": 19,
    "spent_estimate": 18
+  },
+  {
+   "at": "2026-10-10 20:16",
+   "heroes": [
+    "volt",
+    "trooper"
+   ],
+   "limit": 70,
+   "run": 20
   }
  ]
 }
