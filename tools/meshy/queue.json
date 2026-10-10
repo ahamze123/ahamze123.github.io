@@ -1,10 +1,13 @@
 {
- "run": 19,
- "heroes": [],
+ "run": 20,
+ "heroes": [
+  "volt",
+  "trooper"
+ ],
  "refetch": [],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 20,
+ "max_credits": 70,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -12,7 +15,7 @@
   "pose_mode": "a-pose"
  },
  "rig": {
-  "height_meters": 1.1
+  "height_meters": 1.8
  },
  "anims": {
   "heroes": [],
@@ -21,17 +24,6 @@
  "extra": {},
  "per": {},
  "redo": [],
- "images": {
-  "volt": {
-   "ai_model": "nano-banana-pro",
-   "aspect_ratio": "2:3",
-   "prompt": "Full body character concept of a sci-fi commando soldier for a 3D video game, standing straight in a neutral A-pose with both arms held slightly away from the body, empty open hands, no weapon. Blue armored combat suit with a light blue chest plate, shoulder pads and knee pads, dark gray flexible undersuit, rounded blue helmet with a glowing cyan visor covering the eyes, bright orange scarf around the neck, utility belt with small pouches, sturdy dark gray combat boots. Front view, the whole body visible from head to feet, centered. Stylized 3D animated-movie style, clean shapes, bright colors. Plain pure white background, no shadow, no text."
-  },
-  "drone": {
-   "ai_model": "nano-banana-pro",
-   "aspect_ratio": "2:3",
-   "prompt": "Full body character concept of a robot soldier enemy for a 3D video game, standing straight in a neutral A-pose with both arms held slightly away from the body, empty hands, no weapon. Humanoid robot with light gray armor plates and purple accents, dark gray mechanical joints, a smooth helmet-like head with one wide glowing red eye visor and a small antenna, a small backpack. Front view, the whole body visible from head to feet, centered. Stylized 3D animated-movie style, clean shapes, bright colors. Plain pure white background, no shadow, no text."
-  }
- },
+ "images": {},
  "redo_images": []
 }
