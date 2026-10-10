@@ -3849,6 +3849,7 @@
    }
   },
   "volt": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -5177,7 +5178,8 @@
     "trooper"
    ],
    "limit": 70,
-   "run": 20
+   "run": 20,
+   "spent_estimate": 70
   }
  ]
 }
