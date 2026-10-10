@@ -1124,3 +1124,5 @@
 2026-10-10 20:18:12 [volt] image-to-3d IN_PROGRESS 99%
 2026-10-10 20:18:12 [trooper] image-to-3d SUCCEEDED 100%
 2026-10-10 20:18:16 [trooper] rig task made 01a12777-53da-72a6-bfd7-82bb4acb5c87
+2026-10-10 20:18:18 [trooper] rigging IN_PROGRESS 10%
+2026-10-10 20:18:22 [volt] image-to-3d SUCCEEDED 100%
