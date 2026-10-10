@@ -1114,3 +1114,12 @@
 2026-10-10 20:16:36 run 20 heroes ['volt', 'trooper'] max credits 70
 2026-10-10 20:16:39 [volt] model task made 01a12775-e138-7583-8f9e-1d168f4d5256
 2026-10-10 20:16:39 [trooper] model task made 01a12775-e137-7123-b8d3-fd68e6c11015
+2026-10-10 20:16:40 [volt] image-to-3d IN_PROGRESS 1%
+2026-10-10 20:16:41 [trooper] image-to-3d IN_PROGRESS 1%
+2026-10-10 20:17:22 [volt] image-to-3d IN_PROGRESS 45%
+2026-10-10 20:17:22 [trooper] image-to-3d IN_PROGRESS 41%
+2026-10-10 20:17:52 [volt] image-to-3d IN_PROGRESS 67%
+2026-10-10 20:17:52 [trooper] image-to-3d IN_PROGRESS 67%
+2026-10-10 20:18:02 [trooper] image-to-3d IN_PROGRESS 84%
+2026-10-10 20:18:12 [volt] image-to-3d IN_PROGRESS 99%
+2026-10-10 20:18:12 [trooper] image-to-3d SUCCEEDED 100%
