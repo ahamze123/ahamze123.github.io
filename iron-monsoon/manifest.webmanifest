@@ -1,0 +1,29 @@
+{
+ "name": "Iron Monsoon",
+ "short_name": "Iron Monsoon",
+ "description": "An original run-and-gun adventure with story mode, power-ups and co-op.",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "display_override": [
+  "fullscreen",
+  "standalone"
+ ],
+ "orientation": "landscape",
+ "background_color": "#04060a",
+ "theme_color": "#04060a",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
