@@ -3732,7 +3732,23 @@
     "status": "SUCCEEDED"
    }
   },
-  "trooper": {},
+  "trooper": {
+   "model": {
+    "id": "01a12775-e137-7123-b8d3-fd68e6c11015",
+    "made": "2026-10-10 20:16",
+    "run": 20,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "uma": {
    "extra": {},
    "full": {
