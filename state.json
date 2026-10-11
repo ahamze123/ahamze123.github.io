@@ -4479,7 +4479,33 @@
     ]
    }
   },
-  "sm2_buster": {},
+  "sm2_buster": {
+   "model": {
+    "id": "01a12c00-7b1c-7057-a3be-12370e4e4e5a",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 17:26",
+    "run": 32,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_buster_front.png",
+     "sm2_buster_side.png",
+     "sm2_buster_back.png"
+    ]
+   }
+  },
   "sm2_ember": {
    "extra": {},
    "full": {
@@ -4622,7 +4648,33 @@
     "status": "SUCCEEDED"
    }
   },
-  "sm2_icebreaker": {},
+  "sm2_icebreaker": {
+   "model": {
+    "id": "01a12c00-7b18-7416-b849-0ce58e577750",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 17:26",
+    "run": 32,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_icebreaker_front.png",
+     "sm2_icebreaker_side.png",
+     "sm2_icebreaker_back.png"
+    ]
+   }
+  },
   "sm2_king": {
    "extra": {},
    "full": {
@@ -4765,8 +4817,60 @@
     "status": "SUCCEEDED"
    }
   },
-  "sm2_roller": {},
-  "sm2_sparks": {},
+  "sm2_roller": {
+   "model": {
+    "id": "01a12c00-7b1e-7100-b2eb-b9144fae16ef",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 17:26",
+    "run": 32,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_roller_front.png",
+     "sm2_roller_side.png",
+     "sm2_roller_back.png"
+    ]
+   }
+  },
+  "sm2_sparks": {
+   "model": {
+    "id": "01a12c00-7b35-75a7-9f4a-475d7b60de57",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 17:26",
+    "run": 32,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_sparks_front.png",
+     "sm2_sparks_side.png",
+     "sm2_sparks_back.png"
+    ]
+   }
+  },
   "sm2_spike": {
    "extra": {},
    "full": {
