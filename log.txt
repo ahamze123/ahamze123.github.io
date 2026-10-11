@@ -1352,3 +1352,4 @@
 2026-10-11 15:41:39 [sm2_robot] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5733436}
 2026-10-11 15:41:40 run finished; credits used by new tasks (estimate): 35
 2026-10-11 16:11:37 run 901 heroes ['dm2_korr', 'dm2_sera', 'dm2_bram', 'dm2_draxx'] max credits 170
+2026-10-11 16:11:40 [dm2_sera] model task made multi-image-to-3d 01a12bbb-ee4d-75e2-9195-ab120513f634

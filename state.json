@@ -549,6 +549,36 @@
     "status": "SUCCEEDED"
    }
   },
+  "dm2_bram": {},
+  "dm2_draxx": {},
+  "dm2_korr": {},
+  "dm2_sera": {
+   "model": {
+    "id": "01a12bbb-ee4d-75e2-9195-ab120513f634",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:11",
+    "run": 901,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_sera_front.png",
+     "dm2_sera_side.png",
+     "dm2_sera_back.png"
+    ]
+   }
+  },
   "drake": {
    "extra": {},
    "full": {
