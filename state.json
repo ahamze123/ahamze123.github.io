@@ -4880,6 +4880,8 @@
   },
   "sm2_maestro": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12c05-c134-7379-9943-d75e91fa2417",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 17:32",
@@ -4897,7 +4899,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12c05-c134-7379-9943-d75e91fa2417/output/preview.png?Expires=1791999364&Signature=l010OSyro6RYKaS-n~Ss6O2c8u9L1utr0Xw2mzrLByzYZiWY~34cRgnJihE1gMy1z4w78bVDIdCK5rBU8nHM40Ci--guR1oPhb-f2uHAPKUf-kUnLGb58VvTTaeY2rJqIbGt3PX4NwPDeX18Gym6M0rgApr269pyfsmCEfNx1SUBO1YPQGMMDjhi2dv04kH6bPWioe9TAdjrJIOBJ7JfkAh2XY-bujzyXh2uj-IcUNExWx9eDvpo9hlIO478XMylH0bAgVAGYfQl2qdpKI3X2onv4CXUxK4hro6M7Bqe7Q8EepugwVp-lffNiStIB~xNjut3mIV7FGHYzTTzTB4OGw__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_maestro_front.png",
      "sm2_maestro_side.png",
@@ -4977,6 +4980,7 @@
    }
   },
   "sm2_roller": {
+   "extra": {},
    "full": {
     "bytes": 7036460,
     "pictures": [
