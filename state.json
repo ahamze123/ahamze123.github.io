@@ -5248,6 +5248,18 @@
    "limit": 0,
    "run": 22,
    "spent_estimate": 0
+  },
+  {
+   "at": "2026-10-11 08:54",
+   "heroes": [
+    "sm_volt",
+    "sm_ember",
+    "sm_hawk",
+    "sm_tank",
+    "volt"
+   ],
+   "limit": 170,
+   "run": 23
   }
  ]
 }
