@@ -19,7 +19,7 @@ The fighters were drawn in ChatGPT from the front, the side and the back, turned
 ## How to play
 - **Attack** again and again for a combo. Run (tap a direction twice) and attack for a shoulder charge. Jump and attack for a flying slash.
 - Walk into an enemy to **grab** him: attack to bash him, attack after two bashes (or attack while pushing back) to throw him.
-- **Special**: a spinning attack all around you. It costs a little health, but never your last bit.
+- **Special**: a spinning attack all around you. It is free; it just needs a moment to recharge between spins.
 - **Magic**: uses every magic jar you carry at once; the more jars, the bigger the spell. Kick the little **thieves** (blue hats carry magic jars, green hats carry food) to shake jars and food out of their sacks.
 - Barrels, crates and pots hide food, gold, gems and magic jars.
 
