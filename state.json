@@ -3672,6 +3672,7 @@
    }
   },
   "sm2_volt": {
+   "extra": {},
    "full": {
     "bytes": 6637976,
     "pictures": [
@@ -5879,7 +5880,8 @@
     "sm2_volt"
    ],
    "limit": 80,
-   "run": 28
+   "run": 28,
+   "spent_estimate": 35
   }
  ]
 }
