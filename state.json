@@ -4524,6 +4524,7 @@
    }
   },
   "sm2_buster": {
+   "extra": {},
    "full": {
     "bytes": 6051776,
     "pictures": [
@@ -4977,6 +4978,8 @@
   },
   "sm2_roller": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12c00-7b1e-7100-b2eb-b9144fae16ef",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 17:26",
@@ -4994,7 +4997,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12c00-7b1e-7100-b2eb-b9144fae16ef/output/preview.png?Expires=1791999146&Signature=kHdEDssDD16GsQCAVgGZtfP7ifS~rxbSLcA6qnYjS291iOBd560MJ5EgT4syBQlYSfFWYpVtgnXgLetOxodw67ehdx9mn5h~Lk87XAdYPHD37kVwD9M6ZEnBsSDoJ58wpAcgrGNlazhcXsVfGr7Gi15Rz9BDIX98OBJqLdBiYKbsEfmEgfH2tRrC8oRInz07Y6nh8SiMdSXP05wojXPXYDqqTHlAQ9VE91cIJkpmXicZJbadX6pnBWeKZGbpUoIfm~o8YJ2sUR8vl6dPpIwAKbuV6Ky6TPhuKxjx28qxABEXlGimk1ykYEmnUshA-RI5g1GhmB5ZGNzw1ztKfi7g4g__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_roller_front.png",
      "sm2_roller_side.png",
