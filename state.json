@@ -3702,6 +3702,14 @@
       "joints": 24,
       "triangles": 20812
      },
+     "running": {
+      "bytes": 47616,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "walking": {
       "bytes": 58256,
       "clips": [
@@ -3718,6 +3726,7 @@
    }
   },
   "sm_hawk": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -3801,6 +3810,14 @@
       ],
       "joints": 24,
       "triangles": 20628
+     },
+     "running": {
+      "bytes": 46816,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
      },
      "walking": {
       "bytes": 57500,
