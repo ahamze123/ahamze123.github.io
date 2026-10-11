@@ -791,6 +791,8 @@
   },
   "dm2_ogre": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bc9-39c5-713a-aa63-8f6d73c81c0f",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:26",
@@ -808,7 +810,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bc9-39c5-713a-aa63-8f6d73c81c0f/output/preview.png?Expires=1791995336&Signature=XWafH-KipVs3urk9Azwo5~R3HjbmcpjRI0hAk6wY0n6kGjLnScaXcbZCEwTChD6eCdYtIWsGX3Mm9~Zqhr4enQVgkYFTgtR2RA1TjErohvjX4Csy1Ng2YWj~FmVa4R0Mu~PhtrG~GXEKTyp18t8m6nmip0-8F6cPSl3UuVXtSmUNjYpanfee0EzdE9TCsRf~P29D4XwPGAZu4BwPtc9-gYdJw27BCYkVy~Xi~pg7mak0u4lyC2kl5KKcj4VJh7zvU8aUSoOApPlnoMlWUh2HdDiYQMCh66vlmZ-flFYOFh~7Vk7twfxH5~BD02WBcUgto5NE9Jm-yUim6sydXemUAA__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_ogre_front.png",
      "dm2_ogre_side.png",
