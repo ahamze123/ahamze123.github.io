@@ -1371,3 +1371,11 @@
 2026-10-11 16:13:46 [dm2_draxx] multi-image-to-3d IN_PROGRESS 58%
 2026-10-11 16:13:55 [dm2_sera] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 16:14:01 [dm2_sera] rig task made 01a12bbe-09de-74b0-96d3-25dab407dec2
+2026-10-11 16:14:02 [dm2_sera] rigging IN_PROGRESS 10%
+2026-10-11 16:14:06 [dm2_bram] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:14:12 [dm2_sera] rigging IN_PROGRESS 36%
+2026-10-11 16:14:16 [dm2_korr] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:14:22 [dm2_sera] rigging IN_PROGRESS 95%
+2026-10-11 16:14:26 [dm2_draxx] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:14:32 [dm2_sera] rigging SUCCEEDED 100%
+2026-10-11 16:14:34 [dm2_sera] rigged: {"model": {"bytes": 6042248, "triangles": 61995, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57316, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46676, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
