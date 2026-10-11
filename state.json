@@ -605,6 +605,8 @@
   },
   "dm2_korr": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bbb-ee52-7637-b2fb-61127b7084a0",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:11",
@@ -622,7 +624,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bbb-ee52-7637-b2fb-61127b7084a0/output/preview.png?Expires=1791994471&Signature=W~nLx0312xwKqTYbze-i~PJzxBNzwNIYuhEkhIhP40BMshA5ZaYXR9ztWBlIhQuPjwJ-1zc7ehE4OYyKsS3wnxCwXB7D0AttuwqA6fJewOWZYCuI-JhIJfCMnd5ViHBwbI0z4Rn4kr~v76abdLe9zBhzaht7IbVPOOCP6pE6rUYBKxyipGXhHJV17jb1iZKH0GYjkFmAmnn26iwEwmaMY7nj6LgyypmZJzTjmUN4rWfo0qn3lxdrmx0wjdemo3e9xs8E4o1mxRF9NKwMjS7GXohlKWv6ksJESN-On5NXM-3c6lQkHnQG4~OWRyzVbUR0svoYuyF8fxdnJiDxzO3AEw__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_korr_front.png",
      "dm2_korr_side.png",
@@ -631,6 +634,12 @@
    }
   },
   "dm2_sera": {
+   "full": {
+    "bytes": 7169956,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
