@@ -6106,6 +6106,16 @@
    "limit": 150,
    "run": 29,
    "spent_estimate": 105
+  },
+  {
+   "at": "2026-10-11 15:33",
+   "heroes": [
+    "sm2_tank",
+    "sm2_viper",
+    "sm2_king"
+   ],
+   "limit": 150,
+   "run": 30
   }
  ]
 }

@@ -1299,3 +1299,4 @@
 2026-10-11 15:29:15 [sm2_ember] rigged: {"model": {"bytes": 5687336, "triangles": 62103, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57688, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47056, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 15:29:18 [sm2_ember] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6534216}
 2026-10-11 15:29:21 run finished; credits used by new tasks (estimate): 105
+2026-10-11 15:33:46 run 30 heroes ['sm2_tank', 'sm2_viper', 'sm2_king'] max credits 150
