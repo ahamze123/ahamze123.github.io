@@ -845,6 +845,8 @@
   },
   "dm2_rogue": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bc9-39d6-7070-bdfe-6e81ab017aa1",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:26",
@@ -862,7 +864,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bc9-39d6-7070-bdfe-6e81ab017aa1/output/preview.png?Expires=1791995309&Signature=mKhgQXnrEHUl39-fj8dkzqVFEUNuBvxtvy1PtQ6BLq6NIPmfEhJKxXk254HKXWujKS1fsqd9wgnM4lylqm9kk-BJSGk2yiR88fZHChk6Hq1Sso~DpvTw-RCUbPZrdcdZd7ge~xuKOksLvQzUg1sU7kfVMA3dQRJRSnrgrFY0NFzqspHmMTE9Tt5OwaJp90gn8xoR4q~-9PcxDR8m4Ww5wMImDFian2aYU5KDS114UFezyOsnuaI74x7d9GckndeFaPwCweE2R6kHtFaHZKvVmTyktQtuDrvVYK8umvbWY2L2DhCl5CjBZ~38dQKvMp~l80DtxfA~zzuhbB4EvAfzSg__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_rogue_front.png",
      "dm2_rogue_side.png",

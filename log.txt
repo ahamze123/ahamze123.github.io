@@ -1413,3 +1413,23 @@
 2026-10-11 16:26:12 [dm2_ogre] multi-image-to-3d IN_PROGRESS 1%
 2026-10-11 16:26:11 [dm2_snatcher] model task made multi-image-to-3d 01a12bc9-39de-73c1-bf14-00ada2afdf31
 2026-10-11 16:26:11 [dm2_rogue] model task made multi-image-to-3d 01a12bc9-39d6-7070-bdfe-6e81ab017aa1
+2026-10-11 16:26:13 [dm2_brute] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:26:15 [dm2_raider] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:26:14 [dm2_skeleton] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:26:16 [dm2_snatcher] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:26:17 [dm2_rogue] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:26:58 [dm2_rogue] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 16:27:08 [dm2_skeleton] multi-image-to-3d IN_PROGRESS 30%
+2026-10-11 16:27:16 [dm2_ogre] multi-image-to-3d IN_PROGRESS 30%
+2026-10-11 16:27:28 [dm2_snatcher] multi-image-to-3d IN_PROGRESS 33%
+2026-10-11 16:27:29 [dm2_rogue] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 16:27:39 [dm2_brute] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 16:27:39 [dm2_raider] multi-image-to-3d IN_PROGRESS 27%
+2026-10-11 16:27:49 [dm2_skeleton] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:27:57 [dm2_ogre] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:28:09 [dm2_snatcher] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:28:10 [dm2_rogue] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:28:20 [dm2_brute] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:28:20 [dm2_skeleton] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:28:20 [dm2_raider] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:28:30 [dm2_rogue] multi-image-to-3d SUCCEEDED 100%
