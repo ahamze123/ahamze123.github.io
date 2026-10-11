@@ -1294,3 +1294,4 @@
 2026-10-11 15:29:04 [sm2_hawk] rigging SUCCEEDED 100%
 2026-10-11 15:29:04 [sm2_ember] rigging IN_PROGRESS 36%
 2026-10-11 15:29:05 [sm2_hawk] rigged: {"model": {"bytes": 4690112, "triangles": 62061, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57416, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46796, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 15:29:08 [sm2_hawk] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5414728}

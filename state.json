@@ -3708,6 +3708,12 @@
    }
   },
   "sm2_hawk": {
+   "full": {
+    "bytes": 5414728,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
