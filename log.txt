@@ -1333,3 +1333,4 @@
 2026-10-11 15:37:35 [sm2_viper] rigging SUCCEEDED 100%
 2026-10-11 15:37:35 [sm2_tank] rigging SUCCEEDED 100%
 2026-10-11 15:37:36 [sm2_viper] rigged: {"model": {"bytes": 5710768, "triangles": 62026, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57132, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46516, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 15:37:36 [sm2_tank] rigged: {"model": {"bytes": 4705868, "triangles": 62064, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57336, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46704, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}

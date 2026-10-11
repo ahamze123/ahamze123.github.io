@@ -3995,6 +3995,22 @@
       ],
       "joints": 24,
       "triangles": 62064
+     },
+     "running": {
+      "bytes": 46704,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57336,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
      }
     },
     "id": "01a12b9c-5a3d-7386-853d-5144e8074c03",
