@@ -9831,7 +9831,8 @@ const Game = {
     this.stats.kills++;
     const owner = src && src.owner;
     if (owner && owner.isPlayer) { owner.addKill(); if (src.kind !== 'super') owner.addSuper(clamp((e.score || 100) / 22, 4, 14)); }
-    const [n, big] = coinsFor(e); // robots drop coins for the shop
+    let [n, big] = coinsFor(e); // robots drop coins for the shop
+    if (this.mode === 'race') { n *= 2; big *= 2; }
     if (n || big) dropCoins(e.cx, e.cy, n, big);
     if (owner && owner.isPlayer) { if (e.rescue) Trophies.ev(owner, 'rescued', 1); else if (e.treasure) Trophies.ev(owner, 'treasures', 1); else if (n) Trophies.ev(owner, 'kills', 1); }
     this.maybeDrop(e);
@@ -9879,16 +9880,18 @@ const Game = {
     this.level = null; this.players = []; this.boss = null; this.enemies = []; this.bullets = []; this.ebullets = []; this.pickups = []; this.vehicles = []; this.coins = [];
     Parts.length = 0; Fx.length = 0; Scr.bars = Scr.barsT = 0; Scr.slow = 1; Scr.hitstop = 0; Cam.trauma = 0;
     if (!keepSel) { this.menuSel = 0; this.titlePage = 'main'; }
+    this.mode = 'mission'; this.rush = this.surv = this.vs = this.results = null;
     this.setState('title');
     Music.play('title'); Ambience.set('jungle'); Sfx.flame(false);
   },
-  startGame(story = false, li = Store.data.mission) {
-    this.twoP = Store.data.players === 2; this.diff = Store.data.diff; this.storyMode = story;
+  startGame(story = false, li = Store.data.mission, mode = null) {
+    this.twoP = Store.data.players === 2; this.diff = Store.data.diff; this.storyMode = story; this.mode = mode || (story ? 'story' : 'mission');
     if (!Net.on) this.loadouts = [0, 1].map(i => Heroes.loadout(Heroes.of(i), i)); // online: both computers got the same ones from the host
     this.players = [new Player(0)];
     if (this.twoP) this.players.push(new Player(1));
     this.checkpoint = null;
-    if (story) this.playScene(STORY.brief[li], li, () => { this.loadLevel(li, false); this.setState('play'); });
+    if (this.modeBegin(li)) this.setState('play'); // boss rush and survival start at a boss yard
+    else if (story) this.playScene(STORY.brief[li], li, () => { this.loadLevel(li, false); this.setState('play'); });
     else { this.loadLevel(li, false); this.setState('play'); }
     try { const wl = navigator.wakeLock && navigator.wakeLock.request('screen'); if (wl && wl.catch) wl.catch(() => {}); } catch (e) { /* not available */ }
   },
@@ -9916,13 +9919,17 @@ const Game = {
     });
     Music.play(L.theme.song); Ambience.set(L.theme.ambience);
     this.cardT = 3.4;
+    if (this.surv) { if (this.surv.k) this.surv.wave--; this.surv.k = null; this.surv.t = 2.5; } // (a reload starts the wave again)
   },
   continueGame() {
     for (const p of this.players) { p.lives = DIFF[this.diff].lives + (p.lo ? p.lo.life : 0); p.resetGuns(); p.state = 'alive'; }
     this.loadLevel(this.li, true);
     this.cardT = 2; this.setState('play');
   },
-  gameOver() { this.contT = 9.99; this.setState('continue'); Music.play('over'); Sfx.flame(false); this.saveHi(); Heroes.bankAll(); },
+  gameOver() {
+    if (this.surv || this.vs) { this.finishMode('over'); return; } // no continues in survival and versus games
+    this.contT = 9.99; this.setState('continue'); Music.play('over'); Sfx.flame(false); this.saveHi(); Heroes.bankAll();
+  },
   saveHi() { let hi = Store.data.hi; for (const p of this.players) hi = Math.max(hi, p.score); if (hi !== Store.data.hi) { Store.data.hi = hi; Store.save(); } },
   onPlayerDown(p) {
     this.stats.deaths++;
@@ -9944,7 +9951,7 @@ const Game = {
     for (const p of this.players) if (p.state !== 'out') { Trophies.ev(p, 'bosses', 1); if (!p.bossHits && p.alive()) Trophies.ev(p, 'nohit', 1); }
   },
   startBoss() {
-    if (this.boss || this.bossDone) return;
+    if (this.boss || this.bossDone || this.level.noBoss || this.mode === 'surv') return;
     const L = this.level, aL = Cam.x, aR = Cam.x + VW, fy = L.floorBelow(Cam.x + VW / 2, Cam.y + 20, true);
     for (const p of this.players) p.bossHits = 0;
     this.boss = new L.def.boss(aL, aR, isFinite(fy) ? fy : Cam.y + 226);
@@ -9983,6 +9990,7 @@ const Game = {
       case 'victory': this.updateTitleScene(rdt); if (this.stateT > 2 && (M.ok || taps.length)) this.toTitle(); break;
       case 'online': Net.updateLobby(rdt, M, taps); break;
       case 'meta': Meta.update(rdt, M, taps); break;
+      case 'results': this.updateResults(rdt, M, taps); break;
     }
   },
   /* ---------- ambush arenas ---------- */
@@ -10135,7 +10143,7 @@ const Game = {
   drawRadio(c) {
     const r = this.radioQ[0]; if (!r || !r.max) return;
     const k = clamp((r.max - r.t) / 0.2, 0, 1) * clamp(r.t / 0.3, 0, 1);
-    const w = Math.min(330, VW - 140), x = (VW - w) / 2 + 18, y = this.banners.filter(b => b.t > 0.05).length > 1 ? 84 : 58; // up top, so it never hides the floor you are fighting on (lower while two banners show)
+    const w = Math.min(330, VW - 140), x = (VW - w) / 2 + 18, y = this.bannerTop() + (this.banners.filter(b => b.t > 0.05).length > 1 ? 60 : 34); // up top, so it never hides the floor you are fighting on (lower while two banners show)
     c.globalAlpha = k;
     drawTalkBox(c, r.who, r.text, r.text.length, x, y, w, 38);
     c.save(); c.beginPath(); c.arc(x - 16, y + 19, 20, 0, TAU); c.fillStyle = 'rgba(8,16,32,0.9)'; c.fill(); c.strokeStyle = `rgba(${(SPEAKERS[r.who] || {}).rgb || '255,255,255'},0.9)`; c.lineWidth = 1.2; c.stroke(); c.clip();
@@ -10174,6 +10182,7 @@ const Game = {
       Sfx.confirm(); Heroes.bankAll();
     }
     this.updateLock(dt);
+    this.modeTick(dt);
     for (const tk of L.talks) if (!tk.done && Cam.x + VW / 2 >= tk.x) { tk.done = true; this.radio(tk.lines); }
     this.updateRadio(dt);
     if (this.goT > 0) this.goT -= dt;
@@ -10183,7 +10192,8 @@ const Game = {
     if (this.bossIntroT > 0) { this.bossIntroT -= dt; if (this.bossIntroT <= 0.6) Scr.barsT = 0; }
     if (this.clearT > 0) {
       this.clearT -= dt;
-      if (this.clearT <= 0 && this.state === 'play') {
+      if (this.clearT <= 0 && this.state === 'play' && this.rush) this.rushNext();
+      else if (this.clearT <= 0 && this.state === 'play') {
         const bonus = 5000 + (this.diff === 'veteran' ? 5000 : 0);
         this.tally = this.players.map(p => ({ tag: p.tag, style: p.style, score: p.score, bonus, lives: p.lives, combo: p.bestCombo, p }));
         for (const p of this.players) if (p.state !== 'out') p.score += bonus;
@@ -10395,7 +10405,8 @@ const Game = {
       it.push({ id: 'oback' });
       return it;
     }
-    const it = [{ id: 'story' }, { id: 'play' }, { id: 'players' }, { id: 'hero' }, { id: 'shop' }, { id: 'trophies' }, { id: 'options' }];
+    if (this.titlePage === 'modes') return [{ id: 'rush' }, { id: 'surv' }, { id: 'battle' }, { id: 'race' }, { id: 'mback' }];
+    const it = [{ id: 'story' }, { id: 'play' }, { id: 'players' }, { id: 'hero' }, { id: 'shop' }, { id: 'trophies' }, { id: 'modes' }, { id: 'options' }];
     if (Net.available) it.splice(3, 0, { id: 'online' });
     return it;
   },
@@ -10410,6 +10421,12 @@ const Game = {
       case 'shop': return ['SHOP', '◎ ' + Heroes.of(0).coins + (d.players === 2 ? '  ·  ◎ ' + Heroes.of(1).coins : '')];
       case 'trophies': return ['TROPHIES', Trophies.count(Heroes.of(0)) + ' OF ' + TROPHIES.length];
       case 'options': return ['OPTIONS', ''];
+      case 'modes': return ['MORE MODES', 'RUSH · SURVIVAL · VERSUS'];
+      case 'rush': { const b = Heroes.of(0).best.rush; return ['BOSS RUSH', b ? 'BEST ' + fmtTime(b) : '13 BOSSES']; }
+      case 'surv': { const w = d.survWorld || 0, b = (Heroes.of(0).best.surv || {})[w] || 0; return ['SURVIVAL', `${LEVELS[w].name}${b ? ' · BEST ' + b : ''}`]; }
+      case 'battle': return ['SCORE BATTLE', '2 PLAYERS · 3 MIN'];
+      case 'race': return ['COIN RACE', '2 PLAYERS · 2 MIN'];
+      case 'mback': return ['BACK', ''];
       case 'oback': return ['BACK', ''];
       case 'players': return ['PLAYERS', d.players === 2 ? '2 · CO-OP' : '1'];
       case 'mode': return ['MODE', d.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
@@ -10428,6 +10445,7 @@ const Game = {
     const d = Store.data;
     if (id === 'story') { const mx = this.heroStory(); this.storyPick = ((this.storyPick ?? mx) + dir + mx + 1) % (mx + 1); Sfx.select(); return true; }
     if (id === 'mission' || id === 'play') d.mission = (d.mission + dir + LEVELS.length) % LEVELS.length;
+    else if (id === 'surv') d.survWorld = ((d.survWorld || 0) + dir + LEVELS.length) % LEVELS.length;
     else if (id === 'hero') { // quick switch of player 1's hero (never the one player 2 has)
       const n = Heroes.list().length, other = d.players === 2 && n > 1 ? d.heroP[1] : -1;
       let v = (d.heroP[0] + dir + n) % n; if (v === other) v = (v + dir + n) % n;
@@ -10475,7 +10493,7 @@ const Game = {
     this.updateTitleScene(dt);
     const items = this.titleItems();
     if (taps.length && this.fsHit(taps)) return;
-    if (this.titlePage === 'options' && M.back) { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'options'); Sfx.select(); return; }
+    if (this.titlePage !== 'main' && M.back) { const from = this.titlePage; this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === from); Sfx.select(); return; }
     const go = id => { // pressing fire / tapping the middle of an item
       if (id === 'story') { Sfx.confirm(); this.startGame(true, this.storyPick ?? this.heroStory()); return true; }
       if (id === 'play') { Sfx.confirm(); this.startGame(false); return true; }
@@ -10485,6 +10503,10 @@ const Game = {
       if (id === 'trophies') { Meta.open('trophies'); return true; }
       if (id === 'options') { this.titlePage = 'options'; this.menuSel = 0; Sfx.confirm(); return true; }
       if (id === 'oback') { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'options'); Sfx.select(); return true; }
+      if (id === 'modes') { this.titlePage = 'modes'; this.menuSel = 0; Sfx.confirm(); return true; }
+      if (id === 'mback') { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'modes'); Sfx.select(); return true; }
+      if (id === 'rush' || id === 'battle' || id === 'race') { Sfx.confirm(); this.startMode(id); return true; }
+      if (id === 'surv') { Sfx.confirm(); this.startMode('surv', Store.data.survWorld || 0); return true; }
       return false;
     };
     this.menuSel = this.handleMenu(items, this.menuSel, M, taps, this.menuGeom(items.length, 122, 13), go, go);
@@ -10534,6 +10556,7 @@ const Game = {
     if (this.state === 'pause') this.drawPause(c);
     else if (this.state === 'continue') this.drawContinue(c);
     else if (this.state === 'clear') { this.drawClear(c); this.drawBanners(c); } // trophies won at the end show over the results
+    else if (this.state === 'results') { this.drawResults(c); this.drawBanners(c); }
     if (lastDevice === 'touch' && this.state === 'play') this.drawTouch(c);
     if (Net.on) Net.drawGame(c);
   },
@@ -10611,8 +10634,9 @@ const Game = {
     if (Scr.flash > 0.01) { c.fillStyle = `rgba(${Scr.flashRGB},${Scr.flash * (REDUCED ? 0.4 : 0.85)})`; c.fillRect(0, 0, VW, VH); }
     if (Scr.bars > 0.01) { const h = 24 * easeInOut(Math.min(1, Scr.bars)); c.fillStyle = '#000'; c.fillRect(0, 0, VW, h); c.fillRect(0, VH - h, VW, h); }
   },
+  bannerTop() { return this.state === 'clear' || this.state === 'results' ? 4 : (this.rush || this.surv || this.vs) ? 44 : 24; }, // (below the mode's line at the top)
   drawBanners(c) {
-    let y = 24;
+    let y = this.bannerTop();
     for (const b of this.banners) {
       const k = clamp((b.max - b.t) / 0.22, 0, 1) * clamp(b.t / 0.45, 0, 1); if (k <= 0) continue;
       setFont(c, 11, FONT_DISP, 400); const tw = c.measureText(b.title).width + b.title.length * 1.2;
@@ -10641,7 +10665,7 @@ const Game = {
     }
     setFont(c, 7, FONT_MONO, 400); c.fillStyle = 'rgba(232,238,247,0.7)';
     c.textAlign = 'center'; c.fillText('HI ' + pad(Math.max(Store.data.hi, ...this.players.map(p => p.score)), 7), VW / 2, 14);
-    this.drawLetterRow(c, 25);
+    if (!this.drawModeHud(c)) this.drawLetterRow(c, this.vs ? 48 : 25);
     const B = this.boss;
     if (B && this.bossIntroT < 1.2 && !B.dead) {
       const w = Math.min(250, VW - 150), x = (VW - w) / 2, y = VH - 16, f = clamp(B.hp / B.hpMax, 0, 1);
@@ -10675,7 +10699,8 @@ const Game = {
     c.fillStyle = 'rgba(5,9,16,0.5)'; rrect(c, x0, y0, 114, 41, 3); c.fill();
     c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 0.6; c.stroke();
     c.fillStyle = st.visor; c.fillRect(x0, y0 + 3, 1.6, 35);
-    setFont(c, 7, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = st.visor; spaced(c, p.tag, x0 + 6, y0 + 10, 1);
+    setFont(c, 7, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = st.visor; const tagW = spaced(c, p.tag, x0 + 6, y0 + 10, 1);
+    if (this.vsLeader() === i) drawCrown(c, x0 + 14 + tagW, y0 + 6.5, 0.7); // ahead in a versus game
     setFont(c, 9, FONT_MONO, 400); c.fillStyle = '#f2f5fa'; c.textAlign = 'right'; c.fillText(pad(p.score, 7), x0 + 109, y0 + 10.5);
     if (p.state === 'out') {
       setFont(c, 7, FONT_UI, 700); c.fillStyle = 'rgba(255,120,100,0.9)'; c.textAlign = 'left'; c.fillText('DOWN', x0 + 6, y0 + 25);
@@ -10849,6 +10874,9 @@ const Game = {
     else if (selId === 'shop') note = 'Robots drop coins · spend them on upgrades and guns';
     else if (selId === 'trophies') note = 'Every hero has their own trophy wall';
     else if (selId === 'options') note = 'Mode, health, sound and music';
+    else if (selId === 'modes') note = 'Boss Rush, Survival, Score Battle and Coin Race';
+    else if (MODES[selId]) note = MODES[selId].sub + (MODES[selId].vs && d.players !== 2 ? ' (switches to 2 players)' : '');
+    else if (selId === 'mback') note = 'Esc goes back';
     else if (selId === 'sound' || selId === 'music' || selId === 'fullscreen' || selId === 'oback') note = 'Esc goes back';
     else if (d.inf) note = 'Unlimited health is on · practice as long as you like';
     c.fillText(note, geom.x, geom.top + items.length * geom.h + 4);
@@ -11736,6 +11764,162 @@ addEventListener('keydown', e => { if (!e.repeat) Meta.typed(e.code); });
 Heroes.init();
 
 /* =====================================================================
+   07c_modes.js : MORE MODES
+   BOSS RUSH     all 13 bosses in a row, against the clock
+   SURVIVAL      endless robot waves in the world you pick (a mini-boss every 5th wave)
+   SCORE BATTLE  two players, three minutes: the higher score wins
+   COIN RACE     two players, two minutes: the most coins wins (coins drop double)
+   All of it runs inside the shared world in online games (gameplay dice only).
+   ===================================================================== */
+const MODES = {
+  rush:   { name: 'BOSS RUSH',    sub: 'All 13 bosses in a row · how fast can you beat them?' },
+  surv:   { name: 'SURVIVAL',     sub: 'Endless robot waves · ◂ ▸ picks the world' },
+  battle: { name: 'SCORE BATTLE', sub: 'Two players · the higher score after 3 minutes wins', time: 180, vs: true },
+  race:   { name: 'COIN RACE',    sub: 'Two players · the most coins after 2 minutes wins', time: 120, vs: true },
+};
+const fmtTime = t => { const m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); };
+// the enemy kinds a world's ambushes use (for survival waves), and its mini-boss
+function worldEnemies(L) {
+  const out = [], seen = new Set();
+  for (const k of L.locks) for (const w of k.waves) for (const d of w) {
+    if (d.type === 'miniboss' || d.type === 'brute' || d.type === 'paratrooper') continue;
+    const t = Object.assign({}, d); delete t.n; delete t.side; delete t.x; delete t.h;
+    const key = JSON.stringify(t); if (!seen.has(key)) { seen.add(key); out.push(t); }
+  }
+  return out.length ? out : [{ type: 'trooper' }, { type: 'drone' }];
+}
+function worldMini(L) { for (const k of L.locks) for (const w of k.waves) for (const d of w) if (d.type === 'miniboss') return d.kind; return 'crab'; }
+
+Object.assign(Game, {
+  mode: 'mission', rush: null, surv: null, vs: null, results: null,
+  // start one of the extra modes (li: the world for survival, the mission for the versus modes)
+  startMode(mode, li = Store.data.mission) {
+    if (MODES[mode].vs) Store.data.players = 2;
+    if (mode === 'rush') li = 0;
+    this.startGame(false, li, mode);
+  },
+  // called by startGame once the players are made
+  modeBegin(li) {
+    this.rush = this.surv = this.vs = this.results = null;
+    if (this.mode === 'rush') { this.rush = { i: 0, t: 0 }; this.jumpToBoss(0); return true; }
+    if (this.mode === 'surv') { this.surv = { li, wave: 0, t: 2.5, k: null, best: 0 }; this.jumpToBoss(li, true); this.banner('SURVIVAL', 'Get ready for the first wave', '255,214,90'); return true; }
+    if (MODES[this.mode] && MODES[this.mode].vs) this.vs = { t: MODES[this.mode].time };
+    return false;
+  },
+  jumpToBoss(li, noBoss) { // straight to a mission's boss yard
+    const L0 = new Level(LEVELS[li], li), k = L0.segs.length - 1;
+    this.checkpoint = { li, k, p: L0.segs[k].len, x: 1e9 };
+    this.loadLevel(li, true);
+    if (noBoss) this.level.noBoss = true;
+    this.stats = { hits: 0, deaths: 0, kills: 0, rescued: 0, rescueTotal: 0, time: 0 };
+  },
+  modeTick(dt) {
+    if (this.state !== 'play') return;
+    if (this.rush) this.rush.t += dt;
+    if (this.vs) { this.vs.t -= dt; if (this.vs.t <= 0) { this.vs.t = 0; this.finishMode('time'); } }
+    if (this.surv) this.survTick(dt);
+  },
+  /* ---- boss rush ---- */
+  rushNext() { // the boss is beaten: on to the next one
+    const R = this.rush; R.i++;
+    if (R.i >= LEVELS.length) { this.finishMode('done'); return; }
+    for (const p of this.players) { if (p.state === 'alive') p.hp = p.maxHp; if (R.i % 3 === 0) p.lives++; }
+    Heroes.bankAll();
+    this.jumpToBoss(R.i);
+    this.banner('BOSS ' + (R.i + 1) + ' OF ' + LEVELS.length, R.i % 3 === 0 ? 'Health restored · +1 life' : 'Health restored', '255,214,90');
+  },
+  /* ---- survival: waves of the world's robots ---- */
+  survTick(dt) {
+    const S = this.surv;
+    if (S.k) { S.k.list = S.k.list.filter(e => !e.dead); if (S.k.list.length) return; S.k = null; S.t = 2.6; if (S.wave > 0) { this.banner('WAVE ' + S.wave + ' CLEAR', 'Next wave in a moment', '120,255,170'); Sfx.confirm(); for (const p of this.players) if (p.alive() && p.hp < p.maxHp) p.hp++; } }
+    S.t -= dt; if (S.t > 0) return;
+    S.wave++;
+    const L = this.level, kinds = worldEnemies(L), n = Math.min(3 + S.wave, 13), W = [];
+    for (let i = 0; i < n; i++) W.push(Object.assign({}, kinds[Math.floor(rand(kinds.length))], { side: chance(0.5) ? 'left' : 'right' }));
+    if (S.wave % 4 === 0) W.push({ type: 'brute', side: 'right' });
+    if (S.wave % 5 === 0) W.push({ type: 'miniboss', kind: worldMini(L), side: 'right' });
+    if (S.wave % 2 === 0) { const k = new Pickup(Cam.x + rand(80, VW - 80), Cam.y + 30, this.randomItem()); k.vy = 40; this.pickups.push(k); }
+    const gy = L.floorBelow(Cam.x + VW / 2, Cam.y + 20, true);
+    S.k = { x: Cam.x + VW / 2, waves: [W], state: 'fight', wave: -1, list: [], t: 0, gy: isFinite(gy) ? gy : Cam.y + 226 };
+    this.nextWave(S.k);
+    this.banner('WAVE ' + S.wave, S.wave % 5 === 0 ? 'A mini-boss is coming!' : n + ' robots incoming', '255,96,70'); Sfx.warning();
+    for (const p of this.players) Trophies.ev(p, 'survWave', S.wave - 1, true);
+  },
+  /* ---- the end of a mode: results ---- */
+  finishMode(reason) {
+    if (this.state === 'results') return;
+    Heroes.bankAll();
+    const R = this.results = { mode: this.mode, reason, title: '', lines: [], record: '', win: -1 };
+    const local = this.players.map(p => Heroes.forPlayer(p));
+    if (this.mode === 'rush') {
+      const done = reason === 'done', t = this.rush.t;
+      R.title = done ? 'BOSS RUSH COMPLETE!' : 'BOSS RUSH OVER';
+      R.lines.push(done ? 'All ' + LEVELS.length + ' bosses beaten in ' + fmtTime(t) : 'You beat ' + this.rush.i + ' of ' + LEVELS.length + ' bosses');
+      if (done) for (const h of new Set(local.filter(Boolean))) { Trophies.add(h, 'rushes', 1); if (!h.best.rush || t < h.best.rush) { h.best.rush = t; R.record = 'NEW BEST TIME!'; } }
+    } else if (this.mode === 'surv') {
+      const w = Math.max(0, this.surv.wave - (this.surv.k ? 1 : 0));
+      R.title = 'SURVIVAL'; R.lines.push('You survived ' + w + (w === 1 ? ' wave' : ' waves') + ' in ' + LEVELS[this.surv.li].name);
+      for (const h of new Set(local.filter(Boolean))) { const b = h.best.surv || (h.best.surv = {}); Trophies.add(h, 'survWave', w, true); if (w > (b[this.surv.li] || 0)) { b[this.surv.li] = w; R.record = 'NEW RECORD!'; } }
+    } else if (this.vs) {
+      const race = this.mode === 'race', val = p => race ? (p.coins || 0) : p.score, a = val(this.players[0]), b = this.players[1] ? val(this.players[1]) : -1;
+      R.win = a > b ? 0 : b > a ? 1 : -1;
+      R.title = R.win < 0 ? "IT'S A DRAW!" : this.players[R.win].tag + ' WINS!';
+      R.lines.push(this.players.map(p => p.tag + '  ' + (race ? val(p) + ' coins' : pad(val(p), 7))).join('      '));
+      if (R.win >= 0) { const h = local[R.win]; if (h) Trophies.add(h, 'wins', 1); }
+    }
+    Store.save();
+    this.setState('results'); Music.play(reason === 'done' || this.vs ? 'victory' : 'clear'); Sfx.flame(false);
+  },
+  updateResults(dt, M, taps) {
+    if (Net.on) return; // online: the host takes everyone back to the lobby
+    if (this.stateT > 1.5 && (M.ok || taps.length)) this.toTitle(true);
+  },
+  drawResults(c) {
+    const R = this.results; if (!R) return;
+    const a = clamp(this.stateT / 0.5, 0, 1);
+    c.globalAlpha = a; c.fillStyle = 'rgba(3,6,12,0.66)'; c.fillRect(0, 0, VW, VH);
+    setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ff9a3c'; spaced(c, MODES[R.mode].name, VW / 2, VH * 0.27, 3, 'center');
+    setFont(c, 24, FONT_DISP, 400); c.fillStyle = '#f4f6fb'; spaced(c, R.title, VW / 2, VH * 0.4, 2, 'center');
+    setFont(c, 8, FONT_UI, 700); c.fillStyle = 'rgba(230,236,246,0.92)'; c.textAlign = 'center';
+    R.lines.forEach((l, i) => c.fillText(l, VW / 2, VH * 0.52 + i * 13));
+    if (R.record) { setFont(c, 11, FONT_DISP, 400); c.fillStyle = `rgba(255,214,63,${0.7 + 0.3 * Math.sin(this.rt * 6)})`; spaced(c, R.record, VW / 2, VH * 0.66, 2, 'center'); }
+    if (R.win >= 0) { const p = this.players[R.win]; drawCrown(c, VW / 2, VH * 0.16, 1.6); setFont(c, 7, FONT_UI, 700); c.fillStyle = p.style.visor; c.textAlign = 'center'; c.fillText('★ ' + p.tag + ' ★', VW / 2, VH * 0.21); }
+    if (this.stateT > 1.5) { setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center'; c.fillText(Net.on ? 'Back to the lobby in a moment…' : lastDevice === 'touch' ? 'Tap to go back to the title' : 'Press fire to go back to the title', VW / 2, VH * 0.84); }
+    c.globalAlpha = 1;
+  },
+  // the mode's line at the top of the screen
+  drawModeHud(c) {
+    if (this.rush) { setFont(c, 9, FONT_DISP, 400); c.textAlign = 'center'; c.fillStyle = '#ffd23f'; c.fillText(`BOSS ${Math.min(this.rush.i + 1, LEVELS.length)} / ${LEVELS.length}   ${fmtTime(this.rush.t)}`, VW / 2, 27); return true; }
+    if (this.surv) {
+      const S = this.surv; setFont(c, 10, FONT_DISP, 400); c.textAlign = 'center'; c.fillStyle = '#ffd23f'; c.fillText('WAVE ' + Math.max(1, S.wave), VW / 2, 28);
+      if (!S.k && S.t > 0 && S.wave > 0) { setFont(c, 6.5, FONT_UI, 700); c.fillStyle = 'rgba(230,236,246,0.85)'; c.fillText('NEXT WAVE IN ' + Math.ceil(S.t), VW / 2, 38); }
+      return true;
+    }
+    if (this.vs) {
+      const t = Math.ceil(this.vs.t), low = this.vs.t < 10;
+      setFont(c, 13, FONT_DISP, 400); c.textAlign = 'center'; c.fillStyle = low && Math.floor(this.rt * 4) % 2 ? '#ff5a4a' : '#ffffff';
+      c.fillText(Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'), VW / 2, 31);
+      setFont(c, 5.5, FONT_UI, 700); c.fillStyle = 'rgba(255,214,90,0.9)'; c.fillText(this.mode === 'race' ? 'COIN RACE' : 'SCORE BATTLE', VW / 2, 39);
+      return false;
+    }
+    return false;
+  },
+  // who is ahead in a versus game (for the crown)
+  vsLeader() {
+    if (!this.vs || this.players.length < 2) return -1;
+    const val = p => this.mode === 'race' ? (p.coins || 0) : p.score, a = val(this.players[0]), b = val(this.players[1]);
+    return a > b ? 0 : b > a ? 1 : -1;
+  },
+});
+function drawCrown(c, x, y, s = 1) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  c.fillStyle = '#ffd23f'; c.strokeStyle = '#8a5a00'; c.lineWidth = 0.7; c.lineJoin = 'round';
+  c.beginPath(); c.moveTo(-6, 3); c.lineTo(-6.5, -3); c.lineTo(-3, 0); c.lineTo(0, -4.5); c.lineTo(3, 0); c.lineTo(6.5, -3); c.lineTo(6, 3); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#ff4a6a'; c.beginPath(); c.arc(0, 0.8, 1, 0, TAU); c.fill();
+  c.restore();
+}
+
+/* =====================================================================
    08_net.js : ONLINE CO-OP (web version) — two computers, one game.
    Lockstep: both computers run the same world. Every tick needs both
    players' buttons; each computer sends its own buttons a few ticks ahead.
@@ -11824,12 +12008,13 @@ function netEncode(s) { let b = 0; for (let i = 0; i < NET_BITS.length; i++) if 
 function netDecode(b, s) { for (let i = 0; i < NET_BITS.length; i++) s[NET_BITS[i]] = !!(b & (1 << i)); s.pause = false; return s; }
 // outside the shared world the game dice are ordinary random numbers, so drawing the screen can never move the shared dice
 const NET_OFF_RNG = () => { Net.offCalls++; return Math.random(); };
-const NET_STATE = { play: 1, clear: 2, continue: 3, victory: 4 };
+const NET_STATE = { play: 1, clear: 2, continue: 3, victory: 4, results: 5 };
+const NET_GAMES = ['mission', 'rush', 'surv', 'battle', 'race']; // what the host can pick to play
 
 Object.assign(Net, {
   available: !!window.IM_WEB, on: false, role: null, phase: 'menu', sel: 0,
   peer: null, conn: null, code: '', codeIn: ['A', 'A', 'A', 'A'], slot: 0, status: '', error: '', notice: '', noticeT: 0,
-  lobby: { li: 0, diff: 'recruit', inf: false }, saved: null, gid: 0, rng: null, theirLo: null,
+  lobby: { li: 0, diff: 'recruit', inf: false, gm: 'mission' }, saved: null, gid: 0, rng: null, theirLo: null,
   tick: 0, acc: 0, mine: new Map(), theirs: new Map(), sums: new Map(), rsums: new Map(), outK: -1, out: [],
   delay: NET_DELAY, sched: -1, pend: 0, theirsMax: -1, rbuf: null, rtts: [], heard: 0, winMin: 99, winT: 0, calm: 0,
   stallT: 0, stalls: 0, menu: false, menuSel: 0, desyncs: 0, mismatches: 0, resyncAt: -1, resyncMsg: null, syncFrom: 0, youT: 0, rtt: 0, pingT: 0,
@@ -11844,7 +12029,7 @@ Object.assign(Net, {
       case 'menu': return [{ id: 'host' }, { id: 'join' }, { id: 'back' }];
       case 'hosting': case 'connecting': return [{ id: 'cancel' }];
       case 'joining': return [{ id: 'go' }, { id: 'cancel' }];
-      case 'lobby': return this.role === 'host' ? [{ id: 'nmission' }, { id: 'nmode' }, { id: 'nhealth' }, { id: 'nstart' }, { id: 'leave' }] : [{ id: 'leave' }];
+      case 'lobby': return this.role === 'host' ? [{ id: 'ngame' }, { id: 'nmission' }, { id: 'nmode' }, { id: 'nhealth' }, { id: 'nstart' }, { id: 'leave' }] : [{ id: 'leave' }];
       case 'error': return [{ id: 'back' }];
     }
     return [{ id: 'back' }];
@@ -11858,7 +12043,8 @@ Object.assign(Net, {
       case 'cancel': return ['CANCEL', ''];
       case 'go': return ['JOIN', this.codeIn.join('')];
       case 'leave': return ['LEAVE', ''];
-      case 'nmission': return ['MISSION', `${L.li + 1} · ${LEVELS[L.li].name}`];
+      case 'ngame': return ['GAME', L.gm === 'mission' ? 'MISSION' : MODES[L.gm].name];
+      case 'nmission': return [L.gm === 'surv' ? 'WORLD' : 'MISSION', L.gm === 'rush' ? 'ALL 13 BOSSES' : `${L.li + 1} · ${LEVELS[L.li].name}`];
       case 'nmode': return ['MODE', L.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
       case 'nhealth': return ['HEALTH', L.inf ? 'UNLIMITED' : 'NORMAL'];
       case 'nstart': return ['START!', ''];
@@ -11867,11 +12053,12 @@ Object.assign(Net, {
   },
   change(id, dir) {
     const L = this.lobby;
-    if (id === 'nmission') L.li = (L.li + dir + LEVELS.length) % LEVELS.length;
+    if (id === 'ngame') L.gm = NET_GAMES[(NET_GAMES.indexOf(L.gm) + dir + NET_GAMES.length) % NET_GAMES.length];
+    else if (id === 'nmission') L.li = (L.li + dir + LEVELS.length) % LEVELS.length;
     else if (id === 'nmode') L.diff = L.diff === 'recruit' ? 'veteran' : 'recruit';
     else if (id === 'nhealth') L.inf = !L.inf;
     else return false;
-    Sfx.select(); this.send({ t: 'lobby', li: L.li, diff: L.diff, inf: L.inf }); return true;
+    Sfx.select(); this.send({ t: 'lobby', li: L.li, diff: L.diff, inf: L.inf, gm: L.gm }); return true;
   },
   choose(id) {
     if (id === 'host') this.host();
@@ -12032,9 +12219,9 @@ Object.assign(Net, {
         if (m.v !== NET_VERSION) { this.send({ t: 'bye' }); this.fail('Your friend has a different version of the game. Both of you, please reload the page.'); return; }
         this.theirLo = cleanLoadout(m.lo, 1 - this.mySlot());
         this.phase = 'lobby'; this.sel = 0; Sfx.confirm(); this.notice = this.role === 'host' ? this.theirLo.name + ' joined!' : 'Connected!'; this.noticeT = 3;
-        if (this.role === 'host') { this.lobby = { li: Store.data.mission, diff: Store.data.diff, inf: Store.data.inf }; this.send(Object.assign({ t: 'lobby' }, this.lobby)); }
+        if (this.role === 'host') { this.lobby = { li: Store.data.mission, diff: Store.data.diff, inf: Store.data.inf, gm: this.lobby.gm || 'mission' }; this.send(Object.assign({ t: 'lobby' }, this.lobby)); }
         break;
-      case 'lobby': if (this.role === 'guest') this.lobby = { li: m.li, diff: m.diff, inf: m.inf }; break;
+      case 'lobby': if (this.role === 'guest') this.lobby = { li: m.li, diff: m.diff, inf: m.inf, gm: NET_GAMES.includes(m.gm) ? m.gm : 'mission' }; break;
       case 'start': if (this.role === 'guest' && !this.on) this.begin(m); break;
       case 'in':
         for (let i = 0; i < m.d.length; i++) this.theirs.set(m.k + i, m.d[i]);
@@ -12068,7 +12255,7 @@ Object.assign(Net, {
   /* ---------- starting and stopping a shared game ---------- */
   start() {
     if (!this.conn) return;
-    const L = this.lobby, m = { t: 'start', li: L.li, diff: L.diff, inf: L.inf, seed: (Math.random() * 2 ** 31) | 0, lo: [this.myLoadout(), this.theirLo] };
+    const L = this.lobby, m = { t: 'start', li: L.li, diff: L.diff, inf: L.inf, gm: L.gm, seed: (Math.random() * 2 ** 31) | 0, lo: [this.myLoadout(), this.theirLo] };
     this.send(m); this.begin(m);
   },
   // both heroes, cleaned the same way on both computers; two heroes that look the same get told apart
@@ -12096,7 +12283,8 @@ Object.assign(Net, {
     resize();
     this.rng = netRng(m.seed);
     Game.loadouts = this.gameLoadouts(m);
-    this.sim(() => { Game.simT = 0; Game.god = false; Game.titleCam = 0; Game.startGame(false, m.li); Game.stateT = 0; });
+    const gm = NET_GAMES.includes(m.gm) ? m.gm : 'mission';
+    this.sim(() => { Game.simT = 0; Game.god = false; Game.titleCam = 0; Game.startGame(false, gm === 'rush' ? 0 : m.li, gm === 'mission' ? null : gm); Game.stateT = 0; });
   },
   stop() {
     if (this.on) Heroes.bankAll(); // (while still online, so only your own hero gets your coins)
@@ -12151,9 +12339,10 @@ Object.assign(Net, {
         case 'clear': Game.step(NET_TICK); if (Game.stateT > 6) Game.nextMission(); break;
         case 'continue': Game.step(NET_TICK * 0.3); if (Game.stateT > 3) Game.continueGame(); break;
         case 'victory': Game.updateTitleScene(NET_TICK); break;
+        case 'results': break; // (the world waits while everyone reads the results)
       }
     });
-    if (Game.state === 'victory' && Game.stateT > 9 && host) { this.toLobby(); return; }
+    if ((Game.state === 'victory' || Game.state === 'results') && Game.stateT > 9 && host) { this.toLobby(); return; }
     if (T % 60 === 30 && Game.state !== 'victory') { const h = this.hash(); this.sums.set(T, h); this.send({ t: 'sum', g: this.gid, k: T, h }); this.checkSum(T); }
     if (this.snaps && T % 10 === 0 && Game.state !== 'victory') { this.snaps.set(T, this.snap()); this.snaps.delete(T - 1200); }
   },
@@ -12169,6 +12358,7 @@ Object.assign(Net, {
     for (const v of Game.vehicles) { mix(v.x); mix(v.y); mix(v.hp); mix(v.rider ? v.rider.i + 1 : 0); }
     if (Game.boss) { mix(Game.boss.x); mix(Game.boss.y); mix(Game.boss.hp); }
     if (Game.level && Game.level.letters) for (const k of Game.level.letters) mix(k.got ? 1 : 0);
+    mix(Game.rush ? Game.rush.i * 1000 + Game.rush.t : 0); mix(Game.surv ? Game.surv.wave : 0); mix(Game.vs ? Game.vs.t : 0);
     return h >>> 0;
   },
   snap() { // the whole shared world in exact numbers (only on the automatic test page)
@@ -12226,6 +12416,7 @@ Object.assign(Net, {
     if (act === 'boss') { const k = L.segs.length - 1; G.checkpoint = { li: G.li, k, p: L.segs[k].len, x: 1e9 }; G.loadLevel(G.li, true); }
     else if (act === 'killboss' && B) { B.active = true; if (B.core) { B.core.armored = false; B.core.damage(99999, B.core.cx, B.core.cy, {}); } }
     else if (act === 'hurtboss' && B && B.core) B.core.hp = B.core.max * 0.3;
+    else if (act === 'endvs' && G.vs) G.vs.t = 0.5;
     else if (act === 'mini' || act === 'ride') { // jump to the mini-boss arena (or to the vehicles)
       const isMini = k => k.waves.some(w => w.some(d => d.type === 'miniboss'));
       const x = act === 'mini' ? (L.locks.find(isMini) || {}).x - 230 : ((L.spawns.find(s => s.type === 'vehicle') || {}).x || 0) - 420;
@@ -12283,7 +12474,7 @@ Object.assign(Net, {
     }
     if (this.phase === 'lobby') {
       if (this.role === 'host') say('Your friend is here! Pick a mission and press START.', 84, 7.5, '#9be06a');
-      else { say('Connected! The host picks the mission.', 84, 7.5, '#9be06a'); say(`MISSION ${this.lobby.li + 1} · ${LEVELS[this.lobby.li].name}`, 113, 8.5, '#ffffff'); say(`${this.lobby.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'} · ${this.lobby.inf ? 'UNLIMITED HEALTH' : 'NORMAL HEALTH'}`, 126, 7, '#9fb4c8'); say('Waiting for the host to start…', 142, 7); }
+      else { say('Connected! The host picks the mission.', 84, 7.5, '#9be06a'); say(this.lobby.gm === 'rush' ? 'BOSS RUSH · ALL 13 BOSSES' : `${this.lobby.gm && this.lobby.gm !== 'mission' ? MODES[this.lobby.gm].name + ' · ' : 'MISSION '}${this.lobby.li + 1} · ${LEVELS[this.lobby.li].name}`, 113, 8.5, '#ffffff'); say(`${this.lobby.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'} · ${this.lobby.inf ? 'UNLIMITED HEALTH' : 'NORMAL HEALTH'}`, 126, 7, '#9fb4c8'); say('Waiting for the host to start…', 142, 7); }
       say(`You play ${Heroes.of(0).name} · your friend plays ${this.theirLo ? this.theirLo.name : 'their hero'}`, 96, 6.5, this.role === 'host' ? '#8cf5ff' : '#ffb27a');
     }
     if (this.phase === 'error') say(this.error, 96, 8, '#ffb4a0');

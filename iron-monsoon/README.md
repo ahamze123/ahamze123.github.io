@@ -37,6 +37,15 @@ The **TROPHIES** wall has 22 trophies to win, like beating a boss without gettin
 - On a computer, press the full-screen button at the top right of the title screen, or turn on **FULL SCREEN** in the pause menu.
 - On a phone or tablet, the first tap switches to full screen. For the best experience, use **Add to Home Screen** (Safari: Share button). The game then opens like an app, full screen and sideways.
 
+## More modes
+Pick **MORE MODES** on the title screen:
+- **BOSS RUSH:** all 13 bosses in a row against the clock. Your health comes back between bosses, and every third boss gives an extra life. Each hero keeps their best time.
+- **SURVIVAL:** endless waves of robots in the world you pick (◂ ▸). Every fifth wave brings that world's mini-boss. Each hero keeps their best wave for every world.
+- **SCORE BATTLE:** two players, three minutes. The higher score wins (the leader wears a crown).
+- **COIN RACE:** two players, two minutes. Robots drop double coins, and the most coins wins.
+
+Online, the host can pick any of these under **GAME** in the lobby.
+
 ## Mini-bosses
 Halfway through every mission a mini-boss blocks the way: the **CRAB TANK**, **HOVER GUNSHIP**, **SHIELD TITAN**, **SPIDER MECH**, **FROST WALKER** and **MAGMA GOLEM**. Each one has a glowing weak spot that takes extra damage, and each gets angry below half health. The Shield Titan blocks shots with its shield, so hit its back when it turns round to fire.
 
