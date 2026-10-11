@@ -145,10 +145,20 @@ def pic_path(h):
     return None
 
 
-def pic_uri(h):
-    p = pic_path(h)
+def pic_uri(h, p=None):
+    p = p or pic_path(h)
     mime = 'image/png' if open(p, 'rb').read(4) == b'\x89PNG' else 'image/jpeg'
     return 'data:%s;base64,%s' % (mime, base64.b64encode(open(p, 'rb').read()).decode())
+
+
+def view_paths(h):
+    """several views of one character for multi-image to 3D: tools/meshy/pics/<h>_front / _side / _back (.png or .jpg)"""
+    out = []
+    for v in ('front', 'side', 'back', 'side2'):
+        for ext in ('.png', '.jpg'):
+            p = os.path.join(HERE, 'pics', '%s_%s%s' % (h, v, ext))
+            if os.path.exists(p): out.append(p); break
+    return out if len(out) >= 2 else []
 
 
 def glb_info(path):
@@ -268,23 +278,31 @@ def do_hero(h, cfg):
         if redo and m and m.get('status') == 'SUCCEEDED' and m.get('run') != cfg.get('run'):
             S.setdefault('old', []).append({k: S.get(k) for k in ('model', 'rig', 'anim') if S.get(k)})
             S.pop('model', None); S.pop('rig', None); S.pop('anim', None); m = None
+        views = view_paths(h)
         if not m or m.get('status') in ('FAILED', 'CANCELED', 'EXPIRED'):
-            if not pic_path(h):
+            if not pic_path(h) and not views:
                 log(who, 'no picture in tools/meshy/pics or images/'); return
             if not budget(COST['model']):
                 log(who, 'skipped: this run may not spend more credits'); return
-            body = {'image_url': pic_uri(h), 'ai_model': M.get('ai_model', 'latest'), 'should_texture': True,
-                    'enable_pbr': False, 'should_remesh': True, 'topology': M.get('topology', 'triangle'),
+            body = {'ai_model': M.get('ai_model', 'latest'), 'should_texture': True,
+                    'enable_pbr': False, 'should_remesh': M.get('should_remesh', True), 'topology': M.get('topology', 'triangle'),
                     'target_polycount': int(M.get('target_polycount', 20000)), 'pose_mode': M.get('pose_mode', 'a-pose')}
-            for k in ('texture_prompt', 'texture_resolution', 'image_enhancement', 'model_type', 'geometry_resolution'):
+            for k in ('texture_prompt', 'texture_resolution', 'image_enhancement', 'model_type', 'geometry_resolution', 'remove_lighting'):
                 if k in M: body[k] = M[k]
-            r = api('POST', '/openapi/v1/image-to-3d', body)
-            m = S['model'] = {'id': r['result'], 'status': 'PENDING', 'run': cfg.get('run'), 'made': time.strftime('%Y-%m-%d %H:%M'),
-                              'settings': {k: v for k, v in body.items() if k != 'image_url'}}
-            log(who, 'model task made', m['id'])
+            if views:   # front, side and back drawings: one model from all of them
+                body['image_urls'] = [pic_uri(h, p) for p in views]
+                r = api('POST', '/openapi/v1/multi-image-to-3d', body)
+                kind = 'multi-image-to-3d'
+            else:
+                body['image_url'] = pic_uri(h)
+                r = api('POST', '/openapi/v1/image-to-3d', body)
+                kind = 'image-to-3d'
+            m = S['model'] = {'id': r['result'], 'status': 'PENDING', 'run': cfg.get('run'), 'made': time.strftime('%Y-%m-%d %H:%M'), 'kind': kind,
+                              'views': [os.path.basename(p) for p in views], 'settings': {k: v for k, v in body.items() if k not in ('image_url', 'image_urls')}}
+            log(who, 'model task made', kind, m['id'])
             save(True, '%s: model task' % h)
         if m['status'] != 'SUCCEEDED':
-            t = wait('image-to-3d', m['id'], who)
+            t = wait(m.get('kind', 'image-to-3d'), m['id'], who)
             m.update(status=t.get('status'), credits=t.get('consumed_credits'), error=(t.get('task_error') or {}).get('message') or None)
             if t.get('status') != 'SUCCEEDED':
                 log(who, 'model FAILED:', m.get('error')); save(True, '%s: model failed' % h); return
@@ -303,7 +321,7 @@ def do_hero(h, cfg):
         if M.get('rig') is False:
             # an animal or a thing with no skeleton ('per': {"name": {"rig": false}}): keep the textured model as it is
             if not os.path.exists(os.path.join(folder, 'model.glb')):
-                t = api('GET', '/openapi/v1/image-to-3d/%s' % m['id'])
+                t = api('GET', '/openapi/v1/%s/%s' % (m.get('kind', 'image-to-3d'), m['id']))
                 url = (t.get('model_urls') or {}).get('glb')
                 if not url:
                     log(who, 'no model file in the finished task'); return

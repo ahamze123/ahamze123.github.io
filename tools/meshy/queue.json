@@ -1,10 +1,14 @@
 {
- "run": 27,
- "heroes": [],
- "refetch": [],
+ "run": 28,
+ "heroes": [
+  "sm2_volt"
+ ],
+ "refetch": [
+  "sm2_volt"
+ ],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 0,
+ "max_credits": 80,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -19,7 +23,18 @@
   "action_ids": []
  },
  "extra": {},
- "per": {},
+ "per": {
+  "sm2_volt": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  }
+ },
  "redo": [],
  "images": {},
  "redo_images": [],
