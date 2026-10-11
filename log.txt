@@ -1539,3 +1539,5 @@
 2026-10-11 17:32:03 [sm2_buster] rigging IN_PROGRESS 36%
 2026-10-11 17:32:09 [sm2_sparks] rigging SUCCEEDED 100%
 2026-10-11 17:32:09 [sm2_sparks] rigged: {"model": {"bytes": 5733304, "triangles": 61922, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57340, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46716, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 17:32:10 [sm2_bruno] rigging SUCCEEDED 100%
+2026-10-11 17:32:13 [sm2_sparks] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6810164}
