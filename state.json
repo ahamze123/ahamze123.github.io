@@ -1259,6 +1259,33 @@
     "status": "SUCCEEDED"
    }
   },
+  "dm3_sera": {
+   "model": {
+    "id": "01a12bce-41d3-7676-9abd-b97c97a7988c",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:31",
+    "run": 903,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm3_sera_front.png",
+     "dm3_sera_side.png",
+     "dm3_sera_back.png"
+    ]
+   }
+  },
   "drake": {
    "extra": {},
    "full": {
