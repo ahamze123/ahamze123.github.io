@@ -1262,3 +1262,5 @@
 2026-10-11 15:18:36 run finished; credits used by new tasks (estimate): 35
 2026-10-11 15:25:39 run 29 heroes ['sm2_ember', 'sm2_hawk', 'sm2_spike'] max credits 150
 2026-10-11 15:25:42 [sm2_hawk] model task made multi-image-to-3d 01a12b91-da51-7078-b96b-368d5d1f44a3
+2026-10-11 15:25:42 [sm2_ember] model task made multi-image-to-3d 01a12b91-da4e-7507-a21f-0cf1384a89d7
+2026-10-11 15:25:42 [sm2_spike] model task made multi-image-to-3d 01a12b91-da52-72f5-b04a-8cd1dbab6aec
