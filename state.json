@@ -4879,6 +4879,7 @@
    }
   },
   "sm2_maestro": {
+   "extra": {},
    "full": {
     "bytes": 5973020,
     "pictures": [
@@ -7663,7 +7664,8 @@
     "sm2_maestro"
    ],
    "limit": 280,
-   "run": 32
+   "run": 32,
+   "spent_estimate": 210
   }
  ]
 }
