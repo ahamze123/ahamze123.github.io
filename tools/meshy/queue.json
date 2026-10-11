@@ -1,14 +1,18 @@
 {
- "run": 28,
+ "run": 29,
  "heroes": [
-  "sm2_volt"
+  "sm2_ember",
+  "sm2_hawk",
+  "sm2_spike"
  ],
  "refetch": [
-  "sm2_volt"
+  "sm2_ember",
+  "sm2_hawk",
+  "sm2_spike"
  ],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 80,
+ "max_credits": 150,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -25,6 +29,36 @@
  "extra": {},
  "per": {
   "sm2_volt": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_ember": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_hawk": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_spike": {
    "ai_model": "latest",
    "geometry_resolution": "2k",
    "texture_resolution": "4k",
