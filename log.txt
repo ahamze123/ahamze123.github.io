@@ -1551,3 +1551,4 @@
 2026-10-11 17:32:23 [sm2_maestro] multi-image-to-3d IN_PROGRESS 1%
 2026-10-11 17:32:27 [sm2_buster] rigging SUCCEEDED 100%
 2026-10-11 17:32:27 [sm2_buster] rigged: {"model": {"bytes": 4854300, "triangles": 61862, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57424, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46836, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 17:32:30 [sm2_buster] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6051776}
