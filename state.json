@@ -4516,6 +4516,12 @@
      "sm2_buster_side.png",
      "sm2_buster_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12c05-450f-7612-b1bb-51d165c1c59d",
+    "made": "2026-10-11 17:31",
+    "model": "01a12c00-7b1c-7057-a3be-12370e4e4e5a",
+    "status": "PENDING"
    }
   },
   "sm2_ember": {

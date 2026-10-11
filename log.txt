@@ -1530,3 +1530,4 @@
 2026-10-11 17:31:49 [sm2_bruno] rig task made 01a12c05-3f97-7666-9d35-5c717fc883e1
 2026-10-11 17:31:50 [sm2_bruno] rigging IN_PROGRESS 10%
 2026-10-11 17:31:51 [sm2_icebreaker] rig task made 01a12c05-450f-7614-a0a6-dc42e6635192
+2026-10-11 17:31:51 [sm2_buster] rig task made 01a12c05-450f-7612-b1bb-51d165c1c59d
