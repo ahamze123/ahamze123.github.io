@@ -4453,6 +4453,12 @@
    }
   },
   "sm2_bruno": {
+   "full": {
+    "bytes": 5519356,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
@@ -4724,10 +4730,30 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 4978292,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 62079
+     },
+     "walking": {
+      "bytes": 57252,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12c05-450f-7614-a0a6-dc42e6635192",
     "made": "2026-10-11 17:31",
     "model": "01a12c00-7b18-7416-b849-0ce58e577750",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "sm2_king": {
