@@ -1133,3 +1133,4 @@
 2026-10-10 20:18:38 [volt] rigging SUCCEEDED 100%
 2026-10-10 20:18:38 [volt] rigged: {"model": {"bytes": 2225176, "triangles": 20718, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57452, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46844, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-10 20:18:40 run finished; credits used by new tasks (estimate): 70
+2026-10-11 08:27:31 run 18 heroes [] max credits 30
