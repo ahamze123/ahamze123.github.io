@@ -3672,6 +3672,7 @@
    }
   },
   "sm_ember": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -5516,7 +5517,8 @@
     "volt"
    ],
    "limit": 170,
-   "run": 23
+   "run": 23,
+   "spent_estimate": 170
   }
  ]
 }
