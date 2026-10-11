@@ -1225,3 +1225,4 @@
 2026-10-11 09:06:44 [sm_spike] image-to-3d IN_PROGRESS 67%
 2026-10-11 09:06:54 [sm_spike] image-to-3d IN_PROGRESS 84%
 2026-10-11 09:07:04 [sm_spike] image-to-3d SUCCEEDED 100%
+2026-10-11 09:07:09 [sm_spike] rig task made 01a12a37-3f62-744a-a952-04b6c67fddbe
