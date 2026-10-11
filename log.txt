@@ -1457,3 +1457,4 @@
 2026-10-11 16:29:17 [dm2_snatcher] rigging IN_PROGRESS 10%
 2026-10-11 16:29:18 [dm2_skeleton] rigged: {"model": {"bytes": 5636448, "triangles": 62016, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58076, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47440, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:29:21 [dm2_skeleton] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6574668}
+2026-10-11 16:29:21 [dm2_raider] multi-image-to-3d SUCCEEDED 100%

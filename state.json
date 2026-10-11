@@ -827,6 +827,8 @@
   },
   "dm2_raider": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bc9-39db-71fe-bd79-d1cfdf31b83b",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:26",
@@ -844,7 +846,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bc9-39db-71fe-bd79-d1cfdf31b83b/output/preview.png?Expires=1791995359&Signature=HMTEVAUamQT68FRu67lOLs0e6NjYh2Ir5PQA1fVUqrm1SUS~ICduvueGmv~WhC8ecLxUeV9NaysUtM1DLDULkYPVb5mSMaujMibQINNjcdtgWtHVc8Ksm1FnsB-UXdXNO1RKhmQOZmxU1jKBkuCEyDVzRdm4RXZ98pGzSU4qeAIV93vpyIYs-WZrOcBrwO635Zi~Ocx5jscc4SxHQgsXAhhfc8Aq-BcX5OBk9bC~BVKCQB9ovy67yKibU6gOxAIcuBMqFF0xcTlE171tIpjBx~R6RJGYby5Onxys7jTz8g9cUOz75CBLiQJu5D22Lc52bUiV9ChmhDRRCnI2baxGCQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_raider_front.png",
      "dm2_raider_side.png",
@@ -995,6 +998,7 @@
    }
   },
   "dm2_skeleton": {
+   "extra": {},
    "full": {
     "bytes": 6574668,
     "pictures": [
