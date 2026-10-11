@@ -3884,6 +3884,33 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm2_robot": {
+   "model": {
+    "id": "01a12b9d-7641-75c2-9ac0-a756f65cafa1",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 15:38",
+    "run": 31,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_robot_front.png",
+     "sm2_robot_side.png",
+     "sm2_robot_back.png"
+    ]
+   }
+  },
   "sm2_spike": {
    "extra": {},
    "full": {
