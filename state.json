@@ -634,6 +634,12 @@
      "dm2_korr_side.png",
      "dm2_korr_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bbe-b502-7130-8a29-5f2357786bb7",
+    "made": "2026-10-11 16:14",
+    "model": "01a12bbb-ee52-7637-b2fb-61127b7084a0",
+    "status": "PENDING"
    }
   },
   "dm2_sera": {
