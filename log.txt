@@ -1547,3 +1547,4 @@
 2026-10-11 17:32:17 [sm2_bruno] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5519356}
 2026-10-11 17:32:17 [sm2_icebreaker] rigged: {"model": {"bytes": 4978292, "triangles": 62079, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57252, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46616, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 17:32:18 [sm2_maestro] model task made multi-image-to-3d 01a12c05-c134-7379-9943-d75e91fa2417
+2026-10-11 17:32:22 [sm2_icebreaker] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5779488}

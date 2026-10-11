@@ -4702,6 +4702,12 @@
    }
   },
   "sm2_icebreaker": {
+   "full": {
+    "bytes": 5779488,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
