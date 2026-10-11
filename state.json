@@ -1032,6 +1032,8 @@
   },
   "dm2_snatcher": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bc9-39de-73c1-bf14-00ada2afdf31",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:26",
@@ -1049,7 +1051,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bc9-39de-73c1-bf14-00ada2afdf31/output/preview.png?Expires=1791995350&Signature=o4zt~uB9-5hao4yiMUqlqTX8KCXetnrJWQ5wZ05xMBnnYDc20wQgdBDLqH9dlMsJpl4NWVuNqkly92vGzNPsxfD0XHfAYNOS6ncmLl~e3P7VaV9MMenowCn3-1IiRCilmuL8zyRQ8Z~yKLEKmuEE~NxmeZik8NyI-IhUppFdKVtjAGBNH9AjFl2ZRigbT-BXUC1i7wh~Xte9EoLMw3xWTEI4c-u5-Qxsdbqi2Hjd-AYKL5I5wdPS1f5wRrHD~zlMrtVnMwnWItJ1WIwBipdkh24vMzE8IlbggNQteQALW4a9ViQQnU7XVs7GgD4M12Rcp2POkxn~xgjCrkif-r2f0Q__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_snatcher_front.png",
      "dm2_snatcher_side.png",
