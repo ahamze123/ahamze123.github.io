@@ -4013,6 +4013,12 @@
      "sm2_viper_side.png",
      "sm2_viper_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12b9c-5a3e-7181-a360-3c7bf9e77827",
+    "made": "2026-10-11 15:37",
+    "model": "01a12b99-494b-753a-8cee-b1f27a4cff39",
+    "status": "PENDING"
    }
   },
   "sm2_volt": {
