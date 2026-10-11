@@ -3671,6 +3671,10 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm_ember": {},
+  "sm_hawk": {},
+  "sm_tank": {},
+  "sm_volt": {},
   "tala": {
    "extra": {},
    "full": {
@@ -3886,7 +3890,26 @@
     "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
     "status": "SUCCEEDED"
    },
-   "extra": {},
+   "extra": {
+    "fight2": {
+     "action_ids": [
+      211,
+      212,
+      216,
+      422,
+      94,
+      217,
+      7,
+      138,
+      214,
+      403
+     ],
+     "id": "01a12a2b-9f84-70b1-a48c-dcdcb486b3dc",
+     "made": "2026-10-11 08:54",
+     "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
+     "status": "PENDING"
+    }
+   },
    "last_error": "POST /openapi/v1/animations: HTTP 400 {\"message\":\"This animation is no longer available: action_ids 464. See https://docs.meshy.ai/en/api/animation-library for available animation IDs.\"}",
    "model": {
     "credits": 30,
