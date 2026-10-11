@@ -1370,3 +1370,4 @@
 2026-10-11 16:13:36 [dm2_korr] multi-image-to-3d IN_PROGRESS 58%
 2026-10-11 16:13:46 [dm2_draxx] multi-image-to-3d IN_PROGRESS 58%
 2026-10-11 16:13:55 [dm2_sera] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 16:14:01 [dm2_sera] rig task made 01a12bbe-09de-74b0-96d3-25dab407dec2
