@@ -899,10 +899,38 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 5046788,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 62076
+     },
+     "running": {
+      "bytes": 46628,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57272,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12bcc-3246-75f5-a83c-398e5037996d",
     "made": "2026-10-11 16:29",
     "model": "01a12bc9-39db-71fe-bd79-d1cfdf31b83b",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "dm2_rogue": {
@@ -1119,6 +1147,7 @@
    }
   },
   "dm2_snatcher": {
+   "extra": {},
    "full": {
     "bytes": 5949532,
     "pictures": [
