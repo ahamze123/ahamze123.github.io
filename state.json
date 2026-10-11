@@ -3671,10 +3671,74 @@
     "status": "SUCCEEDED"
    }
   },
-  "sm_ember": {},
-  "sm_hawk": {},
-  "sm_tank": {},
-  "sm_volt": {},
+  "sm_ember": {
+   "model": {
+    "id": "01a12a2b-9f70-70e8-a87c-8a34a4a3b95c",
+    "made": "2026-10-11 08:54",
+    "run": 23,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
+  "sm_hawk": {
+   "model": {
+    "id": "01a12a2b-9f70-70e9-9830-70222afc9d44",
+    "made": "2026-10-11 08:54",
+    "run": 23,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
+  "sm_tank": {
+   "model": {
+    "id": "01a12a2b-9fbd-734a-a062-98fb64f1ad2e",
+    "made": "2026-10-11 08:54",
+    "run": 23,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
+  "sm_volt": {
+   "model": {
+    "id": "01a12a2b-9f89-73de-b4e0-2012a8d3193d",
+    "made": "2026-10-11 08:54",
+    "run": 23,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "tala": {
    "extra": {},
    "full": {
