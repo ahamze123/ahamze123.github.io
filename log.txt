@@ -1481,3 +1481,8 @@
 2026-10-11 16:30:10 run finished; credits used by new tasks (estimate): 210
 2026-10-11 16:31:38 run 903 heroes ['dm3_sera'] max credits 45
 2026-10-11 16:31:41 [dm3_sera] model task made multi-image-to-3d 01a12bce-41d3-7676-9abd-b97c97a7988c
+2026-10-11 16:31:42 [dm3_sera] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:32:43 [dm3_sera] multi-image-to-3d IN_PROGRESS 27%
+2026-10-11 16:33:34 [dm3_sera] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:34:15 [dm3_sera] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:34:36 [dm3_sera] multi-image-to-3d SUCCEEDED 100%
