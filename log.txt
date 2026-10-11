@@ -1531,3 +1531,11 @@
 2026-10-11 17:31:50 [sm2_bruno] rigging IN_PROGRESS 10%
 2026-10-11 17:31:51 [sm2_icebreaker] rig task made 01a12c05-450f-7614-a0a6-dc42e6635192
 2026-10-11 17:31:51 [sm2_buster] rig task made 01a12c05-450f-7612-b1bb-51d165c1c59d
+2026-10-11 17:31:52 [sm2_icebreaker] rigging IN_PROGRESS 10%
+2026-10-11 17:31:53 [sm2_buster] rigging IN_PROGRESS 10%
+2026-10-11 17:31:59 [sm2_sparks] rigging IN_PROGRESS 63%
+2026-10-11 17:32:00 [sm2_bruno] rigging IN_PROGRESS 36%
+2026-10-11 17:32:03 [sm2_icebreaker] rigging IN_PROGRESS 36%
+2026-10-11 17:32:03 [sm2_buster] rigging IN_PROGRESS 36%
+2026-10-11 17:32:09 [sm2_sparks] rigging SUCCEEDED 100%
+2026-10-11 17:32:09 [sm2_sparks] rigged: {"model": {"bytes": 5733304, "triangles": 61922, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57340, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46716, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
