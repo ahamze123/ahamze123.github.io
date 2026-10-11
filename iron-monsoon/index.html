@@ -448,6 +448,7 @@ const Sfx = {
   mount() { if (!AU.ok('mount', 0.3)) return; AU.tone('sawtooth', 80, 240, 0.35, 0.05); AU.tone('square', 160, 480, 0.3, 0.025, 0.05); AU.noise(0.3, 0.08, 'lowpass', 600, 1800); },
   cannon() { if (!AU.ok('cannon', 0.15)) return; AU.tone('sine', 120, 38, 0.35, 0.3); AU.tone('square', 180, 60, 0.18, 0.06); AU.noise(0.3, 0.3, 'lowpass', 1400, 200); },
   land() { if (!AU.ok('land', 0.08)) return; AU.noise(0.06, 0.06, 'lowpass', 700); },
+  coin() { if (!AU.ok('coin', 0.045)) return; const k = 1 + ((AU.ctx.currentTime * 7) % 1) * 0.06; AU.tone('square', 1319 * k, 1319 * k, 0.045, 0.03); AU.tone('square', 1976 * k, 1976 * k, 0.09, 0.03, 0.045); },
   pickup() { if (!AU.ok('pickup', 0.1)) return; [523, 659, 784, 1047, 1319].forEach((f, i) => AU.tone('square', f, f, 0.09, 0.05, i * 0.055)); },
   oneup() { if (!AU.ok('oneup', 0.1)) return; [784, 988, 1175, 1568, 1976].forEach((f, i) => AU.tone('triangle', f, f, 0.12, 0.08, i * 0.07)); },
   hurt() { if (!AU.ok('hurt', 0.1)) return; AU.tone('sawtooth', 320, 70, 0.3, 0.1); AU.noise(0.2, 0.15, 'bandpass', 900, 200); },
@@ -3470,13 +3471,17 @@ const boxOverlap = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] >
    ===================================================================== */
 class Player {
   constructor(i) {
-    this.i = i; this.style = i ? STYLE_P2 : STYLE_P1; this.tag = i ? 'EMBER' : 'VOLT';
-    this.score = 0; this.lives = DIFF[Game.diff].lives; this.weapon = 'pulse'; this.wlv = 1; this.nextLife = 30000;
-    this.guns = ['pulse']; this.glv = { pulse: 1 }; this.sup = 0;
+    // lo: the hero this player plays (name, look, shop upgrades); both computers have the same ones in online games
+    this.i = i; this.lo = (Game.loadouts && Game.loadouts[i]) || null;
+    this.style = this.lo ? heroStyle(this.lo.look) : i ? STYLE_P2 : STYLE_P1; this.tag = this.lo ? this.lo.name : i ? 'EMBER' : 'VOLT';
+    this.score = 0; this.lives = DIFF[Game.diff].lives + (this.lo ? this.lo.life : 0); this.weapon = 'pulse'; this.wlv = 1; this.nextLife = 30000;
+    this.sup = 0; this.coins = 0; this.banked = 0; this.coins0 = 0; this.bossHits = 0;
+    this.resetGuns();
     this.scarf = []; this.isPlayer = true; this.w = 11; this.h = 30; this.bestCombo = 0;
     this.spawn(0, 0);
   }
-  get maxHp() { return DIFF[Game.diff].hp; }
+  get maxHp() { return DIFF[Game.diff].hp + (this.lo ? this.lo.hp : 0); } // TOUGH ARMOUR adds hearts
+  magnet() { return 36 + 40 * (this.lo ? this.lo.magnet : 0); } // how far away coins fly to you
   spawn(x, y) {
     Object.assign(this, { x, y, vx: 0, vy: 0, face: 1, onGround: false, ground: null, dropT: 0, state: 'alive', mode: 'stand',
       spinning: false, spin: 0, phase: 0, aim: 0, recoil: 0, fireCd: 0.2, muzzleT: 0, invuln: 2.4, inWater: null, diving: false,
@@ -3601,6 +3606,7 @@ class Player {
     }
     if (this.buddyT > 0) { if (!this.buddy) this.buddy = new Buddy(this); this.buddy.update(dt); }
     else if (this.buddy) { this.buddy.leave(); this.buddy = null; }
+    if (this.lo) outfitTick(this, dt);
     if (this.speedT > 0 && Math.abs(this.vx) > RUN && Math.random() < dt * 24) { const p = P('streak', this.x - this.face * 8, this.y - crand(6, 26), 0, 0, 0.18, 1, this.style.vrgb); p.w = -this.face * crand(10, 18); p.h = 0; p.a = 0.6; }
     if (this.starT > 0 && Math.random() < dt * 30) { const p = P('glow', this.x + crand(-9, 9), this.y - crand(2, 30), crand(-20, 20), crand(-30, 0), 0.5, crand(1.5, 2.5), STAR_RGB[(this.t * 12 | 0) % STAR_RGB.length]); p.a = 0.9; }
     if (this.supT > 0 && Math.random() < dt * 40) { const p = P('glow', this.x + crand(-11, 11), this.y - crand(0, 40), crand(-12, 12), crand(-70, -30), crand(0.4, 0.7), crand(1.2, 2.4), Math.random() < 0.7 ? SUPER.rgb : '255,255,235'); p.a = 0.95; p.drag = 1; }
@@ -3620,6 +3626,8 @@ class Player {
     return false;
   }
   mount(v) {
+    if (this.lo && this.lo.veh && !v.boosted) { const add = Math.round(v.d.hp * 0.3 * this.lo.veh); v.boosted = true; v.max += add; v.hp += add; } // VEHICLE ARMOUR
+    Trophies.ride(this, v.kind);
     this.ride = v; v.rider = this; v.face = this.face; v.vx = this.vx * 0.5; v.coyote = 0; v.hops = 1; v.aim = v.tAim = 0;
     this.slideT = 0; this.spinning = false; this.prevJump = true; this.offRide = null;
     if (this.flameOn) { this.flameOn = false; Game.flameSound(); }
@@ -3661,7 +3669,7 @@ class Player {
   addGun(type) {
     this.glv[this.weapon] = this.wlv;
     if (this.guns.includes(type)) this.glv[type] = Math.min(3, (this.glv[type] || 1) + 1);
-    else { this.guns.push(type); this.glv[type] = 1; }
+    else { this.guns.push(type); this.glv[type] = 1; Trophies.ev(this, 'maxGuns', this.guns.length, true); }
     this.weapon = type; this.wlv = this.glv[type];
   }
   swapGun() {
@@ -3673,12 +3681,16 @@ class Player {
     if (this.flameOn) { this.flameOn = false; Game.flameSound(); }
     Sfx.swap();
   }
-  resetGuns() { this.guns = ['pulse']; this.glv = { pulse: 1 }; this.weapon = 'pulse'; this.wlv = 1; }
+  resetGuns() { // back to the guns this hero always carries (PULSE and the ones bought in the shop); the newest one in hand
+    this.guns = ['pulse'].concat(this.lo ? this.lo.guns : []); this.glv = {};
+    for (const g of this.guns) this.glv[g] = 1;
+    this.weapon = this.guns[this.guns.length - 1]; this.wlv = 1;
+  }
   loseGunLevel() { this.wlv = Math.max(1, (this.wlv || 1) - 1); this.glv[this.weapon] = this.wlv; }
   /* ---- Super Soldier ---- */
   addSuper(n) {
     if (this.supT > 0 || this.state !== 'alive' || this.sup >= SUPER.max) return;
-    this.sup = Math.min(SUPER.max, this.sup + n);
+    this.sup = Math.min(SUPER.max, this.sup + n * (1 + 0.25 * (this.lo ? this.lo.sup : 0))); // SUPER CHARGER fills it faster
     if (this.sup >= SUPER.max) { this.readyT = 1.2; Sfx.ready(); Game.banner('SUPER READY', superHint(this), SUPER.rgb, null, this); }
   }
   trySuper() {
@@ -3687,7 +3699,7 @@ class Player {
     this.sup = 0; this.supT = SUPER.time; this.novaCd = 0; this.airJumps = 2;
     superBlast(this);
     Game.banner('SUPER SOLDIER!', 'Unstoppable for ' + SUPER.time + ' seconds', SUPER.rgb, null, this);
-    Sfx.superOn();
+    Sfx.superOn(); Trophies.ev(this, 'supers', 1);
   }
   endSuper() {
     this.supT = 0; this.invuln = Math.max(this.invuln, 1);
@@ -3711,6 +3723,7 @@ class Player {
     this.combo++; this.comboT = 1.9;
     if (this.combo >= 3) popText(this.x, this.y - 44, 'x' + this.combo, this.combo >= 10 ? '255,120,90' : '255,226,120');
     if (this.combo > this.bestCombo) this.bestCombo = this.combo;
+    if (this.combo >= 5) Trophies.ev(this, 'bestCombo', this.combo, true);
   }
   endCombo() {
     const n = this.combo; this.combo = 0; this.comboT = 0;
@@ -3785,7 +3798,8 @@ class Player {
       this.shHit = 1; this.shHitA = Math.atan2(sy - G.y, sx - G.x);
       sparks(G.x + Math.cos(this.shHitA) * G.rx, G.y + Math.sin(this.shHitA) * G.ry, 7, this.shHitA, 1.6, 150, '200,245,255'); Sfx.clank(); return true;
     }
-    if (this.ride) return this.ride.damage(1, src); // the vehicle's armour takes the hit
+    if (this.ride) { const took = this.ride.damage(1, src); if (took) this.bossHits++; return took; } // the vehicle's armour takes the hit
+    this.bossHits++; // (for the UNTOUCHABLE trophy)
     Game.stats.hits++;
     if (Store.data.inf) { // unlimited health: the hit flashes and stings, but costs nothing
       this.invuln = 0.7; this.hurtT = 0.16; Sfx.clank();
@@ -3820,6 +3834,7 @@ class Player {
   }
   pitfall() {
     if (this.state !== 'alive') return;
+    this.bossHits++;
     if (this.ride) this.ride.wreck(false);
     if (Game.god || Store.data.inf) { this.respawnSafe(); if (Store.data.inf) { Sfx.charge(); flash(0.15, '120,200,255'); } return; }
     if (this.hp > 1 && Game.diff === 'recruit') { this.hp--; Game.stats.hits++; Sfx.hurt(); flash(0.2, '255,70,60'); this.respawnSafe(); this.invuln = 2; return; }
@@ -3856,10 +3871,15 @@ class Player {
       c.globalAlpha = g.a * 0.42;
       drawSoldier(c, { x: g.x, y: g.y, face: g.face, mode: g.mode === 'slide' ? 'crouch' : g.mode, phase: g.phase, aim: g.aim, spin: g.spin, style: this.style, solid: i % 2 ? '#ffb43a' : '#ffd84a', t: this.t });
     }
-    c.globalAlpha = 1;
-    drawSoldier(c, { x: this.x, y: this.y, face: this.face, mode: this.state === 'dying' ? 'dead' : slide ? 'crouch' : this.mode, phase: this.phase, aim: this.aim,
+    const od = this.supT > 0 ? null : outfitDraw(this); // special outfits: a shine, rainbow colours, see-through
+    const pose = { x: this.x, y: this.y, face: this.face, mode: this.state === 'dying' ? 'dead' : slide ? 'crouch' : this.mode, phase: this.phase, aim: this.aim,
       recoil: this.recoil, spin: this.spin, style: this.style, flash: this.hurtT > 0.12 || (this.starT > 0 && Math.floor(this.t * 16) % 3 === 0), t: this.t, deathRot: this.deathRot, scarf: this.scarf, lean: slide ? -0.32 : 0,
-      outline: this.supT > 0 ? '#ffe27a' : null, outlineA: this.supT < 2 ? 0.5 + 0.5 * Math.abs(Math.sin(this.t * 10)) : 1, sheen: this.supT > 0 ? 0.06 + 0.06 * Math.sin(this.t * 9) : 0, sheenCol: '#fff4c0' });
+      outline: this.supT > 0 ? '#ffe27a' : null, outlineA: this.supT < 2 ? 0.5 + 0.5 * Math.abs(Math.sin(this.t * 10)) : 1,
+      sheen: this.supT > 0 ? 0.06 + 0.06 * Math.sin(this.t * 9) : od && od.sheen || 0, sheenCol: od && od.sheenCol || '#fff4c0' };
+    c.globalAlpha = od && od.alpha || 1;
+    drawSoldier(c, pose);
+    if (this.lo && this.lo.look.top) drawTopper(c, pose, this.lo.look.top);
+    c.globalAlpha = 1;
     if (this.shield > 0 && this.state === 'alive') this.drawShield(c);
   }
   drawAura(c) { // Super Soldier: tongues of golden fire licking upward around the body
@@ -5921,8 +5941,13 @@ class Vehicle {
     drawArt(c, 'v_dome', T.ring[0], T.ring[1], T.H, T.b[0], T.b[1], { flip: this.face < 0, flash: fl });
   }
   drawRider(c, p) {
-    drawSoldier(c, { x: p.x, y: p.y, face: p.face, mode: this.kind === 'tank' ? 'stand' : 'crouch', phase: 0, aim: this.kind === 'tank' ? 0 : p.aim, recoil: p.recoil, style: p.style, t: p.t, scarf: p.scarf,
-      flash: p.hurtT > 0.12 || (p.starT > 0 && Math.floor(p.t * 16) % 3 === 0), outline: p.supT > 0 ? '#ffe27a' : null, outlineA: 1, sheen: p.supT > 0 ? 0.08 : 0, sheenCol: '#fff4c0' });
+    const od = p.supT > 0 ? null : outfitDraw(p);
+    const pose = { x: p.x, y: p.y, face: p.face, mode: this.kind === 'tank' ? 'stand' : 'crouch', phase: 0, aim: this.kind === 'tank' ? 0 : p.aim, recoil: p.recoil, style: p.style, t: p.t, scarf: p.scarf,
+      flash: p.hurtT > 0.12 || (p.starT > 0 && Math.floor(p.t * 16) % 3 === 0), outline: p.supT > 0 ? '#ffe27a' : null, outlineA: 1, sheen: p.supT > 0 ? 0.08 : od && od.sheen || 0, sheenCol: od && od.sheenCol || '#fff4c0' };
+    c.globalAlpha = od && od.alpha || 1;
+    drawSoldier(c, pose);
+    if (p.lo && p.lo.look.top) drawTopper(c, pose, p.lo.look.top);
+    c.globalAlpha = 1;
   }
   drawRidden(c, p) {
     const blink = p.invuln > 0 && p.invuln < 2.2 && Math.floor(p.t * 20) % 2 === 0;
@@ -9235,7 +9260,7 @@ const pad = (n, l) => String(Math.max(0, Math.floor(n))).padStart(l, '0');
 
 const Game = {
   state: 'title', stateT: 0, rt: 0,
-  level: null, li: 0, players: [], enemies: [], bullets: [], ebullets: [], pickups: [], vehicles: [], boss: null,
+  level: null, li: 0, players: [], enemies: [], bullets: [], ebullets: [], pickups: [], vehicles: [], coins: [], boss: null, loadouts: null, titlePage: 'main',
   twoP: false, diff: 'recruit', god: false, simT: 0, lastDrop: -99, sinceDrop: 0, banners: [], radioQ: [], lockOn: null, goT: 0,
   stats: { hits: 0, deaths: 0, kills: 0, rescued: 0, rescueTotal: 0, time: 0 },
   menuSel: 0, pauseSel: 0, contT: 0, cardT: 0, bossIntroT: 0, clearT: -1, bossDone: false, checkpoint: null,
@@ -9279,6 +9304,9 @@ const Game = {
     this.stats.kills++;
     const owner = src && src.owner;
     if (owner && owner.isPlayer) { owner.addKill(); if (src.kind !== 'super') owner.addSuper(clamp((e.score || 100) / 22, 4, 14)); }
+    const [n, big] = coinsFor(e); // robots drop coins for the shop
+    if (n || big) dropCoins(e.cx, e.cy, n, big);
+    if (owner && owner.isPlayer) { if (e.rescue) Trophies.ev(owner, 'rescued', 1); else if (n) Trophies.ev(owner, 'kills', 1); }
     this.maybeDrop(e);
   },
   randomItem() {
@@ -9319,15 +9347,17 @@ const Game = {
     for (const h of this.heroes) { h.spawn(0, 0); h.mode = 'stand'; h.aim = -0.35; h.invuln = 0; }
     this.toTitle();
   },
-  toTitle() {
-    this.level = null; this.players = []; this.boss = null; this.enemies = []; this.bullets = []; this.ebullets = []; this.pickups = []; this.vehicles = [];
+  toTitle(keepSel = false) {
+    Heroes.bankAll(); this.saveHi();
+    this.level = null; this.players = []; this.boss = null; this.enemies = []; this.bullets = []; this.ebullets = []; this.pickups = []; this.vehicles = []; this.coins = [];
     Parts.length = 0; Fx.length = 0; Scr.bars = Scr.barsT = 0; Scr.slow = 1; Scr.hitstop = 0; Cam.trauma = 0;
-    this.menuSel = 0; this.setState('title');
+    if (!keepSel) { this.menuSel = 0; this.titlePage = 'main'; }
+    this.setState('title');
     Music.play('title'); Ambience.set('jungle'); Sfx.flame(false);
-    this.saveHi();
   },
   startGame(story = false, li = Store.data.mission) {
     this.twoP = Store.data.players === 2; this.diff = Store.data.diff; this.storyMode = story;
+    if (!Net.on) this.loadouts = [0, 1].map(i => Heroes.loadout(Heroes.of(i), i)); // online: both computers got the same ones from the host
     this.players = [new Player(0)];
     if (this.twoP) this.players.push(new Player(1));
     this.checkpoint = null;
@@ -9338,7 +9368,7 @@ const Game = {
   loadLevel(li, fromCheckpoint) {
     this.li = li; Store.data.mission = li; Store.save();
     const L = this.level = new Level(LEVELS[li], li);
-    this.enemies = []; this.bullets = []; this.ebullets = []; this.pickups = []; this.vehicles = []; this.boss = null;
+    this.enemies = []; this.bullets = []; this.ebullets = []; this.pickups = []; this.vehicles = []; this.coins = []; this.boss = null;
     Fx.length = 0; for (const p of Parts) PartPool.push(p); Parts.length = 0;
     this.bossIntroT = 0; this.clearT = -1; this.bossDone = false; this.tally = null;
     Cam.k = 0; Cam.p = 0; Cam.trauma = 0; Scr.bars = Scr.barsT = 0; Scr.slow = 1; Scr.hitstop = 0; Scr.flash = 0;
@@ -9355,16 +9385,17 @@ const Game = {
       const keep = { score: p.score, lives: p.state === 'out' ? Math.max(1, p.lives) : p.lives, weapon: p.weapon, wlv: p.wlv, nextLife: p.nextLife, bestCombo: p.bestCombo };
       const sp = this.findSpawnPoint(Cam.x + 50 + i * 30);
       p.spawn(sp.x, sp.y); Object.assign(p, keep);
+      if (!cp) { p.coins0 = p.coins; if (p.lo && p.lo.shield) p.shield = BUFFS.shield.t; } // START SHIELD from the shop
     });
     Music.play(L.theme.song); Ambience.set(L.theme.ambience);
     this.cardT = 3.4;
   },
   continueGame() {
-    for (const p of this.players) { p.lives = DIFF[this.diff].lives; p.resetGuns(); p.state = 'alive'; }
+    for (const p of this.players) { p.lives = DIFF[this.diff].lives + (p.lo ? p.lo.life : 0); p.resetGuns(); p.state = 'alive'; }
     this.loadLevel(this.li, true);
     this.cardT = 2; this.setState('play');
   },
-  gameOver() { this.contT = 9.99; this.setState('continue'); Music.play('over'); Sfx.flame(false); this.saveHi(); },
+  gameOver() { this.contT = 9.99; this.setState('continue'); Music.play('over'); Sfx.flame(false); this.saveHi(); Heroes.bankAll(); },
   saveHi() { let hi = Store.data.hi; for (const p of this.players) hi = Math.max(hi, p.score); if (hi !== Store.data.hi) { Store.data.hi = hi; Store.save(); } },
   onPlayerDown(p) {
     this.stats.deaths++;
@@ -9379,10 +9410,16 @@ const Game = {
       if (this.players.every(q => q.state === 'out')) this.gameOver();
     }
   },
-  onBossDead() { this.bossDone = true; this.clearT = 3.4; this.saveHi(); },
+  onBossDead() {
+    this.bossDone = true; this.clearT = 3.4; this.saveHi();
+    const B = this.boss, x = clamp(B ? B.x : Cam.x + VW / 2, Cam.x + 60, Cam.x + VW - 60), y = clamp(B ? B.y - 60 : Cam.y + 120, Cam.y + 40, Cam.y + VH - 70);
+    dropCoins(x, y, 40, 8, true); // a shower of coins that flies to the heroes
+    for (const p of this.players) if (p.state !== 'out') { Trophies.ev(p, 'bosses', 1); if (!p.bossHits && p.alive()) Trophies.ev(p, 'nohit', 1); }
+  },
   startBoss() {
     if (this.boss || this.bossDone) return;
     const L = this.level, aL = Cam.x, aR = Cam.x + VW, fy = L.floorBelow(Cam.x + VW / 2, Cam.y + 20, true);
+    for (const p of this.players) p.bossHits = 0;
     this.boss = new L.def.boss(aL, aR, isFinite(fy) ? fy : Cam.y + 226);
     this.boss.furyInit(1.5 * (this.players.length > 1 ? 1.3 : 1)); // tougher bosses (more so for two heroes)
     this.bossIntroT = 3.4; Scr.barsT = 1; Sfx.warning(); Music.play(this.boss.song || 'boss');
@@ -9418,6 +9455,7 @@ const Game = {
       case 'clear': this.updateWorld(rdt); if (this.stateT > 1.4 && (M.ok || taps.length) || this.stateT > 6.5) this.nextMission(); break;
       case 'victory': this.updateTitleScene(rdt); if (this.stateT > 2 && (M.ok || taps.length)) this.toTitle(); break;
       case 'online': Net.updateLobby(rdt, M, taps); break;
+      case 'meta': Meta.update(rdt, M, taps); break;
     }
   },
   /* ---------- ambush arenas ---------- */
@@ -9466,7 +9504,12 @@ const Game = {
   },
   nextMission() {
     const next = this.li + 1;
-    if (this.storyMode) { Store.data.story = Math.max(Store.data.story || 0, Math.min(next, LEVELS.length - 1)); Store.save(); }
+    Heroes.bankAll();
+    if (this.storyMode) {
+      Store.data.story = Math.max(Store.data.story || 0, Math.min(next, LEVELS.length - 1));
+      for (const p of this.players) { const h = Heroes.forPlayer(p); if (h) h.story = Math.max(h.story || 0, Math.min(next, LEVELS.length - 1)); }
+      Store.save();
+    }
     const toVictory = () => { this.setState('victory'); Music.play('victory'); Ambience.set('jungle'); Sfx.flame(false); this.saveHi(); for (const p of Parts) PartPool.push(p); Parts.length = 0; };
     if (next >= LEVELS.length) { if (this.storyMode) this.playScene(STORY.end, -1, toVictory); else toVictory(); return; }
     this.checkpoint = null;
@@ -9540,17 +9583,18 @@ const Game = {
     if (this.boss) { this.boss.update(dt * this.boss.furySpeed()); this.boss.furyTick(dt); if (this.boss.dead) this.boss = null; }
     this.updateBullets(dt); this.updateEBullets(dt);
     for (const k of this.pickups) k.update(dt);
+    for (const k of this.coins) if (!k.dead) k.update(dt);
     updateParts(dt); updateFx(dt);
     this.contactDamage();
     this.updateCamera(dt, false);
     this.constrainPlayers();
-    compact(this.enemies); compact(this.bullets); compact(this.ebullets); compact(this.pickups); compact(this.vehicles);
+    compact(this.enemies); compact(this.bullets); compact(this.ebullets); compact(this.pickups); compact(this.vehicles); compact(this.coins);
     for (const cp of L.checkpoints) if (!cp.done && Cam.x + VW / 2 >= cp.x) {
       cp.done = true; cp.raiseT = 0; this.checkpoint = { li: this.li, k: Cam.k, p: Cam.p, x: cp.x };
       let healed = false;
       if (this.diff === 'recruit') for (const p of this.players) if (p.alive() && p.hp < p.maxHp) { p.hp = p.maxHp; healed = true; }
       this.banner('CHECKPOINT', healed ? 'Health fully restored' : 'Progress is saved', '120,255,170');
-      Sfx.confirm();
+      Sfx.confirm(); Heroes.bankAll();
     }
     this.updateLock(dt);
     for (const tk of L.talks) if (!tk.done && Cam.x + VW / 2 >= tk.x) { tk.done = true; this.radio(tk.lines); }
@@ -9564,12 +9608,20 @@ const Game = {
       this.clearT -= dt;
       if (this.clearT <= 0 && this.state === 'play') {
         const bonus = 5000 + (this.diff === 'veteran' ? 5000 : 0);
-        this.tally = this.players.map(p => ({ tag: p.tag, style: p.style, score: p.score, bonus, lives: p.lives, combo: p.bestCombo }));
+        this.tally = this.players.map(p => ({ tag: p.tag, style: p.style, score: p.score, bonus, lives: p.lives, combo: p.bestCombo, p }));
         for (const p of this.players) if (p.state !== 'out') p.score += bonus;
         this.clearStars = this.computeStars();
         const st = Store.data.stars || (Store.data.stars = {});
         st[this.li] = Math.max(st[this.li] || 0, this.clearStars); Store.save();
+        for (const k of this.coins) k.home = true; // coins still lying around fly to the heroes
         this.saveHi(); this.setState('clear'); Music.play('clear'); Sfx.flame(false);
+        const done = new Set(); // stars, story and trophies for the heroes saved on this computer
+        for (const p of this.players) {
+          const h = Heroes.forPlayer(p); if (!h || done.has(h)) continue; done.add(h);
+          h.stars[this.li] = Math.max(h.stars[this.li] || 0, this.clearStars);
+          Trophies.add(h, 'missions', 1); if (Net.on) Trophies.add(h, 'onlineMissions', 1);
+        }
+        Heroes.bankAll();
       }
     }
   },
@@ -9758,17 +9810,28 @@ const Game = {
 
   /* ---------- title / menus ---------- */
   titleItems() {
-    const it = [{ id: 'story' }, { id: 'start' }, { id: 'mission' }, { id: 'players' }, { id: 'mode' }, { id: 'health' }, { id: 'sound' }, { id: 'music' }];
-    if (Net.available) it.splice(2, 0, { id: 'online' });
+    if (this.titlePage === 'options') {
+      const it = [{ id: 'mode' }, { id: 'health' }, { id: 'sound' }, { id: 'music' }];
+      if (fsSupported()) it.push({ id: 'fullscreen' });
+      it.push({ id: 'oback' });
+      return it;
+    }
+    const it = [{ id: 'story' }, { id: 'play' }, { id: 'players' }, { id: 'hero' }, { id: 'shop' }, { id: 'trophies' }, { id: 'options' }];
+    if (Net.available) it.splice(3, 0, { id: 'online' });
     return it;
   },
+  heroStory() { return Math.min(Heroes.of(0).story || 0, LEVELS.length - 1); }, // the furthest chapter the hero reached
   itemText(id) {
     const d = Store.data;
     switch (id) {
-      case 'story': { const ch = this.storyPick ?? (d.story || 0); return ['STORY MODE', ch > 0 ? 'CHAPTER ' + (ch + 1) : 'NEW STORY']; }
-      case 'start': return ['PLAY ONE MISSION', ''];
+      case 'story': { const ch = this.storyPick ?? this.heroStory(); return ['STORY MODE', ch > 0 ? 'CHAPTER ' + (ch + 1) : 'NEW STORY']; }
+      case 'play': { const n = Heroes.of(0).stars[d.mission] || 0; return ['PLAY MISSION', `${d.mission + 1} · ${LEVELS[d.mission].name}  ${'★'.repeat(n)}${'☆'.repeat(3 - n)}`]; }
       case 'online': return ['ONLINE CO-OP', 'PLAY WITH A FRIEND'];
-      case 'mission': { const n = (d.stars && d.stars[d.mission]) || 0; return ['MISSION', `${d.mission + 1} · ${LEVELS[d.mission].name}  ${'★'.repeat(n)}${'☆'.repeat(3 - n)}`]; }
+      case 'hero': return ['MY HERO', d.players === 2 ? Heroes.of(0).name + ' & ' + Heroes.of(1).name : Heroes.of(0).name];
+      case 'shop': return ['SHOP', '◎ ' + Heroes.of(0).coins + (d.players === 2 ? '  ·  ◎ ' + Heroes.of(1).coins : '')];
+      case 'trophies': return ['TROPHIES', Trophies.count(Heroes.of(0)) + ' OF ' + TROPHIES.length];
+      case 'options': return ['OPTIONS', ''];
+      case 'oback': return ['BACK', ''];
       case 'players': return ['PLAYERS', d.players === 2 ? '2 · CO-OP' : '1'];
       case 'mode': return ['MODE', d.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
       case 'health': return ['HEALTH', d.inf ? 'UNLIMITED' : 'NORMAL'];
@@ -9784,9 +9847,14 @@ const Game = {
   },
   changeItem(id, dir) {
     const d = Store.data;
-    if (id === 'story') { const mx = Math.min(d.story || 0, LEVELS.length - 1); this.storyPick = ((this.storyPick ?? mx) + dir + mx + 1) % (mx + 1); Sfx.select(); return true; }
-    if (id === 'mission') d.mission = (d.mission + dir + LEVELS.length) % LEVELS.length;
-    else if (id === 'players') d.players = d.players === 2 ? 1 : 2;
+    if (id === 'story') { const mx = this.heroStory(); this.storyPick = ((this.storyPick ?? mx) + dir + mx + 1) % (mx + 1); Sfx.select(); return true; }
+    if (id === 'mission' || id === 'play') d.mission = (d.mission + dir + LEVELS.length) % LEVELS.length;
+    else if (id === 'hero') { // quick switch of player 1's hero (never the one player 2 has)
+      const n = Heroes.list().length, other = d.players === 2 && n > 1 ? d.heroP[1] : -1;
+      let v = (d.heroP[0] + dir + n) % n; if (v === other) v = (v + dir + n) % n;
+      d.heroP[0] = v; this.storyPick = null;
+    }
+    else if (id === 'players') { d.players = d.players === 2 ? 1 : 2; if (d.players === 2 && d.heroP[1] === d.heroP[0] && Heroes.list().length > 1) d.heroP[1] = (d.heroP[0] + 1) % Heroes.list().length; }
     else if (id === 'mode') d.diff = d.diff === 'recruit' ? 'veteran' : 'recruit';
     else if (id === 'health') { d.inf = !d.inf; if (d.inf) for (const p of this.players) if (p.state === 'alive') p.hp = p.maxHp; }
     else if (id === 'sound') { d.sound = !d.sound; AU.apply(); Ambience.restart(); }
@@ -9828,13 +9896,19 @@ const Game = {
     this.updateTitleScene(dt);
     const items = this.titleItems();
     if (taps.length && this.fsHit(taps)) return;
-    this.menuSel = this.handleMenu(items, this.menuSel, M, taps, this.menuGeom(items.length, 122, 13), id => {
-      if (id === 'start') { Sfx.confirm(); this.startGame(false); }
-    }, id => {
-      if (id === 'story') { Sfx.confirm(); this.startGame(true, this.storyPick ?? Math.min(Store.data.story || 0, LEVELS.length - 1)); return true; }
+    if (this.titlePage === 'options' && M.back) { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'options'); Sfx.select(); return; }
+    const go = id => { // pressing fire / tapping the middle of an item
+      if (id === 'story') { Sfx.confirm(); this.startGame(true, this.storyPick ?? this.heroStory()); return true; }
+      if (id === 'play') { Sfx.confirm(); this.startGame(false); return true; }
       if (id === 'online') { Net.open(); return true; }
+      if (id === 'hero') { Meta.open('hero'); return true; }
+      if (id === 'shop') { Meta.open('shop'); return true; }
+      if (id === 'trophies') { Meta.open('trophies'); return true; }
+      if (id === 'options') { this.titlePage = 'options'; this.menuSel = 0; Sfx.confirm(); return true; }
+      if (id === 'oback') { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'options'); Sfx.select(); return true; }
       return false;
-    });
+    };
+    this.menuSel = this.handleMenu(items, this.menuSel, M, taps, this.menuGeom(items.length, 122, 13), go, go);
   },
   fsHit(taps) {
     for (const t of taps) if (t.x > VW - 30 && t.y < 26) {
@@ -9873,13 +9947,14 @@ const Game = {
     c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
     if (this.state === 'story') { this.drawStory(c); return; }
     if (this.state === 'online') { if (!this.drawTitleArt(c)) this.renderScene(c, this.titleLevel); this.post(c); Net.drawLobby(c); return; }
+    if (this.state === 'meta') { if (!this.drawTitleArt(c)) this.renderScene(c, this.titleLevel); this.post(c); Meta.render(c); return; }
     if (this.state === 'title' || this.state === 'victory') { if (!this.drawTitleArt(c)) this.renderScene(c, this.titleLevel); this.post(c); if (this.state === 'title') this.drawTitle(c); else this.drawVictory(c); return; }
     this.renderGame(c);
     this.post(c);
     this.drawHUD(c);
     if (this.state === 'pause') this.drawPause(c);
     else if (this.state === 'continue') this.drawContinue(c);
-    else if (this.state === 'clear') this.drawClear(c);
+    else if (this.state === 'clear') { this.drawClear(c); this.drawBanners(c); } // trophies won at the end show over the results
     if (lastDevice === 'touch' && this.state === 'play') this.drawTouch(c);
     if (Net.on) Net.drawGame(c);
   },
@@ -9904,6 +9979,7 @@ const Game = {
     c.save(); c.translate(-ox, -oy);
     L.drawWorld(c);
     for (const k of this.pickups) k.draw(c);
+    for (const k of this.coins) k.draw(c);
     for (const e of this.enemies) e.draw(c);
     if (this.boss) this.boss.draw(c);
     for (const f of Fx) if (f.draw) f.draw(c);
@@ -9928,6 +10004,7 @@ const Game = {
     for (const e of this.enemies) e.glow(c);
     if (this.boss) { this.boss.glow(c); this.boss.drawDrops(c); }
     for (const k of this.pickups) k.glow(c);
+    for (const k of this.coins) k.glow(c);
     for (const v of this.vehicles) if (!v.rider) v.glow(c);
     for (const p of this.players) p.glow(c);
     for (const b of this.bullets) b.glow(c);
@@ -10071,6 +10148,13 @@ const Game = {
       c.fillText('x' + p.combo + ' COMBO', bx + 2, y0 + 54);
       c.fillStyle = 'rgba(255,226,122,0.8)'; c.fillRect(bx + 2, y0 + 56.5, 44 * k, 1.4);
     }
+    // coins picked up in this mission (they go into the hero's piggy bank for the shop)
+    const got = (p.coins || 0) - (p.coins0 || 0), bump = Math.max(0, (p.coinT || 0) - this.rt) / 0.25, s = String(got);
+    setFont(c, 7 + bump * 1.5, FONT_MONO, 400); c.textAlign = 'right';
+    const tw = c.measureText(s).width, cx = x0 + 111, cy = y0 + 49;
+    c.fillStyle = 'rgba(5,9,16,0.5)'; rrect(c, cx - tw - 13, cy - 5, tw + 16, 10, 5); c.fill();
+    c.fillStyle = bump > 0 ? '#fff6c8' : '#ffe680'; c.fillText(s, cx, cy + 2.6);
+    drawCoinIcon(c, cx - tw - 6, cy, 3.3);
   },
   drawCard(c) {
     const L = LEVELS[this.li], t = 3.4 - this.cardT, a = clamp(Math.min(t / 0.35, this.cardT / 0.6), 0, 1);
@@ -10111,8 +10195,8 @@ const Game = {
       if (!val) { c.fillStyle = on ? '#fff' : 'rgba(225,232,244,0.78)'; spaced(c, label, geom.x, y, 1.6, 'center'); }
       else {
         c.fillStyle = on ? '#ffffff' : 'rgba(225,232,244,0.7)'; spaced(c, label, geom.x - geom.w / 2 + 10, y, 1.2, 'left');
-        c.fillStyle = on ? '#ffb46b' : 'rgba(255,190,130,0.75)'; c.textAlign = 'right';
-        c.fillText((on ? '◂ ' : '') + val + (on ? ' ▸' : ''), geom.x + geom.w / 2 - 8, y);
+        c.fillStyle = on ? '#ffb46b' : 'rgba(255,190,130,0.75)';
+        fillIconText(c, (on ? '◂ ' : '') + val + (on ? ' ▸' : ''), geom.x + geom.w / 2 - 8, y, 'right');
       }
     });
   },
@@ -10166,7 +10250,14 @@ const Game = {
     let note = d.diff === 'recruit' ? '3 hits per life · extra lives · keep your weapon after a fall' : 'One hit and you are down · classic rules';
     if (selId === 'health') note = d.inf ? 'Unlimited health: hits and falls never cost a life' : 'Normal health: hits and falls cost lives';
     else if (selId === 'story') note = 'The whole adventure with the story · ◂ ▸ picks a chapter you reached';
-    else if (selId === 'start' || selId === 'mission') note = 'Play any mission on its own · ◂ ▸ on MISSION to choose';
+    else if (selId === 'play') note = 'Play any mission on its own · ◂ ▸ picks the mission';
+    else if (selId === 'players') note = d.players === 2 ? 'Two players on one computer: keyboard halves or two gamepads' : 'Press ◂ ▸ for two players on one computer';
+    else if (selId === 'online') note = 'Play together on two computers, phones or tablets';
+    else if (selId === 'hero') note = 'Name, colours, helmet and outfits · ◂ ▸ switches hero';
+    else if (selId === 'shop') note = 'Robots drop coins · spend them on upgrades and guns';
+    else if (selId === 'trophies') note = 'Every hero has their own trophy wall';
+    else if (selId === 'options') note = 'Mode, health, sound and music';
+    else if (selId === 'sound' || selId === 'music' || selId === 'fullscreen' || selId === 'oback') note = 'Esc goes back';
     else if (d.inf) note = 'Unlimited health is on · practice as long as you like';
     c.fillText(note, geom.x, geom.top + items.length * geom.h + 4);
     let hint;
@@ -10218,7 +10309,11 @@ const Game = {
       const y = VH * 0.6 + i * 16, k = clamp((this.stateT - 0.6 - i * 0.3) / 0.8, 0, 1);
       setFont(c, 8, FONT_UI, 700); c.fillStyle = t.style.visor; c.textAlign = 'right'; c.fillText(t.tag, VW / 2 - 50, y);
       setFont(c, 9, FONT_MONO, 400); c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(pad(t.score + t.bonus * k, 7), VW / 2 - 40, y);
-      setFont(c, 7, FONT_UI, 700); c.fillStyle = '#ffd08a'; c.fillText('+' + t.bonus + ' BONUS' + (t.combo >= 5 ? '   BEST COMBO x' + t.combo : ''), VW / 2 + 24, y);
+      setFont(c, 7, FONT_UI, 700); c.fillStyle = '#ffd08a'; const bt = '+' + t.bonus + ' BONUS'; c.fillText(bt, VW / 2 + 24, y);
+      let tx = VW / 2 + 24 + c.measureText(bt).width + 12;
+      const got = (t.p.coins || 0) - (t.p.coins0 || 0); // coins from this mission, counting up as the last ones fly in
+      drawCoinIcon(c, tx, y - 2.5, 3.2); setFont(c, 7, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = '#ffe680'; c.fillText(String(got), tx + 6, y); tx += 6 + c.measureText(String(got)).width + 10;
+      if (t.combo >= 5) { c.fillStyle = '#ffd08a'; c.fillText('BEST COMBO x' + t.combo, tx, y); }
     });
     if (this.stateT > 1.4) {
       setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center';
@@ -10351,10 +10446,632 @@ function boot2() {
   }
   requestAnimationFrame(frame);
 }
-window.__IM = { Game, Cam, Store, LEVELS, Input, Touch, ART, STORY, muzzle: soldierMuzzle };
-const HOT = window.claude && window.claude.hot;
-if (HOT && HOT.snapshot) { try { HOT.snapshot(() => ({ mission: Store.data.mission })); } catch (e) { /* viewer hook unavailable */ } }
-if (HOT && HOT.ready) HOT.ready(start); else start((HOT && HOT.data) || {});
+
+/* =====================================================================
+   07b_meta.js : heroes (one save per child), hero looks, coins,
+   the upgrade shop and the trophy wall
+   ===================================================================== */
+const ARMOR = [
+  { name: 'BLUE', h: 215 }, { name: 'RED', h: 2, v: 1.05 }, { name: 'GREEN', h: 118, v: 0.95 }, { name: 'YELLOW', h: 48, v: 1.3 }, { name: 'PURPLE', h: 274 },
+  { name: 'ORANGE', h: 26, v: 1.2 }, { name: 'PINK', h: 322, s: 0.8, v: 1.2 }, { name: 'TEAL', h: 172, v: 1.05 }, { name: 'WHITE', h: 215, s: 0.1, v: 1.45 }, { name: 'BLACK', h: 215, s: 0.3, v: 0.45 },
+];
+const SCARF = [
+  { name: 'ORANGE', h: 20 }, { name: 'RED', h: 356 }, { name: 'YELLOW', h: 50, v: 1.15 }, { name: 'GREEN', h: 118, v: 0.85 }, { name: 'BLUE', h: 212 },
+  { name: 'PURPLE', h: 280 }, { name: 'PINK', h: 325 }, { name: 'WHITE', h: 20, s: 0.04, v: 1.4 },
+];
+const TOPPER = ['NONE', 'ANTENNA', 'FIN', 'HORNS', 'CAT EARS', 'STAR', 'CROWN'];
+const OUTFITS = [ // need = stars to unlock
+  { name: 'CLASSIC', need: 0 },
+  { name: 'NIGHT OPS', need: 5, armor: { h: 215, s: 0.3, v: 0.42 }, scarf: { h: 356 } },
+  { name: 'ARCTIC', need: 10, armor: { h: 200, s: 0.09, v: 1.45 }, scarf: { h: 205 } },
+  { name: 'LAVA', need: 15, armor: { h: 6, s: 1.1, v: 0.8 }, scarf: { h: 32, v: 1.1 }, fx: 'ember' },
+  { name: 'CHROME', need: 20, armor: { h: 210, s: 0.06, v: 1.2 }, scarf: { h: 210 }, fx: 'shine' },
+  { name: 'GHOST', need: 26, armor: { h: 176, s: 0.5, v: 1.3 }, scarf: { h: 176, s: 0.4, v: 1.3 }, fx: 'ghost' },
+  { name: 'RAINBOW', need: 32, fx: 'rainbow' },
+  { name: 'GOLDEN HERO', need: 39, armor: { h: 44, s: 1.1, v: 1.25 }, scarf: { h: 4 }, fx: 'gold' },
+];
+
+/* ---------------- heroes: every child has their own saved hero ---------------- */
+const Heroes = {
+  blank(name, look) {
+    return { name, look: Object.assign({ armor: 0, scarf: 0, top: 0, outfit: 0 }, look), coins: 0, up: {}, guns: [], stars: {}, story: 0, letters: {}, troph: {}, stat: {}, best: {} };
+  },
+  init() {
+    const d = Store.data;
+    if (!Array.isArray(d.heroes) || !d.heroes.length) {
+      d.heroes = [this.blank('VOLT', { armor: 0, scarf: 0 }), this.blank('EMBER', { armor: 1, scarf: 7 })];
+      for (const h of d.heroes) { h.stars = Object.assign({}, d.stars || {}); h.story = d.story || 0; }
+    }
+    for (const h of d.heroes) { const b = this.blank(h.name, h.look); for (const k in b) if (h[k] === undefined) h[k] = b[k]; }
+    if (!Array.isArray(d.heroP)) d.heroP = [0, Math.min(1, d.heroes.length - 1)];
+    for (let i = 0; i < 4; i++) if (!(d.heroP[i] >= 0 && d.heroP[i] < d.heroes.length)) d.heroP[i] = Math.min(i, d.heroes.length - 1);
+  },
+  list() { return Store.data.heroes; },
+  of(i) { return Store.data.heroes[Store.data.heroP[i]] || Store.data.heroes[0]; }, // the hero local player i is using
+  starsOf(h) { let n = 0; for (const k in h.stars) n += h.stars[k] || 0; return n; },
+  // the hero saved on this computer for a player in the game (online: only your own player)
+  forPlayer(p) { if (!p || !p.isPlayer) return null; if (Net.on) return p.i === Net.mySlot() ? this.of(0) : null; return this.of(p.i); },
+  loadout(h, i = 0) { // what a hero brings into a game (both computers must agree on these in online games)
+    const u = h.up || {};
+    return cleanLoadout({ name: h.name, look: h.look, hp: u.hp, sup: u.sup, veh: u.veh, life: u.life, magnet: u.magnet, shield: u.shield, guns: h.guns }, i);
+  },
+  bankAll() { // coins picked up in the game go into the hero's piggy bank
+    for (const p of Game.players) {
+      const h = this.forPlayer(p); if (!h) { p.banked = p.coins; continue; }
+      const n = (p.coins || 0) - (p.banked || 0);
+      if (n > 0) { h.coins += n; Trophies.add(h, 'coins', n); }
+      p.banked = p.coins;
+    }
+    Store.save();
+  },
+};
+
+/* ---------------- looks: recolour the painted soldier for each hero ---------------- */
+const LOOKS = new Map();
+function lookColors(look) { const o = OUTFITS[look.outfit || 0] || OUTFITS[0]; return { a: o.armor || ARMOR[look.armor || 0] || ARMOR[0], s: o.scarf || SCARF[look.scarf || 0] || SCARF[0], fx: o.fx || null }; }
+function hsv2rgb(h, s, v) {
+  const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+  return [f(5), f(3), f(1)];
+}
+function hsvHex(T, s, v) { const [r, g, b] = hsv2rgb(T.h, Math.min(1, s * (T.s ?? 1)), Math.min(1, v * (T.v ?? 1))); return '#' + [r, g, b].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); }
+function recolorSoldier(img, A, S) {
+  const w = img.width, h = img.height, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const g = cv.getContext('2d'); g.drawImage(img, 0, 0);
+  const id = g.getImageData(0, 0, w, h), d = id.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] === 0) continue;
+    const r = d[i] / 255, gg = d[i + 1] / 255, b = d[i + 2] / 255, mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), dl = mx - mn;
+    if (dl < 0.07 || mx < 0.06) continue; // greys stay grey (gun, boots)
+    let hh = mx === r ? ((gg - b) / dl) % 6 : mx === gg ? (b - r) / dl + 2 : (r - gg) / dl + 4; hh *= 60; if (hh < 0) hh += 360;
+    const sat = dl / mx;
+    let T = null, base = 0;
+    if (hh >= 196 && hh <= 252 && sat > 0.18) { T = A; base = 215; } // the blue armour and suit
+    else if ((hh <= 32 || hh >= 345) && sat > 0.55) { T = S; base = 20; } // the orange scarf (the brown pouches are much less saturated)
+    if (!T) continue;
+    const nh = (T.h + (hh - base) + 720) % 360, ns = Math.min(1, sat * (T.s ?? 1)), nv = Math.min(1, mx * (T.v ?? 1));
+    const [nr, ng, nb] = hsv2rgb(nh, ns, nv);
+    d[i] = nr * 255; d[i + 1] = ng * 255; d[i + 2] = nb * 255;
+  }
+  g.putImageData(id, 0, 0);
+  return cv;
+}
+function heroStyle(look) {
+  look = look || { armor: 0, scarf: 0 };
+  const L = lookColors(look);
+  if (!L.fx && look.outfit === 0) { // the two original heroes keep their own paintings
+    if ((look.armor || 0) === 0 && (look.scarf || 0) === 0) return STYLE_P1;
+    if (look.armor === 1 && look.scarf === 7) return STYLE_P2;
+  }
+  const sig = JSON.stringify([L.a, L.s]);
+  let e = LOOKS.get(sig);
+  if (!e) {
+    const style = Object.assign({}, STYLE_P1, { helmet: hsvHex(L.a, 0.62, 0.8), armor: hsvHex(L.a, 0.6, 1), suit: hsvHex(L.a, 0.7, 0.62), scarf: hsvHex(L.s, 0.85, 1) });
+    const key = 'sol_hero' + LOOKS.size;
+    if (ART.img.sol_volt && ART.meta.sol_volt) { ART.img[key] = recolorSoldier(ART.img.sol_volt, L.a, L.s); ART.meta[key] = ART.meta.sol_volt; SOL_SHEET.set(style, key); }
+    e = { style }; LOOKS.set(sig, e);
+  }
+  return e.style;
+}
+// A little extra on the helmet. It is drawn in the soldier picture's own frame (same moves as drawSolSprite),
+// so it stays on the helmet in every pose, even curled up in the spin jump. s = the pose given to drawSoldier.
+function drawTopper(c, s, top) {
+  if (!top || s.mode === 'dead' || s.mode === 'dive') return;
+  const k = solSheet(s.style);
+  let vx, vy;
+  c.save(); c.translate(s.x, s.y); c.scale(s.face, 1);
+  if (k) {
+    const m = ART.meta[k], F = solPick(m.frames, s);
+    if (!F || !F.v) { c.restore(); return; }
+    const ip = 1 / m.ppx; vx = F.v[0] * ip; vy = F.v[1] * ip;
+    if (s.lean) c.rotate(s.lean);
+    if (s.mode === 'spin') { c.translate(0, -16); c.rotate(s.spin || 0); vx += (F.o[0] - F.r[2] / 2) * ip; vy += (F.o[1] - F.r[3] / 2) * ip; }
+    if (s.recoil) { const a = s.aim || 0; c.translate(-Math.cos(a) * s.recoil * 0.55, -Math.sin(a) * s.recoil * 0.55); }
+  } else { const v = visorPos(s); if (!v) { c.restore(); return; } vx = (v[0] - s.x) * s.face; vy = v[1] - s.y; }
+  c.translate(vx, vy); // (0, 0) is the visor now, +x points the way the hero faces; the helmet's top is about 5 px up, 3 px back
+  c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = 0.6; c.strokeStyle = '#1a1f2a';
+  const tri = (pts, fill) => { c.fillStyle = fill; c.beginPath(); c.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]); c.closePath(); c.fill(); };
+  switch (top) {
+    case 1: // ANTENNA with a blinking red ball
+      c.strokeStyle = '#1a1f2a'; c.lineWidth = 1.7; c.beginPath(); c.moveTo(-4.4, -4.4); c.lineTo(-6.2, -9.4); c.stroke();
+      c.strokeStyle = '#c8d2e0'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-4.4, -4.4); c.lineTo(-6.2, -9.4); c.stroke();
+      c.fillStyle = '#1a1f2a'; c.beginPath(); c.arc(-6.4, -10, 2, 0, TAU); c.fill();
+      c.fillStyle = Math.floor((s.t || 0) * 3) % 2 ? '#ff4a3a' : '#ff8a6a'; c.beginPath(); c.arc(-6.4, -10, 1.5, 0, TAU); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(-6.9, -10.5, 0.5, 0, TAU); c.fill(); break;
+    case 2: // FIN (in the scarf's colour)
+      c.fillStyle = s.style.scarf || '#ff5a1f'; c.beginPath(); c.moveTo(0.4, -4.2); c.quadraticCurveTo(-1.4, -9.8, -6.4, -8.8); c.quadraticCurveTo(-5, -6.4, -8.2, -2.8); c.closePath(); c.fill(); c.stroke(); break;
+    case 3: // HORNS (chunky, curling up and out)
+      c.fillStyle = '#f4ecd8'; c.lineWidth = 0.7;
+      c.beginPath(); c.moveTo(-2.4, -4.3); c.lineTo(0.8, -3.4); c.quadraticCurveTo(3.9, -4.6, 4.3, -10); c.quadraticCurveTo(1.4, -6.8, -2.4, -4.3); c.closePath(); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(-3.6, -4.3); c.lineTo(-6.8, -3.4); c.quadraticCurveTo(-9.9, -4.6, -10.3, -10); c.quadraticCurveTo(-7.4, -6.8, -3.6, -4.3); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = '#c9b48a'; c.beginPath(); c.arc(3.6, -8.6, 0.6, 0, TAU); c.fill(); c.beginPath(); c.arc(-9.6, -8.6, 0.6, 0, TAU); c.fill(); break;
+    case 4: // CAT EARS
+      tri([-2.8, -4.4, 0, -9.4, 1.6, -3.4], s.style.helmet || '#2f6fd0'); c.stroke(); tri([-1.6, -4.6, -0.1, -7.8, 0.6, -4.2], '#ff9ac8');
+      tri([-8.4, -3.2, -6.8, -9, -4.2, -4.6], s.style.helmet || '#2f6fd0'); c.stroke(); tri([-7.4, -3.8, -6.6, -7.4, -5.2, -4.6], '#ff9ac8'); break;
+    case 5: { // STAR sticker on the side of the helmet
+      c.fillStyle = '#ffd23f'; c.strokeStyle = '#8a5a00'; c.lineWidth = 0.5; c.beginPath();
+      for (let j = 0; j < 10; j++) { const a = -Math.PI / 2 + j * Math.PI / 5, r = j % 2 ? 1.05 : 2.5; c.lineTo(-4 + Math.cos(a) * r, -1.4 + Math.sin(a) * r); }
+      c.closePath(); c.fill(); c.stroke(); break;
+    }
+    case 6: // CROWN
+      c.fillStyle = '#ffd23f'; c.strokeStyle = '#8a5a00'; c.beginPath(); c.moveTo(-7.6, -3.8); c.lineTo(-7.9, -8.6); c.lineTo(-5.4, -6.2); c.lineTo(-3.1, -9.9); c.lineTo(-0.8, -6.2); c.lineTo(1.6, -8.6); c.lineTo(1.4, -3.8); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = '#ff4a6a'; c.beginPath(); c.arc(-3.1, -5.2, 0.9, 0, TAU); c.fill(); c.fillStyle = '#5ad0ff'; for (const jx of [-6.4, 0.2]) { c.beginPath(); c.arc(jx, -4.9, 0.6, 0, TAU); c.fill(); } break;
+  }
+  c.restore();
+}
+function outfitDraw(p) { // extra drawing options for special outfits
+  const fx = p.lo && lookColors(p.lo.look).fx; if (!fx) return null;
+  if (fx === 'shine') return { sheen: 0.12 + 0.12 * Math.max(0, Math.sin(p.t * 3)), sheenCol: '#ffffff' };
+  if (fx === 'rainbow') { const [r, g, b] = hsv2rgb((p.t * 140) % 360, 0.9, 1); return { sheen: 0.38, sheenCol: `rgb(${r * 255 | 0},${g * 255 | 0},${b * 255 | 0})` }; }
+  if (fx === 'gold') return { sheen: 0.08 + 0.08 * Math.sin(p.t * 5), sheenCol: '#fff6c0' };
+  if (fx === 'ghost') return { alpha: 0.72 };
+  return null;
+}
+function outfitTick(p, dt) { // sparkles and embers for special outfits (only for the look)
+  const fx = p.lo && lookColors(p.lo.look).fx; if (!fx || p.state !== 'alive') return;
+  if (fx === 'ember' && Math.random() < dt * 12) { const q = P('ember', p.x + crand(-8, 8), p.y - crand(4, 34), crand(-10, 10), crand(-50, -20), crand(0.5, 0.9), crand(1, 1.8), '255,150,60'); q.a = 0.9; }
+  if (fx === 'gold' && Math.random() < dt * 10) { const q = P('glow', p.x + crand(-10, 10), p.y - crand(2, 40), 0, crand(-20, -5), 0.5, crand(1, 1.8), '255,230,140'); q.a = 0.9; }
+  if (fx === 'ghost' && Math.random() < dt * 8) { const q = P('glow', p.x + crand(-8, 8), p.y - crand(4, 36), crand(-6, 6), crand(-16, -4), 0.6, crand(1.2, 2), '150,255,240'); q.a = 0.6; }
+}
+
+/* ---------------- coins: robots drop them, a magnet pulls them in, the hero's bank keeps them ---------------- */
+class Coin { // part of the shared world in online games: only gameplay dice and exact maths in here
+  constructor(x, y, vx, vy, val = 1, home = false) {
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.val = val; this.t = 0; this.life = 14; this.dead = false; this.r = val >= 5 ? 4.4 : 3.2; this.rest = false; this.home = home; this.chk = 0;
+  }
+  update(dt) {
+    this.t += dt; this.life -= dt;
+    let best = null, bd = 1e9;
+    const mine = this.to !== undefined && Game.players[this.to]; // a boss coin shower is shared out between the heroes
+    if (mine && mine.alive()) { best = mine; bd = Math.abs(mine.x - this.x) + Math.abs(mine.y - 16 - this.y); }
+    else for (const p of Game.players) if (p.alive()) { const d = Math.abs(p.x - this.x) + Math.abs(p.y - 16 - this.y); if (d < bd) { bd = d; best = p; } }
+    const reach = best ? (this.home && this.t > 0.6 ? 1e9 : best.magnet()) : 0;
+    if (best && this.t > 0.25 && bd < reach) { // flies to the nearest hero (boss coins and coins left at the end fly from anywhere)
+      const tx = best.x - this.x, ty = best.y - 16 - this.y, d = Math.hypot(tx, ty) || 1, sp = this.home ? 260 + Math.min(400, this.t * 160) : 140 + 360 * (1 - Math.min(1, d / reach));
+      this.vx = tx / d * sp; this.vy = ty / d * sp; this.x += this.vx * dt; this.y += this.vy * dt; this.rest = false;
+      if (d < 9) return this.take(best);
+    } else if (!this.rest || ++this.chk >= 15) { // falling and bouncing (a coin lying still checks its floor now and then)
+      this.chk = 0;
+      const L = Game.level, fy = L.floorBelow(this.x, this.y - 2, true);
+      if (!(this.rest && fy <= this.y + this.r + 1)) {
+        this.rest = false;
+        this.vy = Math.min(420, this.vy + 620 * dt); this.vx *= 1 - Math.min(1, dt * 0.8);
+        const ny = this.y + this.vy * dt;
+        if (this.vy > 0 && ny >= fy - this.r) { this.y = fy - this.r; if (this.vy > 90) this.vy = -this.vy * 0.45; else { this.vy = 0; this.vx = 0; this.rest = true; } }
+        else this.y = ny;
+        this.x += this.vx * dt;
+      }
+    }
+    for (const p of Game.players) if (p.alive() && Math.abs(p.x - this.x) < 9 && this.y > p.y - 34 && this.y < p.y + 2 && !(mine && mine.alive() && p !== mine)) return this.take(p);
+    if (this.life <= 0 && !this.home || this.y > Cam.y + VH + 40 || this.x < Cam.x - 60) this.dead = true;
+  }
+  take(p) {
+    this.dead = true; p.coins = (p.coins || 0) + this.val; p.coinT = Game.rt + 0.25;
+    Sfx.coin(); sparks(this.x, this.y, 3, -Math.PI / 2, TAU, 70, '255,220,90');
+  }
+  draw(c) {
+    if (this.life < 3 && Math.floor(this.t * 12) % 2) return;
+    const s = Math.abs(Math.cos(this.t * 6)), r = this.r;
+    c.fillStyle = '#8a5a00'; c.beginPath(); c.ellipse(this.x, this.y, Math.max(0.6, r * s) + 0.6, r + 0.6, 0, 0, TAU); c.fill();
+    c.fillStyle = this.val >= 5 ? '#ffe680' : '#ffd23f'; c.beginPath(); c.ellipse(this.x, this.y, Math.max(0.4, r * s), r, 0, 0, TAU); c.fill();
+    if (s > 0.45) { c.fillStyle = '#fff6c8'; c.fillRect(this.x - r * s * 0.35, this.y - r * 0.55, Math.max(0.5, r * s * 0.3), r * 0.9); }
+  }
+  glow(c) { glow(c, this.x, this.y, 6, '255,220,90', 0.35); }
+}
+function drawCoinIcon(c, x, y, r) { // a little gold coin for menus and the HUD
+  c.fillStyle = '#8a5a00'; c.beginPath(); c.arc(x, y, r + 0.6, 0, TAU); c.fill();
+  c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+  c.fillStyle = '#fff3b0'; c.fillRect(x - r * 0.25, y - r * 0.6, r * 0.5, r * 1.2);
+}
+// text in which ◎ is drawn as a gold coin (not every font has that symbol); uses the current font and colour
+function fillIconText(c, str, x, y, align = 'left') {
+  const m = /([\d.]+)px/.exec(c.font), fs = m ? parseFloat(m[1]) : 8, cw = fs * 1.15, parts = String(str).split('◎');
+  let w = 0; for (let i = 0; i < parts.length; i++) w += c.measureText(parts[i]).width + (i < parts.length - 1 ? cw : 0);
+  let cx = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+  const col = c.fillStyle; c.textAlign = 'left';
+  for (let i = 0; i < parts.length; i++) {
+    c.fillStyle = col; c.fillText(parts[i], cx, y); cx += c.measureText(parts[i]).width;
+    if (i < parts.length - 1) { drawCoinIcon(c, cx + cw / 2, y - fs * 0.35, fs * 0.36); cx += cw; }
+  }
+  c.fillStyle = col;
+  return w;
+}
+function dropCoins(x, y, n, big = 0, home = false) { // a burst of coins (big ones are worth 5)
+  if (Game.coins.length > 160) { big += Math.floor(n / 5); n %= 5; } // a huge pile: fewer, bigger coins
+  const np = Math.max(1, Game.players.length), add = k => { if (home) k.to = (i++) % np; Game.coins.push(k); };
+  let i = 0;
+  for (let j = 0; j < n; j++) add(new Coin(x, y, rand(-70, 70), rand(-220, -110), 1, home));
+  for (let j = 0; j < big; j++) add(new Coin(x, y, rand(-50, 50), rand(-260, -160), 5, home));
+}
+// how many coins a defeated enemy drops
+function coinsFor(e) {
+  if (e.rescue) return [8, 0];
+  if (e instanceof ExplosiveBarrel || e instanceof SupplyCrate || e instanceof Cache) return [0, 0];
+  if (e.bossHelp) return [1, 0];
+  const s = e.score || 100;
+  return s >= 2000 ? [10, 2] : s <= 100 ? [1, 0] : s <= 300 ? [2, 0] : s <= 500 ? [3, 0] : [4, 0];
+}
+// a hero's loadout that came over the network: only plain, known values (both computers clean it the same way)
+function cleanLoadout(lo, i) {
+  lo = lo && typeof lo === 'object' ? lo : {};
+  const num = (v, mx) => (Number.isFinite(v) ? clamp(Math.floor(v), 0, mx) : 0);
+  const lk = lo.look && typeof lo.look === 'object' ? lo.look : {};
+  let name = String(lo.name || '').toUpperCase().split('').filter(ch => NAME_CHARS.includes(ch)).join('').trim().slice(0, 8);
+  if (!name) name = i ? 'EMBER' : 'VOLT';
+  const guns = Array.isArray(lo.guns) ? lo.guns.filter((g, k, a) => typeof g === 'string' && WEAPONS[g] && g !== 'pulse' && a.indexOf(g) === k).slice(0, 7) : [];
+  return { name, look: { armor: num(lk.armor, ARMOR.length - 1), scarf: num(lk.scarf, SCARF.length - 1), top: num(lk.top, TOPPER.length - 1), outfit: num(lk.outfit, OUTFITS.length - 1) },
+    hp: num(lo.hp, 2), sup: num(lo.sup, 2), veh: num(lo.veh, 2), life: num(lo.life, 2), magnet: num(lo.magnet, 2), shield: num(lo.shield, 1), guns };
+}
+
+/* ---------------- the shop ---------------- */
+const SHOP = [
+  { id: 'hp', name: 'TOUGH ARMOUR', desc: 'One more heart of health', cost: [150, 400], icon: 'heart' },
+  { id: 'life', name: 'EXTRA LIFE', desc: 'Start every mission with one more life', cost: [200, 500], icon: 'life' },
+  { id: 'sup', name: 'SUPER CHARGER', desc: 'The SUPER bar fills faster', cost: [120, 320], icon: 'super' },
+  { id: 'magnet', name: 'COIN MAGNET', desc: 'Coins fly to you from further away', cost: [80, 220], icon: 'magnet' },
+  { id: 'veh', name: 'VEHICLE ARMOUR', desc: 'Bikes, tanks and jets get tougher', cost: [100, 260], icon: 'veh' },
+  { id: 'shield', name: 'START SHIELD', desc: 'Start every mission with a shield bubble', cost: [140], icon: 'shield' },
+  { id: 'g_scatter', name: 'SCATTER GUN', desc: 'Start every mission carrying it', cost: [160], gun: 'scatter' },
+  { id: 'g_grenade', name: 'GRENADE GUN', desc: 'Start every mission carrying it', cost: [200], gun: 'grenade' },
+  { id: 'g_hornet', name: 'HORNET GUN', desc: 'Start every mission carrying it', cost: [240], gun: 'hornet' },
+  { id: 'g_arc', name: 'ARC GUN', desc: 'Start every mission carrying it', cost: [240], gun: 'arc' },
+  { id: 'g_blade', name: 'BLADE GUN', desc: 'Start every mission carrying it', cost: [260], gun: 'blade' },
+  { id: 'g_rail', name: 'RAIL GUN', desc: 'Start every mission carrying it', cost: [300], gun: 'rail' },
+  { id: 'g_fire', name: 'FIRESTORM GUN', desc: 'Start every mission carrying it', cost: [320], gun: 'fire' },
+];
+function shopLevel(h, it) { return it.gun ? (h.guns.includes(it.gun) ? 1 : 0) : (h.up[it.id] || 0); }
+function shopBuy(h, it) {
+  const lv = shopLevel(h, it); if (lv >= it.cost.length) return 'max';
+  const price = it.cost[lv]; if (h.coins < price) return 'poor';
+  h.coins -= price;
+  if (it.gun) h.guns.push(it.gun); else h.up[it.id] = lv + 1;
+  Trophies.add(h, 'buys', 1); Store.save();
+  return 'ok';
+}
+
+/* ---------------- trophies ---------------- */
+const TROPHIES = [
+  { id: 'first', name: 'FIRST MISSION', desc: 'Finish a mission', stat: 'missions', n: 1 },
+  { id: 'boss5', name: 'BOSS BUSTER', desc: 'Beat 5 bosses', stat: 'bosses', n: 5 },
+  { id: 'boss13', name: 'BOSS LEGEND', desc: 'Beat 13 bosses', stat: 'bosses', n: 13 },
+  { id: 'nohit', name: 'UNTOUCHABLE', desc: 'Beat a boss without getting hit', stat: 'nohit', n: 1 },
+  { id: 'bots', name: 'BOT RESCUER', desc: 'Free 25 Bolt bots', stat: 'rescued', n: 25 },
+  { id: 'kills', name: 'ROBOT SMASHER', desc: 'Defeat 500 robots', stat: 'kills', n: 500 },
+  { id: 'super', name: 'SUPER STAR', desc: 'Go Super Soldier 10 times', stat: 'supers', n: 10 },
+  { id: 'rides', name: 'ROAD WARRIOR', desc: 'Ride every kind of vehicle', stat: 'rideKinds', n: 6 },
+  { id: 'combo', name: 'COMBO KING', desc: 'Make a 25 combo', stat: 'bestCombo', n: 25, max: true },
+  { id: 'guns', name: 'ARMOURY', desc: 'Carry 6 guns at once', stat: 'maxGuns', n: 6, max: true },
+  { id: 'coins', name: 'PIGGY BANK', desc: 'Collect 1,000 coins', stat: 'coins', n: 1000 },
+  { id: 'rich', name: 'TREASURE CHEST', desc: 'Collect 5,000 coins', stat: 'coins', n: 5000 },
+  { id: 'shop', name: 'SHOPPER', desc: 'Buy 5 things in the shop', stat: 'buys', n: 5 },
+  { id: 'treasure', name: 'TREASURE HUNTER', desc: 'Break open 10 treasure rocks', stat: 'treasures', n: 10 },
+  { id: 'word', name: 'M-O-N-S-O-O-N', desc: 'Find all 7 letters in a mission', stat: 'words', n: 1 },
+  { id: 'words', name: 'WORD MASTER', desc: 'Find every letter in every mission', stat: 'words', n: 13 },
+  { id: 'stars20', name: 'STAR COLLECTOR', desc: 'Earn 20 stars', stars: 20 },
+  { id: 'stars39', name: 'ALL THE STARS', desc: 'Earn all 39 stars', stars: 39 },
+  { id: 'rush', name: 'BOSS RUSHER', desc: 'Finish Boss Rush', stat: 'rushes', n: 1 },
+  { id: 'surv', name: 'SURVIVOR', desc: 'Reach wave 10 in Survival', stat: 'survWave', n: 10, max: true },
+  { id: 'battle', name: 'CHAMPION', desc: 'Win a Score Battle or Coin Race', stat: 'wins', n: 1 },
+  { id: 'online', name: 'TEAM PLAYER', desc: 'Finish a mission online', stat: 'onlineMissions', n: 1 },
+];
+const Trophies = {
+  add(h, stat, n, isMax) {
+    if (!h) return;
+    const s = h.stat; s[stat] = isMax ? Math.max(s[stat] || 0, n) : (s[stat] || 0) + n;
+    this.check(h);
+  },
+  check(h) {
+    const stars = Heroes.starsOf(h);
+    for (const t of TROPHIES) {
+      if (h.troph[t.id]) continue;
+      const ok = t.stars ? stars >= t.stars : (h.stat[t.stat] || 0) >= t.n;
+      if (!ok) continue;
+      h.troph[t.id] = 1; Store.save();
+      if (Game.state === 'play' || Game.state === 'clear') { Game.banner('TROPHY!', t.name + ' · ' + h.name, '255,214,90'); Sfx.oneup(); }
+    }
+  },
+  count(h) { let n = 0; for (const t of TROPHIES) if (h.troph[t.id]) n++; return n; },
+  // game events: p is the player who did it (only heroes saved on this computer count)
+  ev(p, stat, n = 1, isMax = false) { const h = Heroes.forPlayer(p); if (h) this.add(h, stat, n, isMax); },
+  ride(p, kind) { const h = Heroes.forPlayer(p); if (!h) return; const r = h.stat.rides || (h.stat.rides = []); if (!r.includes(kind)) { r.push(kind); this.add(h, 'rideKinds', r.length, true); } },
+};
+
+/* ---------------- screens: MY HERO, SHOP, TROPHIES ---------------- */
+const NAME_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
+const Meta = {
+  page: 'hero', sel: 0, slot: 0, who: 0, editing: false, nameBuf: [], nameSlot: 0, msg: '', msgT: 0, shopSel: 0, shopTop: 0, trSel: 0, preview: null, prevT: 0,
+  open(page) { this.page = page; this.sel = 0; this.who = 0; this.editing = false; this.msg = ''; this.shopSel = 0; this.shopTop = 0; this.trSel = 0; Game.setState('meta'); Sfx.confirm(); },
+  hero() { return Heroes.of(this.who); },
+  heroItems() {
+    const it = [{ id: 'pick' }, { id: 'name' }, { id: 'armor' }, { id: 'scarf' }, { id: 'top' }, { id: 'outfit' }];
+    if (Store.data.players === 2) it.push({ id: 'who' });
+    it.push({ id: 'new' }, { id: 'back' });
+    return it;
+  },
+  heroText(id) {
+    const h = this.hero(), lk = h.look;
+    switch (id) {
+      case 'pick': return ['HERO', `${Store.data.heroP[this.who] + 1} of ${Heroes.list().length}`];
+      case 'name': return ['NAME', h.name + '  ✎'];
+      case 'armor': return ['ARMOUR', OUTFITS[lk.outfit].armor || OUTFITS[lk.outfit].fx ? '(OUTFIT)' : ARMOR[lk.armor].name];
+      case 'scarf': return ['SCARF', OUTFITS[lk.outfit].scarf || OUTFITS[lk.outfit].fx ? '(OUTFIT)' : SCARF[lk.scarf].name];
+      case 'top': return ['HELMET', TOPPER[lk.top]];
+      case 'outfit': { const o = OUTFITS[lk.outfit]; return ['OUTFIT', o.name]; }
+      case 'who': return ['EDITING', this.who === 0 ? 'PLAYER 1' : 'PLAYER 2'];
+      case 'new': return ['+ NEW HERO', ''];
+      case 'back': return ['BACK', ''];
+    }
+    return [id, ''];
+  },
+  heroChange(id, dir) {
+    const d = Store.data, h = this.hero(), lk = h.look, cyc = (v, n) => (v + dir + n) % n;
+    if (id === 'pick') { // the two players never share one hero
+      const n = Heroes.list().length, other = d.players === 2 && n > 1 ? d.heroP[1 - this.who] : -1;
+      let v = cyc(d.heroP[this.who], n); if (v === other) v = cyc(v, n);
+      d.heroP[this.who] = v; Game.storyPick = null;
+    }
+    else if (id === 'armor') { lk.armor = cyc(lk.armor, ARMOR.length); lk.outfit = 0; }
+    else if (id === 'scarf') { lk.scarf = cyc(lk.scarf, SCARF.length); lk.outfit = 0; }
+    else if (id === 'top') lk.top = cyc(lk.top, TOPPER.length);
+    else if (id === 'outfit') {
+      const stars = Heroes.starsOf(h); let o = lk.outfit;
+      for (let k = 0; k < OUTFITS.length; k++) { o = (o + dir + OUTFITS.length) % OUTFITS.length; if (OUTFITS[o].need <= stars) break; }
+      if (o === lk.outfit) { this.say('Earn stars in missions to unlock outfits'); Sfx.nope(); return true; }
+      lk.outfit = o;
+    }
+    else if (id === 'who') this.who = 1 - this.who;
+    else return false;
+    Store.save(); Sfx.select(); return true;
+  },
+  heroChoose(id) {
+    if (id === 'name') { this.editing = true; this.nameBuf = this.hero().name.padEnd(8, ' ').slice(0, 8).split(''); this.nameSlot = Math.min(7, this.hero().name.length); Sfx.confirm(); }
+    else if (id === 'new') {
+      const L = Heroes.list(); if (L.length >= 8) { this.say('That is a lot of heroes! (8 at most)'); Sfx.nope(); return; }
+      L.push(Heroes.blank('HERO ' + (L.length + 1), { armor: L.length % ARMOR.length, scarf: (L.length * 3) % SCARF.length }));
+      Store.data.heroP[this.who] = L.length - 1; Game.storyPick = null; Store.save(); Sfx.confirm(); this.say('A new hero! Give them a name.');
+      this.sel = this.heroItems().findIndex(it => it.id === 'name'); this.editing = true; this.nameBuf = Array(8).fill(' '); this.nameSlot = 0; // straight to typing the new name
+    }
+    else if (id === 'back') { Game.toTitle(true); Sfx.select(); }
+    else if (!this.heroChange(id, 1)) Sfx.select();
+  },
+  say(m) { this.msg = m; this.msgT = 2.6; },
+  typed(code) { // a key typed on a real keyboard while naming the hero (Enter finishes, through the menu keys)
+    if (Game.state !== 'meta' || !this.editing) return;
+    if (code === 'Backspace') { if (this.nameBuf[this.nameSlot] === ' ' || this.nameSlot === 7 && this.nameBuf[7] === ' ') this.nameSlot = Math.max(0, this.nameSlot - 1); this.nameBuf[this.nameSlot] = ' '; Sfx.select(); return; }
+    const ch = code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5) : code === 'Space' ? ' ' : '';
+    if (ch.length === 1 && NAME_CHARS.includes(ch)) { this.nameBuf[this.nameSlot] = ch; this.nameSlot = Math.min(7, this.nameSlot + 1); Sfx.select(); }
+  },
+  finishName() {
+    const n = this.nameBuf.join('').trim();
+    if (n) this.hero().name = n;
+    this.editing = false; Store.save(); Sfx.confirm();
+  },
+  update(dt, M, taps) {
+    Game.updateTitleScene(dt); this.prevT += dt;
+    if (this.msgT > 0) this.msgT -= dt;
+    const px = VW / 2 - Math.min(440, VW - 24) / 2;
+    if (!this.editing) for (const t of taps) if (t.x < px + 70 && t.y < 42) { Game.toTitle(true); Sfx.select(); return; } // the ◂ BACK button
+    if (this.page === 'hero') return this.updateHero(M, taps);
+    if (this.page === 'shop') return this.updateShop(M, taps);
+    return this.updateTrophies(M, taps);
+  },
+  updateHero(M, taps) {
+    if (this.editing) {
+      if (Object.keys(Keys).some(k => Keys[k] && (k.startsWith('Key') || k.startsWith('Digit') || k === 'Space' || k === 'Backspace'))) M = {}; // typing a name: letters are not menu keys
+      const C = NAME_CHARS, k = C.indexOf(this.nameBuf[this.nameSlot]);
+      if (M.up) { this.nameBuf[this.nameSlot] = C[(k + 1) % C.length]; Sfx.select(); }
+      if (M.down) { this.nameBuf[this.nameSlot] = C[(k - 1 + C.length) % C.length]; Sfx.select(); }
+      if (M.left) { this.nameSlot = Math.max(0, this.nameSlot - 1); Sfx.select(); }
+      if (M.right) { this.nameSlot = Math.min(7, this.nameSlot + 1); Sfx.select(); }
+      if (M.ok || M.back) this.finishName();
+      for (const t of taps) {
+        for (let i = 0; i < 8; i++) {
+          const x = this.nameX(i);
+          if (Math.abs(t.x - x) < 10) {
+            const kk = C.indexOf(this.nameBuf[i]);
+            if (t.y > 92 && t.y < 108) { this.nameBuf[i] = C[(kk + 1) % C.length]; this.nameSlot = i; Sfx.select(); }
+            else if (t.y > 136 && t.y < 154) { this.nameBuf[i] = C[(kk - 1 + C.length) % C.length]; this.nameSlot = i; Sfx.select(); }
+            else if (t.y >= 108 && t.y <= 136) { this.nameSlot = i; Sfx.select(); }
+          }
+        }
+        if (t.y > 166 && t.y < 184 && Math.abs(t.x - VW / 2) < 50) this.finishName();
+      }
+      return;
+    }
+    if (M.back) { Game.toTitle(true); return; }
+    const items = this.heroItems(), g = this.heroGeom(items.length);
+    if (this.sel >= items.length) this.sel = items.length - 1;
+    if (M.up) { this.sel = (this.sel - 1 + items.length) % items.length; Sfx.select(); }
+    if (M.down) { this.sel = (this.sel + 1) % items.length; Sfx.select(); }
+    if (M.left) this.heroChange(items[this.sel].id, -1);
+    if (M.right) this.heroChange(items[this.sel].id, 1);
+    if (M.ok) this.heroChoose(items[this.sel].id);
+    for (const t of taps) for (let i = 0; i < items.length; i++) {
+      const y = g.top + i * g.h;
+      if (t.x > g.x - g.w / 2 && t.x < g.x + g.w / 2 && t.y > y - 10 && t.y < y + 4) {
+        this.sel = i; const side = t.x < g.x - g.w / 6 ? -1 : 1, id = items[i].id;
+        if (id === 'name' || id === 'new' || id === 'back' || !this.heroChange(id, side)) this.heroChoose(id);
+      }
+    }
+  },
+  heroGeom(n) { return { x: VW * 0.64, w: Math.min(220, VW * 0.5), top: 66, h: 15, n }; },
+  nameX(i) { return VW / 2 + (i - 3.5) * 21; },
+  updateShop(M, taps) {
+    if (M.back) { Game.toTitle(true); return; }
+    const h = Heroes.of(this.who), n = SHOP.length + 1;
+    if (M.up) { this.shopSel = (this.shopSel - 1 + n) % n; Sfx.select(); }
+    if (M.down) { this.shopSel = (this.shopSel + 1) % n; Sfx.select(); }
+    if ((M.left || M.right) && Store.data.players === 2) { this.who = 1 - this.who; Sfx.select(); }
+    const vis = 7;
+    if (this.shopSel < this.shopTop) this.shopTop = this.shopSel; if (this.shopSel >= this.shopTop + vis) this.shopTop = this.shopSel - vis + 1;
+    const buy = i => {
+      if (i === SHOP.length) { Game.toTitle(true); Sfx.select(); return; }
+      const r = shopBuy(h, SHOP[i]);
+      if (r === 'ok') { Sfx.pickup(); this.say('Bought ' + SHOP[i].name + '!'); }
+      else if (r === 'poor') { Sfx.nope(); this.say('Not enough coins yet. Robots drop coins!'); }
+      else { Sfx.nope(); this.say('You already have all of it'); }
+    };
+    if (M.ok) buy(this.shopSel);
+    for (const t of taps) {
+      for (let r = 0; r < vis; r++) { const i = this.shopTop + r, y = 70 + r * 22; if (i < n && t.y > y - 11 && t.y < y + 10 && Math.abs(t.x - VW / 2) < 170) { if (this.shopSel === i) buy(i); else { this.shopSel = i; Sfx.select(); } } }
+      if (t.y < 60 && t.y > 40 && Store.data.players === 2) { this.who = 1 - this.who; Sfx.select(); }
+      if (t.y > 236 && Math.abs(t.x - VW / 2) < 60) { Game.toTitle(true); Sfx.select(); }
+    }
+  },
+  updateTrophies(M, taps) {
+    if (M.back) { Game.toTitle(true); return; }
+    const n = TROPHIES.length, cols = 6;
+    if (Store.data.players === 2 && (Keys.Tab || Keys.KeyQ) && !this.tabHeld) { this.who = 1 - this.who; Sfx.select(); }
+    this.tabHeld = !!(Keys.Tab || Keys.KeyQ);
+    if (M.left) { this.trSel = (this.trSel - 1 + n) % n; Sfx.select(); }
+    if (M.right) { this.trSel = (this.trSel + 1) % n; Sfx.select(); }
+    if (M.up) { this.trSel = (this.trSel - cols + n) % n; Sfx.select(); }
+    if (M.down) { this.trSel = (this.trSel + cols) % n; Sfx.select(); }
+    if (M.ok) { Game.toTitle(true); Sfx.select(); }
+    for (const t of taps) {
+      for (let i = 0; i < n; i++) { const [x, y] = this.trPos(i); if (Math.abs(t.x - x) < this.trW() / 2 - 2 && Math.abs(t.y - y) < 20) { this.trSel = i; Sfx.select(); } }
+      if (t.y > 34 && t.y < 48 && Store.data.players === 2) { this.who = 1 - this.who; Sfx.select(); }
+      if (t.y > 246) { Game.toTitle(true); Sfx.select(); }
+    }
+  },
+  trPos(i) { const cols = 6; return [VW / 2 + ((i % cols) - (cols - 1) / 2) * this.trW(), 72 + Math.floor(i / cols) * 43]; },
+
+  /* ---- drawing ---- */
+  panel(c, title, sub) {
+    c.fillStyle = 'rgba(6,12,24,0.55)'; c.fillRect(0, 0, VW, VH);
+    const pw = Math.min(440, VW - 24), px = VW / 2 - pw / 2;
+    c.fillStyle = 'rgba(8,16,32,0.9)'; rrect(c, px, 10, pw, VH - 20, 8); c.fill(); c.strokeStyle = 'rgba(255,154,60,0.7)'; c.lineWidth = 1; c.stroke();
+    setFont(c, 14, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText(title, VW / 2, 31);
+    if (sub) { setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.75)'; c.fillText(sub, VW / 2, 42); }
+    c.fillStyle = 'rgba(255,255,255,0.08)'; rrect(c, px + 10, 17, 50, 16, 8); c.fill(); // ◂ BACK (Esc)
+    setFont(c, 7, FONT_UI, 700); c.fillStyle = 'rgba(232,238,247,0.85)'; c.textAlign = 'center'; c.fillText(lastDevice === 'touch' ? '◂ BACK' : '◂ ESC', px + 35, 28);
+  },
+  drawPreview(c, h, x, y, scale) { // the hero, standing big
+    if (!this.preview) { this.preview = new Player(0); this.preview.spawn(0, 0); }
+    const p = this.preview; p.lo = Heroes.loadout(h); p.style = heroStyle(h.look); p.t = this.prevT; p.mode = Math.floor(this.prevT / 3) % 2 ? 'run' : 'stand'; p.phase = this.prevT * 12; p.face = 1; p.aim = 0; p.state = 'alive'; p.invuln = 0; p.hurtT = 0;
+    p.x = 0; p.y = 0; p.updateScarf(1 / 60);
+    c.save(); c.translate(x, y); c.scale(scale, scale);
+    c.fillStyle = 'rgba(0,0,0,0.25)'; c.beginPath(); c.ellipse(0, 1, 16, 3, 0, 0, TAU); c.fill();
+    p.draw(c);
+    c.restore();
+  },
+  render(c) {
+    if (this.page === 'hero') return this.drawHero(c);
+    if (this.page === 'shop') return this.drawShop(c);
+    return this.drawTrophies(c);
+  },
+  drawHero(c) {
+    const h = this.hero();
+    this.panel(c, 'MY HERO', Store.data.players === 2 ? 'Each player picks their own hero · coins, stars and trophies are saved per hero' : 'Coins, stars, trophies and upgrades are saved for each hero');
+    const px = VW * 0.27;
+    c.fillStyle = 'rgba(255,255,255,0.05)'; rrect(c, px - 62, 52, 124, 168, 6); c.fill();
+    this.drawPreview(c, h, px, 196, 2.6);
+    setFont(c, 11, FONT_DISP, 400); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(h.name, px, 214);
+    setFont(c, 6.5, FONT_UI, 700); c.fillStyle = '#ffd23f'; // coins, stars and trophies of this hero
+    const s1 = `◎ ${h.coins}`, s2 = `★ ${Heroes.starsOf(h)}`, s3 = String(Trophies.count(h)), gap = 9;
+    const w1 = c.measureText(s1).width + 3, w2 = c.measureText(s2).width, w3 = c.measureText(s3).width + 9, sx = px - (w1 + w2 + w3 + gap * 2) / 2;
+    fillIconText(c, s1, sx, 226); c.fillStyle = '#ffd23f'; c.textAlign = 'left'; c.fillText(s2, sx + w1 + gap, 226);
+    this.cup(c, sx + w1 + w2 + gap * 2 + 3, 227.5, true, 0, 0.5); c.fillStyle = '#ffd23f'; c.textAlign = 'left'; c.fillText(s3, sx + w1 + w2 + gap * 2 + 9, 226);
+    if (this.editing) {
+      c.fillStyle = 'rgba(6,12,24,0.85)'; c.fillRect(0, 0, VW, VH);
+      setFont(c, 12, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('HERO NAME', VW / 2, 74);
+      for (let i = 0; i < 8; i++) {
+        const x = this.nameX(i), on = i === this.nameSlot;
+        c.fillStyle = on ? 'rgba(255,154,60,0.25)' : 'rgba(255,255,255,0.08)'; rrect(c, x - 9, 109, 18, 26, 3); c.fill();
+        c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.3)'; c.lineWidth = 1; c.stroke();
+        setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#fff'; c.fillText(this.nameBuf[i] === ' ' ? '·' : this.nameBuf[i], x, 128);
+        setFont(c, 8, FONT_UI, 700); c.fillStyle = on ? '#ff9a3c' : 'rgba(230,236,246,0.5)'; c.fillText('▲', x, 104); c.fillText('▼', x, 148);
+      }
+      setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffd23f'; c.fillText('DONE', VW / 2, 178);
+      setFont(c, 6, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.65)'; c.fillText(lastDevice === 'touch' ? 'Tap ▲ ▼ to pick letters, then DONE' : 'Type the name, then press Enter', VW / 2, 196);
+      return;
+    }
+    const items = this.heroItems(), g = this.heroGeom(items.length);
+    const lockedOut = !!(OUTFITS[h.look.outfit].armor || OUTFITS[h.look.outfit].fx);
+    items.forEach((it, i) => {
+      const y = g.top + i * g.h, on = i === this.sel, [a, b] = this.heroText(it.id), arrows = it.id !== 'name' && it.id !== 'new' && it.id !== 'back';
+      if (on) { c.fillStyle = 'rgba(255,154,60,0.2)'; c.fillRect(g.x - g.w / 2, y - 10, g.w, 13); c.fillStyle = '#ff9a3c'; c.fillRect(g.x - g.w / 2, y - 10, 2, 13); }
+      setFont(c, 8, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.8)'; c.fillText(a, g.x - g.w / 2 + 8, y);
+      if (b) { c.textAlign = 'right'; c.fillStyle = (it.id === 'armor' || it.id === 'scarf') && lockedOut ? 'rgba(255,154,60,0.45)' : on ? '#ff9a3c' : 'rgba(255,154,60,0.8)'; c.fillText((arrows ? '◂ ' : '') + b + (arrows ? ' ▸' : ''), g.x + g.w / 2 - 8, y); }
+      if (it.id === 'outfit') { // which outfits are unlocked
+        const stars = Heroes.starsOf(h), nx = OUTFITS.findIndex(o => o.need > stars);
+        setFont(c, 5.5, FONT_UI, 600); c.textAlign = 'right'; c.fillStyle = 'rgba(230,236,246,0.6)';
+        c.fillText(nx < 0 ? 'Every outfit unlocked!' : `Next outfit at ${OUTFITS[nx].need} ★ (you have ${stars})`, g.x + g.w / 2 - 8, y + 7);
+      }
+    });
+    if (this.msgT > 0) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = `rgba(155,224,106,${Math.min(1, this.msgT)})`; c.fillText(this.msg, VW / 2, VH - 16); }
+  },
+  drawShop(c) {
+    const h = Heroes.of(this.who);
+    this.panel(c, 'SHOP', '');
+    setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffd23f';
+    fillIconText(c, `${Store.data.players === 2 ? '◂ ' : ''}${h.name}   ◎ ${h.coins} COINS${Store.data.players === 2 ? ' ▸' : ''}`, VW / 2, 50, 'center');
+    const vis = 7, w = Math.min(340, VW - 60), x0 = VW / 2 - w / 2;
+    for (let r = 0; r < vis; r++) {
+      const i = this.shopTop + r; if (i > SHOP.length) break;
+      const y = 70 + r * 22, on = i === this.shopSel;
+      if (on) { c.fillStyle = 'rgba(255,154,60,0.18)'; rrect(c, x0, y - 11, w, 20, 3); c.fill(); }
+      if (i === SHOP.length) { setFont(c, 8, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.8)'; c.fillText('BACK', VW / 2, y + 2); continue; }
+      const it = SHOP[i], lv = shopLevel(h, it), max = lv >= it.cost.length, price = max ? 0 : it.cost[lv];
+      this.shopIcon(c, it, x0 + 13, y - 1);
+      setFont(c, 7.5, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.85)'; c.fillText(it.name, x0 + 26, y - 1);
+      setFont(c, 5.5, FONT_UI, 600); c.fillStyle = 'rgba(200,212,230,0.75)'; c.fillText(it.desc, x0 + 26, y + 6.5);
+      if (it.cost.length > 1) for (let k = 0; k < it.cost.length; k++) { c.fillStyle = k < lv ? '#ffd23f' : 'rgba(255,255,255,0.2)'; c.beginPath(); c.arc(x0 + w - 74 + k * 7, y - 1, 2.2, 0, TAU); c.fill(); }
+      setFont(c, 7.5, FONT_UI, 700);
+      c.fillStyle = max ? '#9be06a' : h.coins >= price ? '#ffd23f' : 'rgba(255,140,120,0.85)';
+      fillIconText(c, max ? 'OWNED' : '◎ ' + price, x0 + w - 8, y + 2, 'right');
+    }
+    if (this.shopTop > 0) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(255,255,255,0.5)'; c.fillText('▲', VW / 2, 58); }
+    if (this.shopTop + vis <= SHOP.length) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(255,255,255,0.5)'; c.fillText('▼', VW / 2, 70 + vis * 22 - 6); }
+    setFont(c, 6, FONT_UI, 600); c.textAlign = 'center'; c.fillStyle = 'rgba(230,236,246,0.6)';
+    c.fillText(this.msgT > 0 ? '' : lastDevice === 'touch' ? 'Tap a thing twice to buy it' : 'Press fire to buy · Esc to go back', VW / 2, VH - 16);
+    if (this.msgT > 0) { setFont(c, 7, FONT_UI, 700); c.fillStyle = `rgba(155,224,106,${Math.min(1, this.msgT)})`; c.fillText(this.msg, VW / 2, VH - 16); }
+  },
+  shopIcon(c, it, x, y) {
+    if (it.gun) { const W = WEAPONS[it.gun]; c.fillStyle = `rgb(${W.rgb})`; hexPath(c, x, y, 6.5); c.fill(); setFont(c, 7, FONT_UI, 700); c.fillStyle = '#0b0e14'; c.textAlign = 'center'; c.fillText(W.letter, x, y + 2.5); return; }
+    c.save(); c.translate(x, y);
+    if (it.icon === 'heart') { c.fillStyle = '#ff5a6a'; c.beginPath(); c.moveTo(0, 5); c.bezierCurveTo(-8, -1, -4, -7, 0, -3); c.bezierCurveTo(4, -7, 8, -1, 0, 5); c.fill(); }
+    else if (it.icon === 'life') { c.fillStyle = '#2f6fd0'; c.beginPath(); c.arc(0, 0, 5.5, 0, TAU); c.fill(); c.fillStyle = '#a8fbff'; c.fillRect(0, -1.5, 5, 2.5); setFont(c, 5, FONT_UI, 700); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText('+1', -1, 7.5); }
+    else if (it.icon === 'super') { c.fillStyle = '#ffd23f'; c.beginPath(); c.moveTo(1.5, -7); c.lineTo(-4, 1); c.lineTo(0, 1); c.lineTo(-1.5, 7); c.lineTo(4.5, -1.5); c.lineTo(0.5, -1.5); c.closePath(); c.fill(); }
+    else if (it.icon === 'magnet') { c.strokeStyle = '#ff4a3a'; c.lineWidth = 3; c.beginPath(); c.arc(0, -1, 4.5, Math.PI, 0); c.stroke(); c.fillStyle = '#e8eef5'; c.fillRect(-6, -1, 3, 4); c.fillRect(3, -1, 3, 4); }
+    else if (it.icon === 'veh') { c.fillStyle = '#2f7fd6'; c.fillRect(-7, -2, 14, 5); c.fillStyle = '#e8eef5'; c.fillRect(-2, -5, 6, 3); c.fillStyle = '#7de0ff'; c.beginPath(); c.arc(-6, 3, 2, 0, TAU); c.fill(); }
+    else if (it.icon === 'shield') { c.strokeStyle = 'rgb(150,230,255)'; c.lineWidth = 1.4; c.fillStyle = 'rgba(150,230,255,0.3)'; c.beginPath(); c.arc(0, 0, 6, 0, TAU); c.fill(); c.stroke(); }
+    c.restore();
+  },
+  trW() { return Math.min(68, (Math.min(440, VW - 24) - 20) / 6); }, // width of one trophy tile
+  drawTrophies(c) {
+    const h = Heroes.of(this.who), two = Store.data.players === 2, gw = this.trW(), stars = Heroes.starsOf(h);
+    this.panel(c, 'TROPHIES', `${two ? '◂ ' : ''}${h.name} has ${Trophies.count(h)} of ${TROPHIES.length} trophies${two ? (lastDevice === 'touch' ? ' ▸  (tap here to switch)' : ' ▸  (Q switches)') : ''}`);
+    TROPHIES.forEach((t, i) => {
+      const [x, y] = this.trPos(i), got = !!h.troph[t.id], on = i === this.trSel;
+      const prog = t.stars ? Math.min(1, stars / t.stars) : Math.min(1, (h.stat[t.stat] || 0) / t.n);
+      c.fillStyle = got ? 'rgba(255,196,70,0.18)' : 'rgba(255,255,255,0.05)'; rrect(c, x - gw / 2 + 2, y - 20, gw - 4, 40, 4); c.fill();
+      if (on) { c.strokeStyle = '#ff9a3c'; c.lineWidth = 1.2; c.stroke(); }
+      this.cup(c, x, y, got, i, 0.9);
+      setFont(c, 4.8, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = got ? '#ffe08a' : 'rgba(220,228,240,0.6)';
+      const nw = c.measureText(t.name).width, k = Math.min(1, (gw - 8) / nw);
+      if (k < 1) setFont(c, 4.8 * k, FONT_UI, 700);
+      c.fillText(t.name, x, y + 13);
+      if (!got) { const bw = gw - 16; c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(x - bw / 2, y + 15.5, bw, 1.6); if (prog > 0) { c.fillStyle = '#ff9a3c'; c.fillRect(x - bw / 2, y + 15.5, bw * prog, 1.6); } }
+    });
+    const t = TROPHIES[this.trSel], got = !!h.troph[t.id];
+    setFont(c, 9, FONT_DISP, 400); c.textAlign = 'center'; c.fillStyle = got ? '#ffd23f' : 'rgba(232,238,247,0.85)'; c.fillText(t.name, VW / 2, VH - 26);
+    setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.85)';
+    const prog = t.stars ? `${Math.min(stars, t.stars)} / ${t.stars}` : `${Math.min(h.stat[t.stat] || 0, t.n)} / ${t.n}`;
+    c.fillText(t.desc + (got ? '  ·  DONE!' : '  ·  ' + prog), VW / 2, VH - 16);
+  },
+  cup(c, x, y, got, i, s = 1) { // a trophy cup (grey until it is won)
+    c.save(); c.translate(x, y); c.scale(s, s);
+    if (got) { glow(c, 0, -5, 16, '255,210,90', 0.3); c.globalAlpha = 1; }
+    const gold = got ? '#ffd23f' : 'rgba(150,165,190,0.35)', dark = got ? '#b07a10' : 'rgba(150,165,190,0.25)';
+    c.fillStyle = gold; c.beginPath(); c.moveTo(-7, -12); c.lineTo(7, -12); c.quadraticCurveTo(7, -2, 0, -1); c.quadraticCurveTo(-7, -2, -7, -12); c.fill();
+    c.strokeStyle = gold; c.lineWidth = 1.4; c.beginPath(); c.arc(-7, -8, 2.6, Math.PI * 0.5, Math.PI * 1.5); c.stroke(); c.beginPath(); c.arc(7, -8, 2.6, -Math.PI * 0.5, Math.PI * 0.5); c.stroke();
+    c.fillStyle = dark; c.fillRect(-1.2, -1, 2.4, 4); c.fillStyle = gold; c.fillRect(-5, 3, 10, 2.6);
+    if (got) { c.fillStyle = 'rgba(255,255,255,0.65)'; c.fillRect(-4.6, -10.6, 1.6, 6); c.fillStyle = '#b07a10'; c.beginPath(); for (let j = 0; j < 10; j++) { const a = -Math.PI / 2 + j * Math.PI / 5, r = j % 2 ? 1.1 : 2.6; c.lineTo(Math.cos(a) * r, -7 + Math.sin(a) * r); } c.closePath(); c.fill(); }
+    c.restore();
+  },
+};
+addEventListener('keydown', e => { if (!e.repeat) Meta.typed(e.code); });
+Heroes.init();
 
 /* =====================================================================
    08_net.js : ONLINE CO-OP (web version) — two computers, one game.
@@ -10366,7 +11083,7 @@ if (HOT && HOT.ready) HOT.ready(start); else start((HOT && HOT.data) || {});
    if the two worlds ever disagree, both reload from the last checkpoint.
    Connections go through PeerJS (WebRTC); a 4-letter room code joins them.
    ===================================================================== */
-const NET_VERSION = 'iron-monsoon-14a';
+const NET_VERSION = 'iron-monsoon-15a';
 const NET_TICK = 1 / 60, NET_DELAY = 4, NET_MAXDELAY = 18;
 const NET_LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
 
@@ -10450,7 +11167,7 @@ const NET_STATE = { play: 1, clear: 2, continue: 3, victory: 4 };
 Object.assign(Net, {
   available: !!window.IM_WEB, on: false, role: null, phase: 'menu', sel: 0,
   peer: null, conn: null, code: '', codeIn: ['A', 'A', 'A', 'A'], slot: 0, status: '', error: '', notice: '', noticeT: 0,
-  lobby: { li: 0, diff: 'recruit', inf: false }, saved: null, gid: 0, rng: null,
+  lobby: { li: 0, diff: 'recruit', inf: false }, saved: null, gid: 0, rng: null, theirLo: null,
   tick: 0, acc: 0, mine: new Map(), theirs: new Map(), sums: new Map(), rsums: new Map(), outK: -1, out: [],
   delay: NET_DELAY, sched: -1, pend: 0, theirsMax: -1, rbuf: null, rtts: [], heard: 0, winMin: 99, winT: 0, calm: 0,
   stallT: 0, stalls: 0, menu: false, menuSel: 0, desyncs: 0, mismatches: 0, resyncAt: -1, resyncMsg: null, syncFrom: 0, youT: 0, rtt: 0, pingT: 0,
@@ -10458,6 +11175,8 @@ Object.assign(Net, {
 
   /* ---------- lobby ---------- */
   open() { this.phase = 'menu'; this.sel = 0; this.error = ''; Game.setState('online'); Sfx.confirm(); },
+  mySlot() { return this.role === 'host' ? 0 : 1; }, // the host plays player 1, the friend who joined plays player 2
+  myLoadout() { return Heroes.loadout(Heroes.of(0), this.mySlot()); },
   items() {
     switch (this.phase) {
       case 'menu': return [{ id: 'host' }, { id: 'join' }, { id: 'back' }];
@@ -10606,7 +11325,7 @@ Object.assign(Net, {
   attach(conn) {
     this.conn = conn; this.heard = 0;
     let said = false;
-    const hello = () => { if (said || this.conn !== conn) return; said = true; this.heard = performance.now(); this.send({ t: 'hello', v: NET_VERSION }); };
+    const hello = () => { if (said || this.conn !== conn) return; said = true; this.heard = performance.now(); this.send({ t: 'hello', v: NET_VERSION, lo: this.myLoadout() }); };
     conn.on('open', hello);
     if (conn.open === true) setTimeout(hello, 0); // already open (can happen on the host side)
     conn.on('data', d => { if (this.conn === conn) this.onData(d); });
@@ -10649,7 +11368,8 @@ Object.assign(Net, {
     switch (m.t) {
       case 'hello':
         if (m.v !== NET_VERSION) { this.send({ t: 'bye' }); this.fail('Your friend has a different version of the game. Both of you, please reload the page.'); return; }
-        this.phase = 'lobby'; this.sel = 0; Sfx.confirm(); this.notice = this.role === 'host' ? 'Your friend joined!' : 'Connected!'; this.noticeT = 3;
+        this.theirLo = cleanLoadout(m.lo, 1 - this.mySlot());
+        this.phase = 'lobby'; this.sel = 0; Sfx.confirm(); this.notice = this.role === 'host' ? this.theirLo.name + ' joined!' : 'Connected!'; this.noticeT = 3;
         if (this.role === 'host') { this.lobby = { li: Store.data.mission, diff: Store.data.diff, inf: Store.data.inf }; this.send(Object.assign({ t: 'lobby' }, this.lobby)); }
         break;
       case 'lobby': if (this.role === 'guest') this.lobby = { li: m.li, diff: m.diff, inf: m.inf }; break;
@@ -10686,8 +11406,15 @@ Object.assign(Net, {
   /* ---------- starting and stopping a shared game ---------- */
   start() {
     if (!this.conn) return;
-    const L = this.lobby, m = { t: 'start', li: L.li, diff: L.diff, inf: L.inf, seed: (Math.random() * 2 ** 31) | 0 };
+    const L = this.lobby, m = { t: 'start', li: L.li, diff: L.diff, inf: L.inf, seed: (Math.random() * 2 ** 31) | 0, lo: [this.myLoadout(), this.theirLo] };
     this.send(m); this.begin(m);
+  },
+  // both heroes, cleaned the same way on both computers; two heroes that look the same get told apart
+  gameLoadouts(m) {
+    const lo = [0, 1].map(i => cleanLoadout(m.lo && m.lo[i], i)), a = lo[0], b = lo[1];
+    if (a.look.armor === b.look.armor && a.look.scarf === b.look.scarf && a.look.outfit === b.look.outfit) Object.assign(b.look, { armor: a.look.armor === 1 ? 0 : 1, scarf: a.look.armor === 1 ? 0 : 7, outfit: 0 });
+    if (a.name === b.name) b.name = a.name === 'VOLT' ? 'EMBER' : (a.name.slice(0, 7) + '2');
+    return lo;
   },
   // run fn as part of the shared world: shared dice and exact maths
   sim(fn) {
@@ -10706,9 +11433,11 @@ Object.assign(Net, {
     this.snaps = window.IM_NETTEST ? new Map() : null; this.tests = null;
     resize();
     this.rng = netRng(m.seed);
+    Game.loadouts = this.gameLoadouts(m);
     this.sim(() => { Game.simT = 0; Game.god = false; Game.titleCam = 0; Game.startGame(false, m.li); Game.stateT = 0; });
   },
   stop() {
+    if (this.on) Heroes.bankAll(); // (while still online, so only your own hero gets your coins)
     this.on = false; this.menu = false;
     if (this.saved) { Object.assign(Store.data, this.saved); this.saved = null; Store.save(); }
     SIMRNG = Math.random; resize();
@@ -10769,8 +11498,9 @@ Object.assign(Net, {
   hash() {
     let h = 2166136261;
     const mix = v => { h ^= Math.round((v || 0) * 8) | 0; h = Math.imul(h, 16777619); };
-    mix(Game.li); mix(this.rng.s); mix(NET_STATE[Game.state] || 0); mix(Cam.x); mix(Cam.y); mix(Game.enemies.length); mix(Game.ebullets.length); mix(Game.bullets.length); mix(Game.pickups.length);
-    for (const p of Game.players) { mix(p.x); mix(p.y); mix(p.vx); mix(p.vy); mix(p.hp); mix(p.lives); mix(p.score); mix(p.sup); mix(p.supT); mix(p.guns.length); }
+    mix(Game.li); mix(this.rng.s); mix(NET_STATE[Game.state] || 0); mix(Cam.x); mix(Cam.y); mix(Game.enemies.length); mix(Game.ebullets.length); mix(Game.bullets.length); mix(Game.pickups.length); mix(Game.coins.length);
+    for (const p of Game.players) { mix(p.x); mix(p.y); mix(p.vx); mix(p.vy); mix(p.hp); mix(p.lives); mix(p.score); mix(p.sup); mix(p.supT); mix(p.guns.length); mix(p.coins); }
+    for (const k of Game.coins) { mix(k.x); mix(k.y); }
     for (const e of Game.enemies) { mix(e.x); mix(e.y); mix(e.hp); }
     for (const e of Game.ebullets) { mix(e.x); mix(e.y); }
     for (const e of Game.bullets) { mix(e.x); mix(e.y); }
@@ -10781,7 +11511,8 @@ Object.assign(Net, {
   snap() { // the whole shared world in exact numbers (only on the automatic test page)
     const pk = (o, ks) => ks.map(k => o[k]);
     return JSON.stringify({ rng: this.rng.s, st: Game.state, stT: Game.stateT, simT: Game.simT, cam: [Cam.x, Cam.y, Cam.k, Cam.p], li: Game.li,
-      pl: Game.players.map(p => pk(p, ['x', 'y', 'vx', 'vy', 'hp', 'lives', 'state', 'mode', 'weapon', 'wlv', 'fireCd', 'invuln', 'score', 'aim', 'face', 'airJumps', 'slideT', 'sup', 'supT', 'guns'])),
+      pl: Game.players.map(p => pk(p, ['x', 'y', 'vx', 'vy', 'hp', 'lives', 'state', 'mode', 'weapon', 'wlv', 'fireCd', 'invuln', 'score', 'aim', 'face', 'airJumps', 'slideT', 'sup', 'supT', 'guns', 'coins', 'tag', 'shield'])),
+      co: Game.coins.map(k => pk(k, ['x', 'y', 'vx', 'vy', 'val', 'rest', 'home'])),
       en: Game.enemies.map(e => [e.constructor.name].concat(pk(e, ['x', 'y', 'vx', 'vy', 'hp', 'state', 't', 'dead']))),
       bu: Game.bullets.map(e => pk(e, ['kind', 'x', 'y', 'vx', 'vy', 'dead'])),
       eb: Game.ebullets.map(e => pk(e, ['kind', 'x', 'y', 'vx', 'vy', 'dead'])),
@@ -10802,18 +11533,19 @@ Object.assign(Net, {
   planResync() { // both worlds reload from the host's last checkpoint a few ticks from now
     if (this.resyncAt >= 0) return;
     const at = this.tick + this.delay + 20;
-    const pl = Game.players.map(p => ({ lives: p.lives, score: p.score, weapon: p.weapon, wlv: p.wlv, nextLife: p.nextLife, bestCombo: p.bestCombo, guns: p.guns.slice(), glv: Object.assign({}, p.glv), sup: p.sup }));
+    const pl = Game.players.map(p => ({ lives: p.lives, score: p.score, weapon: p.weapon, wlv: p.wlv, nextLife: p.nextLife, bestCombo: p.bestCombo, guns: p.guns.slice(), glv: Object.assign({}, p.glv), sup: p.sup, coins: p.coins, coins0: p.coins0 }));
     const cp = Game.checkpoint && Game.checkpoint.li === Game.li ? Game.checkpoint : null;
     const m = { t: 'resync', g: this.gid, at, seed: (Math.random() * 2 ** 31) | 0, li: Game.li, cp, pl };
     this.resyncAt = at; this.resyncMsg = m; this.send(m);
   },
   applyResync() { // a fresh start for both worlds: new heroes, the level rebuilt, the same dice
     const m = this.resyncMsg; this.resyncAt = -1; this.resyncMsg = null; if (!m) return;
+    Heroes.bankAll(); // coins so far are safe; the new heroes start with the host's count already banked
     this.rng = netRng(m.seed);
     this.sim(() => {
       Game.simT = 0; Game.checkpoint = m.cp;
       Game.players = [new Player(0), new Player(1)];
-      Game.players.forEach((p, i) => { const s = m.pl[i]; if (s) Object.assign(p, s); });
+      Game.players.forEach((p, i) => { const s = m.pl[i]; if (s) Object.assign(p, s); p.banked = p.coins; });
       if (Game.state !== 'play') Game.setState('play');
       Game.loadLevel(m.li, true);
       Game.stateT = 0;
@@ -10882,7 +11614,7 @@ Object.assign(Net, {
     if (this.phase === 'lobby') {
       if (this.role === 'host') say('Your friend is here! Pick a mission and press START.', 84, 7.5, '#9be06a');
       else { say('Connected! The host picks the mission.', 84, 7.5, '#9be06a'); say(`MISSION ${this.lobby.li + 1} · ${LEVELS[this.lobby.li].name}`, 113, 8.5, '#ffffff'); say(`${this.lobby.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'} · ${this.lobby.inf ? 'UNLIMITED HEALTH' : 'NORMAL HEALTH'}`, 126, 7, '#9fb4c8'); say('Waiting for the host to start…', 142, 7); }
-      say(this.role === 'host' ? 'You are VOLT (blue).' : 'You are EMBER (red).', 96, 6.5, this.role === 'host' ? '#8cf5ff' : '#ffb27a');
+      say(`You play ${Heroes.of(0).name} · your friend plays ${this.theirLo ? this.theirLo.name : 'their hero'}`, 96, 6.5, this.role === 'host' ? '#8cf5ff' : '#ffb27a');
     }
     if (this.phase === 'error') say(this.error, 96, 8, '#ffb4a0');
     const items = this.items(), g = this.geom(items.length);
@@ -10927,6 +11659,14 @@ Object.assign(Net, {
 });
 addEventListener('keydown', e => { if (!e.repeat) Net.typed(e.code); });
 window.__NET = Net; window.__DMATH = { DMath, NATIVE_MATH, netRng, withDetMath };
+
+/* =====================================================================
+   09_boot.js : start the game (last, so every part of the game is ready)
+   ===================================================================== */
+window.__IM = { Game, Cam, Store, LEVELS, Input, Touch, ART, STORY, muzzle: soldierMuzzle, Heroes, Meta, Trophies, SHOP, TROPHIES, OUTFITS };
+const HOT = window.claude && window.claude.hot;
+if (HOT && HOT.snapshot) { try { HOT.snapshot(() => ({ mission: Store.data.mission })); } catch (e) { /* viewer hook unavailable */ } }
+if (HOT && HOT.ready) HOT.ready(start); else start((HOT && HOT.data) || {});
 
 </script>
 </body></html>

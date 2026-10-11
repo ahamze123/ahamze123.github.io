@@ -19,6 +19,20 @@ Pick **STORY MODE** on the title screen to play the whole adventure, with Volt, 
 12. **Stratos** – floating sky islands, boss STORMBIRD
 13. **Iron Heart** – the flying fortress, the final battle
 
+## Your own hero
+Every child can have their own hero (up to 8). Pick **MY HERO** on the title screen:
+- Type a **name**, and choose the **armour** colour, the **scarf** colour and a **helmet** extra (antenna, fin, horns, cat ears, star or crown).
+- **Outfits** unlock with the stars you earn in missions: Night Ops, Arctic, Lava, Chrome, Ghost, Rainbow and the Golden Hero.
+- Each hero keeps their own coins, stars, story chapter, shop upgrades and trophies. With 2 players, each player picks their own hero.
+
+## Coins and the shop
+Robots drop **coins**, freed Bolt bots give a few more, and every boss bursts into a shower of coins that flies straight to you. Spend them in the **SHOP**:
+- **Tough Armour** (more hearts), **Extra Life**, **Super Charger** (the SUPER bar fills faster), **Coin Magnet**, **Vehicle Armour** and a **Start Shield**.
+- **Guns** you buy (Scatter, Grenade, Hornet, Arc, Blade, Rail, Firestorm) are in your hands at the start of every mission.
+
+## Trophies
+The **TROPHIES** wall has 22 trophies to win, like beating a boss without getting hit, freeing 25 Bolt bots, a 25 combo, riding every vehicle and collecting 1,000 coins. A thin bar under each trophy shows how close you are.
+
 ## Full screen
 - On a computer, press the full-screen button at the top right of the title screen, or turn on **FULL SCREEN** in the pause menu.
 - On a phone or tablet, the first tap switches to full screen. For the best experience, use **Add to Home Screen** (Safari: Share button). The game then opens like an app, full screen and sideways.
@@ -33,7 +47,7 @@ Play together on two computers, phones or tablets, anywhere.
 3. The other player picks **JOIN A GAME** and types that code (or taps the arrows on a phone).
 4. The host picks the mission, mode and health, then presses **START!**
 
-The host plays Volt (blue) and the friend plays Ember (red). Both screens show the same game. Pause opens a small menu while the game keeps running. Online play needs an internet connection and works in Chrome, Edge, Firefox and Safari.
+Each player brings their own hero, with their name, colours and shop upgrades; coins and trophies go to the hero on your own screen. Both screens show the same game. Pause opens a small menu while the game keeps running. Online play needs an internet connection and works in Chrome, Edge, Firefox and Safari.
 
 ## Controls
 - **Keyboard (1 player):** arrows or WASD to move and aim, **J** or **Z** to fire, **K**, **X** or **Space** to jump (press again in the air to double jump), **Q** to switch guns, **E** for Super Soldier, **L** or **Shift** to lock your aim, **P** to pause.
@@ -65,3 +79,4 @@ Every power-up shows its name and a short description when you grab it.
 - **Mode:** Recruit (3 hits per life, extra lives, keep your gun) or Veteran (classic one-hit rules).
 - **Health:** Normal or Unlimited, so younger players can practise without losing.
 - Missions give 1 to 3 stars: finish for one, lose few lives for two, lose none and free every caged Bolt bot for three.
+- **OPTIONS** on the title screen holds the mode, health, sound and music settings.
