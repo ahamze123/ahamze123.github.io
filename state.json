@@ -3781,6 +3781,7 @@
    }
   },
   "sm_tank": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
