@@ -1404,3 +1404,4 @@
 2026-10-11 16:15:25 [dm2_bram] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6969176}
 2026-10-11 16:15:26 [dm2_draxx] rigged: {"model": {"bytes": 7225396, "triangles": 61726, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57544, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46920, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:15:30 [dm2_draxx] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 8475588}
+2026-10-11 16:15:32 run finished; credits used by new tasks (estimate): 140

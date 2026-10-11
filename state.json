@@ -621,6 +621,7 @@
    }
   },
   "dm2_draxx": {
+   "extra": {},
    "full": {
     "bytes": 8475588,
     "pictures": [
@@ -6703,7 +6704,8 @@
     "dm2_draxx"
    ],
    "limit": 170,
-   "run": 901
+   "run": 901,
+   "spent_estimate": 140
   }
  ]
 }
