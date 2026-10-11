@@ -1175,3 +1175,4 @@
 2026-10-11 08:55:40 [sm_hawk] image-to-3d IN_PROGRESS 99%
 2026-10-11 08:55:41 [sm_tank] image-to-3d IN_PROGRESS 84%
 2026-10-11 08:56:01 [sm_volt] image-to-3d SUCCEEDED 100%
+2026-10-11 08:56:05 [sm_volt] rig task made 01a12a2d-1ff3-77fb-98c9-0eaf9e140db8
