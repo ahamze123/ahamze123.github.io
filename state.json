@@ -1260,6 +1260,12 @@
    }
   },
   "dm3_sera": {
+   "full": {
+    "bytes": 7113084,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
