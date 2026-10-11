@@ -4906,6 +4906,12 @@
      "sm2_maestro_side.png",
      "sm2_maestro_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12c09-4e55-71eb-a3d5-57dfd2fd8790",
+    "made": "2026-10-11 17:36",
+    "model": "01a12c05-c134-7379-9943-d75e91fa2417",
+    "status": "PENDING"
    }
   },
   "sm2_robot": {
