@@ -3782,6 +3782,7 @@
    }
   },
   "sm_king": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -3920,6 +3921,22 @@
       ],
       "joints": 24,
       "triangles": 20854
+     },
+     "running": {
+      "bytes": 47400,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 58036,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
      }
     },
     "id": "01a12a30-95a8-75b3-978c-e392fa88f0c7",
