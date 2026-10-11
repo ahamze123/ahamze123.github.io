@@ -3795,6 +3795,12 @@
   },
   "sm_king": {
    "extra": {},
+   "full": {
+    "bytes": 2771132,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
