@@ -3885,6 +3885,12 @@
    }
   },
   "sm2_robot": {
+   "full": {
+    "bytes": 5733436,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
