@@ -1235,3 +1235,4 @@
 2026-10-11 11:10:15 [sm_hawk] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3050560}
 2026-10-11 11:10:16 [sm_volt] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3241164}
 2026-10-11 11:10:15 [sm_spike] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3422328}
+2026-10-11 11:10:16 [sm_ember] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3250024}
