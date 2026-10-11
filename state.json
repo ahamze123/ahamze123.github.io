@@ -620,7 +620,33 @@
     "status": "SUCCEEDED"
    }
   },
-  "dm2_brute": {},
+  "dm2_brute": {
+   "model": {
+    "id": "01a12bc9-39ed-729c-a59f-8565183ba6da",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:26",
+    "run": 902,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_brute_front.png",
+     "dm2_brute_side.png",
+     "dm2_brute_back.png"
+    ]
+   }
+  },
   "dm2_draxx": {
    "extra": {},
    "full": {
@@ -790,8 +816,60 @@
     ]
    }
   },
-  "dm2_raider": {},
-  "dm2_rogue": {},
+  "dm2_raider": {
+   "model": {
+    "id": "01a12bc9-39db-71fe-bd79-d1cfdf31b83b",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:26",
+    "run": 902,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_raider_front.png",
+     "dm2_raider_side.png",
+     "dm2_raider_back.png"
+    ]
+   }
+  },
+  "dm2_rogue": {
+   "model": {
+    "id": "01a12bc9-39d6-7070-bdfe-6e81ab017aa1",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:26",
+    "run": 902,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_rogue_front.png",
+     "dm2_rogue_side.png",
+     "dm2_rogue_back.png"
+    ]
+   }
+  },
   "dm2_sera": {
    "extra": {},
    "full": {
@@ -863,8 +941,60 @@
     "status": "SUCCEEDED"
    }
   },
-  "dm2_skeleton": {},
-  "dm2_snatcher": {},
+  "dm2_skeleton": {
+   "model": {
+    "id": "01a12bc9-39e9-707a-9951-8a1c9971b402",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:26",
+    "run": 902,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_skeleton_front.png",
+     "dm2_skeleton_side.png",
+     "dm2_skeleton_back.png"
+    ]
+   }
+  },
+  "dm2_snatcher": {
+   "model": {
+    "id": "01a12bc9-39de-73c1-bf14-00ada2afdf31",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:26",
+    "run": 902,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_snatcher_front.png",
+     "dm2_snatcher_side.png",
+     "dm2_snatcher_back.png"
+    ]
+   }
+  },
   "drake": {
    "extra": {},
    "full": {
