@@ -1230,3 +1230,4 @@
 2026-10-11 09:07:20 [sm_spike] rigging SUCCEEDED 100%
 2026-10-11 09:07:20 [sm_spike] rigged: {"model": {"bytes": 2318192, "triangles": 20765, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57880, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47232, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 09:07:22 run finished; credits used by new tasks (estimate): 35
+2026-10-11 11:10:14 run 26 heroes ['volt', 'sm_volt', 'sm_ember', 'sm_hawk', 'sm_spike', 'sm_tank', 'sm_viper', 'sm_king', 'trooper'] max credits 20
