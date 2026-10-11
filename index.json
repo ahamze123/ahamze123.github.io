@@ -1,1 +1,2012 @@
-{}
+{
+"impact-sounds/footstep_carpet_000": [
+0.21,
+-0.0,
+-21.4
+],
+"impact-sounds/footstep_carpet_001": [
+0.18,
+-0.0,
+-17.2
+],
+"impact-sounds/footstep_carpet_002": [
+0.18,
+-0.0,
+-17.2
+],
+"impact-sounds/footstep_carpet_003": [
+0.18,
+-0.0,
+-20.7
+],
+"impact-sounds/footstep_carpet_004": [
+0.18,
+-0.0,
+-20.7
+],
+"impact-sounds/footstep_concrete_000": [
+0.13,
+-0.0,
+-18.8
+],
+"impact-sounds/footstep_concrete_001": [
+0.16,
+-0.0,
+-20.0
+],
+"impact-sounds/footstep_concrete_002": [
+0.16,
+-0.0,
+-20.5
+],
+"impact-sounds/footstep_concrete_003": [
+0.16,
+-0.0,
+-19.5
+],
+"impact-sounds/footstep_concrete_004": [
+0.16,
+-0.0,
+-19.2
+],
+"impact-sounds/footstep_grass_000": [
+0.81,
+-0.0,
+-27.8
+],
+"impact-sounds/footstep_grass_001": [
+0.71,
+-0.0,
+-26.4
+],
+"impact-sounds/footstep_grass_002": [
+0.73,
+-0.0,
+-27.1
+],
+"impact-sounds/footstep_grass_003": [
+0.71,
+-0.0,
+-27.4
+],
+"impact-sounds/footstep_grass_004": [
+0.63,
+-0.0,
+-26.4
+],
+"impact-sounds/footstep_snow_000": [
+0.42,
+-0.0,
+-19.8
+],
+"impact-sounds/footstep_snow_001": [
+0.42,
+-0.0,
+-16.2
+],
+"impact-sounds/footstep_snow_002": [
+0.42,
+0.0,
+-16.3
+],
+"impact-sounds/footstep_snow_003": [
+0.42,
+-0.0,
+-20.6
+],
+"impact-sounds/footstep_snow_004": [
+0.42,
+-0.0,
+-19.4
+],
+"impact-sounds/footstep_wood_000": [
+0.31,
+-0.0,
+-19.1
+],
+"impact-sounds/footstep_wood_001": [
+0.29,
+-0.0,
+-17.8
+],
+"impact-sounds/footstep_wood_002": [
+0.29,
+-0.0,
+-17.3
+],
+"impact-sounds/footstep_wood_003": [
+0.29,
+-0.0,
+-19.4
+],
+"impact-sounds/footstep_wood_004": [
+0.29,
+-0.0,
+-17.4
+],
+"impact-sounds/impactBell_heavy_000": [
+1.52,
+-0.0,
+-23.8
+],
+"impact-sounds/impactBell_heavy_001": [
+1.78,
+-0.0,
+-22.1
+],
+"impact-sounds/impactBell_heavy_002": [
+0.73,
+-0.0,
+-21.4
+],
+"impact-sounds/impactBell_heavy_003": [
+0.71,
+-0.0,
+-22.1
+],
+"impact-sounds/impactBell_heavy_004": [
+0.34,
+-0.0,
+-19.9
+],
+"impact-sounds/impactGeneric_light_000": [
+0.21,
+-0.0,
+-18.6
+],
+"impact-sounds/impactGeneric_light_001": [
+0.16,
+-0.0,
+-17.7
+],
+"impact-sounds/impactGeneric_light_002": [
+0.21,
+-0.0,
+-18.9
+],
+"impact-sounds/impactGeneric_light_003": [
+0.18,
+-0.0,
+-18.3
+],
+"impact-sounds/impactGeneric_light_004": [
+0.18,
+-0.0,
+-18.1
+],
+"impact-sounds/impactGlass_heavy_000": [
+0.29,
+-0.0,
+-20.1
+],
+"impact-sounds/impactGlass_heavy_001": [
+0.47,
+-0.0,
+-22.9
+],
+"impact-sounds/impactGlass_heavy_002": [
+0.29,
+-0.0,
+-20.7
+],
+"impact-sounds/impactGlass_heavy_003": [
+0.21,
+-0.0,
+-17.2
+],
+"impact-sounds/impactGlass_heavy_004": [
+0.44,
+-0.0,
+-21.8
+],
+"impact-sounds/impactGlass_light_000": [
+0.26,
+-0.0,
+-19.2
+],
+"impact-sounds/impactGlass_light_001": [
+0.24,
+-0.0,
+-18.8
+],
+"impact-sounds/impactGlass_light_002": [
+0.24,
+-0.0,
+-17.5
+],
+"impact-sounds/impactGlass_light_003": [
+0.24,
+-0.0,
+-18.5
+],
+"impact-sounds/impactGlass_light_004": [
+0.24,
+-0.0,
+-18.0
+],
+"impact-sounds/impactGlass_medium_000": [
+0.57,
+-0.0,
+-23.1
+],
+"impact-sounds/impactGlass_medium_001": [
+0.57,
+-0.0,
+-22.9
+],
+"impact-sounds/impactGlass_medium_002": [
+0.57,
+-0.0,
+-23.3
+],
+"impact-sounds/impactGlass_medium_003": [
+0.57,
+-0.0,
+-23.1
+],
+"impact-sounds/impactGlass_medium_004": [
+0.57,
+-0.0,
+-22.0
+],
+"impact-sounds/impactMetal_heavy_000": [
+0.21,
+-0.0,
+-18.2
+],
+"impact-sounds/impactMetal_heavy_001": [
+0.39,
+-0.0,
+-21.3
+],
+"impact-sounds/impactMetal_heavy_002": [
+0.16,
+-0.0,
+-16.4
+],
+"impact-sounds/impactMetal_heavy_003": [
+0.24,
+-0.0,
+-18.9
+],
+"impact-sounds/impactMetal_heavy_004": [
+0.18,
+-0.0,
+-17.2
+],
+"impact-sounds/impactMetal_light_000": [
+0.42,
+0.0,
+-18.5
+],
+"impact-sounds/impactMetal_light_001": [
+0.29,
+0.0,
+-17.4
+],
+"impact-sounds/impactMetal_light_002": [
+0.26,
+-0.0,
+-18.0
+],
+"impact-sounds/impactMetal_light_003": [
+0.52,
+-0.0,
+-18.2
+],
+"impact-sounds/impactMetal_light_004": [
+0.26,
+-0.0,
+-18.1
+],
+"impact-sounds/impactMetal_medium_000": [
+0.31,
+-0.0,
+-19.1
+],
+"impact-sounds/impactMetal_medium_001": [
+0.18,
+-0.0,
+-17.0
+],
+"impact-sounds/impactMetal_medium_002": [
+0.16,
+-0.0,
+-18.7
+],
+"impact-sounds/impactMetal_medium_003": [
+0.29,
+-0.0,
+-19.2
+],
+"impact-sounds/impactMetal_medium_004": [
+0.16,
+-0.0,
+-18.0
+],
+"impact-sounds/impactMining_000": [
+0.97,
+0.0,
+-18.1
+],
+"impact-sounds/impactMining_001": [
+0.91,
+0.0,
+-18.6
+],
+"impact-sounds/impactMining_002": [
+0.84,
+-0.0,
+-20.3
+],
+"impact-sounds/impactMining_003": [
+1.02,
+-0.0,
+-20.8
+],
+"impact-sounds/impactMining_004": [
+0.86,
+0.0,
+-17.2
+],
+"impact-sounds/impactPlank_medium_000": [
+0.81,
+0.0,
+-21.5
+],
+"impact-sounds/impactPlank_medium_001": [
+0.81,
+0.0,
+-18.2
+],
+"impact-sounds/impactPlank_medium_002": [
+0.81,
+0.0,
+-18.7
+],
+"impact-sounds/impactPlank_medium_003": [
+0.81,
+0.0,
+-19.2
+],
+"impact-sounds/impactPlank_medium_004": [
+0.81,
+-0.0,
+-22.7
+],
+"impact-sounds/impactPlate_heavy_000": [
+0.52,
+0.0,
+-20.1
+],
+"impact-sounds/impactPlate_heavy_001": [
+0.39,
+0.0,
+-14.9
+],
+"impact-sounds/impactPlate_heavy_002": [
+0.52,
+0.0,
+-19.2
+],
+"impact-sounds/impactPlate_heavy_003": [
+0.39,
+0.0,
+-15.2
+],
+"impact-sounds/impactPlate_heavy_004": [
+0.6,
+0.0,
+-19.1
+],
+"impact-sounds/impactPlate_light_000": [
+0.57,
+-0.0,
+-22.8
+],
+"impact-sounds/impactPlate_light_001": [
+0.71,
+-0.0,
+-24.9
+],
+"impact-sounds/impactPlate_light_002": [
+0.52,
+-0.0,
+-22.7
+],
+"impact-sounds/impactPlate_light_003": [
+0.57,
+0.0,
+-21.9
+],
+"impact-sounds/impactPlate_light_004": [
+0.71,
+-0.0,
+-23.8
+],
+"impact-sounds/impactPlate_medium_000": [
+0.65,
+0.0,
+-23.1
+],
+"impact-sounds/impactPlate_medium_001": [
+0.65,
+-0.0,
+-21.9
+],
+"impact-sounds/impactPlate_medium_002": [
+0.55,
+-0.0,
+-21.7
+],
+"impact-sounds/impactPlate_medium_003": [
+0.71,
+0.0,
+-19.7
+],
+"impact-sounds/impactPlate_medium_004": [
+0.57,
+0.0,
+-19.3
+],
+"impact-sounds/impactPunch_heavy_000": [
+0.68,
+0.0,
+-15.5
+],
+"impact-sounds/impactPunch_heavy_001": [
+0.57,
+0.0,
+-15.0
+],
+"impact-sounds/impactPunch_heavy_002": [
+0.5,
+0.0,
+-14.2
+],
+"impact-sounds/impactPunch_heavy_003": [
+0.52,
+0.0,
+-14.7
+],
+"impact-sounds/impactPunch_heavy_004": [
+0.57,
+0.0,
+-14.9
+],
+"impact-sounds/impactPunch_medium_000": [
+0.47,
+0.0,
+-14.7
+],
+"impact-sounds/impactPunch_medium_001": [
+0.44,
+0.0,
+-14.4
+],
+"impact-sounds/impactPunch_medium_002": [
+0.57,
+0.0,
+-16.2
+],
+"impact-sounds/impactPunch_medium_003": [
+0.5,
+0.0,
+-15.7
+],
+"impact-sounds/impactPunch_medium_004": [
+0.57,
+0.0,
+-16.1
+],
+"impact-sounds/impactSoft_heavy_000": [
+0.57,
+-0.0,
+-15.1
+],
+"impact-sounds/impactSoft_heavy_001": [
+0.6,
+-0.0,
+-15.1
+],
+"impact-sounds/impactSoft_heavy_002": [
+0.6,
+-0.0,
+-14.8
+],
+"impact-sounds/impactSoft_heavy_003": [
+0.57,
+0.0,
+-14.3
+],
+"impact-sounds/impactSoft_heavy_004": [
+0.55,
+-0.0,
+-14.5
+],
+"impact-sounds/impactSoft_medium_000": [
+0.16,
+-0.0,
+-12.0
+],
+"impact-sounds/impactSoft_medium_001": [
+0.21,
+-0.0,
+-12.6
+],
+"impact-sounds/impactSoft_medium_002": [
+0.18,
+-0.0,
+-11.9
+],
+"impact-sounds/impactSoft_medium_003": [
+0.18,
+-0.0,
+-12.0
+],
+"impact-sounds/impactSoft_medium_004": [
+0.18,
+-0.0,
+-12.2
+],
+"impact-sounds/impactTin_medium_000": [
+0.18,
+-0.0,
+-18.5
+],
+"impact-sounds/impactTin_medium_001": [
+0.21,
+-0.0,
+-20.1
+],
+"impact-sounds/impactTin_medium_002": [
+0.18,
+-0.0,
+-19.1
+],
+"impact-sounds/impactTin_medium_003": [
+0.26,
+-0.0,
+-20.7
+],
+"impact-sounds/impactTin_medium_004": [
+0.24,
+-0.0,
+-20.7
+],
+"impact-sounds/impactWood_heavy_000": [
+0.34,
+-0.0,
+-17.4
+],
+"impact-sounds/impactWood_heavy_001": [
+0.34,
+-0.0,
+-17.6
+],
+"impact-sounds/impactWood_heavy_002": [
+0.34,
+-0.0,
+-16.8
+],
+"impact-sounds/impactWood_heavy_003": [
+0.34,
+-0.0,
+-18.2
+],
+"impact-sounds/impactWood_heavy_004": [
+0.34,
+-0.0,
+-17.9
+],
+"impact-sounds/impactWood_light_000": [
+0.31,
+0.0,
+-19.8
+],
+"impact-sounds/impactWood_light_001": [
+0.31,
+-0.0,
+-21.8
+],
+"impact-sounds/impactWood_light_002": [
+0.31,
+0.0,
+-19.7
+],
+"impact-sounds/impactWood_light_003": [
+0.31,
+-0.0,
+-21.5
+],
+"impact-sounds/impactWood_light_004": [
+0.31,
+-0.0,
+-22.3
+],
+"impact-sounds/impactWood_medium_000": [
+0.37,
+-0.0,
+-20.2
+],
+"impact-sounds/impactWood_medium_001": [
+0.37,
+-0.0,
+-20.2
+],
+"impact-sounds/impactWood_medium_002": [
+0.37,
+-0.0,
+-20.2
+],
+"impact-sounds/impactWood_medium_003": [
+0.37,
+-0.0,
+-20.4
+],
+"impact-sounds/impactWood_medium_004": [
+0.37,
+-0.0,
+-19.8
+],
+"interface-sounds/back_001": [
+0.1,
+-1.4,
+-21.6
+],
+"interface-sounds/back_002": [
+0.13,
+-1.4,
+-17.4
+],
+"interface-sounds/back_003": [
+0.13,
+-0.8,
+-20.0
+],
+"interface-sounds/back_004": [
+0.13,
+-1.3,
+-18.2
+],
+"interface-sounds/bong_001": [
+0.16,
+-1.3,
+-16.6
+],
+"interface-sounds/click_001": [
+0.13,
+-1.8,
+-26.8
+],
+"interface-sounds/click_002": [
+0.05,
+-1.2,
+-16.5
+],
+"interface-sounds/click_003": [
+0.05,
+-1.8,
+-15.0
+],
+"interface-sounds/click_004": [
+0.05,
+-1.9,
+-19.2
+],
+"interface-sounds/click_005": [
+0.05,
+-1.4,
+-12.0
+],
+"interface-sounds/close_001": [
+0.18,
+-0.5,
+-15.5
+],
+"interface-sounds/close_002": [
+0.37,
+-3.2,
+-16.9
+],
+"interface-sounds/close_003": [
+0.37,
+-0.9,
+-15.8
+],
+"interface-sounds/close_004": [
+0.37,
+-0.4,
+-17.9
+],
+"interface-sounds/confirmation_001": [
+0.34,
+-1.4,
+-11.8
+],
+"interface-sounds/confirmation_002": [
+0.57,
+-1.4,
+-15.3
+],
+"interface-sounds/confirmation_003": [
+0.37,
+-1.5,
+-15.7
+],
+"interface-sounds/confirmation_004": [
+0.52,
+-1.4,
+-12.2
+],
+"interface-sounds/drop_001": [
+0.18,
+-0.0,
+-18.7
+],
+"interface-sounds/drop_002": [
+0.24,
+-0.0,
+-17.3
+],
+"interface-sounds/drop_003": [
+0.24,
+-0.0,
+-17.1
+],
+"interface-sounds/drop_004": [
+0.31,
+-0.0,
+-18.2
+],
+"interface-sounds/error_001": [
+0.21,
+0.0,
+-16.6
+],
+"interface-sounds/error_002": [
+0.21,
+0.0,
+-15.0
+],
+"interface-sounds/error_003": [
+0.57,
+0.0,
+-17.4
+],
+"interface-sounds/error_004": [
+0.13,
+-0.0,
+-13.9
+],
+"interface-sounds/error_005": [
+0.55,
+-1.4,
+-19.1
+],
+"interface-sounds/error_006": [
+0.55,
+-1.3,
+-18.4
+],
+"interface-sounds/error_007": [
+0.24,
+-0.1,
+-13.5
+],
+"interface-sounds/error_008": [
+0.18,
+-1.4,
+-21.0
+],
+"interface-sounds/glass_001": [
+0.31,
+-1.5,
+-20.5
+],
+"interface-sounds/glass_002": [
+0.16,
+-1.4,
+-19.4
+],
+"interface-sounds/glass_003": [
+0.16,
+-1.4,
+-16.7
+],
+"interface-sounds/glass_004": [
+0.73,
+-1.2,
+-18.4
+],
+"interface-sounds/glass_005": [
+0.18,
+-1.3,
+-21.0
+],
+"interface-sounds/glass_006": [
+0.18,
+-1.6,
+-19.9
+],
+"interface-sounds/glitch_001": [
+0.05,
+-0.0,
+-7.3
+],
+"interface-sounds/glitch_002": [
+0.08,
+-0.0,
+-11.2
+],
+"interface-sounds/glitch_003": [
+0.05,
+-0.0,
+-9.9
+],
+"interface-sounds/glitch_004": [
+0.05,
+-0.0,
+-12.9
+],
+"interface-sounds/maximize_001": [
+0.29,
+-1.5,
+-13.5
+],
+"interface-sounds/maximize_002": [
+0.29,
+-1.2,
+-10.7
+],
+"interface-sounds/maximize_003": [
+0.26,
+-1.8,
+-20.7
+],
+"interface-sounds/maximize_004": [
+0.44,
+-1.4,
+-15.7
+],
+"interface-sounds/maximize_005": [
+0.57,
+-1.3,
+-17.1
+],
+"interface-sounds/maximize_006": [
+0.42,
+-1.4,
+-14.6
+],
+"interface-sounds/maximize_007": [
+0.21,
+-1.4,
+-14.0
+],
+"interface-sounds/maximize_008": [
+0.26,
+-1.4,
+-13.2
+],
+"interface-sounds/maximize_009": [
+0.26,
+-1.4,
+-11.0
+],
+"interface-sounds/minimize_001": [
+0.29,
+-1.5,
+-13.5
+],
+"interface-sounds/minimize_002": [
+0.29,
+-1.2,
+-10.7
+],
+"interface-sounds/minimize_003": [
+0.26,
+-1.7,
+-20.7
+],
+"interface-sounds/minimize_004": [
+0.44,
+0.0,
+-15.4
+],
+"interface-sounds/minimize_005": [
+0.57,
+-0.0,
+-17.0
+],
+"interface-sounds/minimize_006": [
+0.42,
+-1.4,
+-14.6
+],
+"interface-sounds/minimize_007": [
+0.21,
+-0.7,
+-14.6
+],
+"interface-sounds/minimize_008": [
+0.26,
+-1.4,
+-13.2
+],
+"interface-sounds/minimize_009": [
+0.26,
+-1.4,
+-11.0
+],
+"interface-sounds/open_001": [
+0.18,
+-1.4,
+-15.5
+],
+"interface-sounds/open_002": [
+0.37,
+-3.4,
+-16.9
+],
+"interface-sounds/open_003": [
+0.37,
+-1.3,
+-15.7
+],
+"interface-sounds/open_004": [
+0.37,
+-0.8,
+-17.8
+],
+"interface-sounds/pluck_001": [
+0.13,
+0.0,
+-18.1
+],
+"interface-sounds/pluck_002": [
+0.21,
+-0.0,
+-19.6
+],
+"interface-sounds/question_001": [
+0.52,
+-1.3,
+-12.2
+],
+"interface-sounds/question_002": [
+0.37,
+-1.4,
+-10.5
+],
+"interface-sounds/question_003": [
+0.37,
+-1.4,
+-10.5
+],
+"interface-sounds/question_004": [
+0.37,
+-1.4,
+-10.5
+],
+"interface-sounds/scratch_001": [
+0.18,
+-0.6,
+-12.7
+],
+"interface-sounds/scratch_002": [
+0.18,
+-1.2,
+-12.1
+],
+"interface-sounds/scratch_003": [
+0.16,
+-4.0,
+-20.5
+],
+"interface-sounds/scratch_004": [
+0.37,
+-1.4,
+-20.9
+],
+"interface-sounds/scratch_005": [
+0.37,
+-1.3,
+-15.7
+],
+"interface-sounds/scroll_001": [
+1.04,
+-0.0,
+-22.4
+],
+"interface-sounds/scroll_002": [
+1.04,
+-1.3,
+-22.4
+],
+"interface-sounds/scroll_003": [
+1.04,
+-1.1,
+-22.3
+],
+"interface-sounds/scroll_004": [
+1.04,
+-0.8,
+-20.5
+],
+"interface-sounds/scroll_005": [
+1.04,
+-0.2,
+-18.4
+],
+"interface-sounds/select_001": [
+0.08,
+0.0,
+-14.8
+],
+"interface-sounds/select_002": [
+0.08,
+0.0,
+-13.3
+],
+"interface-sounds/select_003": [
+0.42,
+-1.5,
+-19.2
+],
+"interface-sounds/select_004": [
+0.42,
+-0.6,
+-19.5
+],
+"interface-sounds/select_005": [
+0.42,
+-1.8,
+-19.1
+],
+"interface-sounds/select_006": [
+1.99,
+-1.2,
+-22.9
+],
+"interface-sounds/select_007": [
+0.1,
+0.0,
+-15.1
+],
+"interface-sounds/select_008": [
+0.1,
+-2.2,
+-21.2
+],
+"interface-sounds/switch_001": [
+0.65,
+0.0,
+-24.7
+],
+"interface-sounds/switch_002": [
+0.65,
+0.0,
+-22.6
+],
+"interface-sounds/switch_003": [
+0.55,
+-0.0,
+-12.8
+],
+"interface-sounds/switch_004": [
+0.55,
+-0.0,
+-21.2
+],
+"interface-sounds/switch_005": [
+0.65,
+-0.0,
+-20.4
+],
+"interface-sounds/switch_006": [
+0.65,
+-2.3,
+-26.8
+],
+"interface-sounds/switch_007": [
+0.65,
+-0.1,
+-25.2
+],
+"interface-sounds/tick_001": [
+0.08,
+-2.6,
+-23.1
+],
+"interface-sounds/tick_002": [
+0.05,
+-2.1,
+-18.3
+],
+"interface-sounds/tick_004": [
+0.1,
+-1.6,
+-16.9
+],
+"interface-sounds/toggle_001": [
+0.18,
+-1.1,
+-14.5
+],
+"interface-sounds/toggle_002": [
+0.18,
+-1.3,
+-12.6
+],
+"interface-sounds/toggle_003": [
+0.18,
+-1.4,
+-14.9
+],
+"interface-sounds/toggle_004": [
+0.1,
+-1.3,
+-16.8
+],
+"rpg-audio/Preview": [
+26.17,
+0.0,
+-17.8
+],
+"rpg-audio/beltHandle1": [
+0.31,
+-2.9,
+-26.3
+],
+"rpg-audio/beltHandle2": [
+0.52,
+-2.7,
+-30.2
+],
+"rpg-audio/bookClose": [
+0.26,
+0.0,
+-17.5
+],
+"rpg-audio/bookFlip1": [
+0.81,
+0.0,
+-28.0
+],
+"rpg-audio/bookFlip2": [
+0.47,
+-7.1,
+-34.7
+],
+"rpg-audio/bookFlip3": [
+0.26,
+-3.6,
+-29.8
+],
+"rpg-audio/bookOpen": [
+0.18,
+-11.0,
+-31.6
+],
+"rpg-audio/bookPlace1": [
+0.31,
+0.0,
+-16.4
+],
+"rpg-audio/bookPlace2": [
+0.39,
+0.0,
+-16.7
+],
+"rpg-audio/bookPlace3": [
+0.31,
+0.0,
+-15.8
+],
+"rpg-audio/chop": [
+0.29,
+0.0,
+-17.0
+],
+"rpg-audio/cloth1": [
+0.71,
+-1.5,
+-24.1
+],
+"rpg-audio/cloth2": [
+0.44,
+-7.8,
+-27.0
+],
+"rpg-audio/cloth3": [
+0.52,
+-9.1,
+-28.1
+],
+"rpg-audio/cloth4": [
+0.42,
+-13.7,
+-34.1
+],
+"rpg-audio/clothBelt": [
+0.76,
+-1.9,
+-28.9
+],
+"rpg-audio/clothBelt2": [
+0.78,
+-4.5,
+-29.0
+],
+"rpg-audio/creak1": [
+0.71,
+-6.4,
+-24.1
+],
+"rpg-audio/creak2": [
+0.86,
+-6.1,
+-23.9
+],
+"rpg-audio/creak3": [
+0.37,
+-5.2,
+-19.2
+],
+"rpg-audio/doorClose_1": [
+0.71,
+0.0,
+-16.2
+],
+"rpg-audio/doorClose_2": [
+0.65,
+-0.2,
+-17.3
+],
+"rpg-audio/doorClose_3": [
+0.76,
+0.0,
+-11.8
+],
+"rpg-audio/doorClose_4": [
+0.65,
+0.0,
+-16.9
+],
+"rpg-audio/doorOpen_1": [
+0.97,
+0.0,
+-18.8
+],
+"rpg-audio/doorOpen_2": [
+1.46,
+0.0,
+-21.5
+],
+"rpg-audio/drawKnife1": [
+0.44,
+-22.8,
+-42.4
+],
+"rpg-audio/drawKnife2": [
+0.5,
+-21.7,
+-39.2
+],
+"rpg-audio/drawKnife3": [
+0.52,
+-9.7,
+-36.4
+],
+"rpg-audio/dropLeather": [
+0.44,
+-5.3,
+-21.9
+],
+"rpg-audio/footstep00": [
+0.29,
+0.0,
+-18.6
+],
+"rpg-audio/footstep01": [
+0.31,
+0.0,
+-17.3
+],
+"rpg-audio/footstep02": [
+0.29,
+-0.0,
+-20.8
+],
+"rpg-audio/footstep03": [
+0.31,
+0.0,
+-18.3
+],
+"rpg-audio/footstep04": [
+0.37,
+-2.7,
+-23.3
+],
+"rpg-audio/footstep05": [
+0.31,
+-3.5,
+-24.9
+],
+"rpg-audio/footstep06": [
+0.29,
+-0.8,
+-20.3
+],
+"rpg-audio/footstep07": [
+0.29,
+0.0,
+-20.4
+],
+"rpg-audio/footstep08": [
+0.29,
+0.0,
+-15.5
+],
+"rpg-audio/footstep09": [
+0.26,
+-4.6,
+-22.0
+],
+"rpg-audio/handleCoins": [
+0.89,
+0.0,
+-26.7
+],
+"rpg-audio/handleCoins2": [
+0.37,
+-10.0,
+-31.7
+],
+"rpg-audio/handleSmallLeather": [
+0.37,
+-12.2,
+-35.6
+],
+"rpg-audio/handleSmallLeather2": [
+0.34,
+-14.8,
+-37.8
+],
+"rpg-audio/knifeSlice": [
+0.63,
+-0.6,
+-19.2
+],
+"rpg-audio/knifeSlice2": [
+0.6,
+0.0,
+-16.8
+],
+"rpg-audio/metalClick": [
+0.5,
+-5.7,
+-32.4
+],
+"rpg-audio/metalLatch": [
+0.31,
+0.0,
+-19.2
+],
+"rpg-audio/metalPot1": [
+1.49,
+0.0,
+-13.8
+],
+"rpg-audio/metalPot2": [
+0.97,
+0.0,
+-12.3
+],
+"rpg-audio/metalPot3": [
+0.94,
+0.0,
+-10.2
+],
+"sci-fi-sounds/computerNoise_000": [
+5.04,
+-1.5,
+-8.1
+],
+"sci-fi-sounds/computerNoise_001": [
+5.04,
+-1.5,
+-9.3
+],
+"sci-fi-sounds/computerNoise_002": [
+5.04,
+-1.6,
+-11.9
+],
+"sci-fi-sounds/computerNoise_003": [
+5.04,
+-1.4,
+-11.7
+],
+"sci-fi-sounds/doorClose_000": [
+0.57,
+-1.3,
+-18.2
+],
+"sci-fi-sounds/doorClose_001": [
+0.57,
+-1.0,
+-16.1
+],
+"sci-fi-sounds/doorClose_002": [
+0.57,
+-1.4,
+-16.5
+],
+"sci-fi-sounds/doorOpen_000": [
+0.57,
+-1.0,
+-18.2
+],
+"sci-fi-sounds/doorOpen_001": [
+0.57,
+-1.1,
+-16.1
+],
+"sci-fi-sounds/doorOpen_002": [
+0.57,
+-0.5,
+-16.4
+],
+"sci-fi-sounds/engineCircular_000": [
+5.04,
+-1.1,
+-15.1
+],
+"sci-fi-sounds/engineCircular_001": [
+5.04,
+-0.8,
+-13.7
+],
+"sci-fi-sounds/engineCircular_002": [
+5.04,
+-0.6,
+-12.6
+],
+"sci-fi-sounds/engineCircular_003": [
+5.04,
+-1.5,
+-15.2
+],
+"sci-fi-sounds/engineCircular_004": [
+5.04,
+-1.6,
+-15.5
+],
+"sci-fi-sounds/explosionCrunch_000": [
+0.81,
+-1.3,
+-14.2
+],
+"sci-fi-sounds/explosionCrunch_001": [
+1.38,
+-1.1,
+-12.4
+],
+"sci-fi-sounds/explosionCrunch_002": [
+1.31,
+-1.5,
+-16.8
+],
+"sci-fi-sounds/explosionCrunch_003": [
+1.59,
+-1.3,
+-14.4
+],
+"sci-fi-sounds/explosionCrunch_004": [
+2.01,
+-1.1,
+-15.1
+],
+"sci-fi-sounds/forceField_000": [
+0.99,
+-1.4,
+-12.0
+],
+"sci-fi-sounds/forceField_001": [
+0.99,
+-1.3,
+-12.0
+],
+"sci-fi-sounds/forceField_002": [
+0.99,
+-1.4,
+-12.0
+],
+"sci-fi-sounds/forceField_003": [
+0.99,
+-1.3,
+-12.0
+],
+"sci-fi-sounds/forceField_004": [
+0.99,
+-1.4,
+-12.0
+],
+"sci-fi-sounds/impactMetal_000": [
+0.68,
+-1.4,
+-22.5
+],
+"sci-fi-sounds/impactMetal_001": [
+0.73,
+-1.3,
+-20.3
+],
+"sci-fi-sounds/impactMetal_002": [
+0.52,
+-1.4,
+-20.9
+],
+"sci-fi-sounds/impactMetal_003": [
+0.81,
+-1.3,
+-22.0
+],
+"sci-fi-sounds/impactMetal_004": [
+0.42,
+-1.4,
+-21.7
+],
+"sci-fi-sounds/laserLarge_000": [
+0.71,
+-0.8,
+-17.6
+],
+"sci-fi-sounds/laserLarge_001": [
+0.76,
+-1.0,
+-17.0
+],
+"sci-fi-sounds/laserLarge_002": [
+0.78,
+-0.5,
+-16.9
+],
+"sci-fi-sounds/laserLarge_003": [
+0.76,
+-0.4,
+-18.3
+],
+"sci-fi-sounds/laserLarge_004": [
+0.73,
+-0.2,
+-17.4
+],
+"sci-fi-sounds/laserRetro_000": [
+0.29,
+0.0,
+-7.9
+],
+"sci-fi-sounds/laserRetro_001": [
+0.29,
+-0.0,
+-7.9
+],
+"sci-fi-sounds/laserRetro_002": [
+0.29,
+-0.3,
+-14.0
+],
+"sci-fi-sounds/laserRetro_003": [
+0.29,
+0.0,
+-8.0
+],
+"sci-fi-sounds/laserRetro_004": [
+0.31,
+-1.1,
+-12.0
+],
+"sci-fi-sounds/laserSmall_000": [
+0.29,
+-3.7,
+-19.0
+],
+"sci-fi-sounds/laserSmall_001": [
+0.29,
+0.0,
+-19.3
+],
+"sci-fi-sounds/laserSmall_002": [
+0.39,
+-3.2,
+-20.0
+],
+"sci-fi-sounds/laserSmall_003": [
+0.34,
+-5.2,
+-19.6
+],
+"sci-fi-sounds/laserSmall_004": [
+0.44,
+-0.6,
+-13.0
+],
+"sci-fi-sounds/lowFrequency_explosion_000": [
+2.04,
+0.0,
+-15.5
+],
+"sci-fi-sounds/lowFrequency_explosion_001": [
+1.04,
+0.0,
+-13.2
+],
+"sci-fi-sounds/slime_000": [
+0.55,
+-1.6,
+-26.9
+],
+"sci-fi-sounds/slime_001": [
+4.75,
+-1.4,
+-24.1
+],
+"sci-fi-sounds/spaceEngineLarge_000": [
+5.04,
+-1.0,
+-5.7
+],
+"sci-fi-sounds/spaceEngineLarge_001": [
+5.04,
+0.0,
+-6.6
+],
+"sci-fi-sounds/spaceEngineLarge_002": [
+5.04,
+-0.3,
+-8.5
+],
+"sci-fi-sounds/spaceEngineLarge_003": [
+5.04,
+0.0,
+-7.2
+],
+"sci-fi-sounds/spaceEngineLarge_004": [
+5.04,
+-0.5,
+-8.9
+],
+"sci-fi-sounds/spaceEngineLow_000": [
+5.04,
+-1.4,
+-8.1
+],
+"sci-fi-sounds/spaceEngineLow_001": [
+5.04,
+-1.4,
+-8.1
+],
+"sci-fi-sounds/spaceEngineLow_002": [
+5.04,
+-1.3,
+-8.6
+],
+"sci-fi-sounds/spaceEngineLow_003": [
+5.04,
+-1.4,
+-7.8
+],
+"sci-fi-sounds/spaceEngineLow_004": [
+5.04,
+-1.4,
+-8.1
+],
+"sci-fi-sounds/spaceEngineSmall_000": [
+5.04,
+-1.4,
+-10.7
+],
+"sci-fi-sounds/spaceEngineSmall_001": [
+5.04,
+-1.5,
+-17.9
+],
+"sci-fi-sounds/spaceEngineSmall_002": [
+5.04,
+-1.5,
+-14.8
+],
+"sci-fi-sounds/spaceEngineSmall_003": [
+5.04,
+-1.4,
+-16.7
+],
+"sci-fi-sounds/spaceEngineSmall_004": [
+5.04,
+-1.4,
+-14.3
+],
+"sci-fi-sounds/spaceEngine_000": [
+5.04,
+-0.0,
+-7.1
+],
+"sci-fi-sounds/spaceEngine_001": [
+5.04,
+0.0,
+-5.9
+],
+"sci-fi-sounds/spaceEngine_002": [
+5.04,
+0.0,
+-11.2
+],
+"sci-fi-sounds/spaceEngine_003": [
+5.04,
+0.0,
+-9.5
+],
+"sci-fi-sounds/thrusterFire_000": [
+5.04,
+-1.2,
+-19.3
+],
+"sci-fi-sounds/thrusterFire_001": [
+5.04,
+-1.4,
+-17.9
+],
+"sci-fi-sounds/thrusterFire_002": [
+5.04,
+-1.3,
+-19.2
+],
+"sci-fi-sounds/thrusterFire_003": [
+5.04,
+-1.4,
+-17.0
+],
+"sci-fi-sounds/thrusterFire_004": [
+5.04,
+-1.5,
+-19.5
+],
+"voiceover-pack-fighter/1": [
+0.99,
+-2.0,
+-13.7
+],
+"voiceover-pack-fighter/10": [
+1.07,
+-1.1,
+-14.1
+],
+"voiceover-pack-fighter/2": [
+0.97,
+-0.9,
+-13.9
+],
+"voiceover-pack-fighter/3": [
+1.04,
+-1.1,
+-15.0
+],
+"voiceover-pack-fighter/4": [
+1.1,
+-1.5,
+-14.5
+],
+"voiceover-pack-fighter/5": [
+1.15,
+-1.5,
+-14.9
+],
+"voiceover-pack-fighter/6": [
+1.12,
+-1.6,
+-17.1
+],
+"voiceover-pack-fighter/7": [
+1.2,
+-1.7,
+-14.4
+],
+"voiceover-pack-fighter/8": [
+0.81,
+-1.3,
+-17.9
+],
+"voiceover-pack-fighter/9": [
+1.07,
+-1.2,
+-12.9
+],
+"voiceover-pack-fighter/Preview": [
+33.31,
+-0.1,
+-13.9
+],
+"voiceover-pack-fighter/arcade_mode": [
+1.67,
+-1.1,
+-14.0
+],
+"voiceover-pack-fighter/battle_mode": [
+1.54,
+-0.9,
+-13.8
+],
+"voiceover-pack-fighter/begin": [
+1.25,
+-1.3,
+-13.7
+],
+"voiceover-pack-fighter/championship_mode": [
+1.7,
+-1.3,
+-14.3
+],
+"voiceover-pack-fighter/choose_your_character": [
+2.12,
+-1.4,
+-14.5
+],
+"voiceover-pack-fighter/combo": [
+1.2,
+-1.5,
+-13.6
+],
+"voiceover-pack-fighter/combo_breaker": [
+1.62,
+-0.6,
+-14.1
+],
+"voiceover-pack-fighter/deathmatch": [
+1.2,
+-1.8,
+-15.8
+],
+"voiceover-pack-fighter/fight": [
+0.97,
+-0.2,
+-15.2
+],
+"voiceover-pack-fighter/final_round": [
+1.72,
+-2.2,
+-14.2
+],
+"voiceover-pack-fighter/flawless_victory": [
+1.91,
+-0.8,
+-14.5
+],
+"voiceover-pack-fighter/game_over": [
+1.8,
+-1.8,
+-14.7
+],
+"voiceover-pack-fighter/it_s_a_tie": [
+1.38,
+-1.0,
+-14.9
+],
+"voiceover-pack-fighter/kill_her": [
+1.23,
+-1.4,
+-13.8
+],
+"voiceover-pack-fighter/kill_him": [
+1.18,
+-0.7,
+-13.9
+],
+"voiceover-pack-fighter/kill_it": [
+0.99,
+-0.9,
+-15.7
+],
+"voiceover-pack-fighter/loser": [
+1.49,
+-1.6,
+-13.6
+],
+"voiceover-pack-fighter/multi_kill": [
+1.46,
+-1.5,
+-14.8
+],
+"voiceover-pack-fighter/player_1": [
+1.38,
+-1.6,
+-14.3
+],
+"voiceover-pack-fighter/player_2": [
+1.25,
+-1.4,
+-14.6
+],
+"voiceover-pack-fighter/prepare_yourself": [
+1.72,
+-0.6,
+-13.5
+],
+"voiceover-pack-fighter/ready": [
+1.07,
+-1.7,
+-12.2
+],
+"voiceover-pack-fighter/round_1": [
+1.38,
+-1.2,
+-13.0
+],
+"voiceover-pack-fighter/round_2": [
+1.49,
+-1.8,
+-14.3
+],
+"voiceover-pack-fighter/round_3": [
+1.54,
+0.0,
+-14.0
+],
+"voiceover-pack-fighter/round_4": [
+1.75,
+-1.0,
+-14.2
+],
+"voiceover-pack-fighter/round_5": [
+1.67,
+-1.0,
+-15.1
+],
+"voiceover-pack-fighter/story_mode": [
+1.78,
+-1.0,
+-13.7
+],
+"voiceover-pack-fighter/sudden_death": [
+1.49,
+-1.4,
+-14.7
+],
+"voiceover-pack-fighter/survival_mode": [
+1.93,
+-1.7,
+-13.5
+],
+"voiceover-pack-fighter/tie": [
+1.15,
+-1.4,
+-14.1
+],
+"voiceover-pack-fighter/tie_breaker": [
+1.38,
+-1.7,
+-13.9
+],
+"voiceover-pack-fighter/time": [
+1.2,
+-1.1,
+-13.5
+],
+"voiceover-pack-fighter/winner": [
+1.46,
+-1.5,
+-14.8
+],
+"voiceover-pack-fighter/you_lose": [
+1.41,
+-1.9,
+-13.2
+],
+"voiceover-pack-fighter/you_win": [
+1.28,
+-1.4,
+-14.1
+]
+}
