@@ -1142,10 +1142,38 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 5092080,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 62433
+     },
+     "running": {
+      "bytes": 47420,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 58048,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12bcc-0200-75ac-8da8-2619ca71673e",
     "made": "2026-10-11 16:29",
     "model": "01a12bc9-39de-73c1-bf14-00ada2afdf31",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "drake": {
