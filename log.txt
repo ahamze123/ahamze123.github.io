@@ -1355,3 +1355,5 @@
 2026-10-11 16:11:40 [dm2_sera] model task made multi-image-to-3d 01a12bbb-ee4d-75e2-9195-ab120513f634
 2026-10-11 16:11:40 [dm2_korr] model task made multi-image-to-3d 01a12bbb-ee52-7637-b2fb-61127b7084a0
 2026-10-11 16:11:40 [dm2_draxx] model task made multi-image-to-3d 01a12bbb-ee54-745e-bacf-d65149773e0b
+2026-10-11 16:11:41 [dm2_sera] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:11:40 [dm2_bram] model task made multi-image-to-3d 01a12bbb-ee52-75cc-89c9-660ace7d0eec
