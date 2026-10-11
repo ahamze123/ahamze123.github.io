@@ -3671,6 +3671,33 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm2_volt": {
+   "model": {
+    "id": "01a12b86-f6ca-71ab-9cae-9f25cc19e591",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 15:13",
+    "run": 28,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_volt_front.png",
+     "sm2_volt_side.png",
+     "sm2_volt_back.png"
+    ]
+   }
+  },
   "sm_ember": {
    "extra": {},
    "full": {
