@@ -1,13 +1,12 @@
 {
- "run": 24,
+ "run": 25,
  "heroes": [
-  "sm_viper",
-  "sm_king"
+  "sm_spike"
  ],
  "refetch": [],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 70,
+ "max_credits": 35,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
