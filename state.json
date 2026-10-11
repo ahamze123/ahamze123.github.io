@@ -5793,7 +5793,8 @@
     "trooper"
    ],
    "limit": 20,
-   "run": 26
+   "run": 26,
+   "spent_estimate": 15
   }
  ]
 }

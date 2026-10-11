@@ -1243,3 +1243,4 @@
 2026-10-11 11:10:21 [sm_tank] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 2923084}
 2026-10-11 11:10:35 [volt] animations SUCCEEDED 100%
 2026-10-11 11:10:35 [volt] animations fight3 ['Spartan_Kick', 'High_Kick', '360_Power_Spin_Jump', 'Crouch_Charge_and_Throw', 'Charged_Ground_Slam']
+2026-10-11 11:10:36 run finished; credits used by new tasks (estimate): 15
