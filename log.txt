@@ -1487,3 +1487,8 @@
 2026-10-11 16:34:15 [dm3_sera] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 16:34:36 [dm3_sera] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 16:34:41 [dm3_sera] rig task made 01a12bd0-f8c3-7512-b783-ddff0bf8b771
+2026-10-11 16:34:43 [dm3_sera] rigging IN_PROGRESS 10%
+2026-10-11 16:34:53 [dm3_sera] rigging IN_PROGRESS 36%
+2026-10-11 16:35:03 [dm3_sera] rigging IN_PROGRESS 63%
+2026-10-11 16:35:14 [dm3_sera] rigging SUCCEEDED 100%
+2026-10-11 16:35:15 [dm3_sera] rigged: {"model": {"bytes": 5973412, "triangles": 62108, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57324, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46736, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
