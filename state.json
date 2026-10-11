@@ -3862,10 +3862,29 @@
      171,
      347
     ],
+    "credits": 30,
+    "error": null,
+    "file": {
+     "bytes": 378932,
+     "clips": [
+      "Boxing_Guard_Prep_Straight_Punch",
+      "Walk_Fight_Forward",
+      "Left_Jab_from_Guard",
+      "Left_Hook_from_Guard",
+      "Right_Uppercut_from_Guard",
+      "Roundhouse_Kick",
+      "Boxing_Guard_Right_Straight_Kick",
+      "Face_Punch_Reaction",
+      "Hit_Reaction_to_Waist",
+      "Stand_Up4"
+     ],
+     "joints": 0,
+     "triangles": 0
+    },
     "id": "01a12a29-46ef-71b2-a2d0-e95734a5877a",
     "made": "2026-10-11 08:51",
     "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    },
    "extra": {},
    "model": {
