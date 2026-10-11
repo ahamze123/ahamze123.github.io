@@ -2918,7 +2918,7 @@ const Game = {
     this.setState('title'); this.menuSel = 0; this.heroes = []; this.foes = []; this.items = []; Fx.length = 0; Parts.length = 0; this.shots = []; this.cutin = null;
     Music.play('title'); Ambience.set(null); AU.setDuck(1);
   },
-  autoPause() { if (this.state === 'play') this.setState('pause'); },
+  autoPause() { if (this.net) return; if (this.state === 'play') this.setState('pause'); }, // (online the game never stops for one player)
   togglePause() { if (this.state === 'play') { this.setState('pause'); this.pauseSel = 0; Sfx.select(); } else if (this.state === 'pause') this.setState('play'); },
 
   /* ---------- starting ---------- */
@@ -4314,6 +4314,13 @@ function frame(now) {
   Game.render();
   Touch.taps.length = 0;
 }
+// online host in a hidden tab: browsers stop drawing it, so the game goes on from a timer (friends keep playing)
+setInterval(() => {
+  if (!document.hidden || !Game.net || Net.role !== 'host') return;
+  const now = performance.now(), rdt = clamp((now - (lastT || now)) / 1000, 0, 0.1); lastT = now;
+  if (rdt <= 0) return;
+  Input.update(false, rdt); Game.update(rdt); Touch.taps.length = 0;
+}, 16);
 const rotateEl = document.getElementById('rotate');
 function checkRotate() {
   const portrait = window.innerHeight > window.innerWidth * 1.05;
