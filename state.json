@@ -3911,6 +3911,12 @@
   },
   "sm_tank": {
    "extra": {},
+   "full": {
+    "bytes": 2923084,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
