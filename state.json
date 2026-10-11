@@ -6410,6 +6410,17 @@
    "limit": 50,
    "run": 31,
    "spent_estimate": 35
+  },
+  {
+   "at": "2026-10-11 16:11",
+   "heroes": [
+    "dm2_korr",
+    "dm2_sera",
+    "dm2_bram",
+    "dm2_draxx"
+   ],
+   "limit": 170,
+   "run": 901
   }
  ]
 }
