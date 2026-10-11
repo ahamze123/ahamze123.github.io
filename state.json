@@ -3673,6 +3673,8 @@
   },
   "sm_ember": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a12a2b-9f70-70e8-a87c-8a34a4a3b95c",
     "made": "2026-10-11 08:54",
     "run": 23,
@@ -3685,11 +3687,14 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2b-9f70-70e8-a87c-8a34a4a3b95c/output/preview.png?Expires=1791968161&Signature=BU7eIwSwUnY57egds1ws-TT1OLqIiBCoyskjI8XktASCH5J-Jn1bc07uVDzSpJS65ExlixXHMSpnvqtCbh05nJIdUmd0KxMefP6YVHMpOcaIRWWd89uN1Ii2KXjS-Mf-2Di2gkrl9uDuVeJU0pILMy4c6R7VDpHHMFYkLh9lx-YnOL1gdaoUFbKo3ZRb4GE3~InZqNMYWW2NI23O27cYoVd1zl-utPK1t1WnhTii5iP9MuDZfwuAsnktdlqjviRRHuiH7XRECLD2eFV86wNhTaj~0LOX3nrGxLlsKU4l3aHN-9fKkYBzOP00Rnm3CwMJUPV5c2atMuZRUVRMChRZiA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "sm_hawk": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a12a2b-9f70-70e9-9830-70222afc9d44",
     "made": "2026-10-11 08:54",
     "run": 23,
@@ -3702,11 +3707,14 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2b-9f70-70e9-9830-70222afc9d44/output/preview.png?Expires=1791968161&Signature=pojfqXO0jx8Q44GLFP5cbqky1rRavQJOvSLCNwveYWxQhsdhUhrazxRk-1mYBSnPnTENfYRwBYPJ2HR6bC1uPF0NXhPUhePWpWn4nA0FKRdYLBYZqkx9gNKAdc2JSbLc5bYeIq7gNcbJdPa5CX-tDSTNSJldNcN8d0~rH2yVyQ5wfHfJ1~lPU1cpaOM2fB1x1ZcT1lDDCe1F2jsGRqbU07FsY8SO5g-uyXwcErqm~kQ60Q6at4An5Z333obdK17XKNI-S30FJAMUV1MLMa-QGn-MI0eQag0lTBTdWR7hLEP9Ntrer-bfZBuolLLo9CiF0dYzFzeb--RvWo4qoyWnUg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "sm_tank": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a12a2b-9fbd-734a-a062-98fb64f1ad2e",
     "made": "2026-10-11 08:54",
     "run": 23,
@@ -3719,7 +3727,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2b-9fbd-734a-a062-98fb64f1ad2e/output/preview.png?Expires=1791968167&Signature=icot22PQ6IthQyRTfSNjT3R6-TP3Fer6HFvh1QvJegqcuhQyyeuX3yWn6BTUO2gitPvpGQbIwqIcFozFchMsSdv5J2UwUu8wxIYiZ~JWbUuj1xaZUnjQkq5o-2jG9tv42zzuRGhpsxo06NPkCl3-pkKb7ypnBnUHLUFk9PiaKBIT-wuhiQyM2hJHkYFM57vwSJNkkCrlzMp8N2VWN4Fsf7JQETXnNH6zVrJaQoRD7TN9wVbOJt-auADe4y06VtrcyAXD-DxJ4t3KO3r2VIvBM01TkP8RPEqlYA-8LH4M9fczWVveirWTGfQEKvd8PG~6L~WpbDPZdiXNIhKSOklAaA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "sm_volt": {
