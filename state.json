@@ -4977,6 +4977,12 @@
    }
   },
   "sm2_roller": {
+   "full": {
+    "bytes": 7036460,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
