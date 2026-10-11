@@ -1,0 +1,43 @@
+# Fetches free (CC0) sound effects by Kenney for the games (tools/sfx/get.py). Run it from the Actions tab ("Run workflow").
+# Everything it gets goes to the branch 'sfx-out' (not to the games themselves).
+name: Get sound effects (Kenney CC0)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sfx
+  cancel-in-progress: false
+jobs:
+  get:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open the results branch
+        run: |
+          git config --global user.name "sfx-bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin sfx-out >/dev/null 2>&1; then
+            git fetch --depth=1 origin sfx-out
+            git worktree add -b sfx-out out FETCH_HEAD
+          else
+            git worktree add --detach out
+            cd out
+            git checkout --orphan sfx-out
+            git rm -rfq . || true
+            git clean -fdxq
+          fi
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Get the sounds
+        env:
+          SFX_OUT: ${{ github.workspace }}/out
+        run: python3 tools/sfx/get.py
+      - name: Save the results
+        if: always()
+        run: |
+          cd out
+          git add -A
+          git commit -qm "Sound effects run ${{ github.run_number }}" || echo "nothing new to save"
+          git push -q origin HEAD:sfx-out
