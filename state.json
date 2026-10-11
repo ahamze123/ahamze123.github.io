@@ -978,6 +978,12 @@
      "dm2_skeleton_side.png",
      "dm2_skeleton_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bcb-b2b5-7714-88a7-33a2094af8fe",
+    "made": "2026-10-11 16:28",
+    "model": "01a12bc9-39e9-707a-9951-8a1c9971b402",
+    "status": "PENDING"
    }
   },
   "dm2_snatcher": {
