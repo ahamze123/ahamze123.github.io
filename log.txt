@@ -1553,3 +1553,4 @@
 2026-10-11 17:32:27 [sm2_buster] rigged: {"model": {"bytes": 4854300, "triangles": 61862, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57424, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46836, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 17:32:30 [sm2_buster] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6051776}
 2026-10-11 17:32:32 [sm2_roller] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 17:32:38 [sm2_roller] rig task made 01a12c06-04eb-701b-bbbb-1b44bbdab7ec
