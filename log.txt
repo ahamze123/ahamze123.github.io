@@ -1211,3 +1211,8 @@
 2026-10-11 08:59:53 [sm_viper] rigging IN_PROGRESS 10%
 2026-10-11 08:59:57 [sm_king] image-to-3d SUCCEEDED 100%
 2026-10-11 09:00:02 [sm_king] rig task made 01a12a30-bb8b-7521-ad07-4866dc2d2e5e
+2026-10-11 09:00:03 [sm_king] rigging IN_PROGRESS 10%
+2026-10-11 09:00:03 [sm_viper] rigging IN_PROGRESS 36%
+2026-10-11 09:00:13 [sm_king] rigging SUCCEEDED 100%
+2026-10-11 09:00:13 [sm_viper] rigging SUCCEEDED 100%
+2026-10-11 09:00:13 [sm_king] rigged: {"model": {"bytes": 1879752, "triangles": 20591, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57804, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47184, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}

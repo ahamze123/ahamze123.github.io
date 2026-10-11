@@ -3801,10 +3801,38 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2e-fc25-704d-8c95-dbbe6aa10d54/output/preview.png?Expires=1791968395&Signature=UKcJriUop-iuOYVyIeDMxwfONlPPGk8JwnCthKbiPNvEZcqcoCBWCl31qNUTgJKw8IUfkbcdRNvthe5l90fNmMO-GOn9mAaVy~mUlisT6WmMkjPpdDl7s2018Jek-tG7IQUp62YhOZUeNdHhQ29tW0wDzwakZI3XguvcKbInHHxoo~CxH0GswPasRSp0sHOpF2x8Tt3yauS4TPePGtEGHv0-SX5XDMuLaJccx5tGtFl0amX8tzRJc2NWDToDC3j-TzjoXZ6xO8VrxGwu07QrpaPw4eQYgdF2rMqAZxrXrJTnde2HPwFfGfIsPOJggD-Ydy9cZQhhgRFR~c3MiiyebA__&Key-Pair-Id=K1VGYTHIYLM9UM"
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 1879752,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20591
+     },
+     "running": {
+      "bytes": 47184,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57804,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12a30-bb8b-7521-ad07-4866dc2d2e5e",
     "made": "2026-10-11 09:00",
     "model": "01a12a2e-fc25-704d-8c95-dbbe6aa10d54",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "sm_tank": {
@@ -3882,10 +3910,22 @@
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2e-fc23-756a-af1b-d1311522c5d8/output/preview.png?Expires=1791968387&Signature=JUv00EDCncMvKN0ao-gvXQt76tYsMTzRYG13dneWOoWQ0Pw0NMecwOTpdtyTn~P2~pJffIuKkOCJeBhRzw-HnEcynHJB5F-xg4EdtxCvlmlwGjdDmfgYVtaUi9oJM1PhoqG3Ig7gZ3TXxankAV2r~IfLQA8EVJyi0~4Evve-oTzLb4zbIDartnbiNmRa3Mt~bQ9oryXcGzTVeD3mutcvRwveT03ln1hkbC1v-EVUwVInAYOWJemv9B-uJKSDEnLeSOqjgCjFG6diRcM8~bJc6eNfZO1nn21SkLcHII1KusUz0DLTdYFLvoT7S0c~IexS75DVo7qOFIKWR6f2ty12Xg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 2164072,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20854
+     }
+    },
     "id": "01a12a30-95a8-75b3-978c-e392fa88f0c7",
     "made": "2026-10-11 08:59",
     "model": "01a12a2e-fc23-756a-af1b-d1311522c5d8",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "sm_volt": {
