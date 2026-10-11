@@ -1162,3 +1162,16 @@
 2026-10-11 08:54:39 [volt] animations IN_PROGRESS 80%
 2026-10-11 08:54:59 [volt] animations SUCCEEDED 100%
 2026-10-11 08:55:00 [volt] animations fight2 ['Boxing_Guard_Step_Knee_Strike', 'Elbow_Strike', 'Lunge_Spin_Kick', 'Rising_Flying_Kick', 'Flying_Fist_Kick', 'Sweeping_Kick', 'BeHit_FlyUp', 'Block1', 'Punch_Forward_with_Both_Fists', 'Victory_Fist_Pump']
+2026-10-11 08:55:10 [sm_ember] image-to-3d IN_PROGRESS 41%
+2026-10-11 08:55:10 [sm_volt] image-to-3d IN_PROGRESS 45%
+2026-10-11 08:55:10 [sm_hawk] image-to-3d IN_PROGRESS 43%
+2026-10-11 08:55:10 [sm_tank] image-to-3d IN_PROGRESS 43%
+2026-10-11 08:55:30 [sm_ember] image-to-3d IN_PROGRESS 67%
+2026-10-11 08:55:30 [sm_volt] image-to-3d IN_PROGRESS 74%
+2026-10-11 08:55:30 [sm_hawk] image-to-3d IN_PROGRESS 67%
+2026-10-11 08:55:30 [sm_tank] image-to-3d IN_PROGRESS 67%
+2026-10-11 08:55:40 [sm_ember] image-to-3d IN_PROGRESS 99%
+2026-10-11 08:55:40 [sm_volt] image-to-3d IN_PROGRESS 99%
+2026-10-11 08:55:40 [sm_hawk] image-to-3d IN_PROGRESS 99%
+2026-10-11 08:55:41 [sm_tank] image-to-3d IN_PROGRESS 84%
+2026-10-11 08:56:01 [sm_volt] image-to-3d SUCCEEDED 100%
