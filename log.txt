@@ -1253,3 +1253,4 @@
 2026-10-11 15:16:52 [sm2_volt] multi-image-to-3d IN_PROGRESS 58%
 2026-10-11 15:17:33 [sm2_volt] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 15:18:03 [sm2_volt] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 15:18:08 [sm2_volt] rig task made 01a12b8a-e40f-7307-a957-52186cc292be

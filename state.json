@@ -3699,6 +3699,12 @@
      "sm2_volt_side.png",
      "sm2_volt_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12b8a-e40f-7307-a957-52186cc292be",
+    "made": "2026-10-11 15:18",
+    "model": "01a12b86-f6ca-71ab-9cae-9f25cc19e591",
+    "status": "PENDING"
    }
   },
   "sm_ember": {
