@@ -589,6 +589,22 @@
       ],
       "joints": 24,
       "triangles": 62186
+     },
+     "running": {
+      "bytes": 47576,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 58200,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
      }
     },
     "id": "01a12bbe-baa3-763f-8477-74a834861b96",
@@ -634,6 +650,7 @@
    }
   },
   "dm2_korr": {
+   "extra": {},
    "full": {
     "bytes": 8260080,
     "pictures": [
