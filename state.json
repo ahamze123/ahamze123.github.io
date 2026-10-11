@@ -1287,6 +1287,12 @@
      "dm3_sera_side.png",
      "dm3_sera_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bd0-f8c3-7512-b783-ddff0bf8b771",
+    "made": "2026-10-11 16:34",
+    "model": "01a12bce-41d3-7676-9abd-b97c97a7988c",
+    "status": "PENDING"
    }
   },
   "drake": {

@@ -1486,3 +1486,4 @@
 2026-10-11 16:33:34 [dm3_sera] multi-image-to-3d IN_PROGRESS 58%
 2026-10-11 16:34:15 [dm3_sera] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 16:34:36 [dm3_sera] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 16:34:41 [dm3_sera] rig task made 01a12bd0-f8c3-7512-b783-ddff0bf8b771
