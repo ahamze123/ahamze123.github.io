@@ -3768,7 +3768,8 @@ const Net = {
   seats: [null, null, null], seat: 0, sel: 0, status: '', codeIn: ['A', 'A', 'A', 'A'], slot: 0, diff: 'normal',
   // host: friends' buttons \u00b7 friend: snapshots waiting to be shown
   remote: [null, null, null], snaps: [], offset: null, puppets: new Map(), lastSend: 0, cnt: null, okQ: 0, menu: false, menuSel: 0,
-  ping: 0, heard: 0, pingT: 0, sn: 0, sendT: 0,
+  ping: 0, heard: 0, pingT: 0, sn: 0, sendT: 0, log: [],
+  note(...a) { this.log.push(Math.round(performance.now()) + ' ' + a.join(' ')); if (this.log.length > 60) this.log.shift(); },
 
   /* ---------- entering the online screens ---------- */
   open() {
@@ -3832,10 +3833,10 @@ const Net = {
       return;
     }
     const L = { conn, seat: -1, heard: performance.now(), pingT: 0.5, rtt: 0 };
-    this.links.push(L);
+    this.links.push(L); this.note('knock');
     conn.on('data', d => { if (this.links.includes(L)) this.onData(d, L); });
-    conn.on('close', () => { if (this.links.includes(L)) this.dropLink(L, 'left'); });
-    conn.on('error', () => { if (this.links.includes(L)) this.dropLink(L, 'lost'); });
+    conn.on('close', () => { this.note('link close'); if (this.links.includes(L)) this.dropLink(L, 'left'); });
+    conn.on('error', e => { this.note('link error', e && (e.type || e.message || e)); if (this.links.includes(L)) this.dropLink(L, 'lost'); });
   },
   attach(conn) { // (friend) the line to the host
     this.conn = conn; this.heard = 0;
@@ -3844,8 +3845,8 @@ const Net = {
     conn.on('open', hello);
     if (conn.open === true) setTimeout(hello, 0);
     conn.on('data', d => { if (this.conn === conn) this.onData(d, null); });
-    conn.on('close', () => { if (this.conn === conn) this.lost('The host left the game.'); });
-    conn.on('error', () => { if (this.conn === conn) this.lost('The connection to the host was lost.'); });
+    conn.on('close', () => { this.note('conn close'); if (this.conn === conn) this.lost('The host left the game.'); });
+    conn.on('error', e => { this.note('conn error', e && (e.type || e.message || e)); if (this.conn === conn) this.lost('The connection to the host was lost.'); });
   },
   // (automatic tests only) tabs of the test page talk through one BroadcastChannel, each message addressed to one tab
   testLink(role) {
@@ -3874,7 +3875,7 @@ const Net = {
     if (this.role === 'host') { for (const L of this.links) if (L.seat >= 0) this.sendTo(L, m); return; }
     if (this.conn && this.conn.open !== false) { try { this.conn.send(m); } catch (e) { /* closed */ } }
   },
-  sendTo(L, m) { if (L.conn && L.conn.open !== false) { try { L.conn.send(m); } catch (e) { /* closed */ } } },
+  sendTo(L, m) { if (L.conn && L.conn.open !== false) { try { L.conn.send(m); } catch (e) { this.note('send failed', e && e.message); } } },
   sendRoom() { if (this.role === 'host') this.send({ t: 'room', seats: this.seats, diff: this.diff }); },
   close() {
     const c = this.conn, p = this.peer, ls = this.links, ch = this.testCh;
@@ -3892,6 +3893,7 @@ const Net = {
   },
   // (host) a friend left or their connection broke: their hero leaves, the game goes on
   dropLink(L, why) {
+    this.note('drop', why, 'seat', L.seat, 'quiet', Math.round(performance.now() - L.heard));
     this.links = this.links.filter(x => x !== L);
     try { L.conn.close(); } catch (e) { /* ignore */ }
     if (L.seat >= 0) {
