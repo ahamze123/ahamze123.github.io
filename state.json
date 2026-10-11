@@ -587,6 +587,8 @@
   },
   "dm2_draxx": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bbb-ee54-745e-bacf-d65149773e0b",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:11",
@@ -604,7 +606,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bbb-ee54-745e-bacf-d65149773e0b/output/preview.png?Expires=1791994482&Signature=Oel9Ame7XpvBQZBXUKaeoXq3~UxKq0FgFUhKvDoy2OLxwe2OcBQ~dvQ7rMejTLBOb7dm0iekiz4x7lo0qr-Ao5TZeVPzXmUaWDJJGWpWLZC~ur5otlB0IQ-kCEY1Nu3tl82fOfqwUQfu2KWSweyJoDQh2r-wenhx9UXKXJ11nqm2C~PLkJYNi319nXxNSBF4dfdYUDdm0baUo9uZrIrFbhHwN4jgWqoMCvaCjCmD3BE6lPu09-x0Oz1WcceeS2NmFGoB7mAEa891cc-T4VcFl00zjwrQIGrtnvUi4xxwonGFcHizozTf~AuXfMSr38f7qdc9P89HCZr7g6-ioyNyPg__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_draxx_front.png",
      "dm2_draxx_side.png",
