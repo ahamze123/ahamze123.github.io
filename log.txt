@@ -1303,3 +1303,16 @@
 2026-10-11 15:33:49 [sm2_king] model task made multi-image-to-3d 01a12b99-494d-71b1-9224-f7a20c35f052
 2026-10-11 15:33:49 [sm2_viper] model task made multi-image-to-3d 01a12b99-494b-753a-8cee-b1f27a4cff39
 2026-10-11 15:33:49 [sm2_tank] model task made multi-image-to-3d 01a12b99-494e-7443-aa43-d393a04db35c
+2026-10-11 15:33:51 [sm2_king] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:33:52 [sm2_viper] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:33:53 [sm2_tank] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:34:54 [sm2_king] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 15:35:04 [sm2_viper] multi-image-to-3d IN_PROGRESS 30%
+2026-10-11 15:35:24 [sm2_king] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 15:35:24 [sm2_tank] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 15:35:34 [sm2_viper] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 15:35:55 [sm2_tank] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 15:36:05 [sm2_king] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 15:36:35 [sm2_viper] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 15:36:35 [sm2_king] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 15:36:35 [sm2_tank] multi-image-to-3d IN_PROGRESS 80%

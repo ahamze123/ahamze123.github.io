@@ -3815,6 +3815,8 @@
   },
   "sm2_king": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12b99-494d-71b1-9224-f7a20c35f052",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 15:33",
@@ -3832,7 +3834,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12b99-494d-71b1-9224-f7a20c35f052/output/preview.png?Expires=1791992193&Signature=PaS~zaEqkAgeFa8O0Jw5kZFywkD~~2V~5oIwDAackUSB~sl1g3FxLnw0hq3nOL-qXl1FIEJ617THYLlwdPouVh9XZr40mZA37BlA6Ek0IkUGwJC0kloZxYCMeX3-CdRNgIQI8UGZI1dTrjl8wQjoWLkJ-ACPCseSW5s1pAFHVvQUXudKm1v4XllOZTNPqvv53cLZ0l5Stoetx3GwcAfzazgqP9pK7LM5d1ZfL0sr7ZQrsEmg~NnKG9M-aOkbEt2UUtbuM2DC923gi8YMWmrpanDHMrFFFMnMpMxvoOIzUfqMEmMdlFsMaGLWBke7Al5xTPJZUBtbHIM1~ejXxDQzPg__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_king_front.png",
      "sm2_king_side.png",
