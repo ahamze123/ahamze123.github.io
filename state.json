@@ -3956,6 +3956,12 @@
    }
   },
   "sm2_tank": {
+   "full": {
+    "bytes": 5537956,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
@@ -4020,6 +4026,7 @@
    }
   },
   "sm2_viper": {
+   "extra": {},
    "full": {
     "bytes": 6574232,
     "pictures": [
