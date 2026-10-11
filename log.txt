@@ -1322,3 +1322,5 @@
 2026-10-11 15:37:02 [sm2_king] rigging SUCCEEDED 100%
 2026-10-11 15:37:02 [sm2_king] rigged: {"model": {"bytes": 4897628, "triangles": 61902, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57716, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47076, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 15:37:05 [sm2_king] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5670440}
+2026-10-11 15:37:05 [sm2_viper] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 15:37:05 [sm2_tank] multi-image-to-3d SUCCEEDED 100%

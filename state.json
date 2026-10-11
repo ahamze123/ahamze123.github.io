@@ -3814,6 +3814,7 @@
    }
   },
   "sm2_king": {
+   "extra": {},
    "full": {
     "bytes": 5670440,
     "pictures": [
@@ -3956,6 +3957,8 @@
   },
   "sm2_tank": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12b99-494e-7443-aa43-d393a04db35c",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 15:33",
@@ -3973,7 +3976,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12b99-494e-7443-aa43-d393a04db35c/output/preview.png?Expires=1791992222&Signature=W4ovv8l8i7tTmznnWfssaPn1CDTsz132NggHr7JyaCJGwMdTjTuZ~crALC8PStpuo87FrqaFw8jo57WIb9gBRqQOzkjF6ulGuwNHq0YlByM05ksGQ398rVr8gXkRZR2s63mS8pUHO1f8B27RrHInjvLPd-p3mOWiHm37AjgPc8TWW9qEjsI9vI3PMmT-cKK4O5mVo3Sblfo8i7-pdOycho0jGjiI7DzCkCL9561glhe0q3mzZFMo2MWAbvSP2p1ghstInPJMgSMYmz6eSVUgsj01s9RdEWrtCbgJYYc7m9J5QYLp9VeJLlQdhFEXzFqf4dSVVGOthYIgQ3NQbWgQfg__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_tank_front.png",
      "sm2_tank_side.png",
@@ -3983,6 +3987,8 @@
   },
   "sm2_viper": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12b99-494b-753a-8cee-b1f27a4cff39",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 15:33",
@@ -4000,7 +4006,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12b99-494b-753a-8cee-b1f27a4cff39/output/preview.png?Expires=1791992217&Signature=QtOE-dsDlLlRMBbSWYAP4kDxrXWw7Uymz1SDS5DR8xA~NEjINYFBGmZ7J~lYobyQ1jB6EoYilz9DT~IywOKAoTKqg7MpMrWDp4XkB87HqwOWcZMDZyXcJE-0Q6zNaK1pTRLkdTs0izRq3z1dgrbxfvhTpKMDEvn7HSSPyh4uodN2FmLkOisHI1ZJUMa2QTtkJVkIEa505eH3jviSlZ67m9saJ~CkPZF~P4efCpaY~OdLnTDgk7oFipzzHMfa2r7Ki8PdKR4jAFH4Cl-PTv6cDwP6Gyw7Bb-tGBqD4As77BUCkgTHZfKiH~aCMiABlkBQwYerlCR5nv4iBX~Qanr0Uw__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_viper_front.png",
      "sm2_viper_side.png",
