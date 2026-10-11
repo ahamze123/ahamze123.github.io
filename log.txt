@@ -1475,3 +1475,5 @@
 2026-10-11 16:29:54 [dm2_raider] rigging SUCCEEDED 100%
 2026-10-11 16:29:55 [dm2_raider] rigged: {"model": {"bytes": 5046788, "triangles": 62076, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57272, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46628, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:29:58 [dm2_raider] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6006300}
+2026-10-11 16:30:04 [dm2_brute] rigging SUCCEEDED 100%
+2026-10-11 16:30:05 [dm2_brute] rigged: {"model": {"bytes": 6190496, "triangles": 62130, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58320, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47680, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
