@@ -4365,10 +4365,24 @@
       398,
       127
      ],
+     "credits": 15,
+     "error": null,
+     "file": {
+      "bytes": 271896,
+      "clips": [
+       "Spartan_Kick",
+       "High_Kick",
+       "360_Power_Spin_Jump",
+       "Crouch_Charge_and_Throw",
+       "Charged_Ground_Slam"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "id": "01a12aa8-0017-7648-9e89-9c2e81c006b9",
      "made": "2026-10-11 11:10",
      "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
-     "status": "PENDING"
+     "status": "SUCCEEDED"
     }
    },
    "last_error": "POST /openapi/v1/animations: HTTP 400 {\"message\":\"This animation is no longer available: action_ids 464. See https://docs.meshy.ai/en/api/animation-library for available animation IDs.\"}",
