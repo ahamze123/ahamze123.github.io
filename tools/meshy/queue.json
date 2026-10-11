@@ -1,14 +1,14 @@
 {
- "run": 29,
+ "run": 30,
  "heroes": [
-  "sm2_ember",
-  "sm2_hawk",
-  "sm2_spike"
+  "sm2_tank",
+  "sm2_viper",
+  "sm2_king"
  ],
  "refetch": [
-  "sm2_ember",
-  "sm2_hawk",
-  "sm2_spike"
+  "sm2_tank",
+  "sm2_viper",
+  "sm2_king"
  ],
  "refetch_max": 2048,
  "refetch_quality": 92,
@@ -59,6 +59,36 @@
    "pose_mode": "a-pose"
   },
   "sm2_spike": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_tank": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_viper": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_king": {
    "ai_model": "latest",
    "geometry_resolution": "2k",
    "texture_resolution": "4k",
