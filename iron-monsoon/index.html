@@ -4331,6 +4331,7 @@ const EB_KINDS = {
   boulder: { r: 8, rgb: '170,220,255', g: 400, art: 'ava_rock', shatter: true },
   icicle:  { r: 3.2, rgb: '200,240,255', g: 520, splat: true },
   snowball:{ r: 7, rgb: '235,245,255', persist: true, noTerrain: true, roll: true },
+  rock:    { r: 7, rgb: '255,170,110', g: 520, artH: 17, life: 4 }, // a boss's falling rock (picture set per world)
 };
 class EBullet {
   constructor(x, y, vx, vy, kind = 'orb', o) {
@@ -4393,6 +4394,7 @@ class EBullet {
       sparks(this.x, this.y, 10, -Math.PI / 2, TAU, 160, '200,240,255'); Sfx.crumble();
       for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + (k - 2) * 0.45; Game.ebullets.push(new EBullet(this.x, this.y - 4, Math.cos(a) * 130, Math.sin(a) * 160, 'shard')); }
     } else if (this.kind === 'icicle' || this.kind === 'shard') { sparks(this.x, this.y, 5, -Math.PI / 2, TAU, 110, '210,245,255'); }
+    else if (this.kind === 'rock') { debris(this.x, this.y - 4, 7, ['#5a4a3a', '#7a6a58', '#3a3430'], 200, 3); dust(this.x, this.y, 5); Sfx.crumble(); shake(0.12); }
     else if (this.splat || this.bounces !== undefined && this.kind === 'spore') { goo(this.x, this.y, 8, this.rgb); Sfx.hit(); }
     else sparks(this.x, this.y, 4, -Math.PI / 2, TAU, 90, this.rgb);
   }
@@ -6024,7 +6026,8 @@ class BossPart {
       return 1;
     }
     if (this.armored || this.deflect) { Sfx.clank(); sparks(x, y, 4, Math.atan2(y - this.cy, x - this.cx), 1.8, 150, '255,240,200'); return 0; }
-    this.hp -= d * (b.dmgMul || 1) * (this.dmgK || 1); this.flash = 0.06; Sfx.hit();
+    const kk = src && src.kind === 'shell' ? 0.6 : src && src.kind === 'nova' ? 0.75 : 1; // tank shells and nova bolts hit bosses a bit softer
+    this.hp -= d * kk * (b.dmgMul || 1) * (this.dmgK || 1); this.flash = 0.06; Sfx.hit();
     if (Math.random() < 0.4) sparks(x, y, 3, -Math.PI / 2, TAU, 130, '255,200,120');
     if (this.hp <= 0) { this.hp = 0; this.dead = true; b.partDestroyed(this); }
     return 1;
@@ -6059,7 +6062,76 @@ class Boss {
     for (const eb of Game.ebullets) eb.dead = true;
   }
   aimAt(x, y, pl) { return pl ? Math.atan2(pl.y - 16 - y, pl.x - x) : Math.PI; }
+
+  /* ---- FURY: three stages. At 2/3 and 1/3 health the boss roars, knocks everyone back and speeds up;
+     robot helpers fly in, and in the last stage rocks crash down after a warning mark. ---- */
+  furyInit(hpK) {
+    this.fury = 1; this.roarT = 0; this.helpT = 0; this.dropT = 2; this.drops = [];
+    for (const p of this.parts) { p.hp *= hpK; p.max = p.hp; }
+  }
+  furySpeed() { return !this.active || this.dying ? 1 : this.fury === 3 ? 1.4 : this.fury === 2 ? 1.2 : 1; }
+  furyTick(dt) {
+    for (const d of this.drops) { d.t -= dt; if (d.t <= 0 && !d.done) { d.done = true; Game.ebullets.push(new EBullet(d.x, Cam.y - 16, 0, 360, 'rock', { art: d.art })); } }
+    if (this.drops.length && this.drops.every(d => d.done)) this.drops = [];
+    if (!this.active || this.dying || this.dead || !this.core) return;
+    if (this.roarT > 0) this.roarT -= dt;
+    const f = this.core.hp / this.core.max, want = f < 1 / 3 ? 3 : f < 2 / 3 ? 2 : 1;
+    if (want > this.fury) { this.fury = want; this.enrage(); }
+    if (this.fury >= 2) { this.helpT -= dt; if (this.helpT <= 0) { this.helpT = this.fury === 3 ? 9 : 12; this.callHelp(this.fury === 3 ? 3 : 2); } }
+    if (this.fury >= 3) { this.dropT -= dt; if (this.dropT <= 0) { this.dropT = rand(3, 4.2); this.rockfall(); } }
+    if (this.fury >= 2 && Math.random() < dt * (this.fury === 3 ? 16 : 7)) { // angry sparks and smoke
+      const x = this.core.cx + crand(-26, 26), y = this.core.cy + crand(-26, 20);
+      if (Math.random() < 0.5) sparks(x, y, 3, -Math.PI / 2, 2, 150, '255,120,80'); else puff(x, y, 1, '60,50,50', 7, 0.6);
+    }
+  }
+  enrage() {
+    this.roarT = 1.4; Sfx.roar(); shake(0.75); flash(0.4, '255,90,60'); hitstop(0.08);
+    for (const p of this.parts) p.flash = 0.3;
+    Game.banner(this.fury === 3 ? 'FINAL FURY!' : 'BOSS FURY!', this.fury === 3 ? 'Watch for falling rocks!' : 'It is getting faster', '255,90,70');
+    for (const eb of Game.ebullets) if (!eb.dead) { eb.dead = true; sparks(eb.x, eb.y, 2, -Math.PI / 2, TAU, 80, eb.rgb); }
+    const cx = this.core.cx, cy = this.core.cy;
+    for (const p of Game.players) if (p.alive()) { // the roar blows everyone back
+      const d = Math.sign(p.x - cx) || -1;
+      if (p.ride) { p.ride.vx = d * 240; p.ride.vy = -200; p.ride.onGround = false; } else { p.vx = d * 240; p.vy = -250; p.onGround = false; p.spinning = true; }
+    }
+    for (const [rgb, end, life] of [['255,110,80', VW, 0.7], ['255,220,180', VW * 0.6, 0.5]]) { const r = P('ring', cx, cy, 0, 0, life, 8, rgb); r.end = end; }
+    this.helpT = 4;
+  }
+  callHelp(n) { // flying robots from this world join the fight (never more than four at once)
+    let alive = 0; for (const e of Game.enemies) if (!e.dead && e.bossHelp) alive++;
+    n = Math.min(n, 4 - alive); if (n <= 0) return;
+    const [type, o] = BOSS_HELP[Game.level.def.theme] || ['drone', {}];
+    for (let i = 0; i < n; i++) {
+      const left = i % 2 === 1;
+      const made = Game.spawnEntity(Object.assign({ type, from: left ? 'left' : 'right', x: left ? Cam.x - 20 : Cam.x + VW + 20, y: Cam.y + 46 + i * 22, n: 1, pattern: 'hover' }, o));
+      for (const e of made) { e.bossHelp = true; e.noDrop = true; e.arena = null; }
+    }
+  }
+  rockfall() { // red marks on the floor, then rocks crash down on them
+    const art = BOSS_ROCK[Game.level.def.theme] || 'p_rock', xs = [];
+    for (const p of Game.players) if (p.alive()) xs.push(clamp(p.x + rand(-8, 8), Cam.x + 16, Cam.x + VW - 16));
+    for (let k = 0; k < 3; k++) xs.push(Cam.x + rand(30, VW - 30));
+    for (const x of xs) { const f = Game.level.floorBelow(x, Cam.y + 20, true); this.drops.push({ x, y: isFinite(f) ? Math.min(f, Cam.y + VH - 4) : Cam.y + VH - 20, t: 1, art, done: false }); }
+    Sfx.warning();
+  }
+  drawDrops(c) { // the warning marks: drawn solid (not glowing) so they stay clearly red on bright ground
+    if (!this.drops.length) return;
+    const op = c.globalCompositeOperation; c.globalCompositeOperation = 'source-over';
+    for (const d of this.drops) {
+      if (d.done) continue;
+      const k = 1 - d.t, a = 0.6 + 0.4 * Math.sin(k * 28);
+      c.globalAlpha = 0.22 * a; c.fillStyle = '#ff3b2f'; c.fillRect(d.x - 1, Cam.y, 2, d.y - Cam.y - 4);
+      c.globalAlpha = 0.35 * a; c.beginPath(); c.ellipse(d.x, d.y - 1, 7 + k * 6, 2.4 + k * 2, 0, 0, TAU); c.fill();
+      c.globalAlpha = a; c.strokeStyle = '#ff2a1a'; c.lineWidth = 1.4; c.stroke();
+      c.font = '700 9px "Chakra Petch", system-ui, sans-serif'; c.textAlign = 'center'; c.lineWidth = 2.5; c.strokeStyle = '#ffffff'; c.strokeText('!', d.x, d.y - 9); c.fillStyle = '#ff2a1a'; c.fillText('!', d.x, d.y - 9);
+    }
+    c.globalAlpha = 1; c.globalCompositeOperation = op;
+  }
 }
+const BOSS_HELP = { jungle: ['drone', {}], foundry: ['drone', {}], hive: ['drone', { alien: true }], desert: ['drone', { art: 'skimmer' }], temple: ['drone', { art: 'skimmer' }],
+  snow: ['drone', {}], glacier: ['drone', {}], city: ['jettrooper', {}], metro: ['jettrooper', {}], volcano: ['firebat', {}], forge: ['firebat', {}], sky: ['robohawk', {}], fortress: ['jettrooper', {}] };
+const BOSS_ROCK = { jungle: 'p_rock', foundry: 'p_barrel', hive: 'p_rock', desert: 'p_boulder', temple: 'p_boulder', snow: 'p_snowrock', glacier: 'p_snowrock',
+  city: 'p_crate', metro: 'p_crate', volcano: 'p_lavarock', forge: 'p_barrel', sky: 'p_skyrock', fortress: 'p_dropcrate' };
 
 /* ---------------- GOLIATH — assault walker ---------------- */
 class Goliath extends Boss {
@@ -9312,6 +9384,7 @@ const Game = {
     if (this.boss || this.bossDone) return;
     const L = this.level, aL = Cam.x, aR = Cam.x + VW, fy = L.floorBelow(Cam.x + VW / 2, Cam.y + 20, true);
     this.boss = new L.def.boss(aL, aR, isFinite(fy) ? fy : Cam.y + 226);
+    this.boss.furyInit(1.5 * (this.players.length > 1 ? 1.3 : 1)); // tougher bosses (more so for two heroes)
     this.bossIntroT = 3.4; Scr.barsT = 1; Sfx.warning(); Music.play(this.boss.song || 'boss');
     this.checkpoint = { li: this.li, k: Cam.k, p: Cam.p, x: Cam.x + VW / 2 };
   },
@@ -9464,7 +9537,7 @@ const Game = {
     for (const p of this.players) p.update(dt, ctrl ? Input.p[p.i] : NOIN);
     for (const v of this.vehicles) if (!v.dead && !v.rider) v.update(dt);
     for (const e of this.enemies) if (!e.dead) e.update(dt);
-    if (this.boss) { this.boss.update(dt); if (this.boss.dead) this.boss = null; }
+    if (this.boss) { this.boss.update(dt * this.boss.furySpeed()); this.boss.furyTick(dt); if (this.boss.dead) this.boss = null; }
     this.updateBullets(dt); this.updateEBullets(dt);
     for (const k of this.pickups) k.update(dt);
     updateParts(dt); updateFx(dt);
@@ -9853,7 +9926,7 @@ const Game = {
     c.save(); c.translate(-ox, -oy); c.globalCompositeOperation = 'lighter';
     L.glow(c);
     for (const e of this.enemies) e.glow(c);
-    if (this.boss) this.boss.glow(c);
+    if (this.boss) { this.boss.glow(c); this.boss.drawDrops(c); }
     for (const k of this.pickups) k.glow(c);
     for (const v of this.vehicles) if (!v.rider) v.glow(c);
     for (const p of this.players) p.glow(c);
@@ -9922,6 +9995,8 @@ const Game = {
       const g = c.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#ff3b2f'); g.addColorStop(1, '#ffae3d');
       c.fillStyle = g; c.fillRect(x, y, w * f, 4);
       c.fillStyle = 'rgba(0,0,0,0.5)'; for (let k = 1; k < 10; k++) c.fillRect(x + w * k / 10, y, 0.6, 4);
+      c.fillStyle = 'rgba(255,255,255,0.9)'; for (const m of [1 / 3, 2 / 3]) c.fillRect(x + w * m - 0.6, y - 2.5, 1.2, 9); // where the fury starts
+      if (B.fury >= 2) { setFont(c, 10, FONT_DISP, 400); const tw = c.measureText(B.title).width; setFont(c, 7, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = `rgba(255,${B.roarT > 0 && Math.floor(this.rt * 10) % 2 ? 230 : 90},70,1)`; c.fillText(B.fury === 3 ? '· FINAL FURY' : '· FURY', x + tw + 6, y - 5); }
     }
     if (this.cardT > 0) this.drawCard(c);
     if (this.bossIntroT > 0 && this.boss) this.drawWarning(c);
@@ -10755,6 +10830,7 @@ Object.assign(Net, {
     const G = Game, L = G.level, B = G.boss;
     if (act === 'boss') { const k = L.segs.length - 1; G.checkpoint = { li: G.li, k, p: L.segs[k].len, x: 1e9 }; G.loadLevel(G.li, true); }
     else if (act === 'killboss' && B) { B.active = true; if (B.core) { B.core.armored = false; B.core.damage(99999, B.core.cx, B.core.cy, {}); } }
+    else if (act === 'hurtboss' && B && B.core) B.core.hp = B.core.max * 0.3;
   },
 
   /* ---------- the little in-game menu (the game keeps running) ---------- */

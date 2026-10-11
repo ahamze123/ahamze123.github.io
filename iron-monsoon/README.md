@@ -23,6 +23,9 @@ Pick **STORY MODE** on the title screen to play the whole adventure, with Volt, 
 - On a computer, press the full-screen button at the top right of the title screen, or turn on **FULL SCREEN** in the pause menu.
 - On a phone or tablet, the first tap switches to full screen. For the best experience, use **Add to Home Screen** (Safari: Share button). The game then opens like an app, full screen and sideways.
 
+## Boss fights
+Every boss fights in three stages. When its health bar passes a white mark, it goes into **FURY**: it roars, blows you back, gets faster and calls in flying robots. In the last stage (**FINAL FURY**) red marks appear on the floor, and rocks crash down on them a moment later, so keep moving.
+
 ## Online co-op
 Play together on two computers, phones or tablets, anywhere.
 1. Both players open https://ahamze123.github.io/iron-monsoon/ and pick **ONLINE CO-OP** on the title screen.
