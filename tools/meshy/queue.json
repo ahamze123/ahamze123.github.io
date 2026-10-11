@@ -1,14 +1,24 @@
 {
- "run": 31,
+ "run": 32,
  "heroes": [
-  "sm2_robot"
+  "sm2_sparks",
+  "sm2_roller",
+  "sm2_bruno",
+  "sm2_icebreaker",
+  "sm2_buster",
+  "sm2_maestro"
  ],
  "refetch": [
-  "sm2_robot"
+  "sm2_sparks",
+  "sm2_roller",
+  "sm2_bruno",
+  "sm2_icebreaker",
+  "sm2_buster",
+  "sm2_maestro"
  ],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 50,
+ "max_credits": 280,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -95,6 +105,66 @@
    "pose_mode": "a-pose"
   },
   "sm2_robot": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_sparks": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_roller": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_bruno": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_icebreaker": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_buster": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_maestro": {
    "ai_model": "latest",
    "geometry_resolution": "2k",
    "texture_resolution": "4k",
