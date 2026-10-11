@@ -5800,7 +5800,8 @@
    "at": "2026-10-11 14:57",
    "heroes": [],
    "limit": 0,
-   "run": 27
+   "run": 27,
+   "spent_estimate": 0
   }
  ]
 }
