@@ -7146,6 +7146,14 @@
    "limit": 250,
    "run": 902,
    "spent_estimate": 210
+  },
+  {
+   "at": "2026-10-11 16:31",
+   "heroes": [
+    "dm3_sera"
+   ],
+   "limit": 45,
+   "run": 903
   }
  ]
 }
