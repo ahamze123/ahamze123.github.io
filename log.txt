@@ -1444,3 +1444,5 @@
 2026-10-11 16:28:57 [dm2_rogue] rigging SUCCEEDED 100%
 2026-10-11 16:28:58 [dm2_rogue] rigged: {"model": {"bytes": 5829172, "triangles": 62154, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58020, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47364, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:28:59 [dm2_ogre] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 16:29:01 [dm2_raider] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:29:00 [dm2_rogue] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6604280}
