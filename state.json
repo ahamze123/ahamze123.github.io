@@ -621,6 +621,12 @@
    }
   },
   "dm2_brute": {
+   "full": {
+    "bytes": 7435092,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
