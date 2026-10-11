@@ -1451,3 +1451,4 @@
 2026-10-11 16:29:07 [dm2_skeleton] rigging IN_PROGRESS 36%
 2026-10-11 16:29:11 [dm2_brute] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 16:29:11 [dm2_snatcher] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 16:29:16 [dm2_snatcher] rig task made 01a12bcc-0200-75ac-8da8-2619ca71673e

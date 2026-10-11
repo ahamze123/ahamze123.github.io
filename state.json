@@ -1058,6 +1058,12 @@
      "dm2_snatcher_side.png",
      "dm2_snatcher_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bcc-0200-75ac-8da8-2619ca71673e",
+    "made": "2026-10-11 16:29",
+    "model": "01a12bc9-39de-73c1-bf14-00ada2afdf31",
+    "status": "PENDING"
    }
   },
   "drake": {
