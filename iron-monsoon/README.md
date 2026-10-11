@@ -25,12 +25,25 @@ Pick **STORY MODE** on the title screen to play the whole adventure, with Volt, 
 10. **Magma Fields** – volcano, boss the INFERNO DRAKE
 11. **The Forge** – conveyor belts and presses, boss the FORGE MASTER
 12. **Stratos** – floating sky islands, boss STORMBIRD
-13. **Iron Heart** – the flying fortress, the final battle
+13. **Iron Heart** – the flying fortress, the big battle of Part 1
+
+**Part 2:** the Overseer escaped as a copy of itself and is building a new body. Chase it from the seaside all the way to the Moon:
+
+14. **Coral Coast** – beaches, jet-skis and robot crabs, boss the TIDE KRAKEN
+15. **Sunset Savanna** – golden plains and a robot convoy, boss THUNDERHORN
+16. **Crystal Caverns** – glowing crystal mines with bounce crystals, boss the PRISM BEETLE
+17. **Jade Peaks** – misty mountain temples and robot ninjas, boss the SHOGUN
+18. **Starlight Park** – a fun park with trampolines and toy soldiers, boss JACK-IN-THE-BOT
+19. **Moon Base** – low gravity on the Moon, the final battle against OVERSEER PRIME
+
+Part 2 has new robots in every world (crab bots, jelly drones, meerkats, armadillos, ninjas, lantern drones, toy soldiers, balloon bots, moon hoppers and flying saucers), new music, and two new tricks:
+- **Bounce pads** (bounce crystals, trampolines and jump pads) throw you way up high. Use them to reach high ledges and to cross gaps.
+- **Low gravity** on the Moon: everything falls slowly and you jump much higher.
 
 ## Your own hero
 Every child can have their own hero (up to 8). Pick **MY HERO** on the title screen:
 - Type a **name**, and choose the **armour** colour, the **scarf** colour and a **helmet** extra (antenna, fin, horns, cat ears, star or crown).
-- **Outfits** unlock with the stars you earn in missions: Night Ops, Arctic, Lava, Chrome, Ghost, Rainbow and the Golden Hero.
+- **Outfits** unlock with the stars you earn in missions: Night Ops, Arctic, Lava, Chrome, Ghost, Rainbow, the Golden Hero, and (from Part 2) Cosmic and Diamond.
 - Each hero keeps their own coins, stars, story chapter, shop upgrades and trophies. With 2, 3 or 4 players, each player picks their own hero (◂ ▸ on **EDITING** switches between the players).
 
 ## Coins and the shop
@@ -39,7 +52,7 @@ Robots drop **coins**, freed Bolt bots give a few more, and every boss bursts in
 - **Guns** you buy (Scatter, Grenade, Hornet, Arc, Blade, Rail, Firestorm) are in your hands at the start of every mission.
 
 ## Trophies
-The **TROPHIES** wall has 22 trophies to win, like beating a boss without getting hit, freeing 25 Bolt bots, a 25 combo, riding every vehicle and collecting 1,000 coins. A thin bar under each trophy shows how close you are.
+The **TROPHIES** wall has 26 trophies to win, like beating a boss without getting hit, freeing 25 Bolt bots, a 25 combo, riding every vehicle, collecting 1,000 coins, bouncing on 50 bounce pads and beating Overseer Prime on the Moon. A thin bar under each trophy shows how close you are.
 
 ## Full screen
 - On a computer, press the full-screen button at the top right of the title screen, or turn on **FULL SCREEN** in the pause menu.
@@ -47,7 +60,7 @@ The **TROPHIES** wall has 22 trophies to win, like beating a boss without gettin
 
 ## More modes
 Pick **MORE MODES** on the title screen:
-- **BOSS RUSH:** all 13 bosses in a row against the clock. Your health comes back between bosses, and every third boss gives an extra life. Each hero keeps their best time.
+- **BOSS RUSH:** all 19 bosses in a row against the clock. Your health comes back between bosses, and every third boss gives an extra life. Each hero keeps their best time.
 - **SURVIVAL:** endless waves of robots in the world you pick (◂ ▸). Every fifth wave brings that world's mini-boss. Each hero keeps their best wave for every world.
 - **SCORE BATTLE:** 2 to 4 players, three minutes. The highest score wins (the leader wears a crown).
 - **COIN RACE:** 2 to 4 players, two minutes. Robots drop double coins, and the most coins wins.
