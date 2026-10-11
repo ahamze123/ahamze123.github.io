@@ -5639,6 +5639,14 @@
    "limit": 70,
    "run": 24,
    "spent_estimate": 70
+  },
+  {
+   "at": "2026-10-11 09:05",
+   "heroes": [
+    "sm_spike"
+   ],
+   "limit": 35,
+   "run": 25
   }
  ]
 }
