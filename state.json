@@ -819,10 +819,38 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 5926712,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 62092
+     },
+     "running": {
+      "bytes": 47108,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57740,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12bcb-d713-74a2-b00c-7b98fd992294",
     "made": "2026-10-11 16:29",
     "model": "01a12bc9-39c5-713a-aa63-8f6d73c81c0f",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "dm2_raider": {
