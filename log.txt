@@ -1446,3 +1446,4 @@
 2026-10-11 16:28:59 [dm2_ogre] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 16:29:01 [dm2_raider] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 16:29:00 [dm2_rogue] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6604280}
+2026-10-11 16:29:05 [dm2_ogre] rig task made 01a12bcb-d713-74a2-b00c-7b98fd992294

@@ -817,6 +817,12 @@
      "dm2_ogre_side.png",
      "dm2_ogre_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bcb-d713-74a2-b00c-7b98fd992294",
+    "made": "2026-10-11 16:29",
+    "model": "01a12bc9-39c5-713a-aa63-8f6d73c81c0f",
+    "status": "PENDING"
    }
   },
   "dm2_raider": {
@@ -847,6 +853,7 @@
    }
   },
   "dm2_rogue": {
+   "extra": {},
    "full": {
     "bytes": 6604280,
     "pictures": [
