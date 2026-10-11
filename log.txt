@@ -1467,3 +1467,4 @@
 2026-10-11 16:29:32 [dm2_raider] rigging IN_PROGRESS 10%
 2026-10-11 16:29:38 [dm2_snatcher] rigging SUCCEEDED 100%
 2026-10-11 16:29:39 [dm2_snatcher] rigged: {"model": {"bytes": 5092080, "triangles": 62433, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58048, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47420, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 16:29:39 [dm2_brute] rig task made 01a12bcc-5ba7-750b-949d-f4a4df97e378

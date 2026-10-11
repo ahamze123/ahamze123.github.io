@@ -648,6 +648,12 @@
      "dm2_brute_side.png",
      "dm2_brute_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bcc-5ba7-750b-949d-f4a4df97e378",
+    "made": "2026-10-11 16:29",
+    "model": "01a12bc9-39ed-729c-a59f-8565183ba6da",
+    "status": "PENDING"
    }
   },
   "dm2_draxx": {
