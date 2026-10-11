@@ -551,6 +551,8 @@
   },
   "dm2_bram": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bbb-ee52-75cc-89c9-660ace7d0eec",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:11",
@@ -568,7 +570,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bbb-ee52-75cc-89c9-660ace7d0eec/output/preview.png?Expires=1791994468&Signature=BaiJGCWllSvbOjMBDWHBKknTL~2ydGaPOCApqaLJS1BdFaA29ADqKdAS-ea-WsbgyfjPLq9gUMjUqGfXL2zbBFZiJPPlRoj9ud27mqi8zYG2-uO8Ar60rVn3igViIKKGJtzTn9g6JXfVmnJ7Ub2x5ZYBubC3MP-yhH4LBfctbLVgCkrl1y2A0lM9yAj5AGnRXelc8z3atRPciHzxMF37RjNKBbM-76IE7N-QHvSGuAy7LtiysZ3kskAgNjdaSQgVX4v3rcEx2bRbZubCLg-1Fpx~5BQAbs7868wq9Maixtdk4sMJBUBbgo~OVUQ8gAlpoUEEs-eiaTPgI0lVkadJYg__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_bram_front.png",
      "dm2_bram_side.png",

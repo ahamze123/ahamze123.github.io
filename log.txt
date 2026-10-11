@@ -1381,3 +1381,4 @@
 2026-10-11 16:14:34 [dm2_sera] rigged: {"model": {"bytes": 6042248, "triangles": 61995, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57316, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46676, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:14:36 [dm2_korr] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 16:14:37 [dm2_sera] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 7169956}
+2026-10-11 16:14:37 [dm2_bram] multi-image-to-3d SUCCEEDED 100%
