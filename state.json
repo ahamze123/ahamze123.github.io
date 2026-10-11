@@ -4453,6 +4453,7 @@
    }
   },
   "sm2_bruno": {
+   "extra": {},
    "full": {
     "bytes": 5519356,
     "pictures": [
@@ -4741,6 +4742,14 @@
       "joints": 24,
       "triangles": 62079
      },
+     "running": {
+      "bytes": 46616,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "walking": {
       "bytes": 57252,
       "clips": [
@@ -4827,7 +4836,33 @@
     "status": "SUCCEEDED"
    }
   },
-  "sm2_maestro": {},
+  "sm2_maestro": {
+   "model": {
+    "id": "01a12c05-c134-7379-9943-d75e91fa2417",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 17:32",
+    "run": 32,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_maestro_front.png",
+     "sm2_maestro_side.png",
+     "sm2_maestro_back.png"
+    ]
+   }
+  },
   "sm2_robot": {
    "extra": {},
    "full": {
