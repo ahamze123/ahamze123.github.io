@@ -6330,6 +6330,14 @@
    "limit": 150,
    "run": 30,
    "spent_estimate": 105
+  },
+  {
+   "at": "2026-10-11 15:38",
+   "heroes": [
+    "sm2_robot"
+   ],
+   "limit": 50,
+   "run": 31
   }
  ]
 }
