@@ -5194,6 +5194,14 @@
    "limit": 30,
    "run": 18,
    "spent_estimate": 0
+  },
+  {
+   "at": "2026-10-11 08:51",
+   "heroes": [
+    "volt"
+   ],
+   "limit": 60,
+   "run": 21
   }
  ]
 }
