@@ -1,18 +1,14 @@
 {
- "run": 30,
+ "run": 31,
  "heroes": [
-  "sm2_tank",
-  "sm2_viper",
-  "sm2_king"
+  "sm2_robot"
  ],
  "refetch": [
-  "sm2_tank",
-  "sm2_viper",
-  "sm2_king"
+  "sm2_robot"
  ],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 150,
+ "max_credits": 50,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -89,6 +85,16 @@
    "pose_mode": "a-pose"
   },
   "sm2_king": {
+   "ai_model": "latest",
+   "geometry_resolution": "2k",
+   "texture_resolution": "4k",
+   "should_remesh": true,
+   "target_polycount": 60000,
+   "image_enhancement": false,
+   "remove_lighting": true,
+   "pose_mode": "a-pose"
+  },
+  "sm2_robot": {
    "ai_model": "latest",
    "geometry_resolution": "2k",
    "texture_resolution": "4k",
