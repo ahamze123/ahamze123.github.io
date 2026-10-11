@@ -3892,6 +3892,7 @@
    }
   },
   "sm_viper": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -5636,7 +5637,8 @@
     "sm_king"
    ],
    "limit": 70,
-   "run": 24
+   "run": 24,
+   "spent_estimate": 70
   }
  ]
 }

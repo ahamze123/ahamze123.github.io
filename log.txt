@@ -1217,3 +1217,4 @@
 2026-10-11 09:00:13 [sm_viper] rigging SUCCEEDED 100%
 2026-10-11 09:00:13 [sm_king] rigged: {"model": {"bytes": 1879752, "triangles": 20591, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57804, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47184, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 09:00:14 [sm_viper] rigged: {"model": {"bytes": 2164072, "triangles": 20854, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58036, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47400, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 09:00:17 run finished; credits used by new tasks (estimate): 70
