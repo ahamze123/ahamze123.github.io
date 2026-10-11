@@ -1264,3 +1264,15 @@
 2026-10-11 15:25:42 [sm2_hawk] model task made multi-image-to-3d 01a12b91-da51-7078-b96b-368d5d1f44a3
 2026-10-11 15:25:42 [sm2_ember] model task made multi-image-to-3d 01a12b91-da4e-7507-a21f-0cf1384a89d7
 2026-10-11 15:25:42 [sm2_spike] model task made multi-image-to-3d 01a12b91-da52-72f5-b04a-8cd1dbab6aec
+2026-10-11 15:25:43 [sm2_hawk] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:25:44 [sm2_ember] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:25:44 [sm2_spike] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:26:35 [sm2_spike] multi-image-to-3d IN_PROGRESS 33%
+2026-10-11 15:26:45 [sm2_hawk] multi-image-to-3d IN_PROGRESS 32%
+2026-10-11 15:26:45 [sm2_ember] multi-image-to-3d IN_PROGRESS 25%
+2026-10-11 15:27:16 [sm2_spike] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 15:27:26 [sm2_hawk] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 15:27:26 [sm2_ember] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 15:27:56 [sm2_spike] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 15:28:06 [sm2_hawk] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 15:28:16 [sm2_spike] multi-image-to-3d SUCCEEDED 100%
