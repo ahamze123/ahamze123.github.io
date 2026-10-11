@@ -632,6 +632,8 @@
   },
   "dm2_sera": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bbb-ee4d-75e2-9195-ab120513f634",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:11",
@@ -649,7 +651,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bbb-ee4d-75e2-9195-ab120513f634/output/preview.png?Expires=1791994429&Signature=lOU026HN-Wb6UM2uRUQpeX7-jVb~uBpHxw-HYGceFtoWsulGlnDzi-ccX3Eqdmhymo8dYig57mPgtinRK-hsqxJleWC2Tpp72aaQ9cX-0wWJZetxRKBr0jM6AEXBSM-~WLb7mk19M3bg82qH4qWrUYwb6gqw5mb76Ad8ax9LhOEQtfT6GiYt1JSwTJk7197fsBYg7J1iKaYXE7up00kpNDZnyN-Ax~imzJL-Sn6UyuqXBYWLQ1LTlS~55~xsQRKazoU3IVEbqUasYPzw59dqOyoFhIbPEdfCMZ94ASazYApy77loL-DHY86Pg3~YhznHxuDgm0DBPYK~p7a3BNiVBg__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_sera_front.png",
      "dm2_sera_side.png",

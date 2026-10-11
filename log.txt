@@ -1357,3 +1357,16 @@
 2026-10-11 16:11:40 [dm2_draxx] model task made multi-image-to-3d 01a12bbb-ee54-745e-bacf-d65149773e0b
 2026-10-11 16:11:41 [dm2_sera] multi-image-to-3d IN_PROGRESS 1%
 2026-10-11 16:11:40 [dm2_bram] model task made multi-image-to-3d 01a12bbb-ee52-75cc-89c9-660ace7d0eec
+2026-10-11 16:11:42 [dm2_korr] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:11:43 [dm2_draxx] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:11:44 [dm2_bram] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:12:24 [dm2_sera] multi-image-to-3d IN_PROGRESS 33%
+2026-10-11 16:12:35 [dm2_korr] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 16:12:35 [dm2_draxx] multi-image-to-3d IN_PROGRESS 25%
+2026-10-11 16:12:45 [dm2_bram] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 16:12:54 [dm2_sera] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 16:13:26 [dm2_bram] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 16:13:35 [dm2_sera] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 16:13:36 [dm2_korr] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:13:46 [dm2_draxx] multi-image-to-3d IN_PROGRESS 58%
+2026-10-11 16:13:55 [dm2_sera] multi-image-to-3d SUCCEEDED 100%
