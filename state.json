@@ -550,6 +550,12 @@
    }
   },
   "dm2_bram": {
+   "full": {
+    "bytes": 6969176,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
@@ -643,10 +649,13 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {},
     "id": "01a12bbe-d540-739a-ac5a-cdc023add62d",
     "made": "2026-10-11 16:14",
     "model": "01a12bbb-ee54-745e-bacf-d65149773e0b",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "dm2_korr": {
