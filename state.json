@@ -579,10 +579,22 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 5780636,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 62186
+     }
+    },
     "id": "01a12bbe-baa3-763f-8477-74a834861b96",
     "made": "2026-10-11 16:14",
     "model": "01a12bbb-ee52-75cc-89c9-660ace7d0eec",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "dm2_draxx": {
@@ -622,6 +634,12 @@
    }
   },
   "dm2_korr": {
+   "full": {
+    "bytes": 8260080,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
