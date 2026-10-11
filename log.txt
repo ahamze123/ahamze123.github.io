@@ -1500,3 +1500,24 @@
 2026-10-11 17:26:32 [sm2_sparks] model task made multi-image-to-3d 01a12c00-7b35-75a7-9f4a-475d7b60de57
 2026-10-11 17:26:32 [sm2_icebreaker] model task made multi-image-to-3d 01a12c00-7b18-7416-b849-0ce58e577750
 2026-10-11 17:26:32 [sm2_buster] model task made multi-image-to-3d 01a12c00-7b1c-7057-a3be-12370e4e4e5a
+2026-10-11 17:26:34 [sm2_bruno] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 17:26:36 [sm2_sparks] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 17:26:35 [sm2_roller] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 17:26:37 [sm2_icebreaker] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 17:26:38 [sm2_buster] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 17:27:29 [sm2_icebreaker] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 17:27:39 [sm2_buster] multi-image-to-3d IN_PROGRESS 25%
+2026-10-11 17:27:49 [sm2_sparks] multi-image-to-3d IN_PROGRESS 27%
+2026-10-11 17:28:09 [sm2_icebreaker] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 17:28:19 [sm2_bruno] multi-image-to-3d IN_PROGRESS 30%
+2026-10-11 17:28:19 [sm2_buster] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 17:28:29 [sm2_sparks] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 17:28:40 [sm2_roller] multi-image-to-3d IN_PROGRESS 36%
+2026-10-11 17:28:50 [sm2_bruno] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 17:29:20 [sm2_icebreaker] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 17:29:30 [sm2_roller] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 17:29:30 [sm2_sparks] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 17:29:30 [sm2_buster] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 17:29:50 [sm2_bruno] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 17:30:51 [sm2_roller] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 17:31:32 [sm2_sparks] multi-image-to-3d SUCCEEDED 100%
