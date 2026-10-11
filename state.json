@@ -3837,6 +3837,7 @@
    }
   },
   "sm_spike": {
+   "extra": {},
    "model": {
     "credits": 30,
     "error": null,
@@ -5700,7 +5701,8 @@
     "sm_spike"
    ],
    "limit": 35,
-   "run": 25
+   "run": 25,
+   "spent_estimate": 35
   }
  ]
 }

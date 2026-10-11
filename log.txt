@@ -1229,3 +1229,4 @@
 2026-10-11 09:07:10 [sm_spike] rigging IN_PROGRESS 10%
 2026-10-11 09:07:20 [sm_spike] rigging SUCCEEDED 100%
 2026-10-11 09:07:20 [sm_spike] rigged: {"model": {"bytes": 2318192, "triangles": 20765, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57880, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47232, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 09:07:22 run finished; credits used by new tasks (estimate): 35
