@@ -1196,3 +1196,4 @@
 2026-10-11 08:56:31 [sm_ember] rigged: {"model": {"bytes": 2172084, "triangles": 20812, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58256, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47616, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 08:56:35 run finished; credits used by new tasks (estimate): 170
 2026-10-11 08:58:02 run 24 heroes ['sm_viper', 'sm_king'] max credits 70
+2026-10-11 08:58:05 [sm_king] model task made 01a12a2e-fc25-704d-8c95-dbbe6aa10d54

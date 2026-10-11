@@ -3781,6 +3781,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm_king": {
+   "model": {
+    "id": "01a12a2e-fc25-704d-8c95-dbbe6aa10d54",
+    "made": "2026-10-11 08:58",
+    "run": 24,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "sm_tank": {
    "extra": {},
    "model": {
@@ -3836,6 +3853,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm_viper": {},
   "sm_volt": {
    "extra": {},
    "model": {
