@@ -4480,6 +4480,12 @@
      "sm2_bruno_side.png",
      "sm2_bruno_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12c05-3f97-7666-9d35-5c717fc883e1",
+    "made": "2026-10-11 17:31",
+    "model": "01a12c00-7b1a-772d-b936-dedfd577e367",
+    "status": "PENDING"
    }
   },
   "sm2_buster": {
