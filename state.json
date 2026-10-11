@@ -3726,6 +3726,12 @@
      "sm2_hawk_side.png",
      "sm2_hawk_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12b94-8e99-71b2-ace2-18c11646c9ad",
+    "made": "2026-10-11 15:28",
+    "model": "01a12b91-da51-7078-b96b-368d5d1f44a3",
+    "status": "PENDING"
    }
   },
   "sm2_spike": {
