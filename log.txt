@@ -1154,3 +1154,11 @@
 2026-10-11 08:54:25 [sm_volt] model task made 01a12a2b-9f89-73de-b4e0-2012a8d3193d
 2026-10-11 08:54:25 [sm_hawk] model task made 01a12a2b-9f70-70e9-9830-70222afc9d44
 2026-10-11 08:54:25 [sm_tank] model task made 01a12a2b-9fbd-734a-a062-98fb64f1ad2e
+2026-10-11 08:54:25 [volt] animations IN_PROGRESS 1%
+2026-10-11 08:54:27 [sm_volt] image-to-3d IN_PROGRESS 1%
+2026-10-11 08:54:26 [sm_ember] image-to-3d IN_PROGRESS 1%
+2026-10-11 08:54:28 [sm_hawk] image-to-3d IN_PROGRESS 1%
+2026-10-11 08:54:29 [sm_tank] image-to-3d IN_PROGRESS 1%
+2026-10-11 08:54:39 [volt] animations IN_PROGRESS 80%
+2026-10-11 08:54:59 [volt] animations SUCCEEDED 100%
+2026-10-11 08:55:00 [volt] animations fight2 ['Boxing_Guard_Step_Knee_Strike', 'Elbow_Strike', 'Lunge_Spin_Kick', 'Rising_Flying_Kick', 'Flying_Fist_Kick', 'Sweeping_Kick', 'BeHit_FlyUp', 'Block1', 'Punch_Forward_with_Both_Fists', 'Victory_Fist_Pump']

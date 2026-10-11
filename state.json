@@ -3968,10 +3968,29 @@
       214,
       403
      ],
+     "credits": 30,
+     "error": null,
+     "file": {
+      "bytes": 444292,
+      "clips": [
+       "Boxing_Guard_Step_Knee_Strike",
+       "Elbow_Strike",
+       "Lunge_Spin_Kick",
+       "Rising_Flying_Kick",
+       "Flying_Fist_Kick",
+       "Sweeping_Kick",
+       "BeHit_FlyUp",
+       "Block1",
+       "Punch_Forward_with_Both_Fists",
+       "Victory_Fist_Pump"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "id": "01a12a2b-9f84-70b1-a48c-dcdcb486b3dc",
      "made": "2026-10-11 08:54",
      "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
-     "status": "PENDING"
+     "status": "SUCCEEDED"
     }
    },
    "last_error": "POST /openapi/v1/animations: HTTP 400 {\"message\":\"This animation is no longer available: action_ids 464. See https://docs.meshy.ai/en/api/animation-library for available animation IDs.\"}",
