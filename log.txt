@@ -1246,3 +1246,4 @@
 2026-10-11 11:10:36 run finished; credits used by new tasks (estimate): 15
 2026-10-11 14:57:56 run 27 heroes [] max credits 0
 2026-10-11 14:57:58 run finished; credits used by new tasks (estimate): 0
+2026-10-11 15:13:46 run 28 heroes ['sm2_volt'] max credits 80

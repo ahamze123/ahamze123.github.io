@@ -5802,6 +5802,14 @@
    "limit": 0,
    "run": 27,
    "spent_estimate": 0
+  },
+  {
+   "at": "2026-10-11 15:13",
+   "heroes": [
+    "sm2_volt"
+   ],
+   "limit": 80,
+   "run": 28
   }
  ]
 }
