@@ -1,25 +1,15 @@
 {
- "run": 902,
+ "run": 903,
  "heroes": [
-  "dm2_ogre",
-  "dm2_raider",
-  "dm2_rogue",
-  "dm2_skeleton",
-  "dm2_brute",
-  "dm2_snatcher"
+  "dm3_sera"
  ],
  "refetch": [
-  "dm2_ogre",
-  "dm2_raider",
-  "dm2_rogue",
-  "dm2_skeleton",
-  "dm2_brute",
-  "dm2_snatcher"
+  "dm3_sera"
  ],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 250,
- "parallel": 6,
+ "max_credits": 45,
+ "parallel": 2,
  "model": {
   "ai_model": "latest",
   "geometry_resolution": "2k",
