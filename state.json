@@ -5519,6 +5519,15 @@
    "limit": 170,
    "run": 23,
    "spent_estimate": 170
+  },
+  {
+   "at": "2026-10-11 08:58",
+   "heroes": [
+    "sm_viper",
+    "sm_king"
+   ],
+   "limit": 70,
+   "run": 24
   }
  ]
 }
