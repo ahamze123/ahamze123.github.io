@@ -1198,3 +1198,12 @@
 2026-10-11 08:58:02 run 24 heroes ['sm_viper', 'sm_king'] max credits 70
 2026-10-11 08:58:05 [sm_king] model task made 01a12a2e-fc25-704d-8c95-dbbe6aa10d54
 2026-10-11 08:58:05 [sm_viper] model task made 01a12a2e-fc23-756a-af1b-d1311522c5d8
+2026-10-11 08:58:06 [sm_king] image-to-3d IN_PROGRESS 1%
+2026-10-11 08:58:07 [sm_viper] image-to-3d IN_PROGRESS 1%
+2026-10-11 08:58:47 [sm_king] image-to-3d IN_PROGRESS 41%
+2026-10-11 08:59:07 [sm_viper] image-to-3d IN_PROGRESS 45%
+2026-10-11 08:59:17 [sm_king] image-to-3d IN_PROGRESS 59%
+2026-10-11 08:59:27 [sm_viper] image-to-3d IN_PROGRESS 67%
+2026-10-11 08:59:37 [sm_king] image-to-3d IN_PROGRESS 99%
+2026-10-11 08:59:37 [sm_viper] image-to-3d IN_PROGRESS 84%
+2026-10-11 08:59:47 [sm_viper] image-to-3d SUCCEEDED 100%
