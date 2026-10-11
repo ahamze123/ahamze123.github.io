@@ -1,8 +1,11 @@
-# Fetches free (CC0) sound effects by Kenney for the games (tools/sfx/get.py). Run it from the Actions tab ("Run workflow").
+# Fetches free (CC0) sound effects by Kenney for the games (tools/sfx/get.py). Runs when tools/sfx/packs.json changes, or from the Actions tab.
 # Everything it gets goes to the branch 'sfx-out' (not to the games themselves).
 name: Get sound effects (Kenney CC0)
 on:
   workflow_dispatch:
+  push:
+    branches: [claude/street-monsoon]
+    paths: ['tools/sfx/packs.json', 'tools/sfx/get.py']
 permissions:
   contents: write
 concurrency:
