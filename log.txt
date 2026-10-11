@@ -1402,3 +1402,4 @@
 2026-10-11 16:15:21 [dm2_bram] rigged: {"model": {"bytes": 5780636, "triangles": 62186, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58200, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47576, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:15:24 [dm2_draxx] rigging SUCCEEDED 100%
 2026-10-11 16:15:25 [dm2_bram] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6969176}
+2026-10-11 16:15:26 [dm2_draxx] rigged: {"model": {"bytes": 7225396, "triangles": 61726, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57544, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46920, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}

@@ -550,6 +550,7 @@
    }
   },
   "dm2_bram": {
+   "extra": {},
    "full": {
     "bytes": 6969176,
     "pictures": [
@@ -651,7 +652,32 @@
    "rig": {
     "credits": 5,
     "error": null,
-    "files": {},
+    "files": {
+     "model": {
+      "bytes": 7225396,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 61726
+     },
+     "running": {
+      "bytes": 46920,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57544,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12bbe-d540-739a-ac5a-cdc023add62d",
     "made": "2026-10-11 16:14",
     "model": "01a12bbb-ee54-745e-bacf-d65149773e0b",
