@@ -1180,3 +1180,4 @@
 2026-10-11 08:56:11 [sm_hawk] image-to-3d SUCCEEDED 100%
 2026-10-11 08:56:11 [sm_ember] image-to-3d SUCCEEDED 100%
 2026-10-11 08:56:11 [sm_tank] image-to-3d SUCCEEDED 100%
+2026-10-11 08:56:16 [sm_ember] rig task made 01a12a2d-4889-7068-b414-747af3f9f10f
