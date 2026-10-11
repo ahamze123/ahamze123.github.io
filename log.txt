@@ -1564,3 +1564,7 @@
 2026-10-11 17:34:57 [sm2_maestro] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 17:36:08 [sm2_maestro] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 17:36:13 [sm2_maestro] rig task made 01a12c09-4e55-71eb-a3d5-57dfd2fd8790
+2026-10-11 17:36:14 [sm2_maestro] rigging IN_PROGRESS 10%
+2026-10-11 17:36:25 [sm2_maestro] rigging IN_PROGRESS 36%
+2026-10-11 17:36:35 [sm2_maestro] rigging SUCCEEDED 100%
+2026-10-11 17:36:35 [sm2_maestro] rigged: {"model": {"bytes": 5171464, "triangles": 61550, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57904, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47280, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
