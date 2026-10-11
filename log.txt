@@ -1568,3 +1568,4 @@
 2026-10-11 17:36:25 [sm2_maestro] rigging IN_PROGRESS 36%
 2026-10-11 17:36:35 [sm2_maestro] rigging SUCCEEDED 100%
 2026-10-11 17:36:35 [sm2_maestro] rigged: {"model": {"bytes": 5171464, "triangles": 61550, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57904, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47280, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 17:36:38 [sm2_maestro] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5973020}
