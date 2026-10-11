@@ -1316,3 +1316,4 @@
 2026-10-11 15:36:35 [sm2_viper] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 15:36:35 [sm2_king] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 15:36:35 [sm2_tank] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 15:36:40 [sm2_king] rig task made 01a12b9b-dbee-712e-9369-a74a8c0332e1

@@ -3841,6 +3841,12 @@
      "sm2_king_side.png",
      "sm2_king_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12b9b-dbee-712e-9369-a74a8c0332e1",
+    "made": "2026-10-11 15:36",
+    "model": "01a12b99-494d-71b1-9224-f7a20c35f052",
+    "status": "PENDING"
    }
   },
   "sm2_spike": {
