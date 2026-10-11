@@ -3773,10 +3773,38 @@
     ]
    },
    "rig": {
+    "credits": 5,
+    "error": null,
+    "files": {
+     "model": {
+      "bytes": 6411664,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 62206
+     },
+     "running": {
+      "bytes": 46824,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57476,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12b94-4145-71a5-82a8-18b0c7f90ecf",
     "made": "2026-10-11 15:28",
     "model": "01a12b91-da52-72f5-b04a-8cd1dbab6aec",
-    "status": "PENDING"
+    "status": "SUCCEEDED"
    }
   },
   "sm2_volt": {
