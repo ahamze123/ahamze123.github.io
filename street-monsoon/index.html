@@ -1648,7 +1648,7 @@ const SPR = {
       const waiting = this.loading[k] = [done];
       const im = new Image(); im.decoding = 'async';
       const fin = ok => { delete this.loading[k]; if (ok) this.sets[k] = { img: im, meta: meta[k] }; for (const f of waiting) f(); };
-      im.onload = () => { const d = im.decode ? im.decode() : null; if (d && d.then) d.then(() => fin(true), () => fin(true)); else fin(true); };
+      im.onload = () => { fin(true); if (im.decode) im.decode().catch(() => {}); }; // (decoding goes on by itself; a hidden tab may hold it back)
       im.onerror = () => { setTimeout(() => { // one more try, then carry on without it
         const im2 = new Image(); im2.onload = () => { this.sets[k] = { img: im2, meta: meta[k] }; delete this.loading[k]; for (const f of waiting) f(); };
         im2.onerror = () => fin(false); im2.src = src[k] + (src[k].includes('?') ? '&' : '?') + 'r=1'; }, 800); };
