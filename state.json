@@ -3956,6 +3956,7 @@
    }
   },
   "sm2_tank": {
+   "extra": {},
    "full": {
     "bytes": 5537956,
     "pictures": [
@@ -6327,7 +6328,8 @@
     "sm2_king"
    ],
    "limit": 150,
-   "run": 30
+   "run": 30,
+   "spent_estimate": 105
   }
  ]
 }
