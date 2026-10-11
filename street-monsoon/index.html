@@ -167,12 +167,12 @@ const BLOCK_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyJ', 'KeyK', 'KeyL', 'KeyI', 'KeyU', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyF', 'KeyG', 'KeyH', 'KeyT', 'KeyR', 'KeyP', 'KeyE', 'KeyQ', 'Escape', 'ShiftLeft', 'ShiftRight']);
 let lastDevice = 'kb';
 // atk = punch, kick, jump, sup = the special attack (needs a full super bar)
-// one player: WASD or the arrows to move; J punch, K kick, L or Space jump, I special (or Z X C V with the arrows)
+// one player: WASD or the arrows to move; J punch, K kick, L or Space jump, I special, O block (or Z X C V B with the arrows)
 const KM_SOLO = { l: ['ArrowLeft', 'KeyA'], r: ['ArrowRight', 'KeyD'], u: ['ArrowUp', 'KeyW'], d: ['ArrowDown', 'KeyS'],
-  atk: ['KeyJ', 'KeyZ'], kick: ['KeyK', 'KeyX'], jump: ['KeyL', 'KeyC', 'Space'], sup: ['KeyI', 'KeyV', 'KeyE', 'KeyU', 'ShiftLeft', 'ShiftRight'] };
+  atk: ['KeyJ', 'KeyZ'], kick: ['KeyK', 'KeyX'], jump: ['KeyL', 'KeyC', 'Space'], sup: ['KeyI', 'KeyV', 'KeyE', 'KeyU', 'ShiftLeft', 'ShiftRight'], blk: ['KeyO', 'KeyB', 'KeyQ'] };
 // two players on one keyboard: P1 WASD + F G H T, P2 arrows + J K L I
-const KM_P1 = { l: ['KeyA'], r: ['KeyD'], u: ['KeyW'], d: ['KeyS'], atk: ['KeyF'], kick: ['KeyG'], jump: ['KeyH'], sup: ['KeyT', 'KeyR'] };
-const KM_P2 = { l: ['ArrowLeft'], r: ['ArrowRight'], u: ['ArrowUp'], d: ['ArrowDown'], atk: ['KeyJ'], kick: ['KeyK'], jump: ['KeyL'], sup: ['KeyI', 'KeyU'] };
+const KM_P1 = { l: ['KeyA'], r: ['KeyD'], u: ['KeyW'], d: ['KeyS'], atk: ['KeyF'], kick: ['KeyG'], jump: ['KeyH'], sup: ['KeyT', 'KeyR'], blk: ['KeyY', 'KeyV'] };
+const KM_P2 = { l: ['ArrowLeft'], r: ['ArrowRight'], u: ['ArrowUp'], d: ['ArrowDown'], atk: ['KeyJ'], kick: ['KeyK'], jump: ['KeyL'], sup: ['KeyI', 'KeyU'], blk: ['KeyO', 'Semicolon'] };
 const anyKey = list => { for (let i = 0; i < list.length; i++) if (Keys[list[i]]) return true; return false; };
 
 addEventListener('keydown', e => {
@@ -201,8 +201,8 @@ function readPad(p) {
     if (aa < 66) r = true; else if (aa > 114) l = true;
     if (ang > 30 && ang < 150) d = true; else if (ang < -30 && ang > -150) u = true;
   }
-  // A jump \u00b7 X punch \u00b7 Y kick \u00b7 B or a shoulder button: special
-  return { l, r, u, d, jump: b(0), atk: b(2), kick: b(3), sup: b(1) || b(4) || b(5) || b(6) || b(7), pause: b(9) || b(8) };
+  // A jump \u00b7 X punch \u00b7 Y kick \u00b7 B special \u00b7 a shoulder button or trigger: block
+  return { l, r, u, d, jump: b(0), atk: b(2), kick: b(3), sup: b(1), blk: b(4) || b(5) || b(6) || b(7), pause: b(9) || b(8) };
 }
 function pollPads() {
   Pads.length = 0;
@@ -215,8 +215,8 @@ function pollPads() {
 
 const Touch = {
   joy: null, right: new Map(), taps: [],
-  l: false, r: false, u: false, d: false, atk: false, kick: false, jump: false, atkTap: false, kickTap: false, jumpTap: false, supTap: false,
-  R: 40, atkB: { x: 0, y: 0, r: 1 }, kickB: { x: 0, y: 0, r: 1 }, jumpB: { x: 0, y: 0, r: 1 }, supB: { x: 0, y: 0, r: 1 }, pauseB: { x: 0, y: 0, r: 1 },
+  l: false, r: false, u: false, d: false, atk: false, kick: false, jump: false, blk: false, atkTap: false, kickTap: false, jumpTap: false, supTap: false,
+  R: 40, atkB: { x: 0, y: 0, r: 1 }, kickB: { x: 0, y: 0, r: 1 }, jumpB: { x: 0, y: 0, r: 1 }, supB: { x: 0, y: 0, r: 1 }, blkB: { x: 0, y: 0, r: 1 }, pauseB: { x: 0, y: 0, r: 1 },
   layout() {
     const w = cssW, h = cssH;
     const R = clamp(h * 0.12, 28, 54); this.R = R;
@@ -225,6 +225,7 @@ const Touch = {
     this.kickB = { x: w - R * 1.3, y: h - R * 1.35, r: R * 0.98 };
     this.jumpB = { x: w - R * 1.45, y: h - R * 3.55, r: R * 0.8 };
     this.supB = { x: w - R * 3.7, y: h - R * 3.35, r: R * 0.82 };
+    this.blkB = { x: w - R * 5.75, y: h - R * 1.25, r: R * 0.82 };   // BLOCK: held down, left of PUNCH
     this.pauseB = { x: w - 26, y: 24, r: 18 };
   },
   reset() { this.joy = null; this.right.clear(); this.recompute(); this.atkTap = this.kickTap = this.jumpTap = this.supTap = false; },
@@ -240,13 +241,14 @@ const Touch = {
       }
     }
     this.l = l; this.r = r; this.u = u; this.d = d;
-    let atk = false, kick = false, jump = false;
-    for (const p of this.right.values()) { // each finger presses the nearest of PUNCH, KICK and JUMP
+    let atk = false, kick = false, jump = false, blk = false;
+    for (const p of this.right.values()) { // each finger presses the nearest of PUNCH, KICK, JUMP and BLOCK
       const da = Math.hypot(p.x - this.atkB.x, p.y - this.atkB.y) / this.atkB.r, dk = Math.hypot(p.x - this.kickB.x, p.y - this.kickB.y) / this.kickB.r,
-        dj = Math.hypot(p.x - this.jumpB.x, p.y - this.jumpB.y) / this.jumpB.r, m = Math.min(da, dk, dj);
+        dj = Math.hypot(p.x - this.jumpB.x, p.y - this.jumpB.y) / this.jumpB.r, db = Math.hypot(p.x - this.blkB.x, p.y - this.blkB.y) / this.blkB.r, m = Math.min(da, dk, dj, db);
       if (m > 1.7) continue;
-      if (m === da) atk = true; else if (m === dk) kick = true; else jump = true;
+      if (m === da) atk = true; else if (m === dk) kick = true; else if (m === db) blk = true; else jump = true;
     }
+    this.blk = blk;
     if (atk && !this.atk) this.atkTap = true; // remembered until the next frame reads it, so a very quick tap still counts
     if (kick && !this.kick) this.kickTap = true;
     if (jump && !this.jump) this.jumpTap = true;
@@ -294,8 +296,8 @@ stage.addEventListener('contextmenu', e => e.preventDefault());
 if ((('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.matchMedia && matchMedia('(pointer: coarse)').matches) lastDevice = 'touch';
 
 // held buttons plus the frame they were pressed (\u2026P = pressed this frame)
-const mkIn = () => ({ l: false, r: false, u: false, d: false, atk: false, kick: false, jump: false, sup: false, pause: false,
-  atkP: false, kickP: false, jumpP: false, supP: false, lP: false, rP: false, uP: false, dP: false });
+const mkIn = () => ({ l: false, r: false, u: false, d: false, atk: false, kick: false, jump: false, sup: false, blk: false, pause: false,
+  atkP: false, kickP: false, jumpP: false, supP: false, blkP: false, lP: false, rP: false, uP: false, dP: false });
 // which gamepad a player on this computer uses. With three or four players, players 3 and 4 get the first
 // gamepads (players 1 and 2 have the keyboard halves, and use any gamepads after those)
 function padFor(i, n) {
@@ -316,23 +318,23 @@ const Input = {
     for (let i = 0; i < 4; i++) {
       const s = this.p[i], pv = this.prev[i];
       const km = n > 1 ? (i === 0 ? KM_P1 : KM_P2) : KM_SOLO;
-      s.l = s.r = s.u = s.d = s.atk = s.kick = s.jump = s.sup = s.pause = false;
+      s.l = s.r = s.u = s.d = s.atk = s.kick = s.jump = s.sup = s.blk = s.pause = false;
       if (i === 0 || (i === 1 && n > 1)) {
         s.l = anyKey(km.l); s.r = anyKey(km.r); s.u = anyKey(km.u); s.d = anyKey(km.d);
-        s.atk = anyKey(km.atk); s.kick = anyKey(km.kick); s.jump = anyKey(km.jump); s.sup = anyKey(km.sup);
+        s.atk = anyKey(km.atk); s.kick = anyKey(km.kick); s.jump = anyKey(km.jump); s.sup = anyKey(km.sup); s.blk = anyKey(km.blk);
       }
       const pad = padFor(i, n);
-      if (pad) { s.l ||= pad.l; s.r ||= pad.r; s.u ||= pad.u; s.d ||= pad.d; s.atk ||= pad.atk; s.kick ||= pad.kick; s.jump ||= pad.jump; s.sup ||= pad.sup; s.pause ||= pad.pause; }
+      if (pad) { s.l ||= pad.l; s.r ||= pad.r; s.u ||= pad.u; s.d ||= pad.d; s.atk ||= pad.atk; s.kick ||= pad.kick; s.jump ||= pad.jump; s.sup ||= pad.sup; s.blk ||= pad.blk; s.pause ||= pad.pause; }
       let tAtk = false, tKick = false, tJump = false;
       if (i === 0 && lastDevice === 'touch') {
         s.l ||= Touch.l; s.r ||= Touch.r; s.u ||= Touch.u; s.d ||= Touch.d;
-        s.atk ||= Touch.atk; s.kick ||= Touch.kick; s.jump ||= Touch.jump;
+        s.atk ||= Touch.atk; s.kick ||= Touch.kick; s.jump ||= Touch.jump; s.blk ||= Touch.blk;
         tAtk = Touch.atkTap; tKick = Touch.kickTap; tJump = Touch.jumpTap;
         s.sup ||= Touch.supTap;
       }
       if (s.l && s.r) { s.l = s.r = false; }
       s.atkP = (s.atk && !pv.atk) || tAtk; s.kickP = (s.kick && !pv.kick) || tKick; s.jumpP = (s.jump && !pv.jump) || tJump;
-      s.supP = s.sup && !pv.sup;
+      s.supP = s.sup && !pv.sup; s.blkP = s.blk && !pv.blk;
       s.lP = s.l && !pv.l; s.rP = s.r && !pv.r; s.uP = s.u && !pv.u; s.dP = s.d && !pv.d;
       // a tap that started and ended between frames still counts once
       if (tAtk) s.atk = true;
@@ -1626,6 +1628,36 @@ class FireSpin {
   }
 }
 // COL. HAWK: his raised fist glows while he gathers power
+// anime concentration lines: the whole screen points at a POWER blow for a moment
+class FocusLines {
+  constructor(x, y, rgb = '255,255,255') { this.x = x; this.y = y; this.rgb = rgb; this.t = this.max = 0.34; this.seed = Math.random() * 1000; }
+  update(dt) { this.t -= dt; return this.t > 0; }
+  draw(c) {
+    const k = 1 - this.t / this.max, a = Math.min(1, k < 0.12 ? k / 0.12 : (1 - k) / 0.88), R0 = 30 + k * 16, R1 = Math.hypot(VW, VH) * 1.1;
+    c.save(); c.globalAlpha = a * 0.8;
+    for (let i = 0; i < 52; i++) {
+      const an = (i / 52) * TAU + hash1(i * 7.3 + this.seed) * 0.1, w = 0.008 + hash1(i * 3.1 + this.seed) * 0.018, r0 = R0 * (1 + hash1(i * 1.7 + this.seed) * 0.9);
+      c.fillStyle = i % 3 ? '#14090c' : `rgb(${this.rgb})`;
+      c.beginPath(); c.moveTo(this.x + Math.cos(an) * r0, this.y + Math.sin(an) * r0);
+      c.lineTo(this.x + Math.cos(an - w) * R1, this.y + Math.sin(an - w) * R1); c.lineTo(this.x + Math.cos(an + w) * R1, this.y + Math.sin(an + w) * R1);
+      c.closePath(); c.fill();
+    }
+    c.restore(); c.globalAlpha = 1;
+  }
+}
+// a power blow's fist or foot glows on its way in
+class PowerGlow {
+  constructor(hid, rgb = '255,236,140') { this.hid = hid; this.rgb = rgb; this.t = 0; this.x = -99; this.y = -99; }
+  update(dt) {
+    this.t += dt; const h = Game.heroes.find(o => o.id === this.hid);
+    if (!h || this.t > 0.5) return false;
+    const M = h.move && SPR.move(h.spr, h.move), p = h.handPoint ? h.handPoint((M && M.limb) || 'RightHand') : null;
+    if (p) { this.x = p[0]; this.y = p[1]; }
+    if (Math.random() < 0.7) { const q = P('glow', this.x + crand(-6, 6), this.y + crand(-6, 6), crand(-30, 30), crand(-60, -20), crand(0.2, 0.4), crand(1.5, 2.6), this.rgb); q.drag = 1; }
+    return true;
+  }
+  glow(c) { if (this.x < -50) return; const r = 10 + Math.sin(this.t * 30) * 2; glow(c, this.x, this.y, r * 2.2, this.rgb, 0.7, true); glow(c, this.x, this.y, r * 0.6, '255,255,240', 0.9, true); }
+}
 class FistGlow {
   constructor(hid, rgb = '255,236,140') { this.hid = hid; this.rgb = rgb; this.t = 0; this.x = 0; this.y = 0; this.done = false; }
   update(dt) {
@@ -2329,7 +2361,8 @@ class Breakable {
       debris(this.x, this.z - 14, 12, cols, 190, 3.5, this.z);
       puff(this.x, this.z - 10, 5, '120,110,100', 6, 0.4);
       shake(0.12);
-      if (this.item) Game.items.push(new Item(this.item, this.x, this.z));
+      if (this.item && typeof WEAPONS === 'object' && WEAPONS[this.item]) Game.dropWeaponFrom(this.x, this.z, this.item);   // a weapon inside
+      else if (this.item) Game.items.push(new Item(this.item, this.x, this.z));
       if (this.letter && typeof Game.dropLetter === 'function') Game.dropLetter(this.letter, this.x, this.z);
       if (this.k === 'chest') { // a treasure chest: a shower of coins and a gem
         if (typeof dropCoins === 'function') dropCoins(this.x, this.z, 12, 4);
@@ -2809,14 +2842,17 @@ const WORDS_KICK = ['WHACK!', 'THWACK!', 'BOOT!', 'KA-BLAM!'];
 const HEROES = {
   volt:  { name: 'VOLT', spr: 'volt', s: 1, hp: 120, spd: 1.0, pow: 1.0, jump: 1.0, rgb: '110,200,255', style: 'BALANCED',
     punch: ['jab', 'cross', 'hook', 'upper'], kick: ['skick', 'high', 'round'], dashP: 'flyfist', dashK: 'rise', air: { atk: 'flyfist', kick: 'skick' },
+    finish: { kick: ['rise', 'THUNDER KICK'], punch: ['upper', 'THUNDER UPPERCUT'] },
     super: 'charge', superName: 'THUNDER BALL', voice: { f0: 132, f1: 720, f2: 1150 },
     bio: 'Fast hands, a rising thunder kick, and a ball of lightning when the SUPER bar is full.' },
   ember: { name: 'EMBER', spr: 'ember', s: 1, hp: 105, spd: 0.84, pow: 0.86, jump: 1.12, rgb: '255,130,90', style: 'SPEED',
     punch: ['jab', 'cross', 'elbow'], kick: ['skick', 'high', 'spin'], dashP: 'flyfist', dashK: 'sweep', air: { atk: 'flyfist', kick: 'skick' },
+    finish: { kick: ['spin', 'FIRE WHEEL'], punch: ['elbow', 'BLAZING ELBOW'] },
     super: 'spinjump', superName: 'BLAZE TORNADO', voice: { f0: 238, f1: 880, f2: 1500 },
     bio: 'The quickest kicks in Skyline City. Her spin kick clears a crowd.' },
   hawk:  { name: 'COL. HAWK', spr: 'hawk', s: 1, hp: 140, spd: 1.16, pow: 1.38, jump: 0.88, rgb: '170,228,120', style: 'POWER',
     punch: ['jab', 'hook', 'upper'], kick: ['skick', 'spartan'], dashP: 'elbow', dashK: 'spartan', air: { atk: 'flyfist', kick: 'skick' },
+    finish: { kick: ['spartan', 'BOOT CRUSHER'], punch: ['shove', 'BULL RUSH'] },
     super: 'slam', superName: 'EARTH SHAKER', voice: { f0: 98, f1: 640, f2: 1050 },
     bio: 'Slow but mighty. His push kick sends thugs flying into each other.' },
 };
@@ -2907,7 +2943,7 @@ class Fighter {
     const S = this.state;
     if (S === 'attack' || S === 'special' || S === 'super') this.updateMove(dt);
     else if (S === 'hurt') { if (this.st > this.stun) this.setState('idle'); }
-    else if (S === 'block') { if (this.st > 0.32) this.setState('idle'); }
+    else if (S === 'block') { if (this.st > 0.32 && !(this.isPlayer && this.blockHeld)) this.setState('idle'); }
     else if (S === 'land') { if (this.st > 0.07) this.setState('idle'); }
     else if (S === 'down') {
       if (this.hp <= 0) { this.setState('dead'); this.blink = 1.1; if (!this.isPlayer) Game.onFoeDown(this); else Game.onHeroDown(this); }
@@ -2964,7 +3000,7 @@ class Fighter {
   }
   endMove() {
     const was = this.move;
-    this.move = null;
+    this.move = null; this.power = null; this.swinging = false;
     if (this.state === 'super') { this.inv = 0.5; this.superOn = false; }
     this.setState('idle');
     if (this.isPlayer) this.afterMove(was);
@@ -3008,7 +3044,11 @@ class Fighter {
     }
   }
   checkHit() {
-    const spec = MV[this.move]; if (!spec || !spec.dmg) return;
+    let spec = MV[this.move]; if (!spec || !spec.dmg) return;
+    const W = this.swinging && this.weapon && WEAPONS[this.weapon.kind];
+    if (W) spec = Object.assign({}, spec, { dmg: W.dmg, reach: W.reach, stun: 0.42, push: 70, weapon: this.weapon.kind, kick: 0, ko: this.swingN % 3 === 0 ? [190, 170] : null, word: 1, multi: 1 });
+    if (this.power && this.power.move === this.move) // a POWER finisher: much harder, further, through everyone in reach
+      spec = Object.assign({}, spec, { dmg: spec.dmg * 1.8, ko: [(spec.ko ? spec.ko[0] : 160) * 1.35, (spec.ko ? spec.ko[1] : 190) * 1.25], multi: 1, word: 1, power: this.power.name, reach: (spec.reach || 34) * 1.15 });
     if (this.predicted) { // (a friend's own screen: the host decides the hits; here we only learn if the blow lands, to go on with the combo)
       const hp = this.hitPoint(); if (hp) for (const t of this.targets()) if (!this.hitSet.has(t.id) && t.hittable() && this.hits(t, hp, spec)) { this.hitSet.add(t.id); this.connected = true; break; }
       return;
@@ -3016,7 +3056,8 @@ class Fighter {
     const hp = this.hitPoint(); if (!hp) return;
     let hitAny = false;
     for (const t of this.targets()) {
-      if (this.hitSet.has(t.id) || !t.hittable()) continue;
+      const juggle = spec.power && t.state === 'fall' && t.y > 2 && t.hp > 0 && !t.dead;
+      if (this.hitSet.has(t.id) || !(t.hittable() || juggle)) continue;
       if (this.hits(t, hp, spec)) {
         this.hitSet.add(t.id); hitAny = true;
         t.takeHit(this, spec, hp);
@@ -3028,10 +3069,14 @@ class Fighter {
       const front = this.dir * (b.x - this.x), reach = Math.max(10, this.dir * (hp.x - this.x));
       if (Math.abs(b.z - this.z) < 14 && front > -6 && front < reach + b.w + 10) { this.hitSet.add('b' + b.x); b.hit(this); hitAny = true; hitstop(0.03); sparks(hp.x - Game.cam, b.z - 16, 6, this.dir > 0 ? 0 : Math.PI, 1.6, 180); }
     }
-    if (hitAny) this.connected = true;
+    if (hitAny) { this.connected = true; if (W && this.isPlayer) this.weaponHit(); }
   }
   hits(t, hp, spec) {
     const ts = t.scale(), dz = Math.abs(t.z - this.z);
+    if (spec.power) { // a POWER finisher catches anyone in its lane just ahead (or just passed through)
+      const fr = this.dir * (t.x - this.x);
+      if (dz <= 14 && fr > -18 && fr < (spec.reach || 34) * this.scale() + 13 * ts * (t.def.heavy ? 1.35 : 1)) return t.state !== 'down';
+    }
     if (dz > 11 + (spec.wide ? 5 : 0)) return false;
     const front = this.dir * (t.x - this.x);
     if (front < -10) return false;
@@ -3045,13 +3090,25 @@ class Fighter {
   hittable() { return !this.dead && !this.gone && this.inv <= 0 && this.state !== 'dead' && this.state !== 'down' && this.state !== 'getup' && this.state !== 'enter' && !(this.state === 'fall' && !this.juggle); }
   takeHit(by, spec, hp) {
     // blocking: a guard that faces the blow
-    if (this.state === 'block' || (!this.isPlayer && this.def.block && (this.state === 'idle' || this.state === 'walk') && chance(this.def.block) && Math.sign(by.x - this.x) === this.dir)) {
-      this.setState('block'); this.kx = by.dir * 60; Sfx.block();
-      Fx.push(new HitSpark(hp.x - Game.cam, this.z - hp.h, 1, '200,230,255'));
-      popText(this.x - Game.cam, this.z - 92 * this.scale(), 'BLOCK', '200,230,255');
+    const facing = Math.sign(by.x - this.x) === this.dir || Math.abs(by.x - this.x) < 3;
+    const guard = this.isPlayer ? (this.state === 'block' && facing && !spec.unblockable)
+      : (this.state === 'block' || (this.def.block && (this.state === 'idle' || this.state === 'walk') && chance(this.def.block) && Math.sign(by.x - this.x) === this.dir));
+    if (guard) {
+      // a guard raised just in time is a PARRY: the attacker reels and the SUPER bar grows
+      const parry = this.isPlayer && this.st < 0.2 && by !== this && !by.isPlayer && by.hp > 0 && !by.isBoss;
+      if (!this.isPlayer) this.setState('block');
+      this.kx = by.dir * (spec.ko ? 90 : 55); Sfx.block();
+      Fx.push(new HitSpark(hp.x - Game.cam, this.z - hp.h, parry ? 3 : 1, parry ? '255,240,150' : '200,230,255'));
+      popText(this.x - Game.cam, this.z - 92 * this.scale(), parry ? 'PARRY!' : 'BLOCK', parry ? '255,230,120' : '200,230,255');
+      if (this.isPlayer) {
+        this.meter = Math.min(100, this.meter + (parry ? 12 : 3));
+        if (parry) { by.move = null; by.setState('hurt'); by.stun = 0.8; by.hurtKind = 'hitf'; by.kx = -by.dir * 50; by.flash = 0.6; hitstop(0.08); shake(0.08); Sfx.stab(); Trophies.ev(this, 'parries'); }
+        else this.blocks = (this.blocks || 0) + 1;
+      }
       return;
     }
     let dmg = spec.dmg * (by.def.pow || 1) * (by.powK || 1) * (by.isPlayer ? 1 : Game.diffK().foeDmg) * (by.superOn ? 1.4 : 1) * (by.furyK ? 1.15 : 1);
+    if (by.isPlayer) dmg *= 1 + Math.min(by.hitCount || 0, 20) * 0.025;   // a long combo hits harder and harder (up to +50%)
     if (this.isPlayer && Game.cheat) dmg = 0;
     dmg = Math.max(1, Math.round(dmg));
     this.hp = Math.max(0, this.hp - dmg);
@@ -3067,12 +3124,17 @@ class Fighter {
     if (spec.launch) Fx.push(new PushGust(sx - by.dir * 14, sy, by.dir, 1.2));
     sparks(sx, sy, 3 + lv * 3, by.dir > 0 ? 0 : Math.PI, 1.3, 150 + lv * 50, '255,240,200');
     footDust(this.x - Game.cam, this.z, 2 + lv, by.dir);
-    if (this.def.metal) { Sfx.metal(); sparks(sx, sy, 10, by.dir > 0 ? 0 : Math.PI, 1.8, 240, '255,230,150'); }
+    if (spec.weapon) { const W = WEAPONS[spec.weapon]; if (W.snd === 'metal') Sfx.metal(); else Sfx.punch(3); if (W.snd === 'wood') Sfx.kick(2); if (big || chance(0.35)) Fx.push(new ComicWord(sx + by.dir * 8, sy - 14, W.word, 0.85)); }
+    else if (this.def.metal) { Sfx.metal(); sparks(sx, sy, 10, by.dir > 0 ? 0 : Math.PI, 1.8, 240, '255,230,150'); }
     else if (spec.kick) Sfx.kick(big ? 3 : 2); else Sfx.punch(lv);
     if (spec.launch) Sfx.push();
     hitstop(big ? 0.09 : lv === 2 ? 0.055 : 0.04);
     shake(big ? 0.24 : lv === 2 ? 0.1 : 0.06);
-    if (big && (spec.word || this.hp <= 0)) Fx.push(new ComicWord(sx + by.dir * 8, sy - 16, spec.kick ? cpick(WORDS_KICK) : cpick(WORDS_BIG), 0.9 + (this.hp <= 0 ? 0.25 : 0)));
+    if (spec.power) { // a POWER finisher lands: anime focus lines, a white flash, a long freeze and the move's name
+      Fx.push(new FocusLines(sx, sy, rgb)); flash(0.45); hitstop(0.16); shake(0.34);
+      if (!by.powerShown) { by.powerShown = 1; Fx.push(new ComicWord(sx + by.dir * 6, sy - 22, spec.power + '!', 1.05, ['#ffd23f', '#14090c'])); }
+      Sfx.push(); if (by.voice) Voice.yell(by.voice); Trophies.ev(by, 'finishers');
+    } else if (big && (spec.word || this.hp <= 0)) Fx.push(new ComicWord(sx + by.dir * 8, sy - 16, spec.kick ? cpick(WORDS_KICK) : cpick(WORDS_BIG), 0.9 + (this.hp <= 0 ? 0.25 : 0)));
     if (this.voice) { if (big) Voice.oof(this.voice); else if (chance(0.4)) Voice.oof(this.voice); }
     // armour: big fellows ignore light hits while they swing
     const armored = this.def.armor && (this.state === 'attack' || this.state === 'special') && !spec.ko && this.hp > 0;
@@ -3080,6 +3142,7 @@ class Fighter {
     else Game.onFoeHitHero(by, this, dmg);
     if (armored) { this.kx = by.dir * 20; return; }
     this.move = null;
+    if (big && this.weapon) this.dropWeapon();
     if (big) {
       const k = spec.ko || [150, 180], heavy = this.def.heavy ? 0.6 : 1;
       this.setState('fall'); this.vx = by.dir * k[0] * heavy; this.vy = k[1] * (this.hp <= 0 ? 1.1 : 1) * (heavy * 0.5 + 0.5); this.vz = 0; this.y = Math.max(this.y, 1);
@@ -3134,6 +3197,7 @@ class Fighter {
     }
     if (this.state === 'fall' && this.y > 4 && Math.abs(this.vx) > 120) drawSpeedStreaks(c, sx, sy, Math.sign(this.vx), clamp((Math.abs(this.vx) - 120) / 160, 0.3, 1), Game.rt);
     SPR.draw(c, this.spr, id, sx, sy, this.dir, sc, { flash: this.flash, tier: this.tier });
+    if (this.weapon && this.drawWeapon) this.drawWeapon(c, cam);
   }
   shadow(c, cam) {
     if (this.gone || (this.state === 'dead' && Math.floor(this.blink * 12) % 2)) return;
@@ -3154,6 +3218,13 @@ class Hero extends Fighter {
     this.buf = null; this.bufT = 0; this.lastTapR = -9; this.lastTapL = -9; this.out = false; this.hitCount = 0; this.hitCountT = 0;
     this.superOn = false; this.nextLife = 50000; this.nopeT = 0;
   }
+  // keep a button press in the buffer (also during the short freeze when a blow lands, so mashing never loses a press)
+  latch(I) {
+    if (I.atkP) { this.buf = 'atk'; this.bufT = 0.2; }
+    if (I.kickP) { this.buf = 'kick'; this.bufT = 0.2; }
+    if (I.jumpP) { this.buf = 'jump'; this.bufT = 0.14; }
+    if (I.supP) { this.buf = 'sup'; this.bufT = 0.22; }
+  }
   afterMove(was) {
     // a combo keeps going while the blows land; a miss starts it over
     const P = this.def.punch, K = this.def.kick;
@@ -3163,8 +3234,23 @@ class Hero extends Fighter {
   nextBlow(btn) {
     const list = btn === 'kick' ? this.def.kick : this.def.punch, key = btn === 'kick' ? 'chainK' : 'chainP';
     if (this[key] >= list.length) this[key] = 0;
-    const m = list[this[key]]; this[key]++;
+    const m = list[this[key]]; this[key]++; this.lastBtn = btn;
     return m;
+  }
+  // POWER FINISHER: two or more blows of one button that land, then the other button
+  tryFinisher(btn) {
+    const F = this.def.finish; if (!F || this.power) return false;
+    const ok = btn === 'kick' ? (this.chainP >= 2 && this.lastBtn === 'atk') : (this.chainK >= 2 && this.lastBtn === 'kick');
+    if (!ok) return false;
+    const [m, name] = F[btn === 'kick' ? 'kick' : 'punch'];
+    if (!this.startMove(m)) return false;
+    this.power = { move: m, name }; this.powerShown = 0; this.chainP = this.chainK = 0; this.lastBtn = null;
+    // dash in at the nearest thug ahead in this lane (one flying away from the blow before, too)
+    let gap = 1e9; for (const t of this.targets()) { if (t.dead || t.gone || t.state === 'down' || Math.abs(t.z - this.z) > 16) continue; const fr = this.dir * (t.x - this.x); if (fr > 0 && fr < gap) gap = fr; }
+    if (gap > 26 && gap < 150) this.kx = this.dir * Math.min(360, Math.sqrt((gap - 22) * 1040));
+    popText(this.x - Game.cam, this.z - 100 * this.scale(), name, this.def.rgb);
+    Fx.push(new PowerGlow(this.id, this.def.rgb)); Sfx.swing(1);
+    return true;
   }
   control(I, dt) {
     this.comboT = Math.max(0, this.comboT - dt); if (this.comboT <= 0) this.combo = 0;
@@ -3172,11 +3258,10 @@ class Hero extends Fighter {
     this.hitCountT = Math.max(0, this.hitCountT - dt); if (this.hitCountT <= 0) this.hitCount = 0;
     this.nopeT = Math.max(0, this.nopeT - dt);
     // remember a press for a moment (it fires as soon as the current move allows)
-    if (I.atkP) { this.buf = 'atk'; this.bufT = 0.2; }
-    if (I.kickP) { this.buf = 'kick'; this.bufT = 0.2; }
-    if (I.jumpP) { this.buf = 'jump'; this.bufT = 0.14; }
-    if (I.supP) { this.buf = 'sup'; this.bufT = 0.22; }
-    this.bufT -= dt; if (this.bufT <= 0) this.buf = null;
+    this.latch(I);
+    const Mb = (this.buf === 'atk' || this.buf === 'kick') && this.state === 'attack' && this.move && SPR.move(this.spr, this.move);
+    if (!(Mb && this.mi <= (Mb.hit ?? 0))) this.bufT -= dt;   // (held until the current blow has landed)
+    if (this.bufT <= 0) this.buf = null;
     const S = this.state;
     // SPECIAL: the hero's big special attack, only with a full SUPER bar
     if (this.buf === 'sup') {
@@ -3189,12 +3274,23 @@ class Hero extends Fighter {
       if (this.meter < 100) { this.buf = null; if (!this.nopeT) { Sfx.nope(); this.nopeT = 0.5; this.meterShake = 0.4; } }
     }
     if (S === 'grab') { this.controlGrab(I); return; }
+    this.blockHeld = !!I.blk;
+    if (S === 'block') {
+      if (!I.blk || this.buf === 'atk' || this.buf === 'kick' || this.buf === 'jump') this.setState('idle');   // let go (or hit back)
+      else { if (I.lP) this.dir = -1; else if (I.rP) this.dir = 1; return; }
+    }
     if (S === 'attack') { // chain the next blow (punch or kick) once this one has landed
       const M = SPR.move(this.spr, this.move);
-      if ((this.buf === 'atk' || this.buf === 'kick') && this.mi > (M.hit ?? 0) && this.connected &&
+      if (this.swinging && this.weapon && (this.buf === 'atk' || this.buf === 'kick') && this.mi > (M.hit ?? 0)) {
+        const btn = this.buf; this.buf = null; this.dir = I.l ? -1 : I.r ? 1 : this.dir;
+        if (btn === 'kick') this.throwWeapon(); else this.swingWeapon();
+        return;
+      }
+      if ((this.buf === 'atk' || this.buf === 'kick') && this.mi > (M.hit ?? 0) && this.connected && !this.power &&
           (this.def.punch.includes(this.move) || this.def.kick.includes(this.move))) {
         const btn = this.buf; this.buf = null;
         this.dir = I.l ? -1 : I.r ? 1 : this.dir;
+        if (this.tryFinisher(btn)) return;
         this.startMove(this.nextBlow(btn));
       }
       // keep walking while punching and kicking (a little slower; the blow keeps facing where it was thrown)
@@ -3216,6 +3312,7 @@ class Hero extends Fighter {
       return;
     }
     if (!this.canAct()) return;
+    if (I.blk) { this.setState('block'); this.running = false; this.move = null; if (I.l) this.dir = -1; else if (I.r) this.dir = 1; return; }
     // moving
     let mx = (I.r ? 1 : 0) - (I.l ? 1 : 0), mz = (I.d ? 1 : 0) - (I.u ? 1 : 0);
     if (I.rP) { if (Game.t - this.lastTapR < 0.26) this.running = true; this.lastTapR = Game.t; }
@@ -3230,8 +3327,12 @@ class Hero extends Fighter {
     // PUNCH / KICK: a dash attack while running, else the next blow of that button's combo
     if (this.buf === 'atk' || this.buf === 'kick') {
       const btn = this.buf; this.buf = null;
+      // weapons: PUNCH on one picks it up; holding one, PUNCH swings it and KICK throws it
+      if (btn === 'atk' && !this.weapon && this.tryPickWeapon()) return;
+      if (this.weapon) { if (btn === 'kick') { this.throwWeapon(); return; } if (this.swingWeapon()) return; }
       if (this.running && Math.abs(mx) > 0) { this.running = false; this.startMove(btn === 'kick' ? this.def.dashK : this.def.dashP); this.x += this.dir * 6; return; }
-      if (this.chainT <= 0) { this.chainP = 0; this.chainK = 0; }
+      if (this.chainT > 0 && this.tryFinisher(btn)) return;
+      if (this.chainT <= 0) { this.chainP = 0; this.chainK = 0; this.lastBtn = null; }
       this.startMove(this.nextBlow(btn));
       return;
     }
@@ -3247,7 +3348,7 @@ class Hero extends Fighter {
     } else if (this.state === 'walk' || this.state === 'run') this.setState('idle');
   }
   tryGrab() {
-    if (this.predicted) return false;
+    if (this.predicted || this.weapon) return false;
     for (const t of Game.foes) {
       if (!t.hittable() || t.state === 'fall' || t.state === 'attack' || t.state === 'special' || t.def.boss || t.isMini) continue;
       if (t.def.heavy && this.key !== 'hawk') continue;
@@ -3944,7 +4045,7 @@ function shopBuy(p, it) {
 }
 
 /* ---------------- trophies ---------------- */
-const TR_COLS = 7;
+const TR_COLS = 8;   // (31 trophies: four rows)
 const TROPHIES = [
   { id: 'first', name: 'FIRST STAGE', desc: 'Finish a stage', stat: 'stages', n: 1 },
   { id: 'boss5', name: 'BOSS BUSTER', desc: 'Beat 5 bosses', stat: 'bosses', n: 5 },
@@ -4572,7 +4673,7 @@ const Game = {
     if (!keepNet && (Net.role || Net.on)) { Net.close(); Net.role = null; }
     this.net = null;
     const from = this.state === 'meta' ? Meta.page : null;
-    this.setState('title'); this.heroes = []; this.foes = []; this.items = []; this.coins = []; this.eshots = []; Fx.length = 0; Parts.length = 0; this.shots = []; this.cutin = null;
+    this.setState('title'); this.heroes = []; this.foes = []; this.items = []; this.coins = []; this.eshots = []; this.weapons = []; Fx.length = 0; Parts.length = 0; this.shots = []; this.cutin = null;
     this.rush = this.surv = this.vs = this.results = null; this.mode = 'story';
     if (from) { this.titlePage = 'main'; this.menuSel = Math.max(0, this.titleLayout().items.findIndex(it => it.id === from)); }
     else if (!keepNet) { this.titlePage = 'main'; this.menuSel = 0; }
@@ -4638,6 +4739,7 @@ const Game = {
     this.si = i; this.stage = new Stage(i, this.surv ? { arena: true } : null); this.cam = 0; this.camLock = null; this.lock = null; this.tokens = 0;
     this.foes = []; this.items = []; this.coins = []; this.eshots = []; this.spawnQ = []; Fx.length = 0; Parts.length = 0; this.foeBar = null; this.banners = []; this.shots = []; this.cutin = null;
     this.stats = { kos: 0, hits: 0, best: 0, deaths: 0, hurts: 0, supers: 0, time: 0, t0: performance.now() }; this.miniDone = false; this.fallers = [];
+    this.layWeapons(i); for (const h of this.heroes) { h.weapon = null; h.swinging = false; }
     const n = this.heroes.length;
     this.heroes.forEach((h, k) => {
       h.x = -30 - k * 26; h.z = clamp(178 + k * (n > 2 ? 22 : 34), ZMIN + 10, ZMAX - 6); h.y = 0; h.setState('walk'); h.dir = 1; h.inv = 1; h.hp = Math.max(h.hp, Math.ceil(h.maxHp * 0.6)); h.release(); h.walkIn = true;
@@ -4683,6 +4785,8 @@ const Game = {
     if (this.net) return h.netSeat === 0 ? (Net.menu ? mkIn() : Input.p[0]) : Net.inputFor(h.netSeat, h);
     return Input.p[this.nLocal() > 1 ? h.slot : 0];
   },
+  // (the world is frozen for a moment) presses still go into the heroes' buffers
+  latchPresses() { if (this.state === 'play') this.heroes.forEach((h, i) => { if (!h.out) h.latch(this.inputFor(h, i)); }); },
   myHero() { if (this.net) return this.heroes.find(h => h.netSeat === Net.seat) || null; return this.heroes[0]; },
   updateCore(rdt) {
     this.rt += rdt;
@@ -4709,9 +4813,10 @@ const Game = {
     if (this.cutin) { // the special's picture: the world holds still for a moment
       this.cutin.t += rdt; updateParts(rdt * 0.15);
       if (this.cutin.t >= this.cutin.max) { const h = this.cutin.h; this.cutin = null; this.startSuper(h); }
+      this.latchPresses();
       return;
     }
-    if (Scr.hitstop > 0) { Scr.hitstop -= rdt; return; }
+    if (Scr.hitstop > 0) { Scr.hitstop -= rdt; this.latchPresses(); return; }
     const dt = Math.min(0.05, rdt * Scr.slow);
     this.t += dt;
     this.stage.update(dt);
@@ -4737,6 +4842,7 @@ const Game = {
     for (const h of this.heroes) if (h.respawnT !== undefined) { h.respawnT -= dt; if (h.respawnT <= 0) this.respawn(h); }
     for (const it of this.items) { it.update(dt); this.pickItems(it); }
     compact(this.items);
+    this.updateWeapons(dt);
     for (const k of this.coins) k.update(dt);
     compact(this.coins);
     for (const s of this.eshots) s.update(dt);
@@ -4975,7 +5081,7 @@ const Game = {
     S.drawBack(c, cam);
     // shadows, then everyone from back to front
     const letters = (S.letters || []).filter(k => !k.got).map(k => ({ z: k.z, k }));
-    const all = [...S.boxes, ...this.items, ...this.coins, ...this.eshots, ...letters, ...this.heroes.filter(h => !h.out || h.state === 'dead'), ...this.foes];
+    const all = [...S.boxes, ...this.items, ...this.coins, ...this.eshots, ...(this.weapons || []), ...letters, ...this.heroes.filter(h => !h.out || h.state === 'dead'), ...this.foes];
     this.drawFallers(c, cam);
     for (const o of all) if (o.shadow) o.shadow(c, cam);
     all.sort((a, b) => (a.z - b.z) || ((a.isPlayer ? 1 : 0) - (b.isPlayer ? 1 : 0)));
@@ -5161,6 +5267,7 @@ const Game = {
     btn(Touch.atkB, 'PUNCH', Touch.atk, '255,140,60');
     btn(Touch.kickB, 'KICK', Touch.kick, '255,90,120');
     btn(Touch.jumpB, 'JUMP', Touch.jump, '110,200,255');
+    btn(Touch.blkB, 'BLOCK', Touch.blk, '170,220,255');
     const full = me && me.meter >= 100;
     btn(Touch.supB, full ? '\u2605 SPECIAL' : 'SPECIAL', false, '255,214,90', full);
     if (me) { // the SUPER bar as a ring round the special button
@@ -5182,7 +5289,7 @@ const Game = {
    Automatic tests set window.SM_NETTEST: tabs then talk through a BroadcastChannel instead.
    ===================================================================== */
 const NET_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ', NET_MAXP = 4, NET_VERSION = 3, NET_RATE = 1 / 40;
-const NET_BTN = ['l', 'r', 'u', 'd', 'atk', 'kick', 'jump', 'sup'];
+const NET_BTN = ['l', 'r', 'u', 'd', 'atk', 'kick', 'jump', 'sup', 'blk'];
 const NET_CNT = ['atk', 'kick', 'jump', 'sup', 'l', 'r', 'ok'];   // presses, counted so a quick tap is never lost
 const SEAT_RGB = ['95,184,255', '255,106,90', '155,224,106', '255,214,90'];
 
@@ -5225,10 +5332,10 @@ const NetEv = {
     } catch (err) { /* an effect this screen cannot show: skip it */ }
   },
 };
-const FX_CLASSES = { HitSpark, ComicWord, GroundRing, SlashArc, ArcBolt, Beam, GroundMarker, ImpactLines, ImpactRing, PushGust, ChargeOrb, FireSpin, FistGlow };
+const FX_CLASSES = { HitSpark, ComicWord, GroundRing, SlashArc, ArcBolt, Beam, GroundMarker, ImpactLines, ImpactRing, PushGust, ChargeOrb, FireSpin, FistGlow, FocusLines, PowerGlow };
 const SHOT_CLASSES = { ball: ThunderBall, fire: FireWave, quake: Shockwave };
 const myLoadout = () => Profiles.loadout(Profiles.of(0)); // (what this player brings: name, outfit, shop upgrades)
-const NET_FREE = s => s === 'idle' || s === 'walk' || s === 'run' || s === 'jump' || s === 'land' || s === 'attack'; // (states a friend's screen moves by itself)
+const NET_FREE = s => s === 'idle' || s === 'walk' || s === 'run' || s === 'jump' || s === 'land' || s === 'attack' || s === 'block'; // (states a friend's screen moves by itself)
 
 const Net = {
   role: null, phase: 'menu', code: '', peer: null, conn: null, links: [], testCh: null, on: false,
@@ -5481,7 +5588,7 @@ const Net = {
     const G = Game, r = v => Math.round((v || 0) * 10) / 10;
     const H = G.heroes.map(h => [h.id, h.key, h.slot, r(h.x), r(h.y), r(h.z), h.dir, h.frameId() || '', r(h.flash), r(h.inv), Math.round(h.hp), h.maxHp, h.lives, Math.round(h.meter), h.score,
       h.out ? 1 : 0, h.gone ? 1 : 0, h.state, h.hitCount, r(h.hitCountT), h.superOn ? 1 : 0, r(h.blink), h.move || '', h.mi | 0, h.airAtk ? (h.airMove || 'flyfist') : '', h.netSeat, r(h.vx),
-      h.pname || '', h.outfit | 0, h.coins | 0, r(h.vy), r(h.kx), h.running ? 1 : 0, r(h.st)]);
+      h.pname || '', h.outfit | 0, h.coins | 0, r(h.vy), r(h.kx), h.running ? 1 : 0, r(h.st), h.weapon ? h.weapon.kind : '', h.swinging ? 1 : 0]);
     const F = G.foes.map(f => [f.id, f.kind, f.tierN, f.s, r(f.x), r(f.y), r(f.z), f.dir, f.frameId() || '', r(f.flash), Math.round(f.hp), f.maxHp, f.isBoss ? 1 : 0, f.def.name, f.state, r(f.blink), f.move || '', f.mi | 0, f.gone ? 1 : 0, r(f.vx), f.isMini ? 1 : 0]);
     const C = G.coins.map(k => [r(k.x), r(k.z), r(k.y), k.val, r(k.t)]);
     const L = G.stage && G.stage.letters ? G.stage.letters.filter(k => !k.got).map(k => [r(k.x), r(k.z), r(k.y), k.i, r(k.t)]) : [];
@@ -5490,12 +5597,13 @@ const Net = {
     const I = G.items.map(it => [it.k, r(it.x), r(it.z), r(it.y), r(it.t), r(it.life)]);
     const B = G.stage ? G.stage.boxes.map(b => [b.idx, r(b.flash), r(b.shake)]) : [];
     const S = G.shots.map(s => [s.kind, r(s.x), r(s.z), r(s.y), r(s.r), r(s.t), s.dir || 1]);
+    const W = (G.weapons || []).map(w => [w.kind, r(w.x), r(w.z), r(w.y), r(w.rot), w.fly ? 1 : 0, r(w.t)]);
     const g = { st: G.state, si: G.si, cam: r(G.cam), goT: r(G.goT), fb: G.foeBar && G.foeBar.f ? [G.foeBar.f.id, r(G.foeBar.t)] : null,
       cut: G.cutin ? [G.cutin.h.id, r(G.cutin.t)] : null, clearT: r(G.clearT), contT: r(G.contT), tl: G.tallied ? 1 : 0,
       sc: G.scene ? [G.sceneId, G.scene.i, Math.floor(G.scene.shown)] : null, stats: G.stats, lm: G.state === 'loading' ? G.loadMsg : '', vst: r(G.st),
       stars: G.clearStars, mode: G.mode, story: G.storyMode ? 1 : 0, rush: G.rush ? [G.rush.i, r(G.rush.t)] : null, surv: G.surv ? [G.surv.wave, r(G.surv.t), G.surv.list ? 1 : 0, G.surv.si] : null,
       vs: G.vs ? r(G.vs.t) : null, res: G.state === 'results' ? G.results : null, got: G.stage ? G.stageLetters() : 0 };
-    return { t: 'snap', n: ++this.sn, ts: Math.round(performance.now()), g, H, F, I, B, S, C, L, E, FA, ev: NetEv.take() };
+    return { t: 'snap', n: ++this.sn, ts: Math.round(performance.now()), g, H, F, I, B, S, C, L, E, FA, W, ev: NetEv.take() };
   },
   // (host) back to the room after the game (game over or the ending)
   hostToLobby() {
@@ -5558,7 +5666,8 @@ const Net = {
     const p = G.heroes[mine];
     let me = this.me;
     if (!me || me.key !== p.key) { me = this.me = new Hero(p.key, p.slot, p.x, p.z); me.netSeat = this.seat; me.id = p.id; me.predicted = true; applyLoadout(me, myLoadout()); me.useHost = true; }
-    for (const k of ['hp', 'maxHp', 'lives', 'meter', 'score', 'coins', 'out', 'gone', 'hitCount', 'hitCountT', 'superOn', 'blink', 'pname', 'outfit', 'tier', 'flash', 'inv']) me[k] = p[k];
+    for (const k of ['hp', 'maxHp', 'lives', 'meter', 'score', 'coins', 'out', 'gone', 'hitCount', 'hitCountT', 'superOn', 'blink', 'pname', 'outfit', 'tier', 'flash', 'inv', 'weapon']) me[k] = p[k];
+    if (me.weapon && p.swinging) me.swinging = true;
     const free = G.state === 'play' && NET_FREE(p.state) && !p.out && !p.gone;
     if (!free) { // the host is in charge: hits, falls, grabs, specials, the walk-in
       me.x = p.x; me.y = p.y; me.z = p.z; me.dir = p.dir; me.state = p.state; me.st = p.hostSt || 0; me.move = p.move; me.mi = p.mi; me.vy = p.vy || 0; me.vx = p.vx || 0; me.airAtk = p.airAtk; me.airMove = p.airMove; me.kx = 0;
@@ -5588,7 +5697,7 @@ const Net = {
       h.hp = r[10]; h.maxHp = r[11]; h.lives = r[12]; h.meter = r[13]; h.score = r[14]; h.out = !!r[15]; h.gone = !!r[16]; h.state = r[17];
       h.hitCount = r[18]; h.hitCountT = r[19]; h.superOn = !!r[20]; h.blink = r[21]; h.move = r[22] || null; h.mi = r[23]; h.airAtk = !!r[24]; h.airMove = r[24] || null; h.netSeat = r[25]; h.vx = r[26];
       if (h.pname !== r[27] || h.outfit !== r[28]) { h.pname = r[27]; h.outfit = r[28]; this.tintsDirty = true; }
-      h.coins = r[29]; h.vy = r[30]; h.kx = r[31]; h.running = !!r[32]; h.hostSt = r[33];
+      h.coins = r[29]; h.vy = r[30]; h.kx = r[31]; h.running = !!r[32]; h.hostSt = r[33]; h.weapon = r[34] ? { kind: r[34] } : null; h.swinging = !!r[35];
       h.updateTrail(rdt);
       return h;
     });
@@ -5611,6 +5720,7 @@ const Net = {
     if (G.stage) { G.stage.letters = (b.L || []).map(r => ({ x: r[0], z: r[1], y: r[2], i: r[3], ch: WORD[r[3]], t: r[4], got: false })); G.stage.gotMask = g.got || 0; }
     G.eshots = (b.E || []).map(r => Object.assign(Object.create(FoeShot.prototype), { kind: r[0], S: SHOTS[r[0]] || SHOTS.spark, x: r[1], z: r[2], y: r[3], dir: r[4], spin: r[5], dead: false }));
     G.fallers = (b.FA || []).map(r => ({ x: r[0], z: r[1], y: r[2], t: r[3], warn: r[4] }));
+    G.weapons = (b.W || []).map(r => Object.assign(Object.create(Weapon.prototype), { kind: r[0], x: r[1], z: r[2], y: r[3], rot: r[4], fly: r[5] ? {} : null, t: r[6], dead: false }));
     G.clearStars = g.stars; G.mode = g.mode; G.storyMode = !!g.story; G.results = g.res;
     G.rush = g.rush ? { i: g.rush[0], t: g.rush[1] } : null; G.surv = g.surv ? { wave: g.surv[0], t: g.surv[1], list: !!g.surv[2], si: g.surv[3] } : null; G.vs = g.vs !== null && g.vs !== undefined ? { t: g.vs } : null;
     G.foeBar = g.fb ? { f: G.foes.find(f => f.id === g.fb[0]) || null, t: g.fb[1] } : null;
@@ -5968,7 +6078,7 @@ Object.assign(Game, {
         if (F.y <= 0 && !F.hit) {
           F.hit = true; Sfx.thud(1.2); shake(0.15);
           debris(F.x - this.cam, F.z - 6, 10, ['#a8743d', '#7a5126', '#5e3c1c'], 180, 3, F.z); dust(F.x - this.cam, F.z, 6, '150,140,125');
-          for (const h of this.heroes) if (!h.out && h.hittable() && Math.abs(h.x - F.x) < 18 && Math.abs(h.z - F.z) < 11) h.takeHit(f, { dmg: 9, ko: [120, 140] }, { x: h.x, h: 70 });
+          for (const h of this.heroes) if (!h.out && h.hittable() && Math.abs(h.x - F.x) < 18 && Math.abs(h.z - F.z) < 11) h.takeHit(f, { dmg: 9, ko: [120, 140], unblockable: 1 }, { x: h.x, h: 70 });
         }
       }
     }
@@ -6404,10 +6514,10 @@ Object.assign(Game, {
     let hint; // how to play (at the bottom)
     setFont(c, 5.6, FONT_UI, 600);
     if (lastDevice === 'touch') hint = 'Stick: move  \u00b7  PUNCH  \u00b7  KICK  \u00b7  JUMP  \u00b7  \u2605 SPECIAL (full SUPER bar)';
-    else if (lastDevice === 'pad') hint = 'Stick move \u00b7 X punch \u00b7 Y kick \u00b7 A jump \u00b7 B special (full SUPER bar) \u00b7 double-tap to run';
-    else if (this.nLocal() > 2) hint = 'P1  WASD \u00b7 F G H \u00b7 T special      P2  Arrows \u00b7 J K L \u00b7 I special      ' + (this.nLocal() > 3 ? 'P3 & P4  gamepads' : 'P3  gamepad');
-    else if (this.nLocal() === 2) hint = 'P1  WASD \u00b7 F punch \u00b7 G kick \u00b7 H jump \u00b7 T special        P2  Arrows \u00b7 J punch \u00b7 K kick \u00b7 L jump \u00b7 I special';
-    else hint = 'Arrows/WASD move \u00b7 J punch \u00b7 K kick \u00b7 L jump \u00b7 I special (full SUPER bar) \u00b7 tap twice to run \u00b7 P pause';
+    else if (lastDevice === 'pad') hint = 'Stick move \u00b7 X punch \u00b7 Y kick \u00b7 A jump \u00b7 B special \u00b7 LB/RB block \u00b7 double-tap to run';
+    else if (this.nLocal() > 2) hint = 'P1  WASD \u00b7 F G H \u00b7 T special \u00b7 Y block      P2  Arrows \u00b7 J K L \u00b7 I special \u00b7 O block      ' + (this.nLocal() > 3 ? 'P3 & P4  gamepads' : 'P3  gamepad');
+    else if (this.nLocal() === 2) hint = 'P1  WASD \u00b7 F punch \u00b7 G kick \u00b7 H jump \u00b7 T special \u00b7 Y block      P2  Arrows \u00b7 J punch \u00b7 K kick \u00b7 L jump \u00b7 I special \u00b7 O block';
+    else hint = 'Arrows/WASD move \u00b7 J punch \u00b7 K kick \u00b7 L jump \u00b7 O block \u00b7 I special (full SUPER bar) \u00b7 tap twice to run \u00b7 P pause';
     const hw = Math.min(VW - 8, c.measureText(hint).width + 14);
     c.fillStyle = 'rgba(8,10,20,0.6)'; rrect(c, VW / 2 - hw / 2, VH - 13.5, hw, 10, 3); c.fill();
     c.fillStyle = 'rgba(226,234,246,0.92)'; c.textAlign = 'center'; c.fillText(hint, VW / 2, VH - 6.5);
@@ -6478,7 +6588,7 @@ Object.assign(Game, {
     setFont(c, 6, FONT_UI, 700); c.fillStyle = 'rgba(255,214,90,0.9)';
     const tip = lastDevice === 'touch' ? 'TAP A FIGHTER, TAP AGAIN TO CHOOSE' : np === 1 ? '\u25c2 \u25b8 TO CHOOSE  \u00b7  PUNCH TO START' : 'EVERY PLAYER: \u25c2 \u25b8 AND PUNCH  \u00b7  P1 CAN START FOR EVERYONE';
     c.fillText(tip, VW / 2, G.top + G.h + 23);
-    if (np > 1 && lastDevice !== 'touch') { setFont(c, 5.2, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.7)'; c.fillText('P1: WASD \u00b7 F punch \u00b7 G kick \u00b7 H jump \u00b7 T special      P2: ARROWS \u00b7 J punch \u00b7 K kick \u00b7 L jump \u00b7 I special' + (np > 2 ? '      P3/P4: GAMEPADS' : ''), VW / 2, G.top + G.h + 32); }
+    if (np > 1 && lastDevice !== 'touch') { setFont(c, 5.2, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.7)'; c.fillText('P1: WASD \u00b7 F punch \u00b7 G kick \u00b7 H jump \u00b7 T special \u00b7 Y block      P2: ARROWS \u00b7 J punch \u00b7 K kick \u00b7 L jump \u00b7 I special \u00b7 O block' + (np > 2 ? '      P3/P4: GAMEPADS' : ''), VW / 2, G.top + G.h + 32); }
     UI.button(c, 'sback', 8, VH - 22, 64, 15, 'BACK', { back: true });
     if (this.ready[0] && np > 1 && !this.ready.slice(0, np).every(Boolean)) UI.primary(c, 'go', VW - 110, VH - 25, 100, 19, 'START', { focus: true, size: 8 });
   },
@@ -6666,6 +6776,263 @@ Object.assign(Game, {
     }
   },
 });
+
+/* =====================================================================
+   08e_weapons.js : weapons lying in the street: a baseball bat, a steel
+   pipe, a frying pan, a wooden plank, a hockey stick and a big fish.
+   Stand on one and press PUNCH to pick it up; PUNCH swings it (every third
+   swing knocks a thug down), KICK throws it spinning. It breaks after a few
+   hits, and a hero who is knocked down drops it.
+   ===================================================================== */
+const WEAPONS = {
+  bat:   { name: 'BASEBALL BAT', len: 34, dmg: 13, reach: 54, hits: 9, snd: 'wood', word: 'BONK!' },
+  pipe:  { name: 'STEEL PIPE', len: 32, dmg: 15, reach: 52, hits: 9, snd: 'metal', word: 'CLANG!' },
+  pan:   { name: 'FRYING PAN', len: 27, dmg: 12, reach: 44, hits: 12, snd: 'metal', word: 'BONG!' },
+  plank: { name: 'WOODEN PLANK', len: 38, dmg: 14, reach: 58, hits: 6, snd: 'wood', word: 'WHACK!' },
+  stick: { name: 'HOCKEY STICK', len: 39, dmg: 13, reach: 60, hits: 9, snd: 'wood', word: 'SLAP!' },
+  fish:  { name: 'BIG FISH', len: 30, dmg: 10, reach: 48, hits: 7, snd: 'soft', word: 'SPLAT!' },
+};
+const WEAPON_KINDS = Object.keys(WEAPONS);
+
+/* ---------- the pictures: drawn once in comic style (ink outline, flat colour, one shade, one highlight) ---------- */
+// every weapon is drawn along +x, 100 units long, the grip end at x = 0, centred on y = 0
+const INK = '#14090c';
+const WEAPON_DRAW = {
+  bat(g) {
+    const body = () => { g.beginPath(); g.moveTo(1, -4.6); g.lineTo(5, -4.6); g.lineTo(5, -3); g.lineTo(36, -3.2); g.quadraticCurveTo(70, -6, 93, -8.2); g.quadraticCurveTo(100, -8.2, 100, 0); g.quadraticCurveTo(100, 8.2, 93, 8.2); g.quadraticCurveTo(70, 6, 36, 3.2); g.lineTo(5, 3); g.lineTo(5, 4.6); g.lineTo(1, 4.6); g.closePath(); };
+    body(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#d9a35c'; g.fill();
+    g.save(); body(); g.clip();
+    g.fillStyle = '#b07a3c'; g.fillRect(0, 2, 100, 10);                       // shade
+    g.fillStyle = '#f5d39b'; g.fillRect(30, -5.4, 66, 2.2);                  // highlight
+    g.fillStyle = '#1d1a20'; g.fillRect(5, -4, 24, 8);                       // grip tape
+    g.strokeStyle = '#5a5560'; g.lineWidth = 0.9; for (let x = 7; x < 29; x += 3.4) { g.beginPath(); g.moveTo(x, -4); g.lineTo(x + 2.6, 4); g.stroke(); }
+    g.restore();
+  },
+  pipe(g) {
+    const body = () => { g.beginPath(); g.rect(0, -4.8, 100, 9.6); };
+    body(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#a7afbd'; g.fill();
+    g.save(); body(); g.clip();
+    g.fillStyle = '#6c7483'; g.fillRect(0, 1.6, 100, 4);
+    g.fillStyle = '#eef2f8'; g.fillRect(0, -3.4, 100, 1.8);
+    g.restore();
+    for (const x of [0, 78]) { // a collar and the open end
+      g.beginPath(); g.rect(x, -6.4, x ? 9 : 6, 12.8); g.lineWidth = 3; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#8b93a2'; g.fill();
+      g.fillStyle = '#d7dce6'; g.fillRect(x + 1, -5, x ? 7 : 4, 1.6);
+    }
+  },
+  pan(g) {
+    g.beginPath(); g.rect(0, -3.2, 48, 6.4); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#3b2a1e'; g.fill();   // the handle
+    g.fillStyle = '#6a4a32'; g.fillRect(2, -2.2, 44, 1.6);
+    g.beginPath(); g.arc(6, 0, 1.7, 0, TAU); g.fillStyle = INK; g.fill();
+    g.beginPath(); g.arc(72, 0, 27, 0, TAU); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#4a4e57'; g.fill();   // the pan
+    g.beginPath(); g.arc(72, 0, 21, 0, TAU); g.fillStyle = '#2b2e35'; g.fill();
+    g.beginPath(); g.arc(72, 0, 21, 3.6, 5.2); g.lineWidth = 3; g.strokeStyle = '#8d939f'; g.stroke();
+    g.beginPath(); g.arc(72, 0, 25.2, 0.3, 1.6); g.lineWidth = 2; g.strokeStyle = '#6c717c'; g.stroke();
+  },
+  plank(g) {
+    const body = () => { g.beginPath(); g.moveTo(0, -6.5); g.lineTo(97, -7); g.lineTo(100, -3); g.lineTo(98.5, 1); g.lineTo(100, 6.6); g.lineTo(0, 6.5); g.closePath(); };
+    body(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#c99050'; g.fill();
+    g.save(); body(); g.clip();
+    g.fillStyle = '#9c6a34'; g.fillRect(0, 3.2, 100, 4);
+    g.fillStyle = '#ecc289'; g.fillRect(0, -5.4, 100, 1.6);
+    g.strokeStyle = '#8a5a2a'; g.lineWidth = 0.9;
+    for (const [y, a] of [[-2, 0.3], [0.6, -0.2], [2.4, 0.15]]) { g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(30, y + a * 6, 60, y - a * 6, 100, y + a * 3); g.stroke(); }
+    g.beginPath(); g.ellipse(58, -1, 3.2, 1.6, 0, 0, TAU); g.stroke();   // a knot
+    g.restore();
+    for (const x of [88, 92]) { g.beginPath(); g.arc(x, x === 88 ? -3 : 3, 1.3, 0, TAU); g.fillStyle = '#cfd5de'; g.fill(); g.lineWidth = 0.8; g.strokeStyle = INK; g.stroke(); }
+  },
+  stick(g) {
+    const shaft = () => { g.beginPath(); g.rect(0, -2.8, 84, 5.6); };
+    shaft(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#2f62a8'; g.fill();
+    g.fillStyle = '#7fb0ee'; g.fillRect(14, -2, 70, 1.4);
+    g.fillStyle = '#f2f4f8'; g.fillRect(0, -2.8, 12, 5.6); g.strokeStyle = '#b9c0cc'; g.lineWidth = 0.8;   // tape on the end
+    for (let x = 2; x < 12; x += 2.4) { g.beginPath(); g.moveTo(x, -2.8); g.lineTo(x + 1.6, 2.8); g.stroke(); }
+    const blade = () => { g.beginPath(); g.moveTo(80, -2.8); g.lineTo(86, -2.8); g.quadraticCurveTo(92, 6, 100, 7.5); g.lineTo(100, 13.5); g.quadraticCurveTo(88, 13, 80, 2.8); g.closePath(); };
+    blade(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#1f2430'; g.fill();
+    g.save(); blade(); g.clip(); g.fillStyle = '#f2f4f8'; g.fillRect(88, 0, 9, 16); g.restore();
+  },
+  fish(g) {
+    const tail = () => { g.beginPath(); g.moveTo(16, 0); g.lineTo(0, -11); g.quadraticCurveTo(5, 0, 0, 11); g.closePath(); };
+    tail(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#4e86b3'; g.fill();
+    const body = () => { g.beginPath(); g.moveTo(14, 0); g.quadraticCurveTo(40, -17, 78, -13); g.quadraticCurveTo(100, -8, 100, 0); g.quadraticCurveTo(100, 8, 78, 12); g.quadraticCurveTo(40, 15, 14, 0); g.closePath(); };
+    body(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); g.fillStyle = '#8fc0e2'; g.fill();
+    g.save(); body(); g.clip();
+    g.fillStyle = '#4e86b3'; g.fillRect(0, -20, 100, 12);             // the back
+    g.fillStyle = '#e4f3fb'; g.fillRect(0, 5, 100, 12);               // the belly
+    g.strokeStyle = '#6aa0c8'; g.lineWidth = 0.8;
+    for (let x = 30; x < 80; x += 7) { g.beginPath(); g.arc(x, -2, 4, -0.9, 0.9); g.stroke(); }   // scales
+    g.restore();
+    g.beginPath(); g.moveTo(84, -10); g.quadraticCurveTo(80, 0, 86, 10); g.lineWidth = 1.6; g.strokeStyle = INK; g.stroke();   // the gill
+    g.beginPath(); g.arc(92, -3, 3, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 1.2; g.stroke();
+    g.beginPath(); g.arc(92.6, -3, 1.4, 0, TAU); g.fillStyle = INK; g.fill();
+    g.beginPath(); g.moveTo(98, 3); g.lineTo(94, 4); g.lineWidth = 1.4; g.stroke();
+  },
+};
+const WEAPON_CANVAS = {};
+function weaponCanvas(kind) {
+  if (WEAPON_CANVAS[kind]) return WEAPON_CANVAS[kind];
+  const k = 3, cv = document.createElement('canvas'); cv.width = 112 * k; cv.height = 40 * k;   // (units: x -6..106, y -20..20)
+  const g = cv.getContext('2d'); g.scale(k, k); g.translate(6, 20); g.lineJoin = 'round'; g.lineCap = 'round';
+  (WEAPON_DRAW[kind] || WEAPON_DRAW.pipe)(g);
+  return (WEAPON_CANVAS[kind] = cv);
+}
+// draw a weapon len game px long, the point `grip` (0..1 along it) at (x, y), turned by rot (mirrored first when flip)
+function drawWeaponArt(c, kind, x, y, rot, grip, len, flip) {
+  const cv = weaponCanvas(kind), u = len / 100;   // game px per unit
+  c.save(); c.translate(x, y); if (flip) c.scale(-1, 1); c.rotate(rot);
+  c.drawImage(cv, (-6 - grip * 100) * u, -20 * u, 112 * u, 40 * u);
+  c.restore();
+}
+
+let WID = 0;
+// one weapon: on the floor, or flying after a throw (fly: the hero who threw it)
+class Weapon {
+  constructor(kind, x, z, hits) {
+    this.kind = kind; this.x = x; this.z = z; this.y = 0; this.vx = 0; this.vy = 0; this.rot = 0; this.spin = 0;
+    this.hits = hits ?? WEAPONS[kind].hits; this.t = Math.random() * 3; this.dead = false; this.fly = null; this.hitSet = null; this.id = ++WID;
+  }
+  update(dt) {
+    this.t += dt;
+    if (this.fly || this.y > 0 || this.vy) {
+      this.vy -= 900 * dt * (this.fly ? 0.32 : 1); this.y += this.vy * dt; this.x += this.vx * dt; this.rot += this.spin * dt;
+      if (this.fly) this.checkFlyHit();
+      if (this.x < Game.cam - 60 || this.x > Game.cam + VW + 60) { this.fly = null; this.x = clamp(this.x, Game.cam + 10, Game.cam + VW - 10); }
+      if (this.y <= 0) { this.y = 0; this.vy = 0; this.vx = 0; this.spin = 0; this.rot = 0; this.fly = null; Sfx.thud(0.5); footDust(this.x - Game.cam, this.z, 2); if (this.hits <= 0) this.shatter(); }
+    }
+  }
+  // a thrown weapon knocks down the first thug it meets
+  checkFlyHit() {
+    const by = this.fly, W = WEAPONS[this.kind];
+    for (const f of Game.foes) {
+      if (!f.hittable() || (this.hitSet && this.hitSet.has(f.id))) continue;
+      if (Math.abs(f.z - this.z) < 13 && Math.abs(f.x - this.x) < 16 * f.scale() && this.y < 80 * f.scale()) {
+        (this.hitSet || (this.hitSet = new Set())).add(f.id);
+        f.takeHit(by, { dmg: W.dmg * 1.5, ko: [170, 170], weapon: this.kind, word: 1 }, { x: f.x, h: Math.max(20, this.y) });
+        this.hits -= 2; this.vx = -this.vx * 0.3; this.vy = 140; this.fly = null; this.spin = -this.spin;
+        return;
+      }
+    }
+  }
+  shatter() {
+    this.dead = true;
+    const sx = this.x - Game.cam, sy = this.z - this.y - 4, W = WEAPONS[this.kind];
+    debris(sx, sy, 9, W.snd === 'metal' ? ['#9aa3b2', '#d7dce6', '#6a7180'] : W.snd === 'soft' ? ['#8fb7d6', '#c9e2f2', '#5d86a8'] : ['#a0703a', '#c9955a', '#6e4a22'], 150, 2.4, this.z);
+    popText(sx, sy - 10, 'BROKEN!', '255,220,170');
+  }
+  shadow(c, cam) { const k = clamp(1 - this.y / 80, 0.3, 1); c.fillStyle = `rgba(0,0,0,${0.28 * k})`; c.beginPath(); c.ellipse(this.x - cam, this.z + 1, WEAPONS[this.kind].len * 0.45 * k, 2.6 * k, 0, 0, TAU); c.fill(); }
+  draw(c, cam) {
+    const W = WEAPONS[this.kind], x = this.x - cam, y = this.z - this.y - (this.y > 0 || this.fly ? 4 : 2);
+    drawWeaponArt(c, this.kind, x, y, this.rot, 0.5, W.len, false);
+    if (!this.fly && this.y <= 0 && (this.t % 2.2) < 0.35) { // a glint, so it is easy to spot
+      const k = (this.t % 2.2) / 0.35, gx = x - W.len * 0.35 + k * W.len * 0.7;
+      c.globalCompositeOperation = 'lighter'; glow(c, gx, y - 1, 7, '255,255,230', 0.7 * Math.sin(k * Math.PI)); c.globalCompositeOperation = 'source-over';
+    }
+  }
+}
+
+Object.assign(Game, {
+  weapons: [],
+  // the weapons a stage starts with (STAGES[i].weapons: [kind, x, z])
+  layWeapons(si) {
+    this.weapons = [];
+    if (this.surv || this.rush) return;   // (none in the arenas)
+    for (const [k, x, z] of STAGES[si].weapons || []) if (WEAPONS[k]) this.weapons.push(new Weapon(k, x, z));
+  },
+  dropWeaponFrom(x, z, kind) { const w = new Weapon(kind || cpick(WEAPON_KINDS), x, z); w.vy = 160; w.y = 1; w.vx = crand(-30, 30); w.spin = crand(-8, 8); this.weapons.push(w); return w; },
+  updateWeapons(dt) { for (const w of this.weapons) w.update(dt); this.weapons = this.weapons.filter(w => !w.dead); },
+});
+
+// heroes: pick up, swing, throw, drop. (On a friend's own screen the hero only shows the swing or the throw: the host decides what happens.)
+Object.assign(Hero.prototype, {
+  // PUNCH on a weapon (with no thug right in front) picks it up
+  tryPickWeapon() {
+    if (this.weapon) return false;
+    let best = null, bd = 1e9;
+    for (const w of Game.weapons) {
+      if (w.fly || w.y > 6) continue;
+      const d = Math.abs(w.x - this.x) + Math.abs(w.z - this.z) * 1.4;
+      if (d < 26 && d < bd) { bd = d; best = w; }
+    }
+    if (!best) return false;
+    if (Game.foes.some(f => f.hittable() && Math.abs(f.z - this.z) < 10 && this.dir * (f.x - this.x) > -6 && Math.abs(f.x - this.x) < 34)) return false;   // (a thug right there: punch him instead)
+    if (this.predicted) return true;   // (the host picks it up)
+    best.dead = true; Game.weapons = Game.weapons.filter(w => w !== best);
+    this.weapon = { kind: best.kind, hits: best.hits }; this.swingN = 0;
+    Sfx.grab(); popText(this.x - Game.cam, this.z - 96 * this.scale(), WEAPONS[best.kind].name, '255,236,170');
+    Trophies.ev(this, 'weapons');
+    return true;
+  },
+  // PUNCH with a weapon: a big swing (every third swing in a row knocks down)
+  swingWeapon() {
+    const m = this.swingN % 2 ? 'hook' : 'cross', mv = [m, 'cross', 'hook', 'jab'].find(x => SPR.move(this.spr, x));
+    if (!mv || !this.startMove(mv)) return false;
+    this.swinging = true; this.swingN = (this.swingN || 0) + 1;
+    const W = WEAPONS[this.weapon.kind], hp = this.handPoint('RightHand');
+    if (hp) Fx.push(new SlashArc(hp[0] + this.dir * W.len * 0.25, hp[1] + 2, W.len * 0.85, -1.9, 0.6, this.dir, '255,255,255', 0.16, 4));
+    Sfx.swing(0.9);
+    return true;
+  },
+  // KICK with a weapon: throw it, spinning, at the thugs ahead
+  throwWeapon() {
+    const W = this.weapon; if (!W) return;
+    this.weapon = null; this.swinging = false;
+    this.startMove(SPR.move(this.spr, 'cross') ? 'cross' : 'jab');
+    Sfx.throwIt(); if (this.voice) Voice.yell(this.voice);
+    if (this.predicted) return;
+    const w = new Weapon(W.kind, this.x + this.dir * 16, this.z, W.hits);
+    w.y = 52 * this.scale(); w.vx = this.dir * 330; w.vy = 40; w.spin = this.dir * 16; w.fly = this;
+    Game.weapons.push(w);
+  },
+  dropWeapon() {
+    const W = this.weapon; if (!W) return;
+    this.weapon = null; this.swinging = false;
+    const w = Game.dropWeaponFrom(this.x - this.dir * 8, this.z, W.kind); w.hits = W.hits;
+  },
+  // a hit with the weapon wears it down
+  weaponHit() {
+    const W = this.weapon; if (!W) return;
+    W.hits--;
+    if (W.hits <= 0) {
+      this.weapon = null; this.swinging = false;
+      const w = new Weapon(W.kind, this.x + this.dir * 20, this.z, 0); w.y = 50 * this.scale(); w.shatter();
+    }
+  },
+  // the weapon in the hand: up over the shoulder when standing, swung through when hitting
+  drawWeapon(c, cam) {
+    const W = this.weapon && WEAPONS[this.weapon.kind]; if (!W) return;
+    const id = this.frameId(), sc = this.scale(), p = id && SPR.point(this.spr, id, 'RightHand', sc); if (!p) return;
+    const x = this.x - cam + this.dir * p[0], y = this.z - this.y + p[1];
+    let ang = -1.95; // (facing right: held up, a little back)
+    if ((this.state === 'attack' || this.state === 'special') && this.swinging && this.move) {
+      const M = SPR.move(this.spr, this.move), hit = M ? (M.hit ?? 1) : 1;
+      ang = this.mi < hit ? -2.5 : this.mi === hit ? -0.25 + Math.min(1, this.mt / 0.07) * 0.35 : 0.5;
+    } else if (this.state === 'walk' || this.state === 'run') ang = -1.75 + Math.sin(this.walkPh * 1.4) * 0.12;
+    else if (this.state === 'jump') ang = -1.2;
+    else if (this.state === 'hurt' || this.state === 'block') ang = -2.3;
+    drawWeaponArt(c, this.weapon.kind, x, y, ang, 0.12, W.len * sc / FIGHTER_K, this.dir < 0);
+  },
+});
+
+// where weapons lie in each stage
+[
+  [['bat', 640, 205], ['pan', 1560, 180], ['pipe', 2380, 225]],      // Main Street
+  [['fish', 700, 190], ['pipe', 1600, 225], ['fish', 2300, 175]],     // the Docks
+  [['bat', 650, 215], ['pipe', 1500, 180], ['bat', 2350, 200]],       // Neon Nights
+  [['pipe', 600, 200], ['plank', 1400, 220]],                          // King's Tower
+  [['pipe', 600, 200], ['bat', 1500, 220], ['pipe', 2200, 180]],       // the Underground
+  [['pan', 650, 210], ['bat', 1550, 185], ['pan', 2300, 220]],         // Skyline Mall
+  [['bat', 640, 200], ['pan', 1500, 225], ['bat', 2350, 185]],         // the Fun Park
+  [['stick', 640, 205], ['stick', 1500, 180], ['stick', 2300, 220]],   // Frosty Park
+  [['plank', 620, 210], ['pipe', 1500, 185], ['plank', 2350, 220]],    // the Building Site
+  [['pan', 600, 200], ['bat', 1500, 215]],                             // the Grand Theater
+].forEach((list, i) => { if (STAGES[i]) STAGES[i].weapons = list; });
+
+// three more trophies for the new moves
+TROPHIES.push(
+  { id: 'weapons', name: 'ARMED AND READY', desc: 'Pick up 20 weapons', stat: 'weapons', n: 20 },
+  { id: 'parries', name: 'PARRY PRO', desc: 'Parry 10 blows with a well-timed BLOCK', stat: 'parries', n: 10 },
+  { id: 'finishers', name: 'FINISHER', desc: 'Land 25 power finishers', stat: 'finishers', n: 25 },
+);
 
 /* =====================================================================
    09_boot.js : full screen \u00b7 main loop \u00b7 start (after the pictures load)

@@ -14,6 +14,9 @@ A street brawler for 1 to 4 players, made from Iron Monsoon's engine. Volt, Embe
 
 ## How to play
 - **Punch** and **Kick** each have their own combo, and you can punch and kick while walking. Run (tap a direction twice) and punch or kick for a dash attack. Jump and punch or kick for a flying attack.
+- **Power finishers:** two punches then a kick, or two kicks then a punch, fire your hero's finisher: Volt's THUNDER KICK and THUNDER UPPERCUT, Ember's FIRE WHEEL and BLAZING ELBOW, Hawk's BOOT CRUSHER and BULL RUSH. A finisher dashes in, hits everyone in its path and still catches a thug who is flying from the blow before. The longer your combo, the harder every blow hits.
+- **Block:** hold the BLOCK button to stop blows from the front. Block at the very last moment to **PARRY**: the thug reels and your SUPER bar grows.
+- **Weapons:** baseball bats, steel pipes, frying pans, planks, hockey sticks and the odd big fish lie in the streets. Stand on one and press **Punch** to pick it up; then Punch swings it (every third swing knocks a thug down) and **Kick** throws it. It breaks after a few hits, and you drop it if you are knocked down.
 - Walk into a thug to **grab** him: punch for knee strikes, kick (or punch after two knees) to throw him into his friends.
 - Every blow that lands fills your **SUPER** bar. When it is full, press **Special** for your hero's special attack, which hits every thug on the screen.
 - Crates, barrels and treasure chests hide food (health), coins, cash, gems, a star (fills the SUPER bar) and extra lives. Seven golden letters, **M-O-N-S-O-O-N**, are hidden in every stage.
@@ -26,11 +29,11 @@ A street brawler for 1 to 4 players, made from Iron Monsoon's engine. Volt, Embe
 - **HEALTH: UNLIMITED** (in OPTIONS and the pause menu) for younger players.
 
 ## Controls
-- **Keyboard (1 player):** arrows or WASD to move, **J** punch, **K** kick, **L** or **Space** jump, **I** special. (With the arrows you can also use Z punch, X kick, C jump, V special.) **P** or **Esc** pauses.
-- **2 players on one keyboard:** P1 uses WASD + **F** punch, **G** kick, **H** jump, **T** special. P2 uses the arrows + **J** punch, **K** kick, **L** jump, **I** special.
+- **Keyboard (1 player):** arrows or WASD to move, **J** punch, **K** kick, **L** or **Space** jump, **O** block, **I** special. (With the arrows you can also use Z punch, X kick, C jump, B block, V special.) **P** or **Esc** pauses.
+- **2 players on one keyboard:** P1 uses WASD + **F** punch, **G** kick, **H** jump, **Y** block, **T** special. P2 uses the arrows + **J** punch, **K** kick, **L** jump, **O** block, **I** special.
 - **3 or 4 players on one computer:** players 3 and 4 use gamepads (players 1 and 2 keep the keyboard).
-- **Gamepad:** stick or d-pad moves, **X** punch, **Y** kick, **A** jump, **B** (or a shoulder button) special, **Start** pauses.
-- **Touch:** left thumb moves; on the right are PUNCH, KICK, JUMP and SPECIAL (the ring round SPECIAL is your SUPER bar).
+- **Gamepad:** stick or d-pad moves, **X** punch, **Y** kick, **A** jump, **B** special, a shoulder button or trigger blocks, **Start** pauses.
+- **Touch:** left thumb moves; on the right are PUNCH, KICK, JUMP, BLOCK and SPECIAL (the ring round SPECIAL is your SUPER bar).
 
 ## Online co-op (up to 4 players)
 1. Everyone opens https://ahamze123.github.io/street-monsoon/ and picks **ONLINE CO-OP** on the title screen.
