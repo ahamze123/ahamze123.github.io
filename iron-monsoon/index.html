@@ -10145,8 +10145,8 @@ const Game = {
     const text = S.lines[S.i][1];
     S.shown = Math.min(text.length, S.shown + dt * 48);
     if (S.shown < text.length && Math.floor(S.shown) % 3 === 0 && this.stateT > 0.2) { if (AU.ok('type', 0.05)) AU.tone('square', 900 + crand(200), 900, 0.02, 0.012); }
-    if (M.back || M.pause) { this.scene = null; S.after(); return; }
-    if ((M.ok || taps.length) && this.stateT > 0.25) {
+    if (M.back || (M.pause && !M.ok) || taps.some(t => { const b = UI.hit(t, 'story'); return b && b.id === 'skip'; })) { this.scene = null; S.after(); return; } // SKIP: straight to the mission (Enter is NEXT)
+    if ((M.ok || taps.length) && this.stateT > 0.25) { // NEXT (a tap anywhere else works too)
       if (S.shown < text.length) S.shown = text.length;
       else if (++S.i >= S.lines.length) { this.scene = null; S.after(); }
       else { this.sceneLine(); Sfx.select(); }
@@ -10160,13 +10160,22 @@ const Game = {
     if (im) { const k = Math.max(VW / im.width, VH / im.height) * 1.04, w = im.width * k, h = im.height * k; c.drawImage(ART.px(im === ART.img[bg] ? bg : 'title', w * SCALE, h * SCALE), (VW - w) / 2 - Math.sin(this.rt * 0.15) * 6, (VH - h) / 2, w, h); }
     else { c.fillStyle = '#1a3050'; c.fillRect(0, 0, VW, VH); }
     const g = c.createLinearGradient(0, VH * 0.25, 0, VH); g.addColorStop(0, 'rgba(6,12,24,0.15)'); g.addColorStop(1, 'rgba(6,12,24,0.82)'); c.fillStyle = g; c.fillRect(0, 0, VW, VH);
+    const gt = c.createLinearGradient(0, 0, 0, 34); gt.addColorStop(0, 'rgba(6,12,24,0.5)'); gt.addColorStop(1, 'rgba(6,12,24,0)'); c.fillStyle = gt; c.fillRect(0, 0, VW, 34); // (so the title and SKIP read on a bright sky)
     setFont(c, 7, FONT_UI, 700); c.fillStyle = '#ff9a3c';
     spaced(c, S.li >= 0 ? 'MISSION ' + pad(S.li + 1, 2) + '  ·  ' + LEVELS[S.li].name : 'THE END OF THE IRON LEGION', VW / 2, 18, 3, 'center');
     const [who, text] = S.lines[S.i], cur = SPEAKERS[who] && SPEAKERS[who].left ? 'L' : 'R';
     const bob = k => Math.sin(this.rt * 2.2 + k) * 1.2;
     if (S.lastL) drawPortrait(c, S.lastL, VW * 0.2, VH - 62 + bob(0), cur === 'L' ? 122 : 110, cur === 'L');
     if (S.lastR) drawPortrait(c, S.lastR, VW * 0.8, VH - 62 + bob(2), cur === 'R' ? 122 : 110, cur === 'R', S.lastR !== 'overseer');
-    drawTalkBox(c, who, text, S.shown, 22, VH - 66, VW - 44, 56, lastDevice === 'touch' ? 'TAP ▸' : 'FIRE ▸    ESC: SKIP');
+    drawTalkBox(c, who, text, S.shown, 22, VH - 66, VW - 44, 56);
+    // NEXT on the box's bottom edge, SKIP up in the corner, and dots for how far the talk has got
+    const last = S.i === S.lines.length - 1 && S.shown >= text.length;
+    UI.primary(c, 'next', VW - 22 - 82, VH - 18, 72, 16, last ? "LET'S GO!" : 'NEXT', { focus: S.shown >= text.length, size: 8 });
+    c.fillStyle = 'rgba(8,16,32,0.7)'; rrect(c, VW - 74, 8, 64, 16, 6); c.fill();
+    UI.button(c, 'skip', VW - 74, 8, 64, 16, 'SKIP  ▸▸', { size: 6.6 });
+    const n = S.lines.length, dx = Math.min(8, 120 / n);
+    for (let i = 0; i < n; i++) { c.fillStyle = i === S.i ? '#ff9a3c' : i < S.i ? 'rgba(255,190,130,0.6)' : 'rgba(255,255,255,0.22)'; c.beginPath(); c.arc(VW / 2 + (i - (n - 1) / 2) * dx, VH - 4.5, i === S.i ? 2 : 1.4, 0, TAU); c.fill(); }
+    if (lastDevice !== 'touch') { setFont(c, 5.4, FONT_UI, 700); c.textAlign = 'right'; c.fillStyle = 'rgba(230,236,246,0.55)'; c.fillText(lastDevice === 'pad' ? 'A: NEXT  ·  START: SKIP' : 'ENTER: NEXT  ·  ESC: SKIP', VW - 22 - 90, VH - 14); }
   },
   drawRadio(c) {
     const r = this.radioQ[0]; if (!r || !r.max) return;
@@ -10429,24 +10438,87 @@ const Game = {
     }
   },
 
-  /* ---------- title / menus ---------- */
-  titleItems() {
-    if (this.titlePage === 'options') {
-      const it = [{ id: 'mode' }, { id: 'health' }, { id: 'sound' }, { id: 'music' }];
-      if (fsSupported()) it.push({ id: 'fullscreen' });
-      it.push({ id: 'oback' });
-      return it;
+  /* ---------- title / menus: real buttons (see 07a_ui.js) ---------- */
+  uiKey() { // which screen the buttons belong to (a click only counts on the screen it was drawn for)
+    const s = this.state;
+    if (s === 'title') return 'title:' + this.titlePage;
+    if (s === 'meta') return 'meta:' + Meta.page + (Meta.editing ? ':edit' : '');
+    if (s === 'online') return 'online:' + Net.phase + ':' + Net.role;
+    if (s === 'play' && Net.on && Net.menu) return 'netmenu';
+    return s;
+  },
+  // where everything sits on the title pages
+  titleLayout() {
+    const P = this.titlePage;
+    if (P === 'options' || P === 'modes') {
+      const pw = Math.min(300, VW - 40), x0 = (VW - pw) / 2, ix = x0 + 12, iw = pw - 24, items = [];
+      if (P === 'options') {
+        ['mode', 'health', 'sound', 'music'].concat(fsSupported() ? ['fullscreen'] : []).forEach((id, k) => items.push({ id, kind: 'value', pick: true, x: ix, y: 58 + k * 23, w: iw, h: 18, row: k }));
+      } else {
+        ['rush', 'surv', 'battle', 'race'].forEach((id, k) => items.push({ id, kind: 'big', pick: id === 'surv', x: ix, y: 56 + k * 33, w: iw, h: 27, row: k }));
+      }
+      const last = items[items.length - 1], by = last.y + last.h + 10, back = P === 'options' ? 'oback' : 'mback';
+      items.push({ id: back, kind: 'button', back: true, x: VW / 2 - 50, y: by, w: 100, h: 17, row: 9 });
+      return { items, panel: [x0, 14, pw, by + 17 + 24 - 14], title: P === 'options' ? 'OPTIONS' : 'MORE MODES' };
     }
-    if (this.titlePage === 'modes') return [{ id: 'rush' }, { id: 'surv' }, { id: 'battle' }, { id: 'race' }, { id: 'mback' }];
-    const it = [{ id: 'story' }, { id: 'play' }, { id: 'players' }, { id: 'hero' }, { id: 'shop' }, { id: 'trophies' }, { id: 'modes' }, { id: 'options' }];
-    if (Net.available) it.splice(3, 0, { id: 'online' });
-    return it;
+    const pw = Math.min(254, VW - 140), x0 = VW - pw - Math.max(10, VW * 0.025), ix = x0 + 7, iw = pw - 14;
+    const items = [
+      { id: 'story', kind: 'big', pick: true, x: ix, y: 84, w: iw, h: 24, row: 0 },
+      { id: 'play', kind: 'big', pick: true, blue: true, x: ix, y: 112, w: iw, h: 24, row: 1 },
+      { id: 'players', kind: 'value', pick: true, x: ix, y: 141, w: iw, h: 17, row: 2 },
+    ];
+    const tiles = (Net.available ? ['online'] : []).concat(['hero', 'shop', 'trophies', 'modes', 'options']), per = 3, gap = 5;
+    tiles.forEach((id, k) => {
+      const r = Math.floor(k / per), inRow = Math.min(per, tiles.length - r * per), tw = (iw - gap * (inRow - 1)) / inRow;
+      items.push({ id, kind: 'tile', x: ix + (k % per) * (tw + gap), y: 163 + r * 31, w: tw, h: 27, row: 3 + r });
+    });
+    return { items, panel: [x0, 77, pw, 172], mx: x0 + pw / 2 };
+  },
+  tileText(id) { // the little line under a tile
+    const n = this.numLocal(), d = Store.data;
+    switch (id) {
+      case 'online': return ['ONLINE', 'UP TO 4 PLAYERS'];
+      case 'hero': return ['MY HERO', n > 2 ? n + ' HEROES' : n === 2 ? Heroes.of(0).name + ' & ' + Heroes.of(1).name : Heroes.of(0).name];
+      case 'shop': return ['SHOP', '◎ ' + Heroes.of(0).coins + (n > 1 ? ' · ◎ ' + Heroes.of(1).coins : '')];
+      case 'trophies': return ['TROPHIES', Trophies.count(Heroes.of(0)) + ' OF ' + TROPHIES.length];
+      case 'modes': return ['MORE MODES', 'RUSH · VERSUS'];
+      case 'options': return ['OPTIONS', (d.sound ? 'SOUND ON' : 'SOUND OFF')];
+    }
+    return [id, ''];
+  },
+  // draw one menu item (the same pieces everywhere)
+  drawItem(c, it, i, focus) {
+    const [label, value] = this.itemText(it.id), data = { sel: i };
+    if (it.kind === 'big') {
+      const bw = Math.round(it.w * (it.pick || value ? 0.5 : 1));
+      UI.primary(c, it.id, it.x, it.y, bw, it.h, label, { focus, blue: it.blue, data: Object.assign({ part: 'go' }, data), size: Math.min(it.h * 0.42, 10) });
+      if (it.pick) UI.picker(c, it.id, it.x + bw + 4, it.y + 2, it.w - bw - 4, it.h - 4, value, { focus, data, disabled: it.id === 'story' && this.heroStory() === 0 });
+      else if (value) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = focus ? '#ffe2b0' : 'rgba(255,208,138,0.85)'; c.fillText(value, it.x + bw + (it.w - bw) / 2 + 2, it.y + it.h / 2 + 2.5); }
+    } else if (it.kind === 'value') UI.valueRow(c, it.id, it.x, it.y, it.w, it.h, label, value, { focus, data });
+    else if (it.kind === 'tile') { const [tl, ts] = this.tileText(it.id); UI.tile(c, it.id, it.x, it.y, it.w, it.h, tl, ts, it.id, { focus, data: Object.assign({ part: 'go' }, data) }); }
+    else if (it.kind === 'primary') UI.primary(c, it.id, it.x, it.y, it.w, it.h, label, { focus, data: Object.assign({ part: 'go' }, data) });
+    else UI.button(c, it.id, it.x, it.y, it.w, it.h, label, { focus, back: it.back, red: it.red, data: Object.assign({ part: 'go' }, data) });
+  },
+  // keys, mouse and taps for a list of items: returns true when something was pressed
+  menuInput(key, items, selName, M, taps, act) {
+    const p = UI.pointed(key); if (p && p.sel !== undefined) this[selName] = p.sel;
+    const n = UI.nav(items, this[selName], M); this[selName] = n.sel;
+    const it = items[this[selName]];
+    if (n.change && it) { this.changeItem(it.id, n.change); return true; }
+    if (n.ok && it) { act(it.id); return true; }
+    for (const t of taps) {
+      const b = UI.hit(t, key); if (!b) continue;
+      if (b.sel !== undefined) this[selName] = b.sel;
+      if (b.part === -1 || b.part === 1) this.changeItem(b.id, b.part); else if (b.part === 'row') this.changeItem(b.id, 1); else act(b.id);
+      return true;
+    }
+    return false;
   },
   heroStory() { return Math.min(Heroes.of(0).story || 0, LEVELS.length - 1); }, // the furthest chapter the hero reached
   itemText(id) {
     const d = Store.data;
     switch (id) {
-      case 'story': { const ch = this.storyPick ?? this.heroStory(); return ['STORY MODE', ch > 0 ? 'CHAPTER ' + (ch + 1) : 'NEW STORY']; }
+      case 'story': { const ch = this.storyPick ?? this.heroStory(); return ['STORY MODE', this.heroStory() === 0 ? 'CHAPTER 1 · NEW' : 'CHAPTER ' + (ch + 1)]; }
       case 'play': { const n = Heroes.of(0).stars[d.mission] || 0; return ['PLAY MISSION', `${d.mission + 1} · ${LEVELS[d.mission].name}  ${'★'.repeat(n)}${'☆'.repeat(3 - n)}`]; }
       case 'online': return ['ONLINE CO-OP', 'UP TO 4 PLAYERS'];
       case 'hero': { const n = this.numLocal(); return ['MY HERO', n > 2 ? n + ' HEROES' : n === 2 ? Heroes.of(0).name + ' & ' + Heroes.of(1).name : Heroes.of(0).name]; }
@@ -10460,7 +10532,7 @@ const Game = {
       case 'race': return ['COIN RACE', '2-4 PLAYERS · 2 MIN'];
       case 'mback': return ['BACK', ''];
       case 'oback': return ['BACK', ''];
-      case 'players': { const n = this.numLocal(); return ['PLAYERS', n === 1 ? '1' : n === 2 ? '2 · CO-OP' : n + ' · CO-OP']; }
+      case 'players': { const n = this.numLocal(); return ['PLAYERS', n === 1 ? '1 PLAYER' : n + ' PLAYERS · CO-OP']; }
       case 'mode': return ['MODE', d.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
       case 'health': return ['HEALTH', d.inf ? 'UNLIMITED' : 'NORMAL'];
       case 'sound': return ['SOUND', d.sound ? 'ON' : 'OFF'];
@@ -10492,26 +10564,6 @@ const Game = {
     else return false;
     Store.save(); Sfx.select(); return true;
   },
-  menuGeom(n, top, h = 14) { const w = Math.min(230, VW * 0.5), x = VW - w / 2 - Math.max(18, VW * 0.07); return { x, w, top, h, n }; },
-  handleMenu(items, sel, M, taps, geom, onOk, onPress) {
-    if (M.up) { sel = (sel - 1 + items.length) % items.length; Sfx.select(); }
-    if (M.down) { sel = (sel + 1) % items.length; Sfx.select(); }
-    if (M.left) this.changeItem(items[sel].id, -1);
-    if (M.right) this.changeItem(items[sel].id, 1);
-    if (M.ok) { if (!(onPress && onPress(items[sel].id)) && !this.changeItem(items[sel].id, 1)) onOk(items[sel].id); }
-    for (const t of taps) {
-      for (let i = 0; i < items.length; i++) {
-        const y = geom.top + i * geom.h;
-        if (t.x > geom.x - geom.w / 2 && t.x < geom.x + geom.w / 2 && t.y > y - 10 && t.y < y + 4) {
-          sel = i;
-          const side = t.x < geom.x - geom.w / 6 ? -1 : t.x > geom.x + geom.w / 4 ? 1 : 0;
-          if (side === 0 && onPress && onPress(items[i].id)) break;
-          if (!this.changeItem(items[i].id, side || 1)) onOk(items[i].id);
-        }
-      }
-    }
-    return sel;
-  },
   updateTitleScene(dt) {
     this.titleCam += dt * 26;
     if (this.titleCam > 3000) this.titleCam = 0;
@@ -10522,25 +10574,23 @@ const Game = {
   },
   updateTitle(dt, M, taps) {
     this.updateTitleScene(dt);
-    const items = this.titleItems();
     if (taps.length && this.fsHit(taps)) return;
-    if (this.titlePage !== 'main' && M.back) { const from = this.titlePage; this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === from); Sfx.select(); return; }
-    const go = id => { // pressing fire / tapping the middle of an item
-      if (id === 'story') { Sfx.confirm(); this.startGame(true, this.storyPick ?? this.heroStory()); return true; }
-      if (id === 'play') { Sfx.confirm(); this.startGame(false); return true; }
-      if (id === 'online') { Net.open(); return true; }
-      if (id === 'hero') { Meta.open('hero'); return true; }
-      if (id === 'shop') { Meta.open('shop'); return true; }
-      if (id === 'trophies') { Meta.open('trophies'); return true; }
-      if (id === 'options') { this.titlePage = 'options'; this.menuSel = 0; Sfx.confirm(); return true; }
-      if (id === 'oback') { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'options'); Sfx.select(); return true; }
-      if (id === 'modes') { this.titlePage = 'modes'; this.menuSel = 0; Sfx.confirm(); return true; }
-      if (id === 'mback') { this.titlePage = 'main'; this.menuSel = this.titleItems().findIndex(it => it.id === 'modes'); Sfx.select(); return true; }
-      if (id === 'rush' || id === 'battle' || id === 'race') { Sfx.confirm(); this.startMode(id); return true; }
-      if (id === 'surv') { Sfx.confirm(); this.startMode('surv', Store.data.survWorld || 0); return true; }
-      return false;
-    };
-    this.menuSel = this.handleMenu(items, this.menuSel, M, taps, this.menuGeom(items.length, 122, 13), go, go);
+    const P = this.titlePage, L = this.titleLayout();
+    if (P !== 'main' && M.back) { this.titleBack(); return; }
+    this.menuSel = clamp(this.menuSel, 0, L.items.length - 1);
+    this.menuInput('title:' + P, L.items, 'menuSel', M, taps, id => this.titleGo(id));
+  },
+  titleBack() { const from = this.titlePage; this.titlePage = 'main'; this.menuSel = Math.max(0, this.titleLayout().items.findIndex(it => it.id === from)); Sfx.select(); },
+  titleGo(id) { // a button on the title pages was pressed
+    if (id === 'story') { Sfx.confirm(); this.startGame(true, this.storyPick ?? this.heroStory()); }
+    else if (id === 'play') { Sfx.confirm(); this.startGame(false); }
+    else if (id === 'online') Net.open();
+    else if (id === 'hero' || id === 'shop' || id === 'trophies') Meta.open(id);
+    else if (id === 'options' || id === 'modes') { this.titlePage = id; this.menuSel = 0; Sfx.confirm(); }
+    else if (id === 'oback' || id === 'mback') this.titleBack();
+    else if (id === 'rush' || id === 'battle' || id === 'race') { Sfx.confirm(); this.startMode(id); }
+    else if (id === 'surv') { Sfx.confirm(); this.startMode('surv', Store.data.survWorld || 0); }
+    else this.changeItem(id, 1);
   },
   fsHit(taps) {
     for (const t of taps) if (t.x > VW - 30 && t.y < 26) {
@@ -10549,31 +10599,40 @@ const Game = {
     }
     return false;
   },
-  pauseItems() {
-    const it = [{ id: 'resume' }, { id: 'restart' }, { id: 'health' }, { id: 'sound' }, { id: 'music' }];
-    if (fsSupported()) it.push({ id: 'fullscreen' });
-    if (lastDevice === 'touch') it.push({ id: 'auto' });
-    it.push({ id: 'quit' });
-    return it;
+  pauseLayout() {
+    const pw = Math.min(250, VW - 40), x0 = (VW - pw) / 2, ix = x0 + 12, iw = pw - 24;
+    const vals = ['health', 'sound', 'music'].concat(fsSupported() ? ['fullscreen'] : [], lastDevice === 'touch' ? ['auto'] : []);
+    const h0 = 36 + 26 + vals.length * 20 + 24, y0 = Math.round((VH - h0) / 2), items = [];
+    items.push({ id: 'resume', kind: 'primary', x: ix + 20, y: y0 + 36, w: iw - 40, h: 21, row: 0 });
+    vals.forEach((id, k) => items.push({ id, kind: 'value', pick: true, x: ix, y: y0 + 62 + k * 20, w: iw, h: 16, row: 1 + k }));
+    const by = y0 + 62 + vals.length * 20 + 3, hw = (iw - 6) / 2;
+    items.push({ id: 'restart', kind: 'button', x: ix, y: by, w: hw, h: 16, row: 9 }, { id: 'quit', kind: 'button', red: true, x: ix + hw + 6, y: by, w: hw, h: 16, row: 9 });
+    return { items, panel: [x0, y0, pw, h0 + 4] };
   },
   updatePause(M, taps) {
-    const items = this.pauseItems();
     if (M.back || (M.pause && this.stateT > 0.2)) { this.setState('play'); return; }
-    this.pauseSel = this.handleMenu(items, this.pauseSel, M, taps, this.pauseGeom(items.length), id => {
+    const L = this.pauseLayout(); this.pauseSel = clamp(this.pauseSel, 0, L.items.length - 1);
+    this.menuInput('pause', L.items, 'pauseSel', M, taps, id => {
       if (id === 'resume') this.setState('play');
       else if (id === 'restart') { this.checkpoint = null; for (const p of this.players) { if (p.state === 'out') p.lives = 0; p.state = 'alive'; } this.loadLevel(this.li, false); this.setState('play'); }
       else if (id === 'quit') this.toTitle();
+      else this.changeItem(id, 1);
     });
   },
-  pauseGeom(n) { return { x: VW / 2, w: 200, top: VH / 2 - (n * 14) / 2 + 16, h: 14, n }; },
   updateContinue(dt, M, taps) {
     this.contT -= dt;
-    if (this.stateT > 0.8 && (M.ok || taps.length)) { Sfx.confirm(); this.continueGame(); return; }
-    if (M.back || this.contT <= 0) this.toTitle();
+    if (this.stateT > 0.8) {
+      let go = M.ok, quit = M.back;
+      for (const t of taps) { const b = UI.hit(t, 'continue'); if (b) { if (b.id === 'cont') go = true; else if (b.id === 'quit') quit = true; } }
+      if (go) { Sfx.confirm(); this.continueGame(); return; }
+      if (quit) { this.toTitle(); return; }
+    }
+    if (this.contT <= 0) this.toTitle();
   },
 
   /* ---------- rendering ---------- */
-  render() {
+  render() { UI.begin(this.uiKey()); this.renderScreen(); UI.end(); },
+  renderScreen() {
     const c = ctx;
     c.setTransform(SCALE, 0, 0, SCALE, 0, 0);
     c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
@@ -10857,24 +10916,6 @@ const Game = {
     setFont(c, 7, FONT_UI, 700); c.fillStyle = '#ffd7c9'; spaced(c, B.title + '  ·  ' + B.sub, VW / 2, cy + 13, 1.5, 'center');
     c.globalAlpha = 1;
   },
-  drawMenuList(c, items, sel, geom) {
-    items.forEach((it, i) => {
-      const [label, val] = this.itemText(it.id), y = geom.top + i * geom.h, on = i === sel;
-      if (on) {
-        const g = c.createLinearGradient(geom.x - geom.w / 2, 0, geom.x + geom.w / 2, 0);
-        g.addColorStop(0, 'rgba(255,138,42,0)'); g.addColorStop(0.5, 'rgba(255,138,42,0.28)'); g.addColorStop(1, 'rgba(255,138,42,0)');
-        c.fillStyle = g; c.fillRect(geom.x - geom.w / 2, y - 9.5, geom.w, 13);
-        c.fillStyle = '#ff8a2a'; c.fillRect(geom.x - geom.w / 2, y - 9.5, 1.5, 13);
-      }
-      setFont(c, 8, FONT_UI, 700);
-      if (!val) { c.fillStyle = on ? '#fff' : 'rgba(225,232,244,0.78)'; spaced(c, label, geom.x, y, 1.6, 'center'); }
-      else {
-        c.fillStyle = on ? '#ffffff' : 'rgba(225,232,244,0.7)'; spaced(c, label, geom.x - geom.w / 2 + 10, y, 1.2, 'left');
-        c.fillStyle = on ? '#ffb46b' : 'rgba(255,190,130,0.75)';
-        fillIconText(c, (on ? '◂ ' : '') + val + (on ? ' ▸' : ''), geom.x + geom.w / 2 - 8, y, 'right');
-      }
-    });
-  },
   drawTitleArt(c) { // ChatGPT picture 16: the heroes charging, slowly drifting closer
     const im = ART.img.title; if (!im) return false;
     const k = Math.max(VW / im.width, VH / im.height) * (1.02 + 0.03 * (0.5 - 0.5 * Math.cos(this.rt * 0.12))), w = im.width * k, h = im.height * k;
@@ -10902,72 +10943,89 @@ const Game = {
       c.globalCompositeOperation = 'lighter'; glow(c, hx - 30 + i * 60 + 9, hy - 67, 8, h.style.vrgb, 0.8); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
     });
   },
-  drawTitleMenu(c) {
-    // logo
-    const mx = this.menuGeom(8, 122).x, ly = 56;
-    c.save();
-    c.lineJoin = 'round';
-    setFont(c, 15, FONT_DISP, 400); c.lineWidth = 4; c.strokeStyle = '#4a1a06'; c.fillStyle = '#ff8a2a'; spaced(c, 'IRON', mx, ly - 22, 9, 'center', true);
-    setFont(c, 40, FONT_DISP, 400);
-    c.fillStyle = 'rgba(8,24,48,0.35)'; spaced(c, 'MONSOON', mx + 2, ly + 11, 2, 'center');
-    c.lineWidth = 6; c.strokeStyle = '#0c2142';
-    const lg = c.createLinearGradient(0, ly - 30, 0, ly + 4); lg.addColorStop(0, '#ffffff'); lg.addColorStop(0.6, '#e6f1ff'); lg.addColorStop(1, '#a9c8ef');
-    c.fillStyle = lg; spaced(c, 'MONSOON', mx, ly + 8, 2, 'center', true);
-    c.fillStyle = '#ff8a2a'; c.fillRect(mx - 70, ly + 15, 140, 2);
-    setFont(c, 6.5, FONT_UI, 700); c.lineWidth = 2.5; c.strokeStyle = '#0c2142'; c.fillStyle = '#ffffff'; spaced(c, 'RUN  ·  GUN  ·  SAVE THE WORLD', mx, ly + 27, 1.6, 'center', true);
-    c.restore();
-    const items = this.titleItems(), geom = this.menuGeom(items.length, 122, 13);
-    c.fillStyle = 'rgba(10,26,52,0.62)'; rrect(c, geom.x - geom.w / 2 - 8, geom.top - 15, geom.w + 16, items.length * geom.h + 26, 5); c.fill();
-    c.strokeStyle = 'rgba(255,255,255,0.18)'; c.lineWidth = 0.8; c.stroke();
-    this.drawMenuList(c, items, this.menuSel, geom);
-    setFont(c, 6, FONT_UI, 500); c.textAlign = 'center'; c.fillStyle = 'rgba(200,210,228,0.7)';
-    const d = Store.data, selId = items[this.menuSel] && items[this.menuSel].id;
-    let note = d.diff === 'recruit' ? '3 hits per life · extra lives · keep your weapon after a fall' : 'One hit and you are down · classic rules';
-    if (selId === 'health') note = d.inf ? 'Unlimited health: hits and falls never cost a life' : 'Normal health: hits and falls cost lives';
-    else if (selId === 'story') note = 'The whole adventure with the story · ◂ ▸ picks a chapter you reached';
-    else if (selId === 'play') note = 'Play any mission on its own · ◂ ▸ picks the mission';
-    else if (selId === 'players') {
-      const n = this.numLocal(), np = Pads.length, pads = np ? ` (${np} gamepad${np === 1 ? '' : 's'} found)` : ' · press a button on each gamepad so the game sees it';
-      note = n === 1 ? 'Press ◂ ▸ for 2, 3 or 4 players on one computer' : n === 2 ? 'Two players on one computer: keyboard halves or two gamepads' : n === 3 ? 'P1 and P2 share the keyboard · P3 plays with a gamepad' + pads : 'P1 and P2 share the keyboard · P3 and P4 play with gamepads' + pads;
+  titleNote(selId) { // a line of help for the chosen button
+    const d = Store.data;
+    if (selId === 'health') return d.inf ? 'Unlimited health: hits and falls never cost a life' : 'Normal health: hits and falls cost lives';
+    if (selId === 'mode') return d.diff === 'recruit' ? 'Recruit: 3 hits per life · extra lives · keep your weapon after a fall' : 'Veteran: one hit and you are down · classic rules';
+    if (selId === 'story') return 'The whole adventure with the story · the arrows pick a chapter you reached';
+    if (selId === 'play') return 'Play any mission on its own · the arrows pick the mission';
+    if (selId === 'players') {
+      const n = this.numLocal(), np = Pads.length, pads = np ? ` (${np} gamepad${np === 1 ? '' : 's'} found)` : ' · press a button on each gamepad';
+      return n === 1 ? 'The arrows pick 2, 3 or 4 players on one computer' : n === 2 ? 'Two players on one computer: keyboard halves or two gamepads' : n === 3 ? 'P1 and P2 share the keyboard · P3 plays with a gamepad' + pads : 'P1 and P2 share the keyboard · P3 and P4 play with gamepads' + pads;
     }
-    else if (selId === 'online') note = 'Play together on up to four computers, phones or tablets';
-    else if (selId === 'hero') note = 'Name, colours, helmet and outfits · ◂ ▸ switches hero';
-    else if (selId === 'shop') note = 'Robots drop coins · spend them on upgrades and guns';
-    else if (selId === 'trophies') note = 'Every hero has their own trophy wall';
-    else if (selId === 'options') note = 'Mode, health, sound and music';
-    else if (selId === 'modes') note = 'Boss Rush, Survival, Score Battle and Coin Race';
-    else if (MODES[selId]) note = MODES[selId].sub + (MODES[selId].vs && this.numLocal() < 2 ? ' (switches to 2 players)' : '');
-    else if (selId === 'mback') note = 'Esc goes back';
-    else if (selId === 'sound' || selId === 'music' || selId === 'fullscreen' || selId === 'oback') note = 'Esc goes back';
-    else if (d.inf) note = 'Unlimited health is on · practice as long as you like';
-    c.fillText(note, geom.x, geom.top + items.length * geom.h + 4);
-    let hint;
+    if (selId === 'online') return 'Play together on up to four computers, phones or tablets';
+    if (selId === 'hero') return 'Name, colours, helmet and outfits for every hero';
+    if (selId === 'shop') return 'Robots drop coins · spend them on upgrades and guns';
+    if (selId === 'trophies') return 'Every hero has their own trophy wall';
+    if (selId === 'options') return 'Mode, health, sound and music';
+    if (selId === 'modes') return 'Boss Rush, Survival, Score Battle and Coin Race';
+    if (MODES[selId]) return MODES[selId].sub + (MODES[selId].vs && this.numLocal() < 2 ? ' (switches to 2 players)' : '');
+    if (selId === 'sound' || selId === 'music' || selId === 'fullscreen') return 'Turn it on or off';
+    if (selId === 'mback' || selId === 'oback') return 'Back to the title (Esc)';
+    return d.inf ? 'Unlimited health is on · practice as long as you like' : '';
+  },
+  drawTitleMenu(c) {
+    const L = this.titleLayout(), P = this.titlePage, d = Store.data;
+    if (P === 'main') { // the logo over the menu
+      const mx = L.mx, ly = 52;
+      c.save(); c.lineJoin = 'round';
+      setFont(c, 12, FONT_DISP, 400); c.lineWidth = 3.5; c.strokeStyle = '#4a1a06'; c.fillStyle = '#ff8a2a'; spaced(c, 'IRON', mx, ly - 31, 8, 'center', true);
+      setFont(c, 36, FONT_DISP, 400);
+      c.fillStyle = 'rgba(8,24,48,0.35)'; spaced(c, 'MONSOON', mx + 2, ly + 3, 2, 'center');
+      c.lineWidth = 5.5; c.strokeStyle = '#0c2142';
+      const lg = c.createLinearGradient(0, ly - 27, 0, ly + 2); lg.addColorStop(0, '#ffffff'); lg.addColorStop(0.6, '#e6f1ff'); lg.addColorStop(1, '#a9c8ef');
+      c.fillStyle = lg; spaced(c, 'MONSOON', mx, ly, 2, 'center', true);
+      c.fillStyle = '#ff8a2a'; c.fillRect(mx - 64, ly + 5, 128, 1.8);
+      setFont(c, 6, FONT_UI, 700); c.lineWidth = 2.4; c.strokeStyle = '#0c2142'; c.fillStyle = '#ffffff'; spaced(c, 'RUN  ·  GUN  ·  SAVE THE WORLD', mx, ly + 16, 1.5, 'center', true);
+      c.restore();
+      UI.panel(c, ...L.panel);
+    } else {
+      c.fillStyle = 'rgba(6,12,24,0.45)'; c.fillRect(0, 0, VW, VH);
+      UI.panel(c, ...L.panel, L.title);
+    }
+    L.items.forEach((it, i) => this.drawItem(c, it, i, i === this.menuSel));
+    const f = L.items[this.menuSel]; if (f && lastDevice !== 'touch') UI.pointer(c, f.x - 5, f.y + f.h / 2); // (where the keys are)
+    const [px, py, pw, ph] = L.panel, cx = px + pw / 2;
+    setFont(c, 6, FONT_UI, 600); c.textAlign = 'center'; c.fillStyle = 'rgba(214,224,240,0.85)';
+    const note = this.titleNote(f && f.id), nw = c.measureText(note).width;
+    if (nw > pw - 10) setFont(c, 6 * (pw - 10) / nw, FONT_UI, 600);
+    c.fillText(note, cx, py + ph - 14);
+    UI.howTo(c, cx, py + ph - 5);
+    let hint; // how to play (at the bottom)
+    setFont(c, 6, FONT_UI, 500);
     if (lastDevice === 'touch') hint = 'Left thumb: move & aim  ·  FIRE  ·  JUMP (again in the air = double jump)  ·  ⇄ switch gun  ·  SUPER when the bar is full';
     else if (lastDevice === 'pad') hint = 'Stick: move & aim · A jump · X fire · Y switch gun · B super (when the bar is full) · RB aim lock · Start pause';
     else if (this.numLocal() > 2) hint = 'P1  WASD · F fire · G jump      P2  Arrows · J fire · K jump      ' + (this.numLocal() > 3 ? 'P3 & P4  gamepads 1 and 2' : 'P3  gamepad') + ' · A jump · X fire · B super';
     else if (d.players === 2) hint = 'P1  WASD · F fire · G jump · R gun · T super        P2  Arrows · J fire · K jump · U gun · I super';
     else hint = 'Move Arrows/WASD · Fire J/Z · Jump K/X/Space (twice = double jump) · Switch gun Q · Super E · Aim lock L · Pause P';
-    const hw = c.measureText(hint).width + 14;
-    c.fillStyle = 'rgba(8,20,40,0.55)'; rrect(c, VW / 2 - hw / 2, VH - 15.5, hw, 10.5, 3); c.fill();
-    c.fillStyle = 'rgba(226,234,246,0.92)'; c.fillText(hint, VW / 2, VH - 8);
-    setFont(c, 7, FONT_MONO, 400); c.textAlign = 'right'; c.fillStyle = 'rgba(232,238,247,0.6)'; c.fillText('HI ' + pad(d.hi, 7), VW - 34, 15);
+    const hw = Math.min(VW - 8, c.measureText(hint).width + 14);
+    c.fillStyle = 'rgba(8,20,40,0.6)'; rrect(c, VW / 2 - hw / 2, VH - 15.5, hw, 10.5, 3); c.fill();
+    c.fillStyle = 'rgba(226,234,246,0.92)'; c.textAlign = 'center'; c.fillText(hint, VW / 2, VH - 8);
+    if (P === 'main') { setFont(c, 7, FONT_MONO, 400); c.textAlign = 'right'; c.fillStyle = 'rgba(232,238,247,0.6)'; c.fillText('HI ' + pad(d.hi, 7), VW - 34, 15); }
     if (fsSupported()) { c.strokeStyle = 'rgba(232,238,247,0.6)'; c.lineWidth = 1; const fx = VW - 20, fy = 10; c.beginPath(); c.moveTo(fx - 5, fy - 1); c.lineTo(fx - 5, fy - 5); c.lineTo(fx - 1, fy - 5); c.moveTo(fx + 1, fy - 5); c.lineTo(fx + 5, fy - 5); c.lineTo(fx + 5, fy - 1); c.moveTo(fx + 5, fy + 1); c.lineTo(fx + 5, fy + 5); c.lineTo(fx + 1, fy + 5); c.moveTo(fx - 1, fy + 5); c.lineTo(fx - 5, fy + 5); c.lineTo(fx - 5, fy + 1); c.stroke(); }
   },
   drawPause(c) {
     c.fillStyle = 'rgba(3,5,10,0.62)'; c.fillRect(0, 0, VW, VH);
-    const items = this.pauseItems(), geom = this.pauseGeom(items.length);
-    setFont(c, 24, FONT_DISP, 400); c.fillStyle = '#f4f6fb'; spaced(c, 'PAUSED', VW / 2, geom.top - 30, 4, 'center');
-    setFont(c, 6.5, FONT_UI, 700); c.fillStyle = 'rgba(255,170,100,0.85)'; spaced(c, 'MISSION ' + (this.li + 1) + ' · ' + LEVELS[this.li].name, VW / 2, geom.top - 19, 1.5, 'center');
-    this.drawMenuList(c, items, this.pauseSel, geom);
+    const L = this.pauseLayout(), [px, py, pw, ph] = L.panel;
+    UI.panel(c, px, py, pw, ph);
+    setFont(c, 17, FONT_DISP, 400); c.fillStyle = '#f4f6fb'; spaced(c, 'PAUSED', VW / 2, py + 19, 3, 'center');
+    setFont(c, 6.2, FONT_UI, 700); c.fillStyle = 'rgba(255,170,100,0.9)'; spaced(c, 'MISSION ' + (this.li + 1) + ' · ' + LEVELS[this.li].name, VW / 2, py + 29, 1.2, 'center');
+    L.items.forEach((it, i) => this.drawItem(c, it, i, i === this.pauseSel));
+    const f = L.items[this.pauseSel]; if (f && lastDevice !== 'touch') UI.pointer(c, f.x - 5, f.y + f.h / 2);
+    UI.howTo(c, VW / 2, py + ph + 9, lastDevice === 'touch' ? '' : 'ESC GOES BACK TO THE GAME');
   },
   drawContinue(c) {
     c.fillStyle = 'rgba(20,0,0,0.55)'; c.fillRect(0, 0, VW, VH);
-    setFont(c, 26, FONT_DISP, 400); c.fillStyle = '#ff5240'; spaced(c, 'MISSION FAILED', VW / 2, VH * 0.36, 3, 'center');
+    setFont(c, 26, FONT_DISP, 400); c.fillStyle = '#ff5240'; spaced(c, 'MISSION FAILED', VW / 2, VH * 0.34, 3, 'center');
     if (Net.on) { setFont(c, 9, FONT_UI, 700); c.fillStyle = '#f0f3f8'; spaced(c, 'BACK TO THE LAST CHECKPOINT…', VW / 2, VH * 0.52, 2, 'center'); return; }
-    setFont(c, 9, FONT_UI, 700); c.fillStyle = '#f0f3f8'; spaced(c, 'CONTINUE?', VW / 2, VH * 0.5, 3, 'center');
-    setFont(c, 40, FONT_MONO, 400); c.textAlign = 'center'; c.fillStyle = '#ffb46b'; c.fillText(String(Math.max(0, Math.floor(this.contT))), VW / 2, VH * 0.68);
-    setFont(c, 7, FONT_UI, 500); c.fillStyle = 'rgba(230,236,246,0.75)';
-    c.fillText(lastDevice === 'touch' ? 'Tap to continue from the last checkpoint' : 'Press fire or Enter to continue from the last checkpoint · Esc to quit', VW / 2, VH * 0.78);
+    setFont(c, 9, FONT_UI, 700); c.fillStyle = '#f0f3f8'; spaced(c, 'CONTINUE?', VW / 2, VH * 0.46, 3, 'center');
+    setFont(c, 30, FONT_MONO, 400); c.textAlign = 'center'; c.fillStyle = '#ffb46b'; c.fillText(String(Math.max(0, Math.floor(this.contT))), VW / 2, VH * 0.6);
+    if (this.stateT > 0.8) {
+      UI.primary(c, 'cont', VW / 2 - 70, VH * 0.66, 140, 22, 'CONTINUE', { focus: true });
+      UI.button(c, 'quit', VW / 2 - 45, VH * 0.66 + 28, 90, 15, 'QUIT TO TITLE', { red: true });
+    }
+    setFont(c, 6, FONT_UI, 500); c.textAlign = 'center'; c.fillStyle = 'rgba(230,236,246,0.75)';
+    c.fillText('From the last checkpoint · ' + (lastDevice === 'touch' ? 'tap CONTINUE' : 'click CONTINUE or press Enter · Esc quits'), VW / 2, VH * 0.93);
   },
   drawClear(c) {
     const a = clamp(this.stateT / 0.5, 0, 1);
@@ -10999,8 +11057,8 @@ const Game = {
       if (t.combo >= 5) { c.fillStyle = '#ffd08a'; c.fillText('BEST COMBO x' + t.combo, tx, y); }
     });
     if (this.stateT > 1.4) {
-      setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center';
-      c.fillText(Net.on ? (this.li < LEVELS.length - 1 ? 'Next mission in a moment…' : 'Here comes the ending…') : this.li < LEVELS.length - 1 ? (lastDevice === 'touch' ? 'Tap for the next mission' : 'Press fire for the next mission') : 'Press fire to continue', VW / 2, VH * 0.86);
+      if (Net.on) { setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center'; c.fillText(this.li < LEVELS.length - 1 ? 'Next mission in a moment…' : 'Here comes the ending…', VW / 2, VH * 0.88); }
+      else UI.primary(c, 'next', VW / 2 - 72, VH * 0.83, 144, 22, this.li < LEVELS.length - 1 ? 'NEXT MISSION' : 'CONTINUE', { focus: true });
     }
     c.globalAlpha = 1;
   },
@@ -11015,7 +11073,10 @@ const Game = {
       setFont(c, 8, FONT_UI, 700); c.fillStyle = p.style.ui || p.style.visor; c.textAlign = 'right'; c.fillText(p.tag, VW / 2 - 10, VH * 0.66 + i * 14);
       setFont(c, 9, FONT_MONO, 400); c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(pad(p.score, 7), VW / 2, VH * 0.66 + i * 14);
     });
-    if (this.stateT > 2) { setFont(c, 7, FONT_UI, 500); c.fillStyle = 'rgba(230,236,246,0.7)'; c.textAlign = 'center'; c.fillText(Net.on ? 'Back to the lobby in a moment…' : lastDevice === 'touch' ? 'Tap to return to the title' : 'Press fire to return to the title', VW / 2, VH * 0.88); }
+    if (this.stateT > 2) {
+      if (Net.on) { setFont(c, 7, FONT_UI, 500); c.fillStyle = 'rgba(230,236,246,0.7)'; c.textAlign = 'center'; c.fillText('Back to the lobby in a moment…', VW / 2, VH * 0.88); }
+      else UI.primary(c, 'title', VW / 2 - 72, VH * 0.84, 144, 22, 'BACK TO THE TITLE', { focus: true });
+    }
   },
   drawTouch(c) {
     const k = VW / cssW, R = Touch.R * k;
@@ -11129,6 +11190,212 @@ function boot2() {
   }
   requestAnimationFrame(frame);
 }
+
+/* =====================================================================
+   07a_ui.js : buttons you can see, point at and click
+   Every menu draws its buttons with these helpers. Drawing a button also
+   remembers where it is, so the next click (or tap) finds it. Pointing at
+   a button with the mouse lights it up and makes it the chosen one; the
+   arrow keys, Enter and a gamepad still work the same menus.
+   ===================================================================== */
+const Mouse = { x: -1, y: -1, moved: false, wheel: 0 }; // (game units; -1 while the pointer is away)
+stage.addEventListener('wheel', e => { if (Game.state === 'meta') { Mouse.wheel += e.deltaY > 0 ? 1 : -1; e.preventDefault(); } }, { passive: false });
+stage.addEventListener('mousemove', e => {
+  const r = cv.getBoundingClientRect();
+  Mouse.x = (e.clientX - r.left) / cssW * VW; Mouse.y = (e.clientY - r.top) / cssH * VH; Mouse.moved = true;
+});
+stage.addEventListener('mouseleave', () => { Mouse.x = Mouse.y = -1; });
+
+const UI = {
+  key: '', boxes: [], hover: null, cursor: '',
+  // each frame: the screen draws its buttons after begin(); clicks in the next frame are checked against them
+  begin(key) { this.key = key; this.boxes = []; this.hover = null; },
+  end() { const want = this.hover && lastDevice !== 'touch' ? 'pointer' : ''; if (want !== this.cursor) { this.cursor = want; stage.style.cursor = want; } },
+  zone(id, x, y, w, h, data) {
+    const b = { id, x, y, w, h }; if (data) Object.assign(b, data); this.boxes.push(b);
+    const on = lastDevice !== 'touch' && Mouse.x >= x && Mouse.x <= x + w && Mouse.y >= y && Mouse.y <= y + h;
+    if (on) this.hover = b;
+    return on;
+  },
+  hit(t, key) { // the button under a click or tap (the last one drawn wins)
+    if (key !== this.key) return null;
+    for (let i = this.boxes.length - 1; i >= 0; i--) { const b = this.boxes[i]; if (t.x >= b.x - 1.5 && t.x <= b.x + b.w + 1.5 && t.y >= b.y - 1.5 && t.y <= b.y + b.h + 1.5) return b; }
+    return null;
+  },
+  pointed(key) { // the button the mouse moved onto (null if the mouse is resting, so the keys keep choosing)
+    if (!Mouse.moved || key !== this.key) return null;
+    Mouse.moved = false;
+    for (let i = this.boxes.length - 1; i >= 0; i--) { const b = this.boxes[i]; if (Mouse.x >= b.x && Mouse.x <= b.x + b.w && Mouse.y >= b.y && Mouse.y <= b.y + b.h) return b; }
+    return null;
+  },
+  // keys and gamepad: up/down to the nearest item on the row above or below; left/right change a value
+  // (or move along a row of tiles). Returns { sel, change (-1/0/1), ok }
+  nav(items, sel, M) {
+    sel = clamp(sel, 0, items.length - 1);
+    const it = items[sel], out = { sel, change: 0, ok: !!M.ok };
+    if (!it) return out;
+    const cx = o => o.x + o.w / 2;
+    if (M.up || M.down) {
+      const rows = [...new Set(items.map(o => o.row))].sort((a, b) => a - b), ri = rows.indexOf(it.row);
+      const r = rows[(ri + (M.up ? -1 : 1) + rows.length) % rows.length];
+      let best = sel, bd = 1e9;
+      items.forEach((o, i) => { if (o.row === r && !o.skip) { const d = Math.abs(cx(o) - cx(it)); if (d < bd) { bd = d; best = i; } } });
+      out.sel = best; Sfx.select();
+    }
+    if (M.left || M.right) {
+      const d = M.left ? -1 : 1;
+      if (it.pick) out.change = d;
+      else {
+        const same = items.map((o, i) => [o, i]).filter(([o]) => o.row === it.row && !o.skip).sort((a, b) => a[0].x - b[0].x), k = same.findIndex(([, i]) => i === sel);
+        if (same.length > 1) { out.sel = same[(k + d + same.length) % same.length][1]; Sfx.select(); }
+      }
+    }
+    return out;
+  },
+
+  /* ---------- the pieces ---------- */
+  panel(c, x, y, w, h, title) {
+    c.fillStyle = 'rgba(9,22,46,0.78)'; rrect(c, x, y, w, h, 7); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,0.18)'; c.lineWidth = 0.8; c.stroke();
+    if (title) { setFont(c, 13, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText(title, x + w / 2, y + 19); }
+  },
+  tri(c, x, y, s, dir) { // a filled arrow head pointing left (-1), right (1), 'up' or 'down'
+    c.beginPath();
+    if (dir === 1) { c.moveTo(x + s * 0.8, y); c.lineTo(x - s * 0.5, y - s * 0.8); c.lineTo(x - s * 0.5, y + s * 0.8); }
+    else if (dir === -1) { c.moveTo(x - s * 0.8, y); c.lineTo(x + s * 0.5, y - s * 0.8); c.lineTo(x + s * 0.5, y + s * 0.8); }
+    else if (dir === 'up') { c.moveTo(x, y - s * 0.8); c.lineTo(x - s * 0.8, y + s * 0.5); c.lineTo(x + s * 0.8, y + s * 0.5); }
+    else { c.moveTo(x, y + s * 0.8); c.lineTo(x - s * 0.8, y - s * 0.5); c.lineTo(x + s * 0.8, y - s * 0.5); }
+    c.closePath(); c.fill();
+  },
+  // the big button to press (PLAY, START, NEXT): bright orange, or sky blue with blue: true
+  primary(c, id, x, y, w, h, label, o = {}) {
+    const hov = this.zone(id, x, y, w, h, o.data), on = (hov || o.focus) && !o.disabled, k = on ? 1 + 0.035 * Math.sin(Game.rt * 7) : 1;
+    c.save(); c.translate(x + w / 2, y + h / 2); c.scale(k, k); c.translate(-w / 2, -h / 2);
+    if (on) { c.globalCompositeOperation = 'lighter'; glow(c, w / 2, h / 2, w * 0.62, o.blue ? '90,190,255' : '255,160,60', 0.33); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
+    const g = c.createLinearGradient(0, 0, 0, h);
+    if (o.disabled) { g.addColorStop(0, '#5f6b7d'); g.addColorStop(1, '#3d4757'); }
+    else if (o.blue) { g.addColorStop(0, on ? '#9fe6ff' : '#7fd3ff'); g.addColorStop(1, on ? '#2f9cf0' : '#2584d6'); }
+    else { g.addColorStop(0, on ? '#ffe08a' : '#ffc45e'); g.addColorStop(1, on ? '#ff8a1f' : '#f2731a'); }
+    c.fillStyle = g; rrect(c, 0, 0, w, h, Math.min(h / 2, 9)); c.fill();
+    c.strokeStyle = o.disabled ? 'rgba(20,24,32,0.6)' : o.blue ? '#0e4d86' : '#8a3a06'; c.lineWidth = on ? 1.3 : 1; c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.35)'; rrect(c, 3, 1.6, w - 6, Math.max(1.5, h * 0.18), 2); c.fill(); // shine
+    const fs = o.size || Math.min(h * 0.5, 11), tx = w / 2;
+    setFont(c, fs, FONT_DISP, 400); c.textAlign = 'left';
+    const tw = iconTextW(c, label) + (o.noArrow ? 0 : fs * 0.95), col = o.disabled ? 'rgba(230,236,246,0.65)' : o.blue ? '#06243f' : '#3a1600';
+    let lx = tx - tw / 2;
+    c.fillStyle = col;
+    if (!o.noArrow) { this.tri(c, lx + fs * 0.32, h / 2, fs * 0.36, 1); lx += fs * 0.95; }
+    fillIconText(c, label, lx, h / 2 + fs * 0.36);
+    c.restore();
+    return hov;
+  },
+  // an ordinary button (BACK, LEAVE, a row to open a page)
+  button(c, id, x, y, w, h, label, o = {}) {
+    const hov = this.zone(id, x, y, w, h, o.data), on = hov || o.focus;
+    c.fillStyle = on ? 'rgba(255,154,60,0.24)' : 'rgba(255,255,255,0.08)'; rrect(c, x, y, w, h, Math.min(h / 2, 6)); c.fill();
+    c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.22)'; c.lineWidth = on ? 1.1 : 0.7; c.stroke();
+    const fs = o.size || Math.min(h * 0.48, 8);
+    setFont(c, fs, FONT_UI, 700); c.fillStyle = o.red ? (on ? '#ffd0c4' : '#ffb4a0') : on ? '#ffffff' : 'rgba(236,241,248,0.9)';
+    if (o.back) { c.textAlign = 'left'; const tw = c.measureText(label).width + fs; const lx = x + w / 2 - tw / 2; this.tri(c, lx + fs * 0.3, y + h / 2, fs * 0.34, -1); c.fillText(label, lx + fs, y + h / 2 + fs * 0.36); }
+    else if (o.left) { c.textAlign = 'left'; c.fillText(label, x + 9, y + h / 2 + fs * 0.36); if (o.chev !== false) { c.fillStyle = on ? '#ff9a3c' : 'rgba(255,190,130,0.75)'; this.tri(c, x + w - 9, y + h / 2, fs * 0.36, 1); } }
+    else fillIconText(c, label, x + w / 2, y + h / 2 + fs * 0.36, 'center');
+    if (o.value) { setFont(c, fs * 0.92, FONT_UI, 700); c.textAlign = 'right'; c.fillStyle = on ? '#ffd08a' : 'rgba(255,208,138,0.8)'; fillIconText(c, o.value, x + w - (o.chev !== false && o.left ? 18 : 9), y + h / 2 + fs * 0.36, 'right'); }
+    return hov;
+  },
+  // a round arrow button
+  arrow(c, id, cx, cy, r, dir, o = {}) {
+    const hov = this.zone(id, cx - r - 1.5, cy - r - 1.5, r * 2 + 3, r * 2 + 3, o.data), on = hov && !o.disabled;
+    c.fillStyle = o.disabled ? 'rgba(255,255,255,0.04)' : on ? '#ff9a3c' : o.focus ? 'rgba(255,154,60,0.35)' : 'rgba(255,255,255,0.13)';
+    c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.fill();
+    c.strokeStyle = o.disabled ? 'rgba(255,255,255,0.1)' : on || o.focus ? '#ffb46b' : 'rgba(255,255,255,0.35)'; c.lineWidth = 0.8; c.stroke();
+    c.fillStyle = o.disabled ? 'rgba(255,255,255,0.2)' : on ? '#2a1200' : '#ffffff';
+    this.tri(c, cx + (dir === 1 ? r * 0.08 : dir === -1 ? -r * 0.08 : 0), cy + (dir === 'down' ? r * 0.06 : dir === 'up' ? -r * 0.06 : 0), r * 0.5, dir);
+    return hov;
+  },
+  // ◀ value ▶ : the arrows change the value (the value itself sits in the middle)
+  picker(c, id, x, y, w, h, value, o = {}) {
+    const r = Math.min(h * 0.42, 6.5), cy = y + h / 2;
+    this.arrow(c, id, x + r + 1, cy, r, -1, { data: Object.assign({ part: -1 }, o.data), focus: o.focus, disabled: o.disabled });
+    this.arrow(c, id, x + w - r - 1, cy, r, 1, { data: Object.assign({ part: 1 }, o.data), focus: o.focus, disabled: o.disabled });
+    const fs = o.size || Math.min(h * 0.46, 7.5);
+    setFont(c, fs, FONT_UI, 700); c.fillStyle = o.focus ? '#ffe2b0' : '#ffd08a';
+    const maxW = w - r * 4 - 6, tw = c.measureText(value).width;
+    if (tw > maxW) setFont(c, fs * maxW / tw, FONT_UI, 700);
+    fillIconText(c, value, x + w / 2, cy + fs * 0.36, 'center');
+  },
+  // a row: a label on the left and ◀ value ▶ on the right (clicking the row also changes it)
+  valueRow(c, id, x, y, w, h, label, value, o = {}) {
+    const hov = this.zone(id, x, y, w, h, Object.assign({ part: 'row' }, o.data)), on = hov || o.focus;
+    c.fillStyle = on ? 'rgba(255,154,60,0.2)' : 'rgba(255,255,255,0.06)'; rrect(c, x, y, w, h, Math.min(h / 2, 6)); c.fill();
+    c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.16)'; c.lineWidth = on ? 1.1 : 0.7; c.stroke();
+    const fs = o.size || Math.min(h * 0.46, 7.6);
+    setFont(c, fs, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#ffffff' : 'rgba(236,241,248,0.88)'; c.fillText(label, x + 9, y + h / 2 + fs * 0.36);
+    const pw = o.pickW || Math.min(w * 0.56, 120);
+    this.picker(c, id, x + w - pw - 3, y + 1, pw, h - 2, value, { focus: on, data: o.data, disabled: o.disabled });
+    return hov;
+  },
+  // a tile: an icon and a label (and a little line under it)
+  tile(c, id, x, y, w, h, label, sub, icon, o = {}) {
+    const hov = this.zone(id, x, y, w, h, o.data), on = hov || o.focus, lift = on ? -1 : 0;
+    c.save(); c.translate(0, lift);
+    c.fillStyle = on ? 'rgba(255,154,60,0.22)' : 'rgba(255,255,255,0.08)'; rrect(c, x, y, w, h, 5); c.fill();
+    c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.2)'; c.lineWidth = on ? 1.2 : 0.7; c.stroke();
+    const ix = x + Math.min(13, h * 0.5), iy = y + h / 2;
+    c.fillStyle = 'rgba(0,0,0,0.25)'; c.beginPath(); c.arc(ix, iy, Math.min(9, h * 0.36), 0, TAU); c.fill();
+    if (icon) UI.icon(c, icon, ix, iy, Math.min(1, h / 27));
+    const fs = Math.min(7.2, h * 0.28), tx = ix + Math.min(12, h * 0.46);
+    setFont(c, fs, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#ffffff' : 'rgba(240,244,250,0.92)';
+    const maxW = x + w - tx - 3, lw = c.measureText(label).width; if (lw > maxW) setFont(c, fs * maxW / lw, FONT_UI, 700);
+    c.fillText(label, tx, sub ? iy - 1 : iy + fs * 0.36);
+    if (sub) { setFont(c, fs * 0.78, FONT_UI, 600); c.fillStyle = on ? '#ffd08a' : 'rgba(255,208,138,0.75)'; const sw = c.measureText(sub).width; if (sw > maxW) setFont(c, fs * 0.78 * maxW / sw, FONT_UI, 600); fillIconText(c, sub, tx, iy + fs * 0.95); }
+    c.restore();
+    return hov;
+  },
+  // a small pointing arrow that bobs next to the chosen thing (where the keys are)
+  pointer(c, x, y) { const b = Math.sin(Game.rt * 8) * 1.4; c.fillStyle = '#ffd23f'; this.tri(c, x + b, y, 3.2, 1); },
+  // a little line that says how the menus work (mouse, touch or gamepad)
+  howTo(c, x, y, extra) {
+    const t = lastDevice === 'touch' ? 'TAP A BUTTON  ·  ◀ ▶ CHANGE' : lastDevice === 'pad' ? 'D-PAD MOVES  ·  A CHOOSES  ·  ◀ ▶ CHANGE' : 'CLICK A BUTTON  ·  ◀ ▶ CHANGE  ·  OR USE THE ARROW KEYS AND ENTER';
+    setFont(c, 5.4, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(200,214,234,0.7)'; c.fillText(extra ? t + '  ·  ' + extra : t, x, y);
+  },
+
+  /* ---------- little pictures for tiles ---------- */
+  icon(c, kind, x, y, s = 1) {
+    c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round';
+    switch (kind) {
+      case 'online': { // the world with a signal
+        c.strokeStyle = '#8cf5ff'; c.lineWidth = 1.1; c.beginPath(); c.arc(0, 0, 5.4, 0, TAU); c.stroke();
+        c.beginPath(); c.ellipse(0, 0, 2.3, 5.4, 0, 0, TAU); c.stroke();
+        c.beginPath(); c.moveTo(-5.3, -1.6); c.lineTo(5.3, -1.6); c.moveTo(-5.3, 1.8); c.lineTo(5.3, 1.8); c.stroke(); break;
+      }
+      case 'hero': { // a helmet with its visor
+        c.fillStyle = '#2f6fd0'; c.beginPath(); c.arc(0, 0.6, 5.2, Math.PI, 0); c.lineTo(5.2, 3.6); c.lineTo(-5.2, 3.6); c.closePath(); c.fill();
+        c.fillStyle = '#a8fbff'; rrect(c, -1, -1.6, 6, 2.6, 1.2); c.fill(); c.fillStyle = '#ff5a1f'; c.fillRect(-5.2, 3.2, 10.4, 1.6); break;
+      }
+      case 'shop': drawCoinIcon(c, 0, 0, 5); break;
+      case 'trophies': Meta.cup(c, 0, 5.5, true, 0, 0.62); break;
+      case 'modes': { // a star with a lightning bolt feel
+        c.fillStyle = '#ffd23f'; c.beginPath(); for (let j = 0; j < 10; j++) { const a = -Math.PI / 2 + j * Math.PI / 5, r = j % 2 ? 2.4 : 5.8; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.closePath(); c.fill();
+        c.strokeStyle = '#8a5a00'; c.lineWidth = 0.6; c.stroke(); break;
+      }
+      case 'options': { // a gear
+        c.fillStyle = '#c9d4e4';
+        for (let j = 0; j < 8; j++) { c.save(); c.rotate(j * Math.PI / 4); c.fillRect(-1.2, -6, 2.4, 2.6); c.restore(); }
+        c.beginPath(); c.arc(0, 0, 4.4, 0, TAU); c.fill(); c.fillStyle = '#25354d'; c.beginPath(); c.arc(0, 0, 1.8, 0, TAU); c.fill(); break;
+      }
+      case 'host': { // a flag on a hill
+        c.fillStyle = '#9be06a'; c.beginPath(); c.arc(0, 6, 6, Math.PI, 0); c.fill();
+        c.strokeStyle = '#e8eef7'; c.lineWidth = 1; c.beginPath(); c.moveTo(-1, 1); c.lineTo(-1, -6); c.stroke();
+        c.fillStyle = '#ff9a3c'; c.beginPath(); c.moveTo(-1, -6); c.lineTo(5, -4); c.lineTo(-1, -2); c.closePath(); c.fill(); break;
+      }
+      case 'join': { // a door with an arrow going in
+        c.strokeStyle = '#8cf5ff'; c.lineWidth = 1.1; c.strokeRect(0.5, -5, 5, 10);
+        c.fillStyle = '#ffd23f'; c.fillRect(-6, -1, 5, 2); UI.tri(c, -0.4, 0, 2.6, 1); break;
+      }
+    }
+    c.restore();
+  },
+};
 
 /* =====================================================================
    07b_meta.js : heroes (one save per child), hero looks, coins,
@@ -11374,6 +11641,11 @@ function fillIconText(c, str, x, y, align = 'left') {
   c.fillStyle = col;
   return w;
 }
+function iconTextW(c, str) { // how wide fillIconText will draw it
+  const m = /([\d.]+)px/.exec(c.font), fs = m ? parseFloat(m[1]) : 8, parts = String(str).split('◎');
+  let w = 0; for (let i = 0; i < parts.length; i++) w += c.measureText(parts[i]).width + (i < parts.length - 1 ? fs * 1.15 : 0);
+  return w;
+}
 function dropCoins(x, y, n, big = 0, home = false) { // a burst of coins (big ones are worth 5)
   if (Game.coins.length > 160) { big += Math.floor(n / 5); n %= 5; } // a huge pile: fewer, bigger coins
   const np = Math.max(1, Game.players.length), add = k => { if (home) k.to = (i++) % np; Game.coins.push(k); };
@@ -11549,12 +11821,11 @@ const Meta = {
   page: 'hero', sel: 0, slot: 0, who: 0, editing: false, np() { return clamp(Math.floor(Store.data.players) || 1, 1, 4); },
   nextWho(dir = 1) { const n = this.np(); this.who = (this.who + dir + n) % n; Sfx.select(); }, // (which player's hero, shop or trophies are showing)
   nameBuf: [], nameSlot: 0, msg: '', msgT: 0, shopSel: 0, shopTop: 0, trSel: 0, preview: null, prevT: 0,
-  open(page) { this.page = page; this.sel = 0; this.who = 0; this.editing = false; this.msg = ''; this.shopSel = 0; this.shopTop = 0; this.trSel = 0; Game.setState('meta'); Sfx.confirm(); },
+  open(page) { this.page = page; this.sel = 0; this.who = 0; this.editing = false; this.msg = ''; this.msgT = 0; this.shopSel = 0; this.shopTop = 0; this.trSel = 0; Mouse.wheel = 0; Game.setState('meta'); Sfx.confirm(); },
   hero() { return Heroes.of(this.who); },
-  heroItems() {
-    const it = [{ id: 'pick' }, { id: 'name' }, { id: 'armor' }, { id: 'scarf' }, { id: 'top' }, { id: 'outfit' }];
-    if (this.np() > 1) it.push({ id: 'who' });
-    it.push({ id: 'new' }, { id: 'back' });
+  heroItems() { // (with several players, the first row says whose hero this is)
+    const it = this.np() > 1 ? [{ id: 'who' }] : [];
+    it.push({ id: 'pick' }, { id: 'name' }, { id: 'armor' }, { id: 'scarf' }, { id: 'top' }, { id: 'outfit' }, { id: 'new' }, { id: 'back' });
     return it;
   },
   heroText(id) {
@@ -11606,114 +11877,131 @@ const Meta = {
   say(m) { this.msg = m; this.msgT = 2.6; },
   typed(code) { // a key typed on a real keyboard while naming the hero (Enter finishes, through the menu keys)
     if (Game.state !== 'meta' || !this.editing) return;
-    if (code === 'Backspace') { if (this.nameBuf[this.nameSlot] === ' ' || this.nameSlot === 7 && this.nameBuf[7] === ' ') this.nameSlot = Math.max(0, this.nameSlot - 1); this.nameBuf[this.nameSlot] = ' '; Sfx.select(); return; }
+    if (code === 'Backspace') { if (this.nameBuf[this.nameSlot] === ' ' || this.nameSlot === 7 && this.nameBuf[7] === ' ') this.nameSlot = Math.max(0, this.nameSlot - 1); this.nameBuf[this.nameSlot] = ' '; Sfx.select(); this.typedN++; return; }
     const ch = code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5) : code === 'Space' ? ' ' : '';
-    if (ch.length === 1 && NAME_CHARS.includes(ch)) { this.nameBuf[this.nameSlot] = ch; this.nameSlot = Math.min(7, this.nameSlot + 1); Sfx.select(); }
+    if (ch.length === 1 && NAME_CHARS.includes(ch)) { this.nameBuf[this.nameSlot] = ch; this.nameSlot = Math.min(7, this.nameSlot + 1); Sfx.select(); this.typedN++; }
   },
+  typedN: 0, typedSeen: 0, // (a letter typed since the last frame is never also a menu key: Z, X, Space and W A S D work the menus too)
   finishName() {
     const n = this.nameBuf.join('').trim();
     if (n) this.hero().name = n;
     this.editing = false; Store.save(); Sfx.confirm();
   },
+  key() { return 'meta:' + this.page + (this.editing ? ':edit' : ''); },
   update(dt, M, taps) {
     Game.updateTitleScene(dt); this.prevT += dt;
     if (this.msgT > 0) this.msgT -= dt;
-    const px = VW / 2 - Math.min(440, VW - 24) / 2;
-    if (!this.editing) for (const t of taps) if (t.x < px + 70 && t.y < 42) { Game.toTitle(true); Sfx.select(); return; } // the ◂ BACK button
+    if (!this.editing) for (const t of taps) { const b = UI.hit(t, this.key()); if (b && b.id === 'back') { Game.toTitle(true); Sfx.select(); return; } } // the BACK buttons
     if (this.page === 'hero') return this.updateHero(M, taps);
     if (this.page === 'shop') return this.updateShop(M, taps);
     return this.updateTrophies(M, taps);
   },
+  /* ---- MY HERO ---- */
+  heroLayout() {
+    const w = Math.min(226, VW * 0.5), x = Math.min(VW * 0.64 - w / 2, VW - w - 20), items = [];
+    let y = 52;
+    for (const it of this.heroItems()) {
+      const kind = it.id === 'name' ? 'name' : it.id === 'new' ? 'button' : it.id === 'back' ? 'back' : 'value';
+      const h = kind === 'back' ? 15 : 16;
+      items.push({ id: it.id, kind, pick: kind === 'value', x: kind === 'back' ? x + w / 2 - 45 : x, y, w: kind === 'back' ? 90 : w, h, row: items.length });
+      y += h + (it.id === 'outfit' ? 10 : 3); // (room for the outfit line under it)
+    }
+    return items;
+  },
   updateHero(M, taps) {
+    const C = NAME_CHARS, key = this.key();
     if (this.editing) {
-      if (Object.keys(Keys).some(k => Keys[k] && (k.startsWith('Key') || k.startsWith('Digit') || k === 'Space' || k === 'Backspace'))) M = {}; // typing a name: letters are not menu keys
-      const C = NAME_CHARS, k = C.indexOf(this.nameBuf[this.nameSlot]);
+      if (this.typedN !== this.typedSeen || Object.keys(Keys).some(k => Keys[k] && (k.startsWith('Key') || k.startsWith('Digit') || k === 'Space' || k === 'Backspace'))) { this.typedSeen = this.typedN; M = {}; } // typing a name: letters are not menu keys
+      const k = C.indexOf(this.nameBuf[this.nameSlot]);
       if (M.up) { this.nameBuf[this.nameSlot] = C[(k + 1) % C.length]; Sfx.select(); }
       if (M.down) { this.nameBuf[this.nameSlot] = C[(k - 1 + C.length) % C.length]; Sfx.select(); }
       if (M.left) { this.nameSlot = Math.max(0, this.nameSlot - 1); Sfx.select(); }
       if (M.right) { this.nameSlot = Math.min(7, this.nameSlot + 1); Sfx.select(); }
-      if (M.ok || M.back) this.finishName();
+      if (M.ok || M.back) { this.finishName(); return; }
       for (const t of taps) {
-        for (let i = 0; i < 8; i++) {
-          const x = this.nameX(i);
-          if (Math.abs(t.x - x) < 10) {
-            const kk = C.indexOf(this.nameBuf[i]);
-            if (t.y > 92 && t.y < 108) { this.nameBuf[i] = C[(kk + 1) % C.length]; this.nameSlot = i; Sfx.select(); }
-            else if (t.y > 136 && t.y < 154) { this.nameBuf[i] = C[(kk - 1 + C.length) % C.length]; this.nameSlot = i; Sfx.select(); }
-            else if (t.y >= 108 && t.y <= 136) { this.nameSlot = i; Sfx.select(); }
-          }
-        }
-        if (t.y > 166 && t.y < 184 && Math.abs(t.x - VW / 2) < 50) this.finishName();
+        const b = UI.hit(t, key); if (!b) continue;
+        if (b.id === 'done') { this.finishName(); return; }
+        const i = b.slot, kk = C.indexOf(this.nameBuf[i]);
+        if (b.id === 'nup') { this.nameBuf[i] = C[(kk + 1) % C.length]; this.nameSlot = i; Sfx.select(); }
+        else if (b.id === 'ndown') { this.nameBuf[i] = C[(kk - 1 + C.length) % C.length]; this.nameSlot = i; Sfx.select(); }
+        else if (b.id === 'nslot') { this.nameSlot = i; Sfx.select(); }
       }
       return;
     }
     if (M.back) { Game.toTitle(true); return; }
-    const items = this.heroItems(), g = this.heroGeom(items.length);
-    if (this.sel >= items.length) this.sel = items.length - 1;
-    if (M.up) { this.sel = (this.sel - 1 + items.length) % items.length; Sfx.select(); }
-    if (M.down) { this.sel = (this.sel + 1) % items.length; Sfx.select(); }
-    if (M.left) this.heroChange(items[this.sel].id, -1);
-    if (M.right) this.heroChange(items[this.sel].id, 1);
-    if (M.ok) this.heroChoose(items[this.sel].id);
-    for (const t of taps) for (let i = 0; i < items.length; i++) {
-      const y = g.top + i * g.h;
-      if (t.x > g.x - g.w / 2 && t.x < g.x + g.w / 2 && t.y > y - 10 && t.y < y + 4) {
-        this.sel = i; const side = t.x < g.x - g.w / 6 ? -1 : 1, id = items[i].id;
-        if (id === 'name' || id === 'new' || id === 'back' || !this.heroChange(id, side)) this.heroChoose(id);
-      }
+    const items = this.heroLayout(); this.sel = clamp(this.sel, 0, items.length - 1);
+    const p = UI.pointed(key); if (p && p.sel !== undefined) this.sel = p.sel;
+    const nv = UI.nav(items, this.sel, M); this.sel = nv.sel;
+    if (nv.change) this.heroChange(items[this.sel].id, nv.change);
+    if (nv.ok) this.heroChoose(items[this.sel].id);
+    for (const t of taps) {
+      const b = UI.hit(t, key); if (!b || b.sel === undefined) continue;
+      this.sel = b.sel;
+      if (b.part === -1 || b.part === 1) this.heroChange(b.id, b.part); else if (b.part === 'row') this.heroChange(b.id, 1); else this.heroChoose(b.id);
+      break;
     }
   },
-  heroGeom(n) { return { x: VW * 0.64, w: Math.min(220, VW * 0.5), top: 66, h: 15, n }; },
-  nameX(i) { return VW / 2 + (i - 3.5) * 21; },
+  nameX(i) { return VW / 2 + (i - 3.5) * 24; },
+  /* ---- SHOP ---- */
+  shopRows() { return 8; },
+  shopBuyAt(i) {
+    const h = Heroes.of(this.who);
+    if (i >= SHOP.length) { Game.toTitle(true); Sfx.select(); return; }
+    const r = shopBuy(h, SHOP[i]);
+    if (r === 'ok') { Sfx.pickup(); this.say('Bought ' + SHOP[i].name + '!'); }
+    else if (r === 'poor') { Sfx.nope(); this.say('Not enough coins yet. Robots drop coins!'); }
+    else { Sfx.nope(); this.say('You already have all of it'); }
+  },
   updateShop(M, taps) {
     if (M.back) { Game.toTitle(true); return; }
-    const h = Heroes.of(this.who), n = SHOP.length + 1;
+    const n = SHOP.length, vis = this.shopRows(), key = this.key();
     if (M.up) { this.shopSel = (this.shopSel - 1 + n) % n; Sfx.select(); }
     if (M.down) { this.shopSel = (this.shopSel + 1) % n; Sfx.select(); }
     if ((M.left || M.right) && this.np() > 1) this.nextWho(M.left ? -1 : 1);
-    const vis = 7;
-    if (this.shopSel < this.shopTop) this.shopTop = this.shopSel; if (this.shopSel >= this.shopTop + vis) this.shopTop = this.shopSel - vis + 1;
-    const buy = i => {
-      if (i === SHOP.length) { Game.toTitle(true); Sfx.select(); return; }
-      const r = shopBuy(h, SHOP[i]);
-      if (r === 'ok') { Sfx.pickup(); this.say('Bought ' + SHOP[i].name + '!'); }
-      else if (r === 'poor') { Sfx.nope(); this.say('Not enough coins yet. Robots drop coins!'); }
-      else { Sfx.nope(); this.say('You already have all of it'); }
-    };
-    if (M.ok) buy(this.shopSel);
+    if (Mouse.wheel) { this.shopTop = clamp(this.shopTop + Math.sign(Mouse.wheel), 0, Math.max(0, n - vis)); this.shopSel = clamp(this.shopSel, this.shopTop, this.shopTop + vis - 1); Mouse.wheel = 0; }
+    else { if (this.shopSel < this.shopTop) this.shopTop = this.shopSel; if (this.shopSel >= this.shopTop + vis) this.shopTop = this.shopSel - vis + 1; }
+    const p = UI.pointed(key); if (p && p.row !== undefined) this.shopSel = p.row;
+    if (M.ok) this.shopBuyAt(this.shopSel);
     for (const t of taps) {
-      for (let r = 0; r < vis; r++) { const i = this.shopTop + r, y = 70 + r * 22; if (i < n && t.y > y - 11 && t.y < y + 10 && Math.abs(t.x - VW / 2) < 170) { if (this.shopSel === i) buy(i); else { this.shopSel = i; Sfx.select(); } } }
-      if (t.y < 60 && t.y > 40 && this.np() > 1) this.nextWho(t.x < VW / 2 ? -1 : 1);
-      if (t.y > 236 && Math.abs(t.x - VW / 2) < 60) { Game.toTitle(true); Sfx.select(); }
+      const b = UI.hit(t, key); if (!b) continue;
+      if (b.id === 'who') this.nextWho(b.part);
+      else if (b.id === 'scroll') { this.shopTop = clamp(this.shopTop + b.part, 0, Math.max(0, n - vis)); this.shopSel = clamp(this.shopSel, this.shopTop, this.shopTop + vis - 1); Sfx.select(); }
+      else if (b.id === 'buy') { this.shopSel = b.row; this.shopBuyAt(b.row); }
+      else if (b.id === 'srow') { this.shopSel = b.row; Sfx.select(); }
+      break;
     }
   },
+  /* ---- TROPHIES ---- */
   updateTrophies(M, taps) {
-    if (M.back) { Game.toTitle(true); return; }
-    const n = TROPHIES.length, cols = 6;
+    if (M.back || M.ok) { Game.toTitle(true); Sfx.select(); return; }
+    const n = TROPHIES.length, cols = 6, key = this.key();
     if (this.np() > 1 && (Keys.Tab || Keys.KeyQ) && !this.tabHeld) this.nextWho(1);
     this.tabHeld = !!(Keys.Tab || Keys.KeyQ);
     if (M.left) { this.trSel = (this.trSel - 1 + n) % n; Sfx.select(); }
     if (M.right) { this.trSel = (this.trSel + 1) % n; Sfx.select(); }
     if (M.up) { this.trSel = (this.trSel - cols + n) % n; Sfx.select(); }
     if (M.down) { this.trSel = (this.trSel + cols) % n; Sfx.select(); }
-    if (M.ok) { Game.toTitle(true); Sfx.select(); }
-    for (const t of taps) {
-      for (let i = 0; i < n; i++) { const [x, y] = this.trPos(i); if (Math.abs(t.x - x) < this.trW() / 2 - 2 && Math.abs(t.y - y) < 20) { this.trSel = i; Sfx.select(); } }
-      if (t.y > 34 && t.y < 48 && this.np() > 1) this.nextWho(t.x < VW / 2 ? -1 : 1);
-      if (t.y > 246) { Game.toTitle(true); Sfx.select(); }
-    }
+    const p = UI.pointed(key); if (p && p.tr !== undefined) this.trSel = p.tr;
+    for (const t of taps) { const b = UI.hit(t, key); if (!b) continue; if (b.id === 'who') this.nextWho(b.part); else if (b.tr !== undefined) { this.trSel = b.tr; Sfx.select(); } break; }
   },
-  trPos(i) { const cols = 6; return [VW / 2 + ((i % cols) - (cols - 1) / 2) * this.trW(), 72 + Math.floor(i / cols) * 43]; },
+  trPos(i) { const cols = 6; return [VW / 2 + ((i % cols) - (cols - 1) / 2) * this.trW(), 76 + Math.floor(i / cols) * 41]; },
 
   /* ---- drawing ---- */
   panel(c, title, sub) {
     c.fillStyle = 'rgba(6,12,24,0.55)'; c.fillRect(0, 0, VW, VH);
     const pw = Math.min(440, VW - 24), px = VW / 2 - pw / 2;
-    c.fillStyle = 'rgba(8,16,32,0.9)'; rrect(c, px, 10, pw, VH - 20, 8); c.fill(); c.strokeStyle = 'rgba(255,154,60,0.7)'; c.lineWidth = 1; c.stroke();
+    UI.panel(c, px, 10, pw, VH - 20);
     setFont(c, 14, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText(title, VW / 2, 31);
-    if (sub) { setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.75)'; c.fillText(sub, VW / 2, 42); }
-    c.fillStyle = 'rgba(255,255,255,0.08)'; rrect(c, px + 10, 17, 50, 16, 8); c.fill(); // ◂ BACK (Esc)
-    setFont(c, 7, FONT_UI, 700); c.fillStyle = 'rgba(232,238,247,0.85)'; c.textAlign = 'center'; c.fillText(lastDevice === 'touch' ? '◂ BACK' : '◂ ESC', px + 35, 28);
+    if (sub) { setFont(c, 6.2, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.75)'; c.fillText(sub, VW / 2, 42); }
+    if (!this.editing) UI.button(c, 'back', px + 9, 17, 56, 17, 'BACK', { back: true }); // (Esc does the same)
+  },
+  // ◀ P2 · NAME ▶ : who the page is for (with several players)
+  whoBar(c, y, text) {
+    const many = this.np() > 1;
+    setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffd23f';
+    const tw = c.measureText(text.replace(/◎/g, '')).width + (text.split('◎').length - 1) * 8 * 1.15;
+    fillIconText(c, text, VW / 2, y, 'center');
+    if (many) { UI.arrow(c, 'who', VW / 2 - tw / 2 - 12, y - 3, 6.5, -1, { data: { part: -1 } }); UI.arrow(c, 'who', VW / 2 + tw / 2 + 12, y - 3, 6.5, 1, { data: { part: 1 } }); }
   },
   drawPreview(c, h, x, y, scale) { // the hero, standing big
     if (!this.preview) { this.preview = new Player(0); this.preview.spawn(0, 0); }
@@ -11732,70 +12020,73 @@ const Meta = {
   drawHero(c) {
     const h = this.hero();
     this.panel(c, 'MY HERO', this.np() > 1 ? 'Each player picks their own hero · coins, stars and trophies are saved per hero' : 'Coins, stars, trophies and upgrades are saved for each hero');
-    const px = VW * 0.27;
+    const px = Math.max(76, VW * 0.25);
     c.fillStyle = 'rgba(255,255,255,0.05)'; rrect(c, px - 62, 52, 124, 168, 6); c.fill();
     this.drawPreview(c, h, px, 196, 2.6);
     setFont(c, 11, FONT_DISP, 400); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(h.name, px, 214);
     setFont(c, 6.5, FONT_UI, 700); c.fillStyle = '#ffd23f'; // coins, stars and trophies of this hero
     const s1 = `◎ ${h.coins}`, s2 = `★ ${Heroes.starsOf(h)}`, s3 = String(Trophies.count(h)), gap = 9;
     const w1 = c.measureText(s1).width + 3, w2 = c.measureText(s2).width, w3 = c.measureText(s3).width + 9, sx = px - (w1 + w2 + w3 + gap * 2) / 2;
-    fillIconText(c, s1, sx, 226); c.fillStyle = '#ffd23f'; c.textAlign = 'left'; c.fillText(s2, sx + w1 + gap, 226);
-    this.cup(c, sx + w1 + w2 + gap * 2 + 3, 227.5, true, 0, 0.5); c.fillStyle = '#ffd23f'; c.textAlign = 'left'; c.fillText(s3, sx + w1 + w2 + gap * 2 + 9, 226);
-    if (this.editing) {
-      c.fillStyle = 'rgba(6,12,24,0.85)'; c.fillRect(0, 0, VW, VH);
-      setFont(c, 12, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('HERO NAME', VW / 2, 74);
-      for (let i = 0; i < 8; i++) {
-        const x = this.nameX(i), on = i === this.nameSlot;
-        c.fillStyle = on ? 'rgba(255,154,60,0.25)' : 'rgba(255,255,255,0.08)'; rrect(c, x - 9, 109, 18, 26, 3); c.fill();
-        c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.3)'; c.lineWidth = 1; c.stroke();
-        setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#fff'; c.fillText(this.nameBuf[i] === ' ' ? '·' : this.nameBuf[i], x, 128);
-        setFont(c, 8, FONT_UI, 700); c.fillStyle = on ? '#ff9a3c' : 'rgba(230,236,246,0.5)'; c.fillText('▲', x, 104); c.fillText('▼', x, 148);
-      }
-      setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffd23f'; c.fillText('DONE', VW / 2, 178);
-      setFont(c, 6, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.65)'; c.fillText(lastDevice === 'touch' ? 'Tap ▲ ▼ to pick letters, then DONE' : 'Type the name, then press Enter', VW / 2, 196);
-      return;
-    }
-    const items = this.heroItems(), g = this.heroGeom(items.length);
-    const lockedOut = !!(OUTFITS[h.look.outfit].armor || OUTFITS[h.look.outfit].fx);
+    fillIconText(c, s1, sx, 230); c.fillStyle = '#ffd23f'; c.textAlign = 'left'; c.fillText(s2, sx + w1 + gap, 230);
+    this.cup(c, sx + w1 + w2 + gap * 2 + 3, 231.5, true, 0, 0.5); c.fillStyle = '#ffd23f'; c.textAlign = 'left'; c.fillText(s3, sx + w1 + w2 + gap * 2 + 9, 230);
+    if (this.editing) return this.drawNameEditor(c);
+    const items = this.heroLayout(), lockedOut = !!(OUTFITS[h.look.outfit].armor || OUTFITS[h.look.outfit].fx);
+    this.sel = clamp(this.sel, 0, items.length - 1);
     items.forEach((it, i) => {
-      const y = g.top + i * g.h, on = i === this.sel, [a, b] = this.heroText(it.id), arrows = it.id !== 'name' && it.id !== 'new' && it.id !== 'back';
-      if (on) { c.fillStyle = 'rgba(255,154,60,0.2)'; c.fillRect(g.x - g.w / 2, y - 10, g.w, 13); c.fillStyle = '#ff9a3c'; c.fillRect(g.x - g.w / 2, y - 10, 2, 13); }
-      setFont(c, 8, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.8)'; c.fillText(a, g.x - g.w / 2 + 8, y);
-      if (b) { c.textAlign = 'right'; c.fillStyle = (it.id === 'armor' || it.id === 'scarf') && lockedOut ? 'rgba(255,154,60,0.45)' : on ? '#ff9a3c' : 'rgba(255,154,60,0.8)'; c.fillText((arrows ? '◂ ' : '') + b + (arrows ? ' ▸' : ''), g.x + g.w / 2 - 8, y); }
+      const [a, b] = this.heroText(it.id), focus = i === this.sel, data = { sel: i };
+      if (it.kind === 'value') UI.valueRow(c, it.id, it.x, it.y, it.w, it.h, a, (it.id === 'armor' || it.id === 'scarf') && lockedOut ? '(OUTFIT)' : b, { focus, data, pickW: Math.min(it.w * 0.58, 128) });
+      else if (it.kind === 'name') UI.button(c, it.id, it.x, it.y, it.w, it.h, a, { focus, left: true, value: h.name + '   ✎ EDIT', chev: false, data: Object.assign({ part: 'go' }, data) });
+      else if (it.kind === 'back') UI.button(c, it.id, it.x, it.y, it.w, it.h, 'BACK', { focus, back: true, data: Object.assign({ part: 'go' }, data) });
+      else UI.button(c, it.id, it.x, it.y, it.w, it.h, a, { focus, data: Object.assign({ part: 'go' }, data) });
       if (it.id === 'outfit') { // which outfits are unlocked
         const stars = Heroes.starsOf(h), nx = OUTFITS.findIndex(o => o.need > stars);
-        setFont(c, 5.5, FONT_UI, 600); c.textAlign = 'right'; c.fillStyle = 'rgba(230,236,246,0.6)';
-        c.fillText(nx < 0 ? 'Every outfit unlocked!' : `Next outfit at ${OUTFITS[nx].need} ★ (you have ${stars})`, g.x + g.w / 2 - 8, y + 7);
+        setFont(c, 5.4, FONT_UI, 600); c.textAlign = 'right'; c.fillStyle = 'rgba(230,236,246,0.6)';
+        c.fillText(nx < 0 ? 'Every outfit unlocked!' : `Next outfit at ${OUTFITS[nx].need} ★ (you have ${stars})`, it.x + it.w - 6, it.y + it.h + 6.5);
       }
     });
-    if (this.msgT > 0) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = `rgba(155,224,106,${Math.min(1, this.msgT)})`; c.fillText(this.msg, VW / 2, VH - 16); }
+    const f = items[this.sel]; if (f && lastDevice !== 'touch') UI.pointer(c, f.x - 5, f.y + f.h / 2);
+    if (this.msgT > 0) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = `rgba(155,224,106,${Math.min(1, this.msgT)})`; c.fillText(this.msg, VW / 2, VH - 15); }
+    else UI.howTo(c, VW / 2, VH - 15);
+  },
+  drawNameEditor(c) {
+    c.fillStyle = 'rgba(6,12,24,0.86)'; c.fillRect(0, 0, VW, VH);
+    setFont(c, 13, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('HERO NAME', VW / 2, 66);
+    for (let i = 0; i < 8; i++) {
+      const x = this.nameX(i), on = i === this.nameSlot, hov = UI.zone('nslot', x - 10, 101, 20, 30, { slot: i });
+      c.fillStyle = on ? 'rgba(255,154,60,0.28)' : hov ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)'; rrect(c, x - 10, 101, 20, 30, 4); c.fill();
+      c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.3)'; c.lineWidth = on ? 1.3 : 0.8; c.stroke();
+      setFont(c, 16, FONT_DISP, 400); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(this.nameBuf[i] === ' ' ? '·' : this.nameBuf[i], x, 122);
+      UI.arrow(c, 'nup', x, 89, 6.5, 'up', { data: { slot: i }, focus: on });
+      UI.arrow(c, 'ndown', x, 143, 6.5, 'down', { data: { slot: i }, focus: on });
+    }
+    UI.primary(c, 'done', VW / 2 - 55, 162, 110, 21, 'DONE', { focus: true });
+    setFont(c, 6, FONT_UI, 600); c.textAlign = 'center'; c.fillStyle = 'rgba(230,236,246,0.7)';
+    c.fillText(lastDevice === 'touch' ? 'Tap ▲ ▼ to pick the letters, then DONE' : 'Type the name on the keyboard (or click ▲ ▼), then press Enter or DONE', VW / 2, 198);
   },
   drawShop(c) {
-    const h = Heroes.of(this.who);
+    const h = Heroes.of(this.who), many = this.np() > 1, vis = this.shopRows();
     this.panel(c, 'SHOP', '');
-    setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffd23f';
-    const many = this.np() > 1;
-    fillIconText(c, `${many ? '◂ P' + (this.who + 1) + ' · ' : ''}${h.name}   ◎ ${h.coins} COINS${many ? ' ▸' : ''}`, VW / 2, 50, 'center');
-    const vis = 7, w = Math.min(340, VW - 60), x0 = VW / 2 - w / 2;
+    this.whoBar(c, 50, `${many ? 'P' + (this.who + 1) + ' · ' : ''}${h.name}   ◎ ${h.coins} COINS`);
+    const w = Math.min(350, VW - 60), x0 = VW / 2 - w / 2, top = 60, rh = 22;
     for (let r = 0; r < vis; r++) {
-      const i = this.shopTop + r; if (i > SHOP.length) break;
-      const y = 70 + r * 22, on = i === this.shopSel;
-      if (on) { c.fillStyle = 'rgba(255,154,60,0.18)'; rrect(c, x0, y - 11, w, 20, 3); c.fill(); }
-      if (i === SHOP.length) { setFont(c, 8, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.8)'; c.fillText('BACK', VW / 2, y + 2); continue; }
-      const it = SHOP[i], lv = shopLevel(h, it), max = lv >= it.cost.length, price = max ? 0 : it.cost[lv];
-      this.shopIcon(c, it, x0 + 13, y - 1);
-      setFont(c, 7.5, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.85)'; c.fillText(it.name, x0 + 26, y - 1);
-      setFont(c, 5.5, FONT_UI, 600); c.fillStyle = 'rgba(200,212,230,0.75)'; c.fillText(it.desc, x0 + 26, y + 6.5);
-      if (it.cost.length > 1) for (let k = 0; k < it.cost.length; k++) { c.fillStyle = k < lv ? '#ffd23f' : 'rgba(255,255,255,0.2)'; c.beginPath(); c.arc(x0 + w - 74 + k * 7, y - 1, 2.2, 0, TAU); c.fill(); }
-      setFont(c, 7.5, FONT_UI, 700);
-      c.fillStyle = max ? '#9be06a' : h.coins >= price ? '#ffd23f' : 'rgba(255,140,120,0.85)';
-      fillIconText(c, max ? 'OWNED' : '◎ ' + price, x0 + w - 8, y + 2, 'right');
+      const i = this.shopTop + r; if (i >= SHOP.length) break;
+      const y = top + r * rh, on = i === this.shopSel, it = SHOP[i], lv = shopLevel(h, it), max = lv >= it.cost.length, price = max ? 0 : it.cost[lv];
+      const hov = UI.zone('srow', x0, y, w - 70, rh - 2, { row: i });
+      c.fillStyle = on ? 'rgba(255,154,60,0.18)' : hov ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.04)'; rrect(c, x0, y, w, rh - 2, 4); c.fill();
+      if (on) { c.strokeStyle = 'rgba(255,154,60,0.8)'; c.lineWidth = 0.9; c.stroke(); }
+      this.shopIcon(c, it, x0 + 13, y + 9);
+      setFont(c, 7.5, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.88)'; c.fillText(it.name, x0 + 26, y + 9);
+      setFont(c, 5.5, FONT_UI, 600); c.fillStyle = 'rgba(200,212,230,0.78)'; c.fillText(it.desc, x0 + 26, y + 16);
+      if (it.cost.length > 1) for (let k = 0; k < it.cost.length; k++) { c.fillStyle = k < lv ? '#ffd23f' : 'rgba(255,255,255,0.2)'; c.beginPath(); c.arc(x0 + w - 88 + k * 7, y + 10, 2.2, 0, TAU); c.fill(); }
+      const bx = x0 + w - 64, by = y + 3, bw = 60, bh = rh - 8;
+      if (max) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = '#9be06a'; c.fillText('✓ OWNED', bx + bw / 2, by + bh / 2 + 2.5); }
+      else if (h.coins >= price) UI.primary(c, 'buy', bx, by, bw, bh, 'BUY ◎' + price, { noArrow: true, focus: on, size: 6.6, data: { row: i } });
+      else UI.button(c, 'buy', bx, by, bw, bh, '◎' + price, { size: 6.6, red: true, data: { row: i } });
     }
-    if (this.shopTop > 0) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(255,255,255,0.5)'; c.fillText('▲', VW / 2, 58); }
-    if (this.shopTop + vis <= SHOP.length) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(255,255,255,0.5)'; c.fillText('▼', VW / 2, 70 + vis * 22 - 6); }
-    setFont(c, 6, FONT_UI, 600); c.textAlign = 'center'; c.fillStyle = 'rgba(230,236,246,0.6)';
-    c.fillText(this.msgT > 0 ? '' : lastDevice === 'touch' ? 'Tap a thing twice to buy it' : 'Press fire to buy · Esc to go back', VW / 2, VH - 16);
-    if (this.msgT > 0) { setFont(c, 7, FONT_UI, 700); c.fillStyle = `rgba(155,224,106,${Math.min(1, this.msgT)})`; c.fillText(this.msg, VW / 2, VH - 16); }
+    if (this.shopTop > 0) UI.arrow(c, 'scroll', x0 + w + 13, top + 8, 6.5, 'up', { data: { part: -1 } });
+    if (this.shopTop + vis < SHOP.length) UI.arrow(c, 'scroll', x0 + w + 13, top + vis * rh - 10, 6.5, 'down', { data: { part: 1 } });
+    if (this.msgT > 0) { setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = `rgba(155,224,106,${Math.min(1, this.msgT)})`; c.fillText(this.msg, VW / 2, VH - 15); }
+    else { setFont(c, 5.6, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(200,214,234,0.75)'; c.fillText(lastDevice === 'touch' ? 'TAP BUY TO GET IT  ·  ▲ ▼ SHOW MORE' : lastDevice === 'pad' ? 'THE D-PAD PICKS  ·  A BUYS' : 'CLICK BUY TO GET IT  ·  OR THE ARROW KEYS AND ENTER  ·  THE MOUSE WHEEL SHOWS MORE', VW / 2, VH - 15); }
   },
   shopIcon(c, it, x, y) {
     if (it.gun) { const W = WEAPONS[it.gun]; c.fillStyle = `rgb(${W.rgb})`; hexPath(c, x, y, 6.5); c.fill(); setFont(c, 7, FONT_UI, 700); c.fillStyle = '#0b0e14'; c.textAlign = 'center'; c.fillText(W.letter, x, y + 2.5); return; }
@@ -11810,25 +12101,28 @@ const Meta = {
   },
   trW() { return Math.min(68, (Math.min(440, VW - 24) - 20) / 6); }, // width of one trophy tile
   drawTrophies(c) {
-    const h = Heroes.of(this.who), two = this.np() > 1, gw = this.trW(), stars = Heroes.starsOf(h);
-    this.panel(c, 'TROPHIES', `${two ? '◂ P' + (this.who + 1) + ' · ' : ''}${h.name} has ${Trophies.count(h)} of ${TROPHIES.length} trophies${two ? (lastDevice === 'touch' ? ' ▸  (tap here to switch)' : ' ▸  (Q switches)') : ''}`);
+    const h = Heroes.of(this.who), many = this.np() > 1, gw = this.trW(), stars = Heroes.starsOf(h);
+    this.panel(c, 'TROPHIES', '');
+    this.whoBar(c, 49, `${many ? 'P' + (this.who + 1) + ' · ' : ''}${h.name} · ${Trophies.count(h)} OF ${TROPHIES.length}`);
     TROPHIES.forEach((t, i) => {
-      const [x, y] = this.trPos(i), got = !!h.troph[t.id], on = i === this.trSel;
+      const [x, y] = this.trPos(i), got = !!h.troph[t.id], hov = UI.zone('tr', x - gw / 2 + 2, y - 20, gw - 4, 39, { tr: i }), on = i === this.trSel || hov;
       const prog = t.stars ? Math.min(1, stars / t.stars) : Math.min(1, (h.stat[t.stat] || 0) / t.n);
-      c.fillStyle = got ? 'rgba(255,196,70,0.18)' : 'rgba(255,255,255,0.05)'; rrect(c, x - gw / 2 + 2, y - 20, gw - 4, 40, 4); c.fill();
+      c.fillStyle = got ? 'rgba(255,196,70,0.18)' : 'rgba(255,255,255,0.05)'; rrect(c, x - gw / 2 + 2, y - 20, gw - 4, 39, 4); c.fill();
       if (on) { c.strokeStyle = '#ff9a3c'; c.lineWidth = 1.2; c.stroke(); }
       this.cup(c, x, y, got, i, 0.9);
       setFont(c, 4.8, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = got ? '#ffe08a' : 'rgba(220,228,240,0.6)';
       const nw = c.measureText(t.name).width, k = Math.min(1, (gw - 8) / nw);
       if (k < 1) setFont(c, 4.8 * k, FONT_UI, 700);
-      c.fillText(t.name, x, y + 13);
-      if (!got) { const bw = gw - 16; c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(x - bw / 2, y + 15.5, bw, 1.6); if (prog > 0) { c.fillStyle = '#ff9a3c'; c.fillRect(x - bw / 2, y + 15.5, bw * prog, 1.6); } }
+      c.fillText(t.name, x, y + 12);
+      if (!got) { const bw = gw - 16; c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(x - bw / 2, y + 14.5, bw, 1.6); if (prog > 0) { c.fillStyle = '#ff9a3c'; c.fillRect(x - bw / 2, y + 14.5, bw * prog, 1.6); } }
     });
     const t = TROPHIES[this.trSel], got = !!h.troph[t.id];
-    setFont(c, 9, FONT_DISP, 400); c.textAlign = 'center'; c.fillStyle = got ? '#ffd23f' : 'rgba(232,238,247,0.85)'; c.fillText(t.name, VW / 2, VH - 26);
+    setFont(c, 9, FONT_DISP, 400); c.textAlign = 'center'; c.fillStyle = got ? '#ffd23f' : 'rgba(232,238,247,0.85)'; c.fillText(t.name, VW / 2, VH - 34);
     setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.85)';
     const prog = t.stars ? `${Math.min(stars, t.stars)} / ${t.stars}` : `${Math.min(h.stat[t.stat] || 0, t.n)} / ${t.n}`;
-    c.fillText(t.desc + (got ? '  ·  DONE!' : '  ·  ' + prog), VW / 2, VH - 16);
+    c.fillText(t.desc + (got ? '  ·  DONE!' : '  ·  ' + prog), VW / 2, VH - 24.5);
+    setFont(c, 5.4, FONT_UI, 700); c.fillStyle = 'rgba(200,214,234,0.7)';
+    c.fillText(lastDevice === 'touch' ? 'TAP A TROPHY TO READ HOW TO WIN IT' : lastDevice === 'pad' ? 'THE D-PAD PICKS A TROPHY TO READ HOW TO WIN IT' : 'POINT AT A TROPHY TO READ HOW TO WIN IT  ·  ESC GOES BACK', VW / 2, VH - 15);
   },
   cup(c, x, y, got, i, s = 1) { // a trophy cup (grey until it is won)
     c.save(); c.translate(x, y); c.scale(s, s);
@@ -11930,7 +12224,8 @@ Object.assign(Game, {
   finishMode(reason) {
     if (this.state === 'results') return;
     Heroes.bankAll();
-    const R = this.results = { mode: this.mode, reason, title: '', lines: [], record: '', win: -1 };
+    const R = this.results = { mode: this.mode, li: this.mode === 'surv' && this.surv ? this.surv.li : this.li, reason, title: '', lines: [], record: '', win: -1 };
+    this.resSel = 0;
     const players = this.players.slice(), local = () => players.map(p => Heroes.forPlayer(p)); // (the heroes saved on this computer)
     if (this.mode === 'rush') {
       const done = reason === 'done', t = this.rush.t;
@@ -11951,9 +12246,17 @@ Object.assign(Game, {
     }
     this.setState('results'); Music.play(reason === 'done' || this.vs ? 'victory' : 'clear'); Sfx.flame(false);
   },
+  // PLAY AGAIN and TITLE under the results (online, the host takes everyone back to the lobby instead)
+  resultsLayout() {
+    const y = Math.round(VH * 0.75);
+    return [{ id: 'again', kind: 'primary', x: VW / 2 - 106, y, w: 124, h: 22, row: 0 }, { id: 'rtitle', kind: 'button', x: VW / 2 + 24, y: y + 3, w: 82, h: 16, row: 0 }];
+  },
   updateResults(dt, M, taps) {
-    if (Net.on) return; // online: the host takes everyone back to the lobby
-    if (this.stateT > 1.5 && (M.ok || taps.length)) this.toTitle(true);
+    if (Net.on || this.stateT <= 1.5) return;
+    this.menuInput('results', this.resultsLayout(), 'resSel', M, taps, id => {
+      if (id === 'again') { const R = this.results; Sfx.confirm(); this.startMode(R.mode, R.li); }
+      else { Sfx.select(); this.toTitle(true); }
+    });
   },
   drawResults(c) {
     const R = this.results; if (!R) return;
@@ -11965,8 +12268,17 @@ Object.assign(Game, {
     R.lines.forEach((l, i) => c.fillText(l, VW / 2, VH * 0.52 + i * 13));
     if (R.record) { setFont(c, 11, FONT_DISP, 400); c.fillStyle = `rgba(255,214,63,${0.7 + 0.3 * Math.sin(this.rt * 6)})`; spaced(c, R.record, VW / 2, VH * 0.66, 2, 'center'); }
     if (R.win >= 0) { const p = this.players[R.win]; drawCrown(c, VW / 2, VH * 0.16, 1.6); setFont(c, 7, FONT_UI, 700); c.fillStyle = p.style.ui || p.style.visor; c.textAlign = 'center'; c.fillText('★ ' + p.tag + ' ★', VW / 2, VH * 0.21); }
-    if (this.stateT > 1.5) { setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center'; c.fillText(Net.on ? 'Back to the lobby in a moment…' : lastDevice === 'touch' ? 'Tap to go back to the title' : 'Press fire to go back to the title', VW / 2, VH * 0.84); }
     c.globalAlpha = 1;
+    if (this.stateT > 1.5) {
+      if (Net.on) { setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center'; c.fillText('Back to the lobby in a moment…', VW / 2, VH * 0.84); }
+      else {
+        this.resultsLayout().forEach((it, i) => {
+          const focus = i === (this.resSel || 0), data = { sel: i, part: 'go' };
+          if (it.kind === 'primary') UI.primary(c, it.id, it.x, it.y, it.w, it.h, 'PLAY AGAIN', { focus, data });
+          else UI.button(c, it.id, it.x, it.y, it.w, it.h, 'TITLE', { focus, back: true, data });
+        });
+      }
+    }
   },
   // the mode's line at the top of the screen
   drawModeHud(c) {
@@ -12144,7 +12456,7 @@ Object.assign(Net, {
       case 'nmission': return [L.gm === 'surv' ? 'WORLD' : 'MISSION', L.gm === 'rush' ? 'ALL 13 BOSSES' : `${L.li + 1} · ${LEVELS[L.li].name}`];
       case 'nmode': return ['MODE', L.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
       case 'nhealth': return ['HEALTH', L.inf ? 'UNLIMITED' : 'NORMAL'];
-      case 'nstart': return [this.friends() ? `START!  (${this.friends() + 1} PLAYERS)` : 'START!', ''];
+      case 'nstart': return [this.friends() ? `START · ${this.friends() + 1} PLAYERS` : 'START', ''];
     }
     return [id, ''];
   },
@@ -12168,17 +12480,35 @@ Object.assign(Net, {
       Sfx.select();
     }
   },
-  geom(n) { return { x: VW / 2, w: Math.min(250, VW * 0.6), top: this.phase === 'lobby' ? (this.role === 'guest' ? 196 : 146) : 150, h: 15, n }; },
+  // where everything sits in the online screens
+  lobbyLayout() {
+    const pw = Math.min(300, VW - 40), px = VW / 2 - pw / 2, ix = px + 14, iw = pw - 28, P = this.phase, host = this.role === 'host', items = [];
+    if (P === 'menu') {
+      const tw = (iw - 8) / 2;
+      items.push({ id: 'host', kind: 'tile', x: ix, y: 104, w: tw, h: 40, row: 0 }, { id: 'join', kind: 'tile', x: ix + tw + 8, y: 104, w: tw, h: 40, row: 0 });
+      items.push({ id: 'back', kind: 'button', back: true, x: VW / 2 - 45, y: 164, w: 90, h: 16, row: 1 });
+    } else if (P === 'hosting' || P === 'connecting') items.push({ id: 'cancel', kind: 'button', x: VW / 2 - 45, y: 176, w: 90, h: 16, row: 0 });
+    else if (P === 'joining') items.push({ id: 'go', kind: 'primary', x: VW / 2 - 50, y: 170, w: 100, h: 20, row: 0 }, { id: 'cancel', kind: 'button', x: VW / 2 - 40, y: 196, w: 80, h: 15, row: 1 });
+    else if (P === 'lobby' && host) {
+      ['ngame', 'nmission', 'nmode', 'nhealth'].forEach((id, k) => items.push({ id, kind: 'value', pick: true, x: ix, y: 138 + k * 18, w: iw, h: 15, row: k }));
+      const bw = (iw - 8) * 0.62;
+      items.push({ id: 'nstart', kind: 'primary', x: ix, y: 214, w: bw, h: 20, row: 4 }, { id: 'leave', kind: 'button', x: ix + bw + 8, y: 216, w: iw - bw - 8, h: 16, row: 4 });
+    } else if (P === 'lobby') items.push({ id: 'leave', kind: 'button', x: VW / 2 - 45, y: 206, w: 90, h: 16, row: 0 });
+    else items.push({ id: 'back', kind: 'button', back: true, x: VW / 2 - 45, y: 176, w: 90, h: 16, row: 0 });
+    return { items, px, pw };
+  },
+  lobbyKey() { return 'online:' + this.phase + ':' + this.role; },
   updateLobby(dt, M, taps) {
     Game.updateTitleScene(dt);
     if (this.noticeT > 0) this.noticeT -= dt;
     this.keepAlive(dt);
-    const joining = this.phase === 'joining';
-    if (M.back && !(joining && Keys.Backspace)) { this.choose(this.phase === 'menu' ? 'back' : 'cancel'); return; }
-    const items = this.items();
+    const joining = this.phase === 'joining', key = this.lobbyKey();
+    // typing the code: letters like W, J or Z (and Backspace) are not menu keys now, even tapped very quickly
+    if (joining && (this.typedN !== this.typedSeen || Keys.Backspace || NET_LETTERS.split('').some(ch => Keys['Key' + ch]))) { this.typedSeen = this.typedN; M = {}; }
+    if (M.back) { this.choose(this.phase === 'menu' ? 'back' : 'cancel'); return; }
+    const items = this.lobbyLayout().items;
     if (this.sel >= items.length) this.sel = 0;
     if (joining) { // four letter wheels: up/down changes the letter, left/right picks the wheel
-      if (NET_LETTERS.split('').some(ch => Keys['Key' + ch])) M = {}; // typing the code: letters like W or J are not menu keys now
       const L = NET_LETTERS, cur = L.indexOf(this.codeIn[this.slot]);
       if (M.up) { this.codeIn[this.slot] = L[(cur + 1) % L.length]; Sfx.select(); }
       if (M.down) { this.codeIn[this.slot] = L[(cur - 1 + L.length) % L.length]; Sfx.select(); }
@@ -12186,40 +12516,34 @@ Object.assign(Net, {
       if (M.right) { this.slot = Math.min(3, this.slot + 1); Sfx.select(); }
       if (M.ok) { if (this.slot < 3) { this.slot++; Sfx.select(); } else this.choose('go'); }
       for (const t of taps) {
-        for (let i = 0; i < 4; i++) {
-          const x = VW / 2 + (i - 1.5) * 34;
-          if (Math.abs(t.x - x) < 15) {
-            const k = L.indexOf(this.codeIn[i]);
-            if (t.y > 88 && t.y < 106) { this.codeIn[i] = L[(k + 1) % L.length]; this.slot = i; Sfx.select(); }
-            else if (t.y > 140 && t.y < 158) { this.codeIn[i] = L[(k - 1 + L.length) % L.length]; this.slot = i; Sfx.select(); }
-            else if (t.y >= 106 && t.y <= 140) { this.slot = i; Sfx.select(); }
-          }
-        }
-        const g = this.geomJoin();
-        for (let i = 0; i < 2; i++) if (Math.abs(t.x - g.x) < g.w / 2 && t.y > g.top + i * g.h - 10 && t.y < g.top + i * g.h + 4) this.choose(i === 0 ? 'go' : 'cancel');
+        const b = UI.hit(t, key); if (!b) continue;
+        const i = b.slot;
+        if (b.id === 'cup') { const k = L.indexOf(this.codeIn[i]); this.codeIn[i] = L[(k + 1) % L.length]; this.slot = i; Sfx.select(); }
+        else if (b.id === 'cdown') { const k = L.indexOf(this.codeIn[i]); this.codeIn[i] = L[(k - 1 + L.length) % L.length]; this.slot = i; Sfx.select(); }
+        else if (b.id === 'cslot') { this.slot = i; Sfx.select(); }
+        else this.choose(b.id);
+        break;
       }
       return;
     }
-    this.sel = Game.handleMenu(items, this.sel, { up: M.up, down: M.down, left: false, right: false, ok: false }, [], this.geom(items.length), () => {});
-    if (M.left) this.change(items[this.sel].id, -1);
-    if (M.right) this.change(items[this.sel].id, 1);
-    if (M.ok && !this.change(items[this.sel].id, 1)) this.choose(items[this.sel].id);
-    const g = this.geom(items.length);
-    for (const t of taps) for (let i = 0; i < items.length; i++) {
-      const y = g.top + i * g.h;
-      if (t.x > g.x - g.w / 2 && t.x < g.x + g.w / 2 && t.y > y - 10 && t.y < y + 4) {
-        this.sel = i; const side = t.x < g.x - g.w / 6 ? -1 : 1;
-        if (!this.change(items[i].id, side)) this.choose(items[i].id);
-      }
+    const p = UI.pointed(key); if (p && p.sel !== undefined) this.sel = p.sel;
+    const nv = UI.nav(items, this.sel, M); this.sel = nv.sel;
+    if (nv.change) this.change(items[this.sel].id, nv.change);
+    else if (nv.ok) { if (!this.change(items[this.sel].id, 1)) this.choose(items[this.sel].id); }
+    for (const t of taps) {
+      const b = UI.hit(t, key); if (!b) continue;
+      if (b.sel !== undefined) this.sel = b.sel;
+      if (b.part === -1 || b.part === 1) this.change(b.id, b.part); else if (b.part === 'row') this.change(b.id, 1); else this.choose(b.id);
+      break;
     }
   },
-  geomJoin() { return { x: VW / 2, w: 160, top: 182, h: 15 }; },
   typed(code) { // a letter typed on a real keyboard while joining
     if (Game.state !== 'online' || this.phase !== 'joining') return;
     const ch = code.replace('Key', '');
-    if (ch.length === 1 && NET_LETTERS.includes(ch)) { this.codeIn[this.slot] = ch; Sfx.select(); if (this.slot < 3) this.slot++; }
-    else if (code === 'Backspace') { this.slot = Math.max(0, this.slot - 1); }
+    if (ch.length === 1 && NET_LETTERS.includes(ch)) { this.codeIn[this.slot] = ch; Sfx.select(); if (this.slot < 3) this.slot++; this.typedN++; }
+    else if (code === 'Backspace') { this.slot = Math.max(0, this.slot - 1); this.typedN++; }
   },
+  typedN: 0, typedSeen: 0,
   // pings keep the round-trip times fresh; a computer we have not heard from for a long time is gone
   keepAlive(dt) {
     const now = performance.now();
@@ -12391,7 +12715,7 @@ Object.assign(Net, {
         if (seat >= NET_MAXP) { this.sendTo(L, { t: 'bye', why: 'full' }); this.dropLink(L, 'quiet'); return; }
         L.seat = seat; L.lo = cleanLoadout(m.lo, seat); this.seats[seat] = this.seatInfo(L.lo);
         this.sendTo(L, { t: 'welcome', v: NET_VERSION, seat });
-        this.sendRoom(); Sfx.confirm(); this.note(L.lo.name + ' joined!');
+        this.sendRoom(); Sfx.confirm(); this.note(((this.roomSeats()[seat] || L.lo).name) + ' joined!'); // (the name they will have in the game)
         break;
       }
       case 'in': { // a friend's buttons: keep them, and pass them on to everyone else
@@ -12734,16 +13058,19 @@ Object.assign(Net, {
   },
 
   /* ---------- the little in-game menu (the game keeps running) ---------- */
-  menuItems() { return this.role === 'host' ? [{ id: 'resume' }, { id: 'lobby' }, { id: 'leave' }] : [{ id: 'resume' }, { id: 'leave' }]; },
+  menuItems() { return this.role === 'host' ? ['resume', 'lobby', 'leave'] : ['resume', 'leave']; },
   menuText(id) { return id === 'resume' ? 'BACK TO THE GAME' : id === 'lobby' ? 'BACK TO THE LOBBY' : 'LEAVE ONLINE GAME'; },
-  menuGeom(n) { return { x: VW / 2, w: 200, top: VH / 2 - n * 8 + 10, h: 16, n }; },
+  menuLayout() {
+    const ids = this.menuItems(), top = VH / 2 - ids.length * 12 + 4;
+    return ids.map((id, k) => ({ id, kind: k === 0 ? 'primary' : 'button', x: VW / 2 - (k === 0 ? 75 : 65), y: top + k * 24 + (k ? 2 : 0), w: k === 0 ? 150 : 130, h: k === 0 ? 20 : 16, row: k }));
+  },
   updateMenu(M, taps) {
-    const items = this.menuItems(), g = this.menuGeom(items.length);
+    const items = this.menuLayout();
     if (M.back || M.pause) { this.menu = false; return; }
-    if (M.up) { this.menuSel = (this.menuSel + items.length - 1) % items.length; Sfx.select(); }
-    if (M.down) { this.menuSel = (this.menuSel + 1) % items.length; Sfx.select(); }
-    let pick = M.ok ? items[this.menuSel].id : null;
-    for (const t of taps) for (let i = 0; i < items.length; i++) { const y = g.top + i * g.h; if (Math.abs(t.x - g.x) < g.w / 2 && t.y > y - 11 && t.y < y + 5) pick = items[i].id; }
+    const p = UI.pointed('netmenu'); if (p && p.sel !== undefined) this.menuSel = p.sel;
+    const nv = UI.nav(items, this.menuSel, M); this.menuSel = nv.sel;
+    let pick = nv.ok ? items[this.menuSel].id : null;
+    for (const t of taps) { const b = UI.hit(t, 'netmenu'); if (b) { pick = b.id; break; } }
     if (pick === 'resume') this.menu = false;
     else if (pick === 'lobby') this.toLobby();
     else if (pick === 'leave') this.leave();
@@ -12767,55 +13094,56 @@ Object.assign(Net, {
   },
   drawLobby(c) {
     c.fillStyle = 'rgba(6,12,24,0.55)'; c.fillRect(0, 0, VW, VH);
-    const pw = Math.min(300, VW - 40), px = VW / 2 - pw / 2;
-    c.fillStyle = 'rgba(8,16,32,0.9)'; rrect(c, px, 28, pw, VH - 50, 8); c.fill(); c.strokeStyle = 'rgba(255,154,60,0.7)'; c.lineWidth = 1; c.stroke();
+    const Lo = this.lobbyLayout(), pw = Lo.pw, px = Lo.px, P = this.phase, host = this.role === 'host';
+    UI.panel(c, px, 28, pw, VH - 46);
     setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('ONLINE CO-OP', VW / 2, 52);
     setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.75)'; c.fillText('Up to four players on computers, phones or tablets', VW / 2, 63);
     const say = (txt, y, size = 7.5, col = '#e8eef7') => { setFont(c, size, FONT_UI, 600); c.fillStyle = col; c.textAlign = 'center'; this.wrap(c, txt, VW / 2, y, pw - 30, size + 3); };
-    if (this.phase === 'menu') say('One player hosts and gets a room code. Up to three friends pick JOIN and type that code.', 86);
-    if (this.phase === 'hosting') {
-      say('ROOM CODE', 84, 7, '#9fb4c8');
-      setFont(c, 30, FONT_DISP, 400); c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.fillText(this.code, VW / 2, 116);
-      say(this.status, 132, 7);
+    if (P === 'menu') say('One player hosts and gets a room code. Up to three friends pick JOIN and type that code.', 82, 7);
+    if (P === 'hosting') {
+      say('ROOM CODE', 88, 7, '#9fb4c8');
+      setFont(c, 30, FONT_DISP, 400); c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.fillText(this.code, VW / 2, 122);
+      say(this.status, 140, 7);
     }
-    if (this.phase === 'connecting') say(this.status, 110, 8);
-    if (this.phase === 'joining') {
+    if (P === 'connecting') say(this.status, 120, 8);
+    if (P === 'joining') {
       say('TYPE THE ROOM CODE', 80, 7, '#9fb4c8');
       for (let i = 0; i < 4; i++) {
-        const x = VW / 2 + (i - 1.5) * 34, on = i === this.slot;
-        c.fillStyle = on ? 'rgba(255,154,60,0.25)' : 'rgba(255,255,255,0.08)'; rrect(c, x - 14, 108, 28, 30, 4); c.fill();
-        c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.3)'; c.lineWidth = 1; c.stroke();
-        setFont(c, 20, FONT_DISP, 400); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(this.codeIn[i], x, 131);
-        setFont(c, 9, FONT_UI, 700); c.fillStyle = on ? '#ff9a3c' : 'rgba(230,236,246,0.6)'; c.fillText('▲', x, 101); c.fillText('▼', x, 152);
+        const x = VW / 2 + (i - 1.5) * 36, on = i === this.slot, hov = UI.zone('cslot', x - 14, 108, 28, 32, { slot: i });
+        c.fillStyle = on ? 'rgba(255,154,60,0.28)' : hov ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)'; rrect(c, x - 14, 108, 28, 32, 4); c.fill();
+        c.strokeStyle = on ? '#ff9a3c' : 'rgba(255,255,255,0.3)'; c.lineWidth = on ? 1.3 : 0.8; c.stroke();
+        setFont(c, 20, FONT_DISP, 400); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(this.codeIn[i], x, 132);
+        UI.arrow(c, 'cup', x, 97, 7, 'up', { data: { slot: i }, focus: on });
+        UI.arrow(c, 'cdown', x, 151, 7, 'down', { data: { slot: i }, focus: on });
       }
-      const g = this.geomJoin(), items = this.items();
-      items.forEach((it, i) => { const y = g.top + i * g.h, [a, b] = this.text(it.id); setFont(c, 8, FONT_UI, 700); c.fillStyle = this.slot === 3 && i === 0 ? '#ff9a3c' : '#e8eef7'; c.textAlign = 'center'; c.fillText(i === 0 ? a + '  ' + b : a, g.x, y); });
-      setFont(c, 6, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.6)'; c.textAlign = 'center';
-      c.fillText(lastDevice === 'touch' ? 'Tap ▲ ▼ to change the letters, then JOIN' : 'Type the 4 letters, then press Enter', VW / 2, VH - 30);
-      return;
     }
-    if (this.phase === 'lobby') {
-      setFont(c, 6.5, FONT_UI, 700); c.fillStyle = '#9fb4c8'; c.textAlign = 'right'; c.fillText('ROOM CODE', VW / 2 - 6, 84);
-      setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#ffffff'; c.textAlign = 'left'; c.fillText(this.code, VW / 2 + 2, 87);
-      this.drawSeats(c, 102);
-      if (this.role === 'host') say(this.friends() ? (this.friends() < NET_MAXP - 1 ? 'More friends can join with the code · pick a game and press START' : 'The room is full · pick a game and press START') : 'Tell your friends the room code · waiting for them to join…', 131, 6.5, this.friends() ? '#9be06a' : '#ffe27a');
+    if (P === 'lobby') {
+      setFont(c, 6.5, FONT_UI, 700); c.fillStyle = '#9fb4c8'; c.textAlign = 'right'; c.fillText('ROOM CODE', VW / 2 - 6, 82);
+      setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#ffffff'; c.textAlign = 'left'; c.fillText(this.code, VW / 2 + 2, 85);
+      this.drawSeats(c, 100);
+      if (host) say(this.friends() ? (this.friends() < NET_MAXP - 1 ? 'More friends can join with the code · pick a game and press START' : 'The room is full · pick a game and press START') : 'Tell your friends the room code · waiting for them to join…', 128, 6.3, this.friends() ? '#9be06a' : '#ffe27a');
       else {
         say(this.lobby.gm === 'rush' ? 'BOSS RUSH · ALL 13 BOSSES' : `${this.lobby.gm && this.lobby.gm !== 'mission' ? MODES[this.lobby.gm].name + ' · ' : 'MISSION '}${this.lobby.li + 1} · ${LEVELS[this.lobby.li].name}`, 140, 8.5, '#ffffff');
         say(`${this.lobby.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'} · ${this.lobby.inf ? 'UNLIMITED HEALTH' : 'NORMAL HEALTH'}`, 153, 7, '#9fb4c8');
-        say('Waiting for the host to start…', 170, 7);
+        say('Waiting for the host to start…', 172, 7);
       }
     }
-    if (this.phase === 'error') say(this.error, 96, 8, '#ffb4a0');
-    const items = this.items(), g = this.geom(items.length);
-    items.forEach((it, i) => {
-      const y = g.top + i * g.h, on = i === this.sel, [a, b] = this.text(it.id), arrows = it.id.startsWith('n') && it.id !== 'nstart';
-      const dim = it.id === 'nstart' && !this.friends();
-      if (on) { c.fillStyle = 'rgba(255,154,60,0.2)'; c.fillRect(g.x - g.w / 2, y - 10, g.w, 13); c.fillStyle = '#ff9a3c'; c.fillRect(g.x - g.w / 2, y - 10, 2, 13); }
-      setFont(c, 8, FONT_UI, 700); c.fillStyle = dim ? 'rgba(232,238,247,0.35)' : on ? '#ffffff' : 'rgba(232,238,247,0.8)';
-      if (b) { c.textAlign = 'left'; c.fillText(a, g.x - g.w / 2 + 8, y); c.textAlign = 'right'; c.fillStyle = on ? '#ff9a3c' : 'rgba(255,154,60,0.8)'; c.fillText((arrows ? '◂ ' : '') + b + (arrows ? ' ▸' : ''), g.x + g.w / 2 - 8, y); }
-      else { c.textAlign = 'center'; c.fillText(a, g.x, y); }
+    if (P === 'error') say(this.error, 100, 8, '#ffb4a0');
+    Lo.items.forEach((it, i) => {
+      const focus = i === this.sel && P !== 'joining', data = { sel: i };
+      const [a, b] = this.text(it.id);
+      if (it.kind === 'tile') UI.tile(c, it.id, it.x, it.y, it.w, it.h, a, b, it.id, { focus, data: Object.assign({ part: 'go' }, data) });
+      else if (it.kind === 'value') UI.valueRow(c, it.id, it.x, it.y, it.w, it.h, a, b, { focus, data, pickW: Math.min(it.w * 0.6, 150) });
+      else if (it.kind === 'primary') UI.primary(c, it.id, it.x, it.y, it.w, it.h, it.id === 'go' ? 'JOIN ' + this.codeIn.join('') : a, { focus: focus || (P === 'joining' && this.slot === 3), disabled: it.id === 'nstart' && !this.friends(), data: Object.assign({ part: 'go' }, data) });
+      else UI.button(c, it.id, it.x, it.y, it.w, it.h, it.back ? 'BACK' : a, { focus, back: it.back, red: it.id === 'leave' || it.id === 'cancel', data: Object.assign({ part: 'go' }, data) });
     });
-    if (this.noticeT > 0) { setFont(c, 8, FONT_UI, 700); c.fillStyle = `rgba(155,224,106,${Math.min(1, this.noticeT)})`; c.textAlign = 'center'; c.fillText(this.notice, VW / 2, VH - 30); }
+    const f = Lo.items[this.sel]; if (f && P !== 'joining' && lastDevice !== 'touch') UI.pointer(c, f.x - 5, f.y + f.h / 2);
+    if (this.noticeT > 0) { setFont(c, 8, FONT_UI, 700); c.fillStyle = `rgba(155,224,106,${Math.min(1, this.noticeT)})`; c.textAlign = 'center'; c.fillText(this.notice, VW / 2, VH - 24); }
+    else if (P === 'joining') {
+      setFont(c, 5.4, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(200,214,234,0.7)';
+      c.fillText(lastDevice === 'touch' ? 'TAP ▲ ▼ TO PICK THE LETTERS, THEN JOIN' : lastDevice === 'pad' ? 'THE D-PAD PICKS THE LETTERS  ·  A GOES TO THE NEXT ONE, THEN JOINS' : 'TYPE THE 4 LETTERS ON THE KEYBOARD (OR CLICK ▲ ▼), THEN PRESS ENTER OR JOIN', VW / 2, VH - 24);
+    }
+    else UI.howTo(c, VW / 2, VH - 24);
   },
   wrap(c, text, x, y, w, lh) {
     const words = String(text).split(' '); let line = '', yy = y;
@@ -12840,10 +13168,11 @@ Object.assign(Net, {
     }
     if (this.menu) {
       c.fillStyle = 'rgba(6,12,24,0.6)'; c.fillRect(0, 0, VW, VH);
-      const items = this.menuItems(), g = this.menuGeom(items.length);
-      setFont(c, 10, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('ONLINE GAME', VW / 2, g.top - 26);
-      setFont(c, 6, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.7)'; c.fillText('The game keeps running while this menu is open', VW / 2, g.top - 15);
-      items.forEach((it, i) => { const y = g.top + i * g.h, on = i === this.menuSel; if (on) { c.fillStyle = 'rgba(255,154,60,0.22)'; c.fillRect(g.x - g.w / 2, y - 11, g.w, 15); } setFont(c, 8, FONT_UI, 700); c.fillStyle = on ? '#fff' : 'rgba(232,238,247,0.8)'; c.textAlign = 'center'; c.fillText(this.menuText(it.id), g.x, y); });
+      const items = this.menuLayout(), top = items[0].y;
+      UI.panel(c, VW / 2 - 92, top - 34, 184, items[items.length - 1].y + items[items.length - 1].h + 12 - (top - 34));
+      setFont(c, 11, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('ONLINE GAME', VW / 2, top - 18);
+      setFont(c, 5.8, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.7)'; c.fillText('The game keeps running while this menu is open', VW / 2, top - 8);
+      items.forEach((it, i) => { const focus = i === this.menuSel, data = { sel: i }; if (it.kind === 'primary') UI.primary(c, it.id, it.x, it.y, it.w, it.h, this.menuText(it.id), { focus, data }); else UI.button(c, it.id, it.x, it.y, it.w, it.h, this.menuText(it.id), { focus, red: it.id === 'leave', data }); });
     }
     setFont(c, 5.5, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = 'rgba(230,236,246,0.55)';
     c.fillText('ONLINE · ROOM ' + this.code + (this.rtt ? ' · ' + Math.round(this.rtt) + ' ms' : ''), VW / 2, VH - 4);

@@ -2,6 +2,14 @@
 
 An original run-and-gun adventure in bright painted worlds, for 1 to 4 players. Two heroes, Volt and Ember, fight the robot army of the Overseer. **Play:** https://ahamze123.github.io/iron-monsoon/
 
+## Getting started
+The title screen has big buttons, so it is easy to see where to click or tap:
+- **STORY MODE** (orange) plays the adventure from your chapter. **PLAY MISSION** (blue) plays one mission on its own.
+- The round **◀ ▶** arrows next to them change the chapter or the mission. The arrows on **PLAYERS** pick 1 to 4 players.
+- The tiles underneath open **MY HERO**, the **SHOP**, **TROPHIES**, **MORE MODES** and **OPTIONS** (and **ONLINE** on the web). Every page has a **BACK** button at the top left.
+- The mouse, a finger, the arrow keys and Enter, or a gamepad all work the menus.
+- When the characters talk between missions, **NEXT** goes on and **SKIP** jumps straight into the mission.
+
 ## Story and missions
 Pick **STORY MODE** on the title screen to play the whole adventure, with Volt, Ember, Colonel Hawk, Dr. Nova and the little helper drone Bolt talking between missions. You can also pick any mission you have reached and play it on its own.
 
@@ -58,10 +66,10 @@ Every boss fights in three stages. When its health bar passes a white mark, it g
 
 ## Online co-op (up to 4 players)
 Play together on up to four computers, phones or tablets, anywhere.
-1. Everyone opens https://ahamze123.github.io/iron-monsoon/ and picks **ONLINE CO-OP** on the title screen.
+1. Everyone opens https://ahamze123.github.io/iron-monsoon/ and picks the **ONLINE** tile on the title screen.
 2. One player picks **HOST A GAME** and gets a 4-letter room code.
-3. Up to three friends pick **JOIN A GAME** and type that code (or tap the arrows on a phone). The lobby shows who is in the room.
-4. The host picks the game, mission, mode and health, then presses **START!** (as soon as one friend is there).
+3. Up to three friends pick **JOIN A GAME** and type that code on the keyboard (or tap the ▲ ▼ arrows on a phone), then press **JOIN**. The lobby shows who is in the room.
+4. The host picks the game, mission, mode and health, then presses **START** (it lights up as soon as one friend is there).
 
 Your own hero answers your buttons at once (within a sixtieth of a second or two). For a moment the game guesses what your friends are pressing, and when their real buttons arrive it quietly corrects itself, so every screen shows the same game with almost no delay. Each player brings their own hero, with their name, colours and shop upgrades; coins and trophies go to the hero on your own screen, and your own panel has a bright edge. Every screen shows the same game. Two heroes that look the same, or have the same name, get told apart automatically. Pause opens a small menu while the game keeps running. If a friend leaves in the middle, their hero leaves too and the game goes on. Online play needs an internet connection and works in Chrome, Edge, Firefox and Safari.
 
