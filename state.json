@@ -549,9 +549,87 @@
     "status": "SUCCEEDED"
    }
   },
-  "dm2_bram": {},
-  "dm2_draxx": {},
-  "dm2_korr": {},
+  "dm2_bram": {
+   "model": {
+    "id": "01a12bbb-ee52-75cc-89c9-660ace7d0eec",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:11",
+    "run": 901,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_bram_front.png",
+     "dm2_bram_side.png",
+     "dm2_bram_back.png"
+    ]
+   }
+  },
+  "dm2_draxx": {
+   "model": {
+    "id": "01a12bbb-ee54-745e-bacf-d65149773e0b",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:11",
+    "run": 901,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_draxx_front.png",
+     "dm2_draxx_side.png",
+     "dm2_draxx_back.png"
+    ]
+   }
+  },
+  "dm2_korr": {
+   "model": {
+    "id": "01a12bbb-ee52-7637-b2fb-61127b7084a0",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:11",
+    "run": 901,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_korr_front.png",
+     "dm2_korr_side.png",
+     "dm2_korr_back.png"
+    ]
+   }
+  },
   "dm2_sera": {
    "model": {
     "id": "01a12bbb-ee4d-75e2-9195-ab120513f634",
