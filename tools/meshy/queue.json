@@ -1,12 +1,29 @@
 {
- "run": 25,
+ "run": 26,
  "heroes": [
-  "sm_spike"
+  "volt",
+  "sm_volt",
+  "sm_ember",
+  "sm_hawk",
+  "sm_spike",
+  "sm_tank",
+  "sm_viper",
+  "sm_king",
+  "trooper"
  ],
- "refetch": [],
+ "refetch": [
+  "sm_volt",
+  "sm_ember",
+  "sm_hawk",
+  "sm_spike",
+  "sm_tank",
+  "sm_viper",
+  "sm_king",
+  "trooper"
+ ],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 35,
+ "max_credits": 20,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -20,7 +37,17 @@
   "heroes": [],
   "action_ids": []
  },
- "extra": {},
+ "extra": {
+  "volt": {
+   "fight3": [
+    206,
+    215,
+    397,
+    398,
+    127
+   ]
+  }
+ },
  "per": {},
  "redo": [],
  "images": {},
