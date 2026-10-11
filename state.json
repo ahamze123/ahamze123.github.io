@@ -3753,6 +3753,12 @@
      "sm2_spike_side.png",
      "sm2_spike_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12b94-4145-71a5-82a8-18b0c7f90ecf",
+    "made": "2026-10-11 15:28",
+    "model": "01a12b91-da52-72f5-b04a-8cd1dbab6aec",
+    "status": "PENDING"
    }
   },
   "sm2_volt": {
