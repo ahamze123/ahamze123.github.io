@@ -3673,6 +3673,12 @@
   },
   "sm_ember": {
    "extra": {},
+   "full": {
+    "bytes": 3250024,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -4015,6 +4021,12 @@
   },
   "sm_volt": {
    "extra": {},
+   "full": {
+    "bytes": 3241164,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
