@@ -1,12 +1,10 @@
 {
- "run": 21,
- "heroes": [
-  "volt"
- ],
+ "run": 22,
+ "heroes": [],
  "refetch": [],
  "refetch_max": 2048,
  "refetch_quality": 92,
- "max_credits": 60,
+ "max_credits": 0,
  "parallel": 5,
  "model": {
   "ai_model": "latest",
@@ -17,40 +15,13 @@
   "height_meters": 1.1
  },
  "anims": {
-  "heroes": [
-   "volt"
-  ],
-  "action_ids": [
-   210,
-   21,
-   191,
-   193,
-   194,
-   207,
-   209,
-   174,
-   171,
-   347
-  ]
+  "heroes": [],
+  "action_ids": []
  },
- "extra": {
-  "volt": {
-   "fight2": [
-    211,
-    212,
-    216,
-    422,
-    464,
-    217,
-    7,
-    138,
-    214,
-    403
-   ]
-  }
- },
+ "extra": {},
  "per": {},
  "redo": [],
  "images": {},
- "redo_images": []
+ "redo_images": [],
+ "library": true
 }
