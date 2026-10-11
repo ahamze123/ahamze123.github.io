@@ -952,6 +952,8 @@
   },
   "dm2_skeleton": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12bc9-39e9-707a-9951-8a1c9971b402",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 16:26",
@@ -969,7 +971,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12bc9-39e9-707a-9951-8a1c9971b402/output/preview.png?Expires=1791995321&Signature=QOT5EoLnYZQ2x5D2soFeQ35oTDUCUktLFrptiJsvf8wZnrsNVhOo8YLeLfjlUVjJSW0RkVtvyvehG3X6BG-903WCpdkP8BN1gkxn2WUzut1VxuSfgMn9fBw~Or1oP2s3rs23jNOiKHxyC8pGf~9ec7A6Cr76VcgJWrHbTBtj8aBshVEXdqECIgwl0oITvFcjrMJfVicdW93NYfuchWPSc9ZroEPtKYFngyQG4mhjXIeK1HH1iDzTf2j2wM7O1B7JUBpcDDEhlbMxkdeoij7AB2x3fkFPLuTKA69to1LXWXRshXC2QzFXz5E536P5qrNLmAIKjxX-F3OzHUbiAZ62YQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "dm2_skeleton_front.png",
      "dm2_skeleton_side.png",
