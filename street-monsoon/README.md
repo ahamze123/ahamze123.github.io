@@ -7,7 +7,7 @@ A street brawler for 1 to 3 players, made from Iron Monsoon's engine. Volt, Embe
 - **EMBER** (speed): the quickest kicks, a spin kick that clears a crowd, and the special **BLAZE TORNADO**: she spins through the air and fire bursts up under every thug.
 - **COL. HAWK** (power): slow but mighty, with a push kick that sends thugs flying into each other, and the special **EARTH SHAKER**: he slams the ground and a shock wave throws every thug into the air.
 
-The fighters were drawn in ChatGPT, turned into 3D models and animated with Meshy, then drawn as cel-shaded pictures for every move.
+The fighters were drawn in ChatGPT, turned into 3D models and animated with Meshy, then drawn as cel-shaded pictures for every move. Every other picture was drawn in ChatGPT too: the four streets (skylines, buildings, floors), the lamps, cars, boats and rooftop gear, the neon signs, the crates and barrels, and the food and treasure you pick up.
 
 ## How to play
 - **Punch** and **Kick** each have their own combo; keep hitting to chain the next blow. Run (tap a direction twice) and punch or kick for a dash attack. Jump and punch or kick for a flying attack.
@@ -34,4 +34,4 @@ The host's computer runs the game; friends' buttons go to it and every screen sh
 - On an iPad or iPhone, for the best full screen: open the page in Safari, tap **Share**, then **Add to Home Screen**. The game then opens like an app, full screen and sideways.
 
 ## Credits
-Sound effects and the announcer voice: Kenney (kenney.nl), free CC0 packs. Painted backgrounds and props from Iron Monsoon.
+Sound effects and the announcer voice: Kenney (kenney.nl), free CC0 packs. Backgrounds, props and pickups drawn in ChatGPT.
