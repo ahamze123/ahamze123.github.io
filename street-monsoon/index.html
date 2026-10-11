@@ -3797,7 +3797,7 @@ const Net = {
     if (window.SM_NETTEST) return this.testLink('host');
     this.loadPeer(() => {
       if (this.phase !== 'hosting') return;
-      const P = this.PeerC(), peer = this.peer = new P('streetmonsoon-' + this.code.toLowerCase(), { debug: 0 });
+      const P = this.PeerC(), peer = this.peer = new P('streetmonsoon-' + this.code.toLowerCase(), { debug: window.SM_PEERDEBUG || 0 });
       peer.on('open', () => { if (this.phase === 'hosting' && this.peer === peer) this.openRoom(); });
       peer.on('connection', conn => { if (this.peer === peer) this.welcomeConn(conn); else try { conn.close(); } catch (e) { /* ignore */ } });
       peer.on('error', err => { if (this.peer !== peer) return; if (err && err.type === 'unavailable-id') { if (this.phase === 'hosting') this.host(); } else if (this.phase === 'hosting') this.fail(this.errText(err)); });
@@ -3811,7 +3811,7 @@ const Net = {
     if (window.SM_NETTEST) return this.testLink('guest');
     this.loadPeer(() => {
       if (this.phase !== 'connecting') return;
-      const P = this.PeerC(), peer = this.peer = new P({ debug: 0 });
+      const P = this.PeerC(), peer = this.peer = new P({ debug: window.SM_PEERDEBUG || 0 });
       peer.on('open', () => { if (this.phase === 'connecting' && this.peer === peer) this.attach(peer.connect('streetmonsoon-' + code.toLowerCase(), { reliable: true, serialization: 'json' })); });
       peer.on('error', err => { if (this.peer === peer && this.phase === 'connecting') this.fail(err && err.type === 'peer-unavailable' ? 'There is no game with the code ' + code + '. Check the code with your friend.' : this.errText(err)); });
       setTimeout(() => { if (this.phase === 'connecting' && this.peer === peer) this.fail('Could not connect to room ' + code + '. Check the code, or try again.'); }, 20000);
@@ -4318,7 +4318,9 @@ function frame(now) {
 }
 // online host in a hidden tab: browsers stop drawing it, so the game goes on from a timer (friends keep playing)
 setInterval(() => {
-  if (!document.hidden || !Game.net || Net.role !== 'host') return;
+  if (!document.hidden || !Game.net) return;
+  if (Net.role === 'guest') { const now = performance.now(), rdt = clamp((now - (lastT || now)) / 1000, 0, 0.1); lastT = now; Net.keepAlive(rdt); Net.sendInput(); return; } // (a friend's hidden tab still says hello)
+  if (Net.role !== 'host') return;
   const now = performance.now(), rdt = clamp((now - (lastT || now)) / 1000, 0, 0.1); lastT = now;
   if (rdt <= 0) return;
   Input.update(false, rdt); Game.update(rdt); Touch.taps.length = 0;
