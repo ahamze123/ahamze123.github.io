@@ -3871,6 +3871,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2e-fc23-756a-af1b-d1311522c5d8/output/preview.png?Expires=1791968387&Signature=JUv00EDCncMvKN0ao-gvXQt76tYsMTzRYG13dneWOoWQ0Pw0NMecwOTpdtyTn~P2~pJffIuKkOCJeBhRzw-HnEcynHJB5F-xg4EdtxCvlmlwGjdDmfgYVtaUi9oJM1PhoqG3Ig7gZ3TXxankAV2r~IfLQA8EVJyi0~4Evve-oTzLb4zbIDartnbiNmRa3Mt~bQ9oryXcGzTVeD3mutcvRwveT03ln1hkbC1v-EVUwVInAYOWJemv9B-uJKSDEnLeSOqjgCjFG6diRcM8~bJc6eNfZO1nn21SkLcHII1KusUz0DLTdYFLvoT7S0c~IexS75DVo7qOFIKWR6f2ty12Xg__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a12a30-95a8-75b3-978c-e392fa88f0c7",
+    "made": "2026-10-11 08:59",
+    "model": "01a12a2e-fc23-756a-af1b-d1311522c5d8",
+    "status": "PENDING"
    }
   },
   "sm_volt": {
