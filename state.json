@@ -4493,6 +4493,14 @@
       "joints": 24,
       "triangles": 62120
      },
+     "running": {
+      "bytes": 46996,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
      "walking": {
       "bytes": 57640,
       "clips": [
@@ -4793,6 +4801,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm2_maestro": {},
   "sm2_robot": {
    "extra": {},
    "full": {
@@ -4892,6 +4901,7 @@
    }
   },
   "sm2_sparks": {
+   "extra": {},
    "full": {
     "bytes": 6810164,
     "pictures": [
