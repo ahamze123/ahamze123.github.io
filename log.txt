@@ -1339,3 +1339,8 @@
 2026-10-11 15:37:44 run finished; credits used by new tasks (estimate): 105
 2026-10-11 15:38:20 run 31 heroes ['sm2_robot'] max credits 50
 2026-10-11 15:38:23 [sm2_robot] model task made multi-image-to-3d 01a12b9d-7641-75c2-9ac0-a756f65cafa1
+2026-10-11 15:38:24 [sm2_robot] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 15:39:15 [sm2_robot] multi-image-to-3d IN_PROGRESS 25%
+2026-10-11 15:39:56 [sm2_robot] multi-image-to-3d IN_PROGRESS 53%
+2026-10-11 15:40:37 [sm2_robot] multi-image-to-3d IN_PROGRESS 80%
+2026-10-11 15:41:08 [sm2_robot] multi-image-to-3d SUCCEEDED 100%
