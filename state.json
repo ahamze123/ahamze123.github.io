@@ -577,6 +577,12 @@
      "dm2_bram_side.png",
      "dm2_bram_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bbe-baa3-763f-8477-74a834861b96",
+    "made": "2026-10-11 16:14",
+    "model": "01a12bbb-ee52-75cc-89c9-660ace7d0eec",
+    "status": "PENDING"
    }
   },
   "dm2_draxx": {
