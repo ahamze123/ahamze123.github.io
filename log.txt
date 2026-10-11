@@ -1433,3 +1433,4 @@
 2026-10-11 16:28:20 [dm2_skeleton] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 16:28:20 [dm2_raider] multi-image-to-3d IN_PROGRESS 58%
 2026-10-11 16:28:30 [dm2_rogue] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 16:28:35 [dm2_rogue] rig task made 01a12bcb-6366-7661-96a8-cdc5679a5860
