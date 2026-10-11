@@ -1302,3 +1302,4 @@
 2026-10-11 15:33:46 run 30 heroes ['sm2_tank', 'sm2_viper', 'sm2_king'] max credits 150
 2026-10-11 15:33:49 [sm2_king] model task made multi-image-to-3d 01a12b99-494d-71b1-9224-f7a20c35f052
 2026-10-11 15:33:49 [sm2_viper] model task made multi-image-to-3d 01a12b99-494b-753a-8cee-b1f27a4cff39
+2026-10-11 15:33:49 [sm2_tank] model task made multi-image-to-3d 01a12b99-494e-7443-aa43-d393a04db35c
