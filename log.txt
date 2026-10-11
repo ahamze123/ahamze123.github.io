@@ -1220,3 +1220,8 @@
 2026-10-11 09:00:17 run finished; credits used by new tasks (estimate): 70
 2026-10-11 09:05:20 run 25 heroes ['sm_spike'] max credits 35
 2026-10-11 09:05:22 [sm_spike] model task made 01a12a35-a736-7196-8887-b14d29dfd0c6
+2026-10-11 09:05:23 [sm_spike] image-to-3d IN_PROGRESS 1%
+2026-10-11 09:06:24 [sm_spike] image-to-3d IN_PROGRESS 45%
+2026-10-11 09:06:44 [sm_spike] image-to-3d IN_PROGRESS 67%
+2026-10-11 09:06:54 [sm_spike] image-to-3d IN_PROGRESS 84%
+2026-10-11 09:07:04 [sm_spike] image-to-3d SUCCEEDED 100%

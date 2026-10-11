@@ -3838,6 +3838,8 @@
   },
   "sm_spike": {
    "model": {
+    "credits": 30,
+    "error": null,
     "id": "01a12a35-a736-7196-8887-b14d29dfd0c6",
     "made": "2026-10-11 09:05",
     "run": 25,
@@ -3850,7 +3852,8 @@
      "target_polycount": 20000,
      "topology": "triangle"
     },
-    "status": "PENDING"
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a35-a736-7196-8887-b14d29dfd0c6/output/preview.png?Expires=1791968820&Signature=CMO5~91cRWmuvgAiiMSR9lURziO23gObZpb1UptxfDHWWcl-Je5~kFlBMaMNZISvklMHmyrxEyOn~FKXWoDyW6YhDoypNeqV~5C5AEmiQBa2W6-KAoPKgt69g6bg6~Sr2uaqrm43p24zUM6j9jBITOsTlW5bQY-hvLw82P6wPmuOh2fJk-r1-55u1D6T72MyogqRtLui2MMGuq8hj6LZJd5VifYgZXGawmBZBLBH3UCGKM8PKxBS8BFRytJsA1u-md2A8VZmWlQg0qRXAKRGSu6GiPExP2-Al1jNKatiYv8W1t68zobp7~8eeVhK0i4nxf2ePCG6bxZeHJ2yfzvYLg__&Key-Pair-Id=K1VGYTHIYLM9UM"
    }
   },
   "sm_tank": {
