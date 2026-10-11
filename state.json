@@ -3728,6 +3728,12 @@
   },
   "sm_hawk": {
    "extra": {},
+   "full": {
+    "bytes": 3050560,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -3838,6 +3844,12 @@
   },
   "sm_spike": {
    "extra": {},
+   "full": {
+    "bytes": 3422328,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
@@ -4308,6 +4320,19 @@
      "made": "2026-10-11 08:54",
      "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
      "status": "SUCCEEDED"
+    },
+    "fight3": {
+     "action_ids": [
+      206,
+      215,
+      397,
+      398,
+      127
+     ],
+     "id": "01a12aa8-0017-7648-9e89-9c2e81c006b9",
+     "made": "2026-10-11 11:10",
+     "rig": "01a12777-7ab6-7478-8b50-9872744734d2",
+     "status": "PENDING"
     }
    },
    "last_error": "POST /openapi/v1/animations: HTTP 400 {\"message\":\"This animation is no longer available: action_ids 464. See https://docs.meshy.ai/en/api/animation-library for available animation IDs.\"}",
