@@ -1290,3 +1290,4 @@
 2026-10-11 15:28:54 [sm2_ember] rigging IN_PROGRESS 10%
 2026-10-11 15:28:54 [sm2_spike] rigging SUCCEEDED 100%
 2026-10-11 15:28:56 [sm2_spike] rigged: {"model": {"bytes": 6411664, "triangles": 62206, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57476, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46824, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 15:28:59 [sm2_spike] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 7553980}

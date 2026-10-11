@@ -3744,6 +3744,12 @@
    }
   },
   "sm2_spike": {
+   "full": {
+    "bytes": 7553980,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
