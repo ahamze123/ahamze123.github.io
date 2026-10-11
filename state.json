@@ -5882,6 +5882,16 @@
    "limit": 80,
    "run": 28,
    "spent_estimate": 35
+  },
+  {
+   "at": "2026-10-11 15:25",
+   "heroes": [
+    "sm2_ember",
+    "sm2_hawk",
+    "sm2_spike"
+   ],
+   "limit": 150,
+   "run": 29
   }
  ]
 }
