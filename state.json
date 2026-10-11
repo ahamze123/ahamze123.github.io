@@ -3912,6 +3912,12 @@
      "sm2_robot_side.png",
      "sm2_robot_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12ba0-05b2-7670-b806-7d48e600d151",
+    "made": "2026-10-11 15:41",
+    "model": "01a12b9d-7641-75c2-9ac0-a756f65cafa1",
+    "status": "PENDING"
    }
   },
   "sm2_spike": {

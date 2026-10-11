@@ -1344,3 +1344,4 @@
 2026-10-11 15:39:56 [sm2_robot] multi-image-to-3d IN_PROGRESS 53%
 2026-10-11 15:40:37 [sm2_robot] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 15:41:08 [sm2_robot] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 15:41:13 [sm2_robot] rig task made 01a12ba0-05b2-7670-b806-7d48e600d151
