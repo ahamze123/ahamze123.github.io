@@ -1185,3 +1185,10 @@
 2026-10-11 08:56:17 [sm_tank] rig task made 01a12a2d-4cfd-73d2-b42b-2c5e0305fe78
 2026-10-11 08:56:17 [sm_hawk] rig task made 01a12a2d-4ce2-7034-a15f-81e18a0b92e6
 2026-10-11 08:56:18 [sm_volt] rigged: {"model": {"bytes": 2213436, "triangles": 20838, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57836, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47196, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 08:56:18 [sm_tank] rigging IN_PROGRESS 10%
+2026-10-11 08:56:17 [sm_ember] rigging IN_PROGRESS 10%
+2026-10-11 08:56:19 [sm_hawk] rigging IN_PROGRESS 15%
+2026-10-11 08:56:30 [sm_hawk] rigging SUCCEEDED 100%
+2026-10-11 08:56:30 [sm_ember] rigging SUCCEEDED 100%
+2026-10-11 08:56:30 [sm_tank] rigging SUCCEEDED 100%
+2026-10-11 08:56:31 [sm_hawk] rigged: {"model": {"bytes": 2067224, "triangles": 20739, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57024, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46380, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
