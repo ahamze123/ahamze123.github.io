@@ -1240,3 +1240,4 @@
 2026-10-11 11:10:21 [sm_viper] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3131816}
 2026-10-11 11:10:23 [sm_king] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 2771132}
 2026-10-11 11:10:25 [trooper] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 3389936}
+2026-10-11 11:10:21 [sm_tank] model with bigger pictures: {"pictures": ["2048x2048 image/jpeg"], "bytes": 2923084}
