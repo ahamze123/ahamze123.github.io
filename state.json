@@ -3836,6 +3836,23 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm_spike": {
+   "model": {
+    "id": "01a12a35-a736-7196-8887-b14d29dfd0c6",
+    "made": "2026-10-11 09:05",
+    "run": 25,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "pose_mode": "a-pose",
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 20000,
+     "topology": "triangle"
+    },
+    "status": "PENDING"
+   }
+  },
   "sm_tank": {
    "extra": {},
    "model": {
