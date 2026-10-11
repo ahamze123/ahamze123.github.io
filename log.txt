@@ -1350,3 +1350,4 @@
 2026-10-11 15:41:35 [sm2_robot] rigging SUCCEEDED 100%
 2026-10-11 15:41:36 [sm2_robot] rigged: {"model": {"bytes": 4884212, "triangles": 61869, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 58136, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47492, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 15:41:39 [sm2_robot] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5733436}
+2026-10-11 15:41:40 run finished; credits used by new tasks (estimate): 35

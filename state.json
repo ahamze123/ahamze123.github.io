@@ -3885,6 +3885,7 @@
    }
   },
   "sm2_robot": {
+   "extra": {},
    "full": {
     "bytes": 5733436,
     "pictures": [
@@ -6407,7 +6408,8 @@
     "sm2_robot"
    ],
    "limit": 50,
-   "run": 31
+   "run": 31,
+   "spent_estimate": 35
   }
  ]
 }
