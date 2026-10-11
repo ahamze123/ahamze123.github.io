@@ -4161,6 +4161,12 @@
   },
   "trooper": {
    "extra": {},
+   "full": {
+    "bytes": 3389936,
+    "pictures": [
+     "2048x2048 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 30,
     "error": null,
