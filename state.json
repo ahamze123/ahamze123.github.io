@@ -3672,6 +3672,7 @@
    }
   },
   "sm2_ember": {
+   "extra": {},
    "full": {
     "bytes": 6534216,
     "pictures": [
@@ -6103,7 +6104,8 @@
     "sm2_spike"
    ],
    "limit": 150,
-   "run": 29
+   "run": 29,
+   "spent_estimate": 105
   }
  ]
 }
