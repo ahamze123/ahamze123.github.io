@@ -1,0 +1,29 @@
+{
+ "name": "Dragon Monsoon",
+ "short_name": "Dragon Monsoon",
+ "description": "A sword and sorcery adventure for one to three players: swords, magic and a kingdom to save, alone or online.",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "display_override": [
+  "fullscreen",
+  "standalone"
+ ],
+ "orientation": "landscape",
+ "background_color": "#170c06",
+ "theme_color": "#170c06",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
