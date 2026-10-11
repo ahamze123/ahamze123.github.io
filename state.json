@@ -620,6 +620,7 @@
     "status": "SUCCEEDED"
    }
   },
+  "dm2_brute": {},
   "dm2_draxx": {
    "extra": {},
    "full": {
@@ -762,6 +763,35 @@
     "status": "SUCCEEDED"
    }
   },
+  "dm2_ogre": {
+   "model": {
+    "id": "01a12bc9-39c5-713a-aa63-8f6d73c81c0f",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 16:26",
+    "run": 902,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "dm2_ogre_front.png",
+     "dm2_ogre_side.png",
+     "dm2_ogre_back.png"
+    ]
+   }
+  },
+  "dm2_raider": {},
+  "dm2_rogue": {},
   "dm2_sera": {
    "extra": {},
    "full": {
@@ -833,6 +863,8 @@
     "status": "SUCCEEDED"
    }
   },
+  "dm2_skeleton": {},
+  "dm2_snatcher": {},
   "drake": {
    "extra": {},
    "full": {

@@ -1406,3 +1406,4 @@
 2026-10-11 16:15:30 [dm2_draxx] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 8475588}
 2026-10-11 16:15:32 run finished; credits used by new tasks (estimate): 140
 2026-10-11 16:26:08 run 902 heroes ['dm2_ogre', 'dm2_raider', 'dm2_rogue', 'dm2_skeleton', 'dm2_brute', 'dm2_snatcher'] max credits 250
+2026-10-11 16:26:11 [dm2_ogre] model task made multi-image-to-3d 01a12bc9-39c5-713a-aa63-8f6d73c81c0f
