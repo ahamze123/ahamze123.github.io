@@ -379,12 +379,13 @@ const AU = {
   },
   setDuck(d) { this.duck = d; this.apply(); },
   ok(name, gap) {
-    if (!this.ctx || !Store.data.sound || this.ctx.state !== 'running') return false;
+    if (!this.ctx || !Store.data.sound || this.ctx.state !== 'running' || Net.resim) return false; // (online: ticks being redone stay quiet)
     const t = this.ctx.currentTime;
     if (gap && this.last[name] !== undefined && t - this.last[name] < gap) return false;
     this.last[name] = t; return true;
   },
   tone(type, f0, f1, dur, vol, when = 0) {
+    if (Net.resim || !this.ctx) return;
     const c = this.ctx, t = c.currentTime + when;
     const o = c.createOscillator(), g = c.createGain();
     o.type = type; o.frequency.setValueAtTime(f0, t);
@@ -393,6 +394,7 @@ const AU = {
     o.connect(g); g.connect(this.sfx); o.start(t); o.stop(t + dur + 0.03);
   },
   noise(dur, vol, type, f0, f1, q = 1, when = 0) {
+    if (Net.resim || !this.ctx) return;
     const c = this.ctx, t = c.currentTime + when;
     const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
     s.buffer = this.nbuf; f.type = type; f.frequency.setValueAtTime(f0, t);
@@ -964,8 +966,8 @@ const Music = {
 
 const Cam = { x: 0, y: 0, k: 0, p: 0, trauma: 0, ox: 0, oy: 0 };
 const Scr = { flash: 0, flashRGB: '255,255,255', hitstop: 0, slow: 1, slowT: 0, bars: 0, barsT: 0 };
-function shake(a) { Cam.trauma = Math.min(1, Cam.trauma + a * (REDUCED ? 0.35 : 1)); }
-function flash(a, rgb = '255,255,255') { if (a >= Scr.flash) { Scr.flash = a; Scr.flashRGB = rgb; } }
+function shake(a) { if (Net.resim) return; Cam.trauma = Math.min(1, Cam.trauma + a * (REDUCED ? 0.35 : 1)); }
+function flash(a, rgb = '255,255,255') { if (Net.resim) return; if (a >= Scr.flash) { Scr.flash = a; Scr.flashRGB = rgb; } }
 function hitstop(t) { Scr.hitstop = Math.max(Scr.hitstop, t); }
 function slowmo(s, t) { Scr.slow = s; Scr.slowT = t; }
 function updateScreenFx(rdt) {
@@ -1005,7 +1007,7 @@ function renderLighting(c, amb) {
 const Parts = [], PartPool = [], MAXP = 1500, DUMMY = {};
 const NORMAL_PARTS = new Set(['smoke', 'debris', 'shell', 'leaf', 'drop', 'bubble', 'ripple', 'flutter', 'snow']);
 function P(type, x, y, vx, vy, life, size, rgb) {
-  if (Parts.length >= MAXP) return DUMMY;
+  if (Parts.length >= MAXP || Net.resim) return DUMMY; // (online: ticks being redone make no new sparks)
   const p = PartPool.pop() || {};
   p.type = type; p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = life; p.max = life; p.size = size; p.rgb = rgb || '255,255,255';
   p.css = null; p.g = 0; p.drag = 0; p.rot = 0; p.vr = 0; p.bounce = 0; p.gy = Infinity; p.grow = 0; p.a = 1;
@@ -1213,6 +1215,7 @@ function popText(x, y, text, rgb = '255,236,170') { const p = P('text', x, y, 0,
 
 /* ---------------- effects (beams, bolts, markers) ---------------- */
 const Fx = [];
+Fx.push = function (...a) { return Net.resim ? this.length : Array.prototype.push.apply(this, a); }; // (no new effects while ticks are redone)
 function updateFx(dt) { for (let i = Fx.length - 1; i >= 0; i--) if (!Fx[i].update(dt)) Fx.splice(i, 1); }
 function jag(x1, y1, x2, y2, seg, amp) {
   const d = Math.hypot(x2 - x1, y2 - y1) || 1, n = Math.max(2, Math.round(d / seg));
@@ -9911,7 +9914,7 @@ const Game = {
     try { const wl = navigator.wakeLock && navigator.wakeLock.request('screen'); if (wl && wl.catch) wl.catch(() => {}); } catch (e) { /* not available */ }
   },
   loadLevel(li, fromCheckpoint) {
-    this.li = li; Store.data.mission = li; Store.save();
+    this.li = li; Ext.run(() => { Store.data.mission = li; Store.save(); });
     const L = this.level = new Level(LEVELS[li], li);
     this.enemies = []; this.bullets = []; this.ebullets = []; this.pickups = []; this.vehicles = []; this.coins = []; this.boss = null;
     Fx.length = 0; for (const p of Parts) PartPool.push(p); Parts.length = 0;
@@ -9946,7 +9949,7 @@ const Game = {
     if (this.surv || this.vs) { this.finishMode('over'); return; } // no continues in survival and versus games
     this.contT = 9.99; this.setState('continue'); Music.play('over'); Sfx.flame(false); this.saveHi(); Heroes.bankAll();
   },
-  saveHi() { let hi = Store.data.hi; for (const p of this.players) hi = Math.max(hi, p.score); if (hi !== Store.data.hi) { Store.data.hi = hi; Store.save(); } },
+  saveHi() { const sc = this.players.map(p => p.score); Ext.run(() => { let hi = Store.data.hi; for (const s of sc) hi = Math.max(hi, s); if (hi !== Store.data.hi) { Store.data.hi = hi; Store.save(); } }); },
   onPlayerDown(p) {
     this.stats.deaths++;
     if (p.lives > 0) {
@@ -10076,13 +10079,16 @@ const Game = {
     k.got = true; Sfx.pickup(); Game.addScore(p, 500);
     sparks(k.x, k.y, 14, -Math.PI / 2, TAU, 170, '255,220,90'); const r = P('ring', k.x, k.y, 0, 0, 0.35, 4, '255,214,90'); r.end = 30;
     popText(k.x, k.y - 14, k.ch + '!', '255,220,90');
-    const done = new Set();
-    for (const q of this.players) { // saved for the heroes on this computer
-      const h = Heroes.forPlayer(q); if (!h || done.has(h)) continue; done.add(h);
-      const was = (h.letters[this.li] || 0), now = was | (1 << k.i); h.letters[this.li] = now;
-      if (now === 127 && was !== 127) Trophies.add(h, 'words', 1);
-    }
-    Store.save();
+    const li = this.li, bit = 1 << k.i, players = this.players.slice();
+    Ext.run(() => { // saved for the heroes on this computer
+      const done = new Set();
+      for (const q of players) {
+        const h = Heroes.forPlayer(q); if (!h || done.has(h)) continue; done.add(h);
+        const was = (h.letters[li] || 0), now = was | bit; h.letters[li] = now;
+        if (now === 127 && was !== 127) Trophies.add(h, 'words', 1);
+      }
+      Store.save();
+    });
     if (this.level.letters.every(q => q.got)) { // all seven in one game: a reward
       this.banner('M-O-N-S-O-O-N!', 'All seven golden letters · +1 life', '255,214,90'); Sfx.oneup();
       for (const q of this.players) if (q.state !== 'out') q.lives++;
@@ -10109,9 +10115,12 @@ const Game = {
     const next = this.li + 1;
     Heroes.bankAll();
     if (this.storyMode) {
-      Store.data.story = Math.max(Store.data.story || 0, Math.min(next, LEVELS.length - 1));
-      for (const p of this.players) { const h = Heroes.forPlayer(p); if (h) h.story = Math.max(h.story || 0, Math.min(next, LEVELS.length - 1)); }
-      Store.save();
+      const players = this.players.slice();
+      Ext.run(() => {
+        Store.data.story = Math.max(Store.data.story || 0, Math.min(next, LEVELS.length - 1));
+        for (const p of players) { const h = Heroes.forPlayer(p); if (h) h.story = Math.max(h.story || 0, Math.min(next, LEVELS.length - 1)); }
+        Store.save();
+      });
     }
     const toVictory = () => { this.setState('victory'); Music.play('victory'); Ambience.set('jungle'); Sfx.flame(false); this.saveHi(); for (const p of Parts) PartPool.push(p); Parts.length = 0; };
     if (next >= LEVELS.length) { if (this.storyMode) this.playScene(STORY.end, -1, toVictory); else toVictory(); return; }
@@ -10217,16 +10226,20 @@ const Game = {
         this.tally = this.players.map(p => ({ tag: p.tag, style: p.style, score: p.score, bonus, lives: p.lives, combo: p.bestCombo, p }));
         for (const p of this.players) if (p.state !== 'out') p.score += bonus;
         this.clearStars = this.computeStars();
-        const st = Store.data.stars || (Store.data.stars = {});
-        st[this.li] = Math.max(st[this.li] || 0, this.clearStars); Store.save();
+        const li = this.li, stars = this.clearStars, players = this.players.slice();
         for (const k of this.coins) k.home = true; // coins still lying around fly to the heroes
         this.saveHi(); this.setState('clear'); Music.play('clear'); Sfx.flame(false);
-        const done = new Set(); // stars, story and trophies for the heroes saved on this computer
-        for (const p of this.players) {
-          const h = Heroes.forPlayer(p); if (!h || done.has(h)) continue; done.add(h);
-          h.stars[this.li] = Math.max(h.stars[this.li] || 0, this.clearStars);
-          Trophies.add(h, 'missions', 1); if (Net.on) Trophies.add(h, 'onlineMissions', 1);
-        }
+        Ext.run(() => { // stars, story and trophies for the heroes saved on this computer
+          const st = Store.data.stars || (Store.data.stars = {});
+          st[li] = Math.max(st[li] || 0, stars);
+          const done = new Set();
+          for (const p of players) {
+            const h = Heroes.forPlayer(p); if (!h || done.has(h)) continue; done.add(h);
+            h.stars[li] = Math.max(h.stars[li] || 0, stars);
+            Trophies.add(h, 'missions', 1); if (Net.on) Trophies.add(h, 'onlineMissions', 1);
+          }
+          Store.save();
+        });
         Heroes.bankAll();
       }
     }
@@ -10605,7 +10618,7 @@ const Game = {
     if (this.boss) this.boss.draw(c);
     for (const f of Fx) if (f.draw) f.draw(c);
     for (const v of this.vehicles) if (!v.rider) v.draw(c);
-    for (const p of this.players) p.draw(c);
+    for (const p of this.players) this.drawPlayerAt(c, p, 'draw');
     drawPartsNormal(c);
     L.drawLiquids(c);
     c.restore();
@@ -10627,7 +10640,7 @@ const Game = {
     for (const k of this.pickups) k.glow(c);
     for (const k of this.coins) k.glow(c);
     for (const v of this.vehicles) if (!v.rider) v.glow(c);
-    for (const p of this.players) p.glow(c);
+    for (const p of this.players) this.drawPlayerAt(c, p, 'glow');
     for (const b of this.bullets) b.glow(c);
     for (const b of this.ebullets) b.glow(c);
     for (const f of Fx) if (f.glow) f.glow(c);
@@ -10636,6 +10649,11 @@ const Game = {
     c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
     L.theme.weather(c, L);
     L.theme.fore(c, L);
+  },
+  drawPlayerAt(c, p, fn) { // (online: a friend's hero glides for a moment after a correction)
+    const o = Net.on ? Net.visOff(p.i) : null;
+    if (!o) { p[fn](c); return; }
+    c.save(); c.translate(o.x, o.y); p[fn](c); c.restore();
   },
   post(c) {
     if (!this.vig || this.vigW !== VW) {
@@ -11529,7 +11547,8 @@ const Trophies = {
 const NAME_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
 const Meta = {
   page: 'hero', sel: 0, slot: 0, who: 0, editing: false, np() { return clamp(Math.floor(Store.data.players) || 1, 1, 4); },
-  nextWho(dir = 1) { const n = this.np(); this.who = (this.who + dir + n) % n; Sfx.select(); }, // which player's hero, shop or trophies are showing nameBuf: [], nameSlot: 0, msg: '', msgT: 0, shopSel: 0, shopTop: 0, trSel: 0, preview: null, prevT: 0,
+  nextWho(dir = 1) { const n = this.np(); this.who = (this.who + dir + n) % n; Sfx.select(); }, // (which player's hero, shop or trophies are showing)
+  nameBuf: [], nameSlot: 0, msg: '', msgT: 0, shopSel: 0, shopTop: 0, trSel: 0, preview: null, prevT: 0,
   open(page) { this.page = page; this.sel = 0; this.who = 0; this.editing = false; this.msg = ''; this.shopSel = 0; this.shopTop = 0; this.trSel = 0; Game.setState('meta'); Sfx.confirm(); },
   hero() { return Heroes.of(this.who); },
   heroItems() {
@@ -11912,25 +11931,24 @@ Object.assign(Game, {
     if (this.state === 'results') return;
     Heroes.bankAll();
     const R = this.results = { mode: this.mode, reason, title: '', lines: [], record: '', win: -1 };
-    const local = this.players.map(p => Heroes.forPlayer(p));
+    const players = this.players.slice(), local = () => players.map(p => Heroes.forPlayer(p)); // (the heroes saved on this computer)
     if (this.mode === 'rush') {
       const done = reason === 'done', t = this.rush.t;
       R.title = done ? 'BOSS RUSH COMPLETE!' : 'BOSS RUSH OVER';
       R.lines.push(done ? 'All ' + LEVELS.length + ' bosses beaten in ' + fmtTime(t) : 'You beat ' + this.rush.i + ' of ' + LEVELS.length + ' bosses');
-      if (done) for (const h of new Set(local.filter(Boolean))) { Trophies.add(h, 'rushes', 1); if (!h.best.rush || t < h.best.rush) { h.best.rush = t; R.record = 'NEW BEST TIME!'; } }
+      if (done) Ext.run(() => { for (const h of new Set(local().filter(Boolean))) { Trophies.add(h, 'rushes', 1); if (!h.best.rush || t < h.best.rush) { h.best.rush = t; R.record = 'NEW BEST TIME!'; } } Store.save(); });
     } else if (this.mode === 'surv') {
-      const w = Math.max(0, this.surv.wave - (this.surv.k ? 1 : 0));
-      R.title = 'SURVIVAL'; R.lines.push('You survived ' + w + (w === 1 ? ' wave' : ' waves') + ' in ' + LEVELS[this.surv.li].name);
-      for (const h of new Set(local.filter(Boolean))) { const b = h.best.surv || (h.best.surv = {}); Trophies.add(h, 'survWave', w, true); if (w > (b[this.surv.li] || 0)) { b[this.surv.li] = w; R.record = 'NEW RECORD!'; } }
+      const w = Math.max(0, this.surv.wave - (this.surv.k ? 1 : 0)), sli = this.surv.li;
+      R.title = 'SURVIVAL'; R.lines.push('You survived ' + w + (w === 1 ? ' wave' : ' waves') + ' in ' + LEVELS[sli].name);
+      Ext.run(() => { for (const h of new Set(local().filter(Boolean))) { const b = h.best.surv || (h.best.surv = {}); Trophies.add(h, 'survWave', w, true); if (w > (b[sli] || 0)) { b[sli] = w; R.record = 'NEW RECORD!'; } } Store.save(); });
     } else if (this.vs) {
       const race = this.mode === 'race', v = this.vsScores();
       R.win = this.vsLeader();
       R.title = R.win < 0 ? "IT'S A DRAW!" : this.players[R.win].tag + ' WINS!';
       const parts = this.players.map((p, i) => p.tag + '  ' + (race ? v[i] + ' coins' : pad(v[i], 7)));
       for (let i = 0; i < parts.length; i += 2) R.lines.push(parts.slice(i, i + 2).join('      ')); // (two to a line)
-      if (R.win >= 0) { const h = local[R.win]; if (h) Trophies.add(h, 'wins', 1); }
+      if (R.win >= 0) { const wp = players[R.win]; Ext.run(() => { const h = Heroes.forPlayer(wp); if (h) Trophies.add(h, 'wins', 1); Store.save(); }); }
     }
-    Store.save();
     this.setState('results'); Music.play(reason === 'done' || this.vs ? 'victory' : 'clear'); Sfx.flame(false);
   },
   updateResults(dt, M, taps) {
@@ -11985,8 +12003,11 @@ function drawCrown(c, x, y, s = 1) {
 
 /* =====================================================================
    08_net.js : ONLINE CO-OP (web version) — up to four computers, one game.
-   Lockstep: every computer runs the same world. Every tick needs every
-   player's buttons; each computer sends its own buttons a few ticks ahead.
+   Every computer runs the same world, one tick at a time. Your own buttons
+   count almost at once (a tick or two ahead); for your friends the world
+   guesses that they keep pressing what they pressed last. When their real
+   buttons arrive and differ, the world goes back to that tick and redoes
+   the few ticks since then (08b_rollback.js), quietly, in the same frame.
    The host's computer is the hub: friends send their buttons to the host,
    and the host passes them on to everyone else (with its own).
    Gameplay dice are seeded the same everywhere, and the trig/exp maths
@@ -11995,8 +12016,9 @@ function drawCrown(c, x, y, s = 1) {
    if the worlds ever disagree, all of them reload from the last checkpoint.
    Connections go through PeerJS (WebRTC); a 4-letter room code joins them.
    ===================================================================== */
-const NET_VERSION = 'iron-monsoon-16a';
+const NET_VERSION = 'iron-monsoon-17a';
 const NET_TICK = 1 / 60, NET_DELAY = 4, NET_MAXDELAY = 18, NET_MAXP = 4;
+const NET_MAXPRED = 15; // how many ticks the world may run on guesses before it waits for a friend
 const NET_LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
 
 // mulberry32 whose state can be read (for the checksum)
@@ -12084,9 +12106,13 @@ Object.assign(Net, {
   lobby: { li: 0, diff: 'recruit', inf: false, gm: 'mission' }, seats: [null, null, null, null], seat: 0, saved: null, gid: 0, rng: null,
   // the shared game: n players, me = my player number; ins[i] = player i's buttons by tick; gone[i] = the tick player i left at
   n: 2, me: 0, ins: [], insMax: [], reps: [], gone: [], tick: 0, acc: 0, sums: new Map(), rsums: [], outK: -1, out: [],
-  delay: NET_DELAY, sched: -1, pend: 0, rtts: [], heard: 0, winMin: 99, winT: 0, calm: 0,
-  stallT: 0, stalls: 0, menu: false, menuSel: 0, desyncs: 0, mismatches: 0, resyncAt: -1, resyncMsg: null, syncFrom: 0, youT: 0, rtt: 0, pingT: 0,
+  delay: 2, sched: -1, pend: 0, rtts: [], heard: 0, winT: 0,
+  stallT: 0, stalls: 0, menu: false, menuSel: 0, desyncs: 0, mismatches: 0, resyncAt: -1, syncFrom: 0, youT: 0, rtt: 0, pingT: 0,
   offCalls: 0, snaps: null, tests: null,
+  // running ahead: the world saved at the start of each tick that may still be redone, the buttons each tick used,
+  // the earliest tick to redo, and the last tick that can no longer change
+  rbSnaps: new Map(), used: new Map(), rbTo: Infinity, fin: -1, lastBits: [], hashes: new Map(), snapPend: new Map(), resyncs: new Map(),
+  resim: false, rollbacks: 0, rbTicks: 0, banked: 0, vis: [],
 
   /* ---------- lobby ---------- */
   open() { this.phase = 'menu'; this.sel = 0; this.error = ''; Game.setState('online'); Sfx.confirm(); },
@@ -12344,10 +12370,11 @@ Object.assign(Net, {
   },
   dropPlayer(p) {
     if (!(p > 0 && p < this.n) || this.gone[p] !== Infinity) return;
-    const at = Math.max(this.insMax[p] + 1, this.tick); // every button of theirs we have was passed on before this message
+    const at = this.insMax[p] + 1; // (every button of theirs we have was passed on before this message)
     this.send({ t: 'drop', g: this.gid, p, at });
-    this.gone[p] = at;
+    this.heroGoes(p, at);
   },
+  heroGoes(p, at) { this.gone[p] = at; if (at < this.tick) this.rbTo = Math.min(this.rbTo, at); }, // (a world that guessed past it redoes those ticks)
   onData(m, L) {
     if (!m || typeof m !== 'object') return;
     if (L) L.heard = performance.now(); else this.heard = performance.now();
@@ -12394,8 +12421,8 @@ Object.assign(Net, {
       }
       case 'start': if (!this.on && this.phase === 'lobby') this.begin(m); break;
       case 'in': if (this.on && m.p >= 0 && m.p < this.n && m.p !== this.me) this.takeIn(m.p, m); break;
-      case 'resync': if (this.on && m.at > this.tick) { this.resyncAt = m.at; this.resyncMsg = m; } break;
-      case 'drop': if (this.on && m.p > 0 && m.p < this.n && this.gone[m.p] === Infinity) this.gone[m.p] = Math.max(m.at | 0, this.tick); break;
+      case 'resync': if (this.on && m.at > this.fin) { this.resyncs.set(m.at, m); if (m.at < this.tick) this.rbTo = Math.min(this.rbTo, m.at); } break;
+      case 'drop': if (this.on && m.p > 0 && m.p < this.n && this.gone[m.p] === Infinity) this.heroGoes(m.p, Math.max(m.at | 0, this.fin + 1)); break;
       case 'tolobby': if (this.on) { this.stop(); Game.setState('online'); this.phase = 'lobby'; this.sel = 0; } break;
       case 'ping': this.send({ t: 'pong', s: m.s }); break;
       case 'pong': { const r = performance.now() - m.s; if (r >= 0 && r < 5000) { this.rtt = r; this.rtts.push(r); if (this.rtts.length > 7) this.rtts.shift(); } break; }
@@ -12405,29 +12432,39 @@ Object.assign(Net, {
         : m.why === 'closed' ? 'The host closed the room.' : 'The host left the game.'); break;
     }
   },
+  // a friend's buttons arrived: keep them; a tick that already ran on a different guess gets redone
   takeIn(p, m) {
     if (!Array.isArray(m.d) || !(m.k >= 0)) return;
     const mp = this.ins[p]; if (!mp) return;
-    for (let i = 0; i < m.d.length; i++) if (m.k + i >= this.tick) mp.set(m.k + i, m.d[i] | 0);
-    this.insMax[p] = Math.max(this.insMax[p], m.k + m.d.length - 1);
-    if (Array.isArray(m.b)) this.reps[p] = m.b;
+    for (let i = 0; i < m.d.length; i++) {
+      const T = m.k + i; if (T <= this.fin || mp.has(T)) continue; // (already have it)
+      const b = m.d[i] | 0;
+      mp.set(T, b);
+      if (T < this.tick) { const u = this.used.get(T); if (u && u[p] !== b) this.rbTo = Math.min(this.rbTo, T); }
+    }
+    // insMax: the last tick up to which every one of their buttons is here (messages could come out of order)
+    const before = this.insMax[p];
+    while (mp.has(this.insMax[p] + 1)) this.insMax[p]++;
+    if (this.insMax[p] !== before) this.lastBits[p] = mp.get(this.insMax[p]);
+    if (Array.isArray(m.b) && !(m.k + m.d.length - 1 < (this.repK[p] || 0))) { this.reps[p] = m.b; this.repK[p] = m.k + m.d.length - 1; }
   },
-  // buttons are sent a few ticks ahead. The head start grows when buttons arrive late anywhere
-  // and shrinks again slowly when there is plenty of room; it never drops below what the ping needs.
-  delayFloor() {
+  // your buttons count a tick or two later (on every computer at the same tick): a small head start keeps the redos short
+  medRtt() {
     const med = a => { const s = a.slice().sort((x, y) => x - y); return s[s.length >> 1]; };
-    let r;
-    if (this.role === 'host') { const ms = this.links.filter(L => L.rtts.length).map(L => med(L.rtts)); if (!ms.length) return 2; r = Math.max(...ms) * 0.5; }
-    else { if (!this.rtts.length) return 2; r = med(this.rtts) * (this.n > 2 ? 1 : 0.5); } // (other friends' buttons come through the host: two trips)
-    return clamp(Math.ceil((r + 18) / (NET_TICK * 1000)), 2, NET_MAXDELAY);
+    if (this.role === 'host') { const ms = this.links.filter(L => L.rtts.length).map(L => med(L.rtts)); return ms.length ? Math.max(...ms) : null; }
+    return this.rtts.length ? med(this.rtts) : null;
   },
-  adapt() {
-    const floor = this.delayFloor();
-    if (this.winMin <= 0) { if (this.delay < NET_MAXDELAY) this.delay++; this.calm = 0; }
-    else if (this.winMin >= 3) { if (++this.calm >= 3 && this.delay > floor) { this.delay--; this.calm = 0; } }
-    else this.calm = 0;
-    if (this.delay < floor) this.delay = floor;
-    this.winMin = 99;
+  pickDelay() { const r = this.medRtt(); return r === null ? 1 : r < 110 ? 1 : r < 220 ? 2 : 3; }, // (1 tick = 17 ms)
+  // the last tick whose buttons have all arrived (the world up to there can never change again)
+  realUpTo() {
+    let m = Infinity;
+    for (let i = 0; i < this.n; i++) { if (i === this.me || (this.gone[i] !== Infinity && this.insMax[i] >= this.gone[i] - 1)) continue; m = Math.min(m, this.insMax[i]); }
+    return m === Infinity ? this.tick - 1 : m;
+  },
+  inputFor(i, T) { if (T >= this.gone[i]) return 0; const b = this.ins[i].get(T); return b !== undefined ? b : this.lastBits[i]; }, // (a guess: what they pressed last)
+  bankCoins(c) { // online: coins go into your own hero's piggy bank (counted by the world, so a redo can never pay twice)
+    const v = c[this.me] || 0, n = v - this.banked; if (n <= 0) return;
+    const h = Heroes.of(0); h.coins += n; this.banked = v; Trophies.add(h, 'coins', n); Store.save();
   },
 
   /* ---------- starting and stopping a shared game ---------- */
@@ -12464,24 +12501,28 @@ Object.assign(Net, {
     this.saved = this.saved || { diff: Store.data.diff, inf: Store.data.inf, players: Store.data.players, mission: Store.data.mission };
     Store.data.diff = m.diff; Store.data.inf = m.inf; Store.data.players = n;
     this.on = true; this.gid = m.seed; this.tick = 0; this.acc = 0; this.stallT = 0; this.stalls = 0; this.menu = false; this.youT = 5;
-    this.desyncs = 0; this.mismatches = 0; this.resyncAt = -1; this.resyncMsg = null; this.syncFrom = 0; this.offCalls = 0;
+    this.desyncs = 0; this.mismatches = 0; this.resyncAt = -1; this.syncFrom = 0; this.offCalls = 0;
     this.sums.clear(); this.out = []; this.outK = -1;
+    this.rbSnaps = new Map(); this.used = new Map(); this.rbTo = Infinity; this.fin = -1; this.hashes = new Map(); this.snapPend = new Map(); this.resyncs = new Map();
+    this.lastBits = new Array(n).fill(0); this.repK = new Array(n).fill(0); this.resim = false; this.rollbacks = 0; this.rbTicks = 0; this.banked = 0; this.vis = [];
     this.ins = []; this.insMax = []; this.reps = []; this.gone = []; this.rsums = [];
     for (let i = 0; i < n; i++) {
       const mp = new Map(); for (let k = 0; k < NET_DELAY; k++) mp.set(k, 0);
       this.ins.push(mp); this.insMax.push(NET_DELAY - 1); this.reps.push(null); this.gone.push(Infinity); this.rsums.push(new Map());
     }
-    this.delay = clamp(Math.max(this.delay || 0, this.delayFloor() + 1), 3, NET_MAXDELAY); this.pend = 0; this.winMin = 99; this.winT = 0; this.calm = 0;
+    this.delay = this.pickDelay(); this.pend = 0; this.winT = 0;
     this.sched = NET_DELAY - 1;
     this.snaps = window.IM_NETTEST ? new Map() : null; this.tests = null;
     resize();
     this.rng = netRng(m.seed);
     Game.loadouts = this.gameLoadouts(m, n);
     const gm = NET_GAMES.includes(m.gm) ? m.gm : 'mission';
+    Ext.q = []; Ext.tick = -1; Ext.on = true;
     this.sim(() => { Game.simT = 0; Game.god = false; Game.titleCam = 0; Game.startGame(false, gm === 'rush' ? 0 : m.li, gm === 'mission' ? null : gm); Game.stateT = 0; });
+    RB.prepGame();
   },
   stop() {
-    if (this.on) Heroes.bankAll(); // (while still online, so only your own hero gets your coins)
+    if (this.on) { Ext.commit(this.fin); Ext.q = []; Ext.on = false; Heroes.bankAll(); } // (what is certain gets saved; your own coins go into your own hero)
     this.on = false; this.menu = false;
     for (const L of this.links) L.pi = -1;
     if (this.saved) { Object.assign(Store.data, this.saved); this.saved = null; Store.save(); }
@@ -12491,7 +12532,6 @@ Object.assign(Net, {
   toLobby() { this.send({ t: 'tolobby' }); this.stop(); Game.setState('online'); this.phase = 'lobby'; this.sel = 0; this.sendRoom(); },
 
   /* ---------- the shared game, one tick at a time ---------- */
-  ready(T) { for (let i = 0; i < this.n; i++) if (T < this.gone[i] && !this.ins[i].has(T)) return false; return true; },
   frame(rdt) {
     Input.update(1, rdt);
     const M = Input.menu, taps = Touch.taps;
@@ -12502,31 +12542,74 @@ Object.assign(Net, {
     if (!this.on) return; // left the game from the menu
     const cur = this.menu ? 0 : netEncode(Input.p[0]);
     this.pend |= cur; // a quick tap between two ticks still counts
-    // each friend: how many ticks of their buttons wait here, and how many of ours wait there (from their reports)
+    // stay in step with the friends: a computer that runs ahead of one of them eases off a little
     let ahead = false;
     for (let j = 0; j < this.n; j++) {
       if (j === this.me || this.gone[j] !== Infinity) continue;
       const have = this.insMax[j] - this.tick, R = this.reps[j], rb = R && Number.isFinite(R[this.me]) ? R[this.me] : 99;
-      if (have < rb - 1) ahead = true; // running ahead of that friend: ease off a little
-      if (!(have <= 0 && rb >= this.delay)) this.winMin = Math.min(this.winMin, have, rb); // (a friend who is simply slower is not a network problem)
+      if (have < rb - 1) ahead = true;
     }
-    this.acc = Math.min(this.acc + rdt * (ahead ? 0.9 : 1), 0.3);
-    this.winT += rdt; if (this.winT >= 1) { this.winT = 0; this.adapt(); }
-    let n = 0; const maxN = this.acc > 0.1 ? 10 : 3;
+    this.acc = Math.min(this.acc + rdt * (ahead ? 0.92 : 1), 0.25);
+    this.winT += rdt; if (this.winT >= 2) { this.winT = 0; this.delay = this.pickDelay(); }
+    if (this.rbTo < this.tick) this.rollback(); // real buttons came in that differ from the guess: redo from there
+    let n = 0; const maxN = this.acc > 0.1 ? 8 : 3, upto = this.realUpTo();
     while (this.on && this.acc >= NET_TICK && n < maxN) {
       const T = this.tick;
+      if (T - upto > NET_MAXPRED) break; // too far ahead of a friend's buttons: wait for them
       if (this.sched < T + this.delay) {
         const b = this.pend | cur, mine = this.ins[this.me]; this.pend = 0;
         while (this.sched < T + this.delay) { this.sched++; mine.set(this.sched, b); this.queue(this.sched, b); }
         this.insMax[this.me] = this.sched;
       }
-      if (!this.ready(T)) break;
-      this.simTick(T);
-      for (const mp of this.ins) mp.delete(T);
+      this.rbSnaps.set(T, RB.save());
+      this.simTick(T, false);
       this.tick++; this.acc -= NET_TICK; n++;
     }
     if (n === 0 && this.on && this.acc >= NET_TICK) { if (this.stallT === 0) this.stalls++; this.stallT += rdt; } else this.stallT = 0;
+    if (this.on) this.finalize();
+    const k = Math.exp(-rdt / 0.09); for (const v of this.vis) if (v) { v.x *= k; v.y *= k; } // (smoothing fades away)
     this.flush();
+  },
+  // back to the start of tick R, then the ticks since then again with the buttons we know now (quietly)
+  rollback() {
+    const R = this.rbTo; this.rbTo = Infinity;
+    const S = this.rbSnaps.get(R); if (!S || R <= this.fin) return;
+    const before = Game.players.map(p => p.state === 'alive' ? [p.x, p.y] : null);
+    RB.load(S); Ext.drop(R);
+    this.resim = true; this.rollbacks++;
+    try { for (let T = R; T < this.tick; T++) { if (T > R) this.rbSnaps.set(T, RB.save()); this.simTick(T, true); this.rbTicks++; } }
+    finally { this.resim = false; }
+    // the friends' heroes glide to where they really are instead of jumping there
+    Game.players.forEach((p, i) => {
+      const b = before[i]; if (!b || i === this.me || p.state !== 'alive') return;
+      const dx = b[0] - p.x, dy = b[1] - p.y;
+      if (Math.abs(dx) < 64 && Math.abs(dy) < 64) { const v = this.vis[i] || (this.vis[i] = { x: 0, y: 0 }); v.x += dx; v.y += dy; }
+    });
+    Game.flameSound();
+  },
+  visOff(i) { const v = this.vis[i]; return v && (Math.abs(v.x) > 0.05 || Math.abs(v.y) > 0.05) ? v : null; }, // (where a friend's hero is drawn, for a moment)
+  // ticks whose buttons have all arrived can never change: send their checksums, save what they earned, forget their saves
+  finalize() {
+    let upto = Math.min(this.realUpTo(), this.tick - 1);
+    if (this.rbTo <= upto) upto = this.rbTo - 1;
+    if (upto <= this.fin) return;
+    const host = this.role === 'host';
+    for (let T = this.fin + 1; T <= upto; T++) {
+      const h = this.hashes.get(T);
+      if (h !== undefined) { this.hashes.delete(T); if (host) { this.sums.set(T, h); this.checkSum(T); } else this.send({ t: 'sum', g: this.gid, k: T, h }); }
+      if (this.snaps) { const sn = this.snapPend.get(T); if (sn !== undefined) { this.snapPend.delete(T); this.snaps.set(T, sn); this.snaps.delete(T - 1200); } }
+      if (this.snaps) { const u = this.used.get(T); (this.usedLog || (this.usedLog = new Map())).set(T, u ? u.join(',') : '?'); this.usedLog.delete(T - 1200); } // (test page: the buttons each final tick used)
+      this.rbSnaps.delete(T); this.used.delete(T); this.resyncs.delete(T);
+      for (const mp of this.ins) mp.delete(T);
+      if (this.tests) this.tests.delete(T);
+      if (host && T % 600 === 0) { // forget old checksums (from friends who left)
+        for (const k of [...this.sums.keys()]) if (k < T - 600) this.sums.delete(k);
+        for (const R of this.rsums) for (const k of [...R.keys()]) if (k < T - 600) R.delete(k);
+      }
+    }
+    Ext.commit(upto);
+    this.fin = upto;
+    if (this.resyncAt >= 0 && upto >= this.resyncAt) this.resyncAt = -1;
   },
   queue(k, b) { if (this.outK < 0) this.outK = k; this.out.push(b); },
   flush() {
@@ -12535,13 +12618,16 @@ Object.assign(Net, {
     if (this.role === 'host') m.p = 0;
     this.send(m); this.out = []; this.outK = -1;
   },
-  simTick(T) {
-    if (T === this.resyncAt) this.applyResync();
-    for (let i = 0; i < 4; i++) netDecode(i < this.n && T < this.gone[i] ? this.ins[i].get(T) : 0, Input.p[i]);
+  simTick(T, resim) {
+    const rs = this.resyncs.get(T); if (rs) this.applyResync(rs);
+    const u = new Array(this.n);
+    for (let i = 0; i < 4; i++) { const b = i < this.n ? this.inputFor(i, T) : 0; if (i < this.n) u[i] = b; netDecode(b, Input.p[i]); }
+    this.used.set(T, u);
+    Ext.tick = T;
     this.sim(() => {
       Scr.hitstop = 0; Scr.slow = 1;
       for (let i = 0; i < this.n; i++) if (T === this.gone[i]) this.heroLeft(i);
-      if (this.tests && this.tests.has(T)) { this.testAct(this.tests.get(T)); this.tests.delete(T); }
+      const act = this.tests && this.tests.get(T); if (act) this.testAct(act);
       Game.stateT += NET_TICK;
       switch (Game.state) {
         case 'play': Game.step(NET_TICK); break;
@@ -12551,17 +12637,9 @@ Object.assign(Net, {
         case 'results': break; // (the world waits while everyone reads the results)
       }
     });
-    const host = this.role === 'host';
-    if ((Game.state === 'victory' || Game.state === 'results') && Game.stateT > 9 && host) { this.toLobby(); return; }
-    if (T % 60 === 30 && Game.state !== 'victory') {
-      const h = this.hash();
-      if (host) { this.sums.set(T, h); this.checkSum(T); } else this.send({ t: 'sum', g: this.gid, k: T, h });
-    }
-    if (host && T % 600 === 0) { // forget old checksums (from friends who left)
-      for (const k of [...this.sums.keys()]) if (k < T - 600) this.sums.delete(k);
-      for (const R of this.rsums) for (const k of [...R.keys()]) if (k < T - 600) R.delete(k);
-    }
-    if (this.snaps && T % 10 === 0 && Game.state !== 'victory') { this.snaps.set(T, this.snap()); this.snaps.delete(T - 1200); }
+    if (T % 60 === 30 && Game.state !== 'victory') this.hashes.set(T, this.hash()); // (sent once the tick is certain)
+    if (this.snaps && T % 10 === 0 && Game.state !== 'victory') this.snapPend.set(T, this.snap());
+    if (!resim && this.role === 'host' && (Game.state === 'victory' || Game.state === 'results') && Game.stateT > 9) this.toLobby();
   },
   heroLeft(i) { // a friend left the game: their hero leaves too (the same tick on every computer)
     const p = Game.players[i]; if (!p) return;
@@ -12614,32 +12692,32 @@ Object.assign(Net, {
   },
   planResync() { // every world reloads from the host's last checkpoint a few ticks from now
     if (this.resyncAt >= 0) return;
-    const at = Math.max(this.sched, this.tick + this.delay) + 20; // (later than any tick a friend can reach before this message arrives)
+    const at = Math.max(this.sched, this.tick + this.delay) + NET_MAXPRED + 8; // (later than any tick a friend can reach before this message arrives)
     const pl = Game.players.map(p => ({ lives: p.lives, score: p.score, weapon: p.weapon, wlv: p.wlv, nextLife: p.nextLife, bestCombo: p.bestCombo, guns: p.guns.slice(), glv: Object.assign({}, p.glv), sup: p.sup, coins: p.coins, coins0: p.coins0, left: !!p.left }));
     const cp = Game.checkpoint && Game.checkpoint.li === Game.li ? Game.checkpoint : null;
     const m = { t: 'resync', g: this.gid, at, seed: (Math.random() * 2 ** 31) | 0, li: Game.li, cp, pl };
-    this.resyncAt = at; this.resyncMsg = m; this.send(m);
+    this.resyncAt = at; this.resyncs.set(at, m); this.send(m);
   },
-  applyResync() { // a fresh start for every world: new heroes, the level rebuilt, the same dice
-    const m = this.resyncMsg; this.resyncAt = -1; this.resyncMsg = null; if (!m) return;
-    Heroes.bankAll(); // coins so far are safe; the new heroes start with the host's count already banked
+  applyResync(m) { // a fresh start for every world at tick m.at: new heroes, the level rebuilt, the same dice
+    Ext.tick = m.at;
+    Heroes.bankAll(); // (coins so far are safe)
     this.rng = netRng(m.seed);
     this.sim(() => {
       Game.simT = 0; Game.checkpoint = m.cp;
       Game.players = []; for (let i = 0; i < this.n; i++) Game.players.push(new Player(i));
-      Game.players.forEach((p, i) => { const s = m.pl && m.pl[i]; if (s) Object.assign(p, s); p.banked = p.coins; if (i < this.n && this.gone[i] <= this.tick) p.left = true; });
+      Game.players.forEach((p, i) => { const s = m.pl && m.pl[i]; if (s) Object.assign(p, s); if (this.gone[i] <= m.at) p.left = true; });
       if (Game.state !== 'play') Game.setState('play');
       Game.loadLevel(m.li, true);
       Game.stateT = 0;
     });
-    this.syncFrom = this.tick;
-    for (const k of [...this.sums.keys()]) if (k < this.tick) this.sums.delete(k);
-    for (const R of this.rsums) for (const k of [...R.keys()]) if (k < this.tick) R.delete(k);
+    this.syncFrom = m.at;
+    for (const k of [...this.sums.keys()]) if (k < m.at) this.sums.delete(k);
+    for (const R of this.rsums) for (const k of [...R.keys()]) if (k < m.at) R.delete(k);
     Game.banner('RESYNC', 'Back to the last checkpoint', '140,200,255');
   },
 
   // (automatic test page only) the same action applied to every world at the same tick
-  testAt(at, act) { if (window.IM_NETTEST) (this.tests || (this.tests = new Map())).set(at, act); },
+  testAt(at, act) { if (!window.IM_NETTEST || at <= this.fin) return; (this.tests || (this.tests = new Map())).set(at, act); if (at < this.tick) this.rbTo = Math.min(this.rbTo, at); },
   testAct(act) {
     const G = Game, L = G.level, B = G.boss;
     if (act === 'boss') { const k = L.segs.length - 1; G.checkpoint = { li: G.li, k, p: L.segs[k].len, x: 1e9 }; G.loadLevel(G.li, true); }
@@ -12753,8 +12831,8 @@ Object.assign(Net, {
       setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillText('YOU', x, y - 2); c.globalAlpha = 1;
     }
     if (this.stallT > 0.5 && Game.state !== 'victory') {
-      const long = this.stallT > 4, who = [];
-      for (let i = 0; i < this.n; i++) if (i !== this.me && this.tick < this.gone[i] && !this.ins[i].has(this.tick) && Game.players[i]) who.push(Game.players[i].tag);
+      const long = this.stallT > 4, who = [], up = this.realUpTo();
+      for (let i = 0; i < this.n; i++) if (i !== this.me && this.gone[i] === Infinity && this.insMax[i] <= up && Game.players[i]) who.push(Game.players[i].tag);
       const txt = who.length === 1 ? 'Waiting for ' + who[0] + '…' : 'Waiting for your friends…';
       c.fillStyle = 'rgba(8,16,32,0.8)'; rrect(c, VW / 2 - 110, VH / 2 - 16, 220, long ? 32 : 24, 6); c.fill();
       setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffec78'; c.textAlign = 'center'; c.fillText(txt, VW / 2, VH / 2);
@@ -12775,9 +12853,159 @@ addEventListener('keydown', e => { if (!e.repeat) Net.typed(e.code); });
 window.__NET = Net; window.__DMATH = { DMath, NATIVE_MATH, netRng, withDetMath };
 
 /* =====================================================================
+   08b_rollback.js : save and restore the shared world in place.
+   Online games run ahead on a guess of the friends' buttons (their last
+   ones). When the real buttons arrive and differ, the world goes back to
+   the saved tick and quietly replays the ticks since then. Saving copies
+   the fields of every object of the world (not the objects themselves),
+   so restoring puts every object back exactly as it was, and everything
+   that points at an object still points at the same one.
+   ===================================================================== */
+const RB = {
+  STATIC: new WeakSet(), // things that never change while a game runs (tables, pictures, level shapes)
+  kinds: new Map(),      // prototype -> how to copy objects of that kind
+  GAME_SKIP: new Set(['titleLevel', 'heroes', 'loadouts', 'vig', 'vigW', 'menuSel', 'pauseSel', 'titlePage', 'portraitOK', 'scene', 'storyPick', 'rt', 'contT']),
+  LEVEL_SKIP: new Set(['def', 'theme', 'solids', 'oneways', 'waters', 'hazards', 'props', 'backdrops', 'statics', 'buckets', '_q', '_stamp', 'segs', 'rail', 'unders', 'tex', 'scorch', 'birds', 'chirpT', 'name', 'index', 'dynOne', 'rbReady']),
+  kind(o) {
+    const pr = Object.getPrototypeOf(o);
+    let k = this.kinds.get(pr);
+    if (k) return k;
+    if (pr === Object.prototype || pr === null) k = 'obj';
+    else if (pr === Array.prototype) k = 'arr';
+    else if (pr === Map.prototype) k = 'map';
+    else if (pr === Set.prototype) k = 'set';
+    else if (o instanceof Level) k = 'level';
+    else if (o instanceof EventTarget || ArrayBuffer.isView(o) || o instanceof ArrayBuffer || o instanceof CanvasRenderingContext2D || o instanceof CanvasGradient
+      || o instanceof CanvasPattern || o instanceof ImageData || o instanceof WeakMap || o instanceof WeakSet || o instanceof Promise || o instanceof RegExp || o instanceof Date
+      || (window.Path2D && o instanceof Path2D) || (window.AudioBuffer && o instanceof AudioBuffer) || (window.ImageBitmap && o instanceof ImageBitmap)) k = 'atom';
+    else if (Array.isArray(o)) k = 'arr';
+    else k = 'obj'; // one of the game's own classes
+    this.kinds.set(pr, k);
+    return k;
+  },
+  // mark a table and everything inside it as never changing
+  markStatic(...roots) {
+    const st = roots.slice();
+    while (st.length) {
+      const x = st.pop();
+      if (x === null || typeof x !== 'object' || this.STATIC.has(x)) continue;
+      const k = this.kind(x); this.STATIC.add(x);
+      if (k === 'atom') continue;
+      if (k === 'map') { for (const [a, b] of x) st.push(a, b); }
+      else if (k === 'set') { for (const a of x) st.push(a); }
+      else if (k === 'arr') { for (let i = 0; i < x.length; i++) st.push(x[i]); }
+      else for (const key in x) st.push(x[key]);
+    }
+  },
+  // a fresh level: its shapes never change (only crumbling ledges, lifts, spawns, ambushes and the like do)
+  prepLevel(L) {
+    if (!L || L.rbReady) return; L.rbReady = true;
+    const S = this.STATIC;
+    for (const k of ['def', 'theme', 'solids', 'waters', 'hazards', 'props', 'backdrops', 'statics', 'segs', 'rail', 'buckets']) { const v = L[k]; if (v && typeof v === 'object') S.add(v); }
+    for (const a of [L.solids, L.waters, L.hazards, L.props, L.backdrops, L.statics, L.segs]) if (a) for (const s of a) S.add(s);
+    if (L.buckets) for (const a of L.buckets.values()) S.add(a);
+    S.add(L.oneways); for (const s of L.oneways) if (!s.crumble) S.add(s);
+    L.dynOne = L.oneways.filter(s => s.crumble);
+    for (const k of L.locks) this.markStatic(k.waves);
+    for (const t of L.talks) this.markStatic(t.lines);
+    this.markStatic(L.def, L.theme);
+  },
+  accCache: new WeakMap(),
+  accessors(o) { // the getter fields of a plain object (or null)
+    let a = this.accCache.get(o);
+    if (a === undefined) { a = null; const ds = Object.getOwnPropertyDescriptors(o); for (const k in ds) if (ds[k].get || ds[k].set) (a || (a = new Set())).add(k); this.accCache.set(o, a); }
+    return a;
+  },
+  save() {
+    const recs = [], seen = new Set(), stack = [], S = this.STATIC;
+    const push = v => { if (v !== null && typeof v === 'object' && !S.has(v) && !seen.has(v)) { seen.add(v); stack.push(v); } };
+    const g = {};
+    for (const k in Game) { if (this.GAME_SKIP.has(k)) continue; const v = Game[k]; if (typeof v === 'function') continue; g[k] = v; push(v); }
+    recs.push(Game, g, 0);
+    while (stack.length) {
+      const o = stack.pop(), kd = this.kind(o);
+      if (kd === 'arr') { const c = o.slice(); recs.push(o, c, 0); for (let i = 0; i < c.length; i++) push(c[i]); }
+      else if (kd === 'obj') {
+        const c = {}, acc = Object.getPrototypeOf(o) === Object.prototype ? this.accessors(o) : null; let n = 0;
+        for (const k in o) { n++; if (k === '_st' || (acc && acc.has(k))) continue; const v = o[k]; c[k] = v; push(v); } // (getters work things out from other fields)
+        recs.push(o, c, n);
+      }
+      else if (kd === 'map') { const c = [...o]; recs.push(o, c, 0); for (const [a, b] of c) { push(a); push(b); } }
+      else if (kd === 'set') { const c = [...o]; recs.push(o, c, 0); for (const a of c) push(a); }
+      else if (kd === 'level') {
+        if (!o.rbReady) this.prepLevel(o);
+        const c = {}; let n = 0; for (const k in o) { n++; if (this.LEVEL_SKIP.has(k)) continue; const v = o[k]; c[k] = v; push(v); }
+        recs.push(o, c, n); for (const s of o.dynOne) push(s);
+      }
+    }
+    return { recs, cam: [Cam.x, Cam.y, Cam.k, Cam.p], rng: Net.rng, rngS: Net.rng ? Net.rng.s : 0 };
+  },
+  load(snap) {
+    const r = snap.recs;
+    for (let i = 0; i < r.length; i += 3) {
+      const o = r[i], c = r[i + 1], n = r[i + 2];
+      if (o === Game) { for (const k in Game) { if (!(k in c) && !this.GAME_SKIP.has(k) && typeof Game[k] !== 'function') delete Game[k]; } Object.assign(Game, c); continue; }
+      if (Array.isArray(c)) {
+        if (o instanceof Map) { o.clear(); for (const [a, b] of c) o.set(a, b); }
+        else if (o instanceof Set) { o.clear(); for (const a of c) o.add(a); }
+        else { o.length = c.length; for (let j = 0; j < c.length; j++) o[j] = c[j]; }
+        continue;
+      }
+      const ks = Object.keys(o);
+      if (ks.length !== n) { const lv = o instanceof Level; for (const k of ks) if (!(k in c) && k !== '_st' && !(lv && this.LEVEL_SKIP.has(k))) delete o[k]; } // (fields added after the save)
+      Object.assign(o, c);
+    }
+    Cam.x = snap.cam[0]; Cam.y = snap.cam[1]; Cam.k = snap.cam[2]; Cam.p = snap.cam[3];
+    if (snap.rng) { Net.rng = snap.rng; snap.rng.s = snap.rngS; }
+  },
+  // the tables of the game never change: copying them every tick would only cost time
+  init() {
+    const t = [];
+    const add = f => { try { const v = f(); if (v && typeof v === 'object') t.push(v); } catch (e) { /* not in this build */ } };
+    add(() => WEAPONS); add(() => VEH); add(() => MINI); add(() => MINI_CLASS); add(() => BUFFS); add(() => DIFF); add(() => SUPER);
+    add(() => STYLE_P1); add(() => STYLE_P2); add(() => STYLE_TROOPER); add(() => STYLE_ELITE); add(() => THEMES); add(() => LEVELS); add(() => PROPS);
+    add(() => SPEAKERS); add(() => STORY); add(() => MODES); add(() => SHOP); add(() => TROPHIES); add(() => OUTFITS); add(() => ARMOR); add(() => SCARF);
+    add(() => TOPPER); add(() => DROP_POOL); add(() => ART); add(() => SONGS); add(() => STAR_RGB); add(() => FIRE_RAMP); add(() => HERO_LOOKS); add(() => HERO_NAMES);
+    add(() => NONE); add(() => DUMMY);
+    this.markStatic(...t);
+  },
+  // the heroes of a new game: their looks and shop upgrades never change while it runs
+  prepGame() { this.markStatic(Game.loadouts); for (const p of Game.players) this.markStatic(p.style, p.lo); },
+};
+
+/* ---------------- things outside the world (saved heroes, trophies, coins in the bank) ----------------
+   Online, a tick can be redone, so anything that changes the saved heroes waits in this list until its
+   tick can no longer change; a redo throws away what its ticks had planned. Offline it happens at once. */
+const Ext = {
+  on: false, tick: -1, q: [],
+  run(fn) { if (this.on) this.q.push({ T: this.tick, fn }); else fn(); },
+  drop(fromT) { if (this.q.length) this.q = this.q.filter(e => e.T < fromT); },
+  commit(upto) {
+    const q = this.q; let i = 0;
+    while (i < q.length && q[i].T <= upto) i++;
+    if (!i) return;
+    const now = q.splice(0, i), was = this.on; this.on = false;
+    try { for (const e of now) e.fn(); } finally { this.on = was; }
+  },
+};
+for (const k of ['ev', 'add', 'ride']) { // trophies
+  const f = Trophies[k];
+  Trophies[k] = function (...a) { if (Ext.on) { Ext.run(() => f.apply(Trophies, a)); return; } return f.apply(Trophies, a); };
+}
+{ // coins into the piggy bank: online, only your own hero's, counted at that tick
+  const f = Heroes.bankAll;
+  Heroes.bankAll = function () {
+    if (!Net.on) return f.apply(Heroes);
+    const c = Game.players.map(p => p.coins || 0);
+    Ext.run(() => Net.bankCoins(c));
+  };
+}
+
+/* =====================================================================
    09_boot.js : start the game (last, so every part of the game is ready)
    ===================================================================== */
-window.__IM = { Game, Cam, Store, LEVELS, Input, Touch, ART, STORY, muzzle: soldierMuzzle, Heroes, Meta, Trophies, SHOP, TROPHIES, OUTFITS };
+window.__IM = { Game, Cam, Store, LEVELS, Input, Touch, ART, STORY, muzzle: soldierMuzzle, Heroes, Meta, Trophies, SHOP, TROPHIES, OUTFITS, RB };
+RB.init(); // (the game's tables never change: online rollback skips them)
 const HOT = window.claude && window.claude.hot;
 if (HOT && HOT.snapshot) { try { HOT.snapshot(() => ({ mission: Store.data.mission })); } catch (e) { /* viewer hook unavailable */ } }
 if (HOT && HOT.ready) HOT.ready(start); else start((HOT && HOT.data) || {});
