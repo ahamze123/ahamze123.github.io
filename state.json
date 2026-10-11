@@ -3715,6 +3715,12 @@
     },
     "status": "SUCCEEDED",
     "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12a2b-9f70-70e9-9830-70222afc9d44/output/preview.png?Expires=1791968161&Signature=pojfqXO0jx8Q44GLFP5cbqky1rRavQJOvSLCNwveYWxQhsdhUhrazxRk-1mYBSnPnTENfYRwBYPJ2HR6bC1uPF0NXhPUhePWpWn4nA0FKRdYLBYZqkx9gNKAdc2JSbLc5bYeIq7gNcbJdPa5CX-tDSTNSJldNcN8d0~rH2yVyQ5wfHfJ1~lPU1cpaOM2fB1x1ZcT1lDDCe1F2jsGRqbU07FsY8SO5g-uyXwcErqm~kQ60Q6at4An5Z333obdK17XKNI-S30FJAMUV1MLMa-QGn-MI0eQag0lTBTdWR7hLEP9Ntrer-bfZBuolLLo9CiF0dYzFzeb--RvWo4qoyWnUg__&Key-Pair-Id=K1VGYTHIYLM9UM"
+   },
+   "rig": {
+    "id": "01a12a2d-4ce2-7034-a15f-81e18a0b92e6",
+    "made": "2026-10-11 08:56",
+    "model": "01a12a2b-9f70-70e9-9830-70222afc9d44",
+    "status": "PENDING"
    }
   },
   "sm_tank": {
@@ -3765,7 +3771,32 @@
    "rig": {
     "credits": 5,
     "error": null,
-    "files": {},
+    "files": {
+     "model": {
+      "bytes": 2213436,
+      "clips": [
+       "Armature|clip0|baselayer"
+      ],
+      "joints": 24,
+      "triangles": 20838
+     },
+     "running": {
+      "bytes": 47196,
+      "clips": [
+       "Armature|running|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     },
+     "walking": {
+      "bytes": 57836,
+      "clips": [
+       "Armature|walking_man|baselayer"
+      ],
+      "joints": 0,
+      "triangles": 0
+     }
+    },
     "id": "01a12a2d-1ff3-77fb-98c9-0eaf9e140db8",
     "made": "2026-10-11 08:56",
     "model": "01a12a2b-9f89-73de-b4e0-2012a8d3193d",

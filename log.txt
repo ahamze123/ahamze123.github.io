@@ -1183,3 +1183,4 @@
 2026-10-11 08:56:16 [sm_ember] rig task made 01a12a2d-4889-7068-b414-747af3f9f10f
 2026-10-11 08:56:17 [sm_volt] rigging SUCCEEDED 100%
 2026-10-11 08:56:17 [sm_tank] rig task made 01a12a2d-4cfd-73d2-b42b-2c5e0305fe78
+2026-10-11 08:56:17 [sm_hawk] rig task made 01a12a2d-4ce2-7034-a15f-81e18a0b92e6
