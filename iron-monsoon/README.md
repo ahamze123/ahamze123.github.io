@@ -37,6 +37,13 @@ The **TROPHIES** wall has 22 trophies to win, like beating a boss without gettin
 - On a computer, press the full-screen button at the top right of the title screen, or turn on **FULL SCREEN** in the pause menu.
 - On a phone or tablet, the first tap switches to full screen. For the best experience, use **Add to Home Screen** (Safari: Share button). The game then opens like an app, full screen and sideways.
 
+## Mini-bosses
+Halfway through every mission a mini-boss blocks the way: the **CRAB TANK**, **HOVER GUNSHIP**, **SHIELD TITAN**, **SPIDER MECH**, **FROST WALKER** and **MAGMA GOLEM**. Each one has a glowing weak spot that takes extra damage, and each gets angry below half health. The Shield Titan blocks shots with its shield, so hit its back when it turns round to fire.
+
+## Secrets
+- Every mission hides the seven golden letters **M-O-N-S-O-O-N**. They show at the top of the screen; letters a hero found before are see-through. Find all seven in one game for an extra life and a shower of coins.
+- Two **treasure chests** wait on high ledges in every mission. Shoot them open for a pile of coins.
+
 ## Boss fights
 Every boss fights in three stages. When its health bar passes a white mark, it goes into **FURY**: it roars, blows you back, gets faster and calls in flying robots. In the last stage (**FINAL FURY**) red marks appear on the floor, and rocks crash down on them a moment later, so keep moving.
 
@@ -63,10 +70,13 @@ Defeating robots, grabbing power-ups, freeing Bolt bots and hitting bosses fills
 Every gun you pick up stays with you. Press **Q** (or **Y**, or the gun button) to switch between them. The little hexagons in your panel show the guns you carry.
 
 ## Vehicles
-Every mission has vehicles waiting for you. Walk into one to climb in, and press **down + jump** to hop off.
+Every mission has vehicles waiting for you: six kinds in all. Walk into one to climb in, and press **down + jump** to hop off.
 - **STORM BIKE** is very fast, jumps far and rams robots. Its twin blasters fire forward.
 - **BOLT TANK** is tough. It has a big cannon you can aim and a machine gun, and it can drive right across lava and acid.
 - **SKY JET** flies anywhere on the screen and fires cannons and homing missiles.
+- **MECH WALKER** stomps robots flat, walks over lava, steps right out of rivers, hops with its jets and has a heavy gatling arm.
+- **JET-SKI** zooms across the water (slower on land) with twin blasters.
+- **SNOWMOBILE** races over the snow and skims across icy water.
 
 Vehicles have their own armour. When it runs out, the vehicle blows up and you jump clear.
 
