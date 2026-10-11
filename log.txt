@@ -1410,3 +1410,5 @@
 2026-10-11 16:26:11 [dm2_brute] model task made multi-image-to-3d 01a12bc9-39ed-729c-a59f-8565183ba6da
 2026-10-11 16:26:11 [dm2_skeleton] model task made multi-image-to-3d 01a12bc9-39e9-707a-9951-8a1c9971b402
 2026-10-11 16:26:11 [dm2_raider] model task made multi-image-to-3d 01a12bc9-39db-71fe-bd79-d1cfdf31b83b
+2026-10-11 16:26:12 [dm2_ogre] multi-image-to-3d IN_PROGRESS 1%
+2026-10-11 16:26:11 [dm2_snatcher] model task made multi-image-to-3d 01a12bc9-39de-73c1-bf14-00ada2afdf31
