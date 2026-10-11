@@ -20,19 +20,25 @@ def probe(path):
     return round(d, 3), float(mx.group(1)) if mx else None, float(mean.group(1)) if mean else None
 
 
+LOG = []
+def log(*a):
+    line = ' '.join(str(x) for x in a); print(line, flush=True); LOG.append(line)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     index = {}
     for pack in PACKS:
         try:
             page = get('https://kenney.nl/assets/' + pack).decode('utf8', 'ignore')
-            links = re.findall(r'href="([^"]+?\.zip)"', page)
-            if not links: print(pack, 'no download link found'); continue
+            links = re.findall(r'(?:href|data-url|data-href|src)="([^"]+?\.zip[^"]*)"', page) or re.findall(r'(https?://[^"\'\s]+?\.zip)', page)
+            if not links:
+                i = page.lower().find('download'); log(pack, 'no download link found; page', len(page), 'bytes; near "download":', page[max(0, i - 300): i + 500].replace('\n', ' ')); continue
             url = links[0] if links[0].startswith('http') else 'https://kenney.nl' + links[0]
-            print(pack, '<-', url, flush=True)
+            log(pack, '<-', url)
             z = zipfile.ZipFile(io.BytesIO(get(url)))
         except Exception as e:
-            print(pack, 'FAILED', e); continue
+            log(pack, 'FAILED', repr(e)); continue
         folder = os.path.join(OUT, pack); os.makedirs(folder, exist_ok=True)
         for name in z.namelist():
             low = name.lower()
@@ -46,9 +52,10 @@ def main():
                 subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', tmp.name, '-ac', '1', '-ar', '44100', '-b:a', '96k', dst], check=False)
             if os.path.exists(dst):
                 index[pack + '/' + base] = probe(dst)
-        print(pack, 'sounds so far', len(index), flush=True)
+        log(pack, 'sounds so far', len(index))
     json.dump(index, open(os.path.join(OUT, 'index.json'), 'w'), indent=0, sort_keys=True)
-    print('done', len(index), 'sounds')
+    log('done', len(index), 'sounds')
+    open(os.path.join(OUT, 'log.txt'), 'w').write('\n'.join(LOG) + '\n')
 
 
 if __name__ == '__main__':
