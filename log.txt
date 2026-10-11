@@ -1317,3 +1317,7 @@
 2026-10-11 15:36:35 [sm2_king] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 15:36:35 [sm2_tank] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 15:36:40 [sm2_king] rig task made 01a12b9b-dbee-712e-9369-a74a8c0332e1
+2026-10-11 15:36:41 [sm2_king] rigging IN_PROGRESS 10%
+2026-10-11 15:36:51 [sm2_king] rigging IN_PROGRESS 36%
+2026-10-11 15:37:02 [sm2_king] rigging SUCCEEDED 100%
+2026-10-11 15:37:02 [sm2_king] rigged: {"model": {"bytes": 4897628, "triangles": 61902, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57716, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47076, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
