@@ -1260,6 +1260,7 @@
    }
   },
   "dm3_sera": {
+   "extra": {},
    "full": {
     "bytes": 7113084,
     "pictures": [
@@ -7223,7 +7224,8 @@
     "dm3_sera"
    ],
    "limit": 45,
-   "run": 903
+   "run": 903,
+   "spent_estimate": 35
   }
  ]
 }
