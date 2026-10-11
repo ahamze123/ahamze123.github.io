@@ -3700,6 +3700,8 @@
   },
   "sm2_hawk": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12b91-da51-7078-b96b-368d5d1f44a3",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 15:25",
@@ -3717,7 +3719,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12b91-da51-7078-b96b-368d5d1f44a3/output/preview.png?Expires=1791991708&Signature=i3vdaPAd3nrFZhmC0hK0r8QJOchqUdM9PF9SpImgUzN7uGuomuBCMoUFv725nhHfAbmGoiJTDBun2iUfXWssWTBZu0YPmlV9GDwkngXmNY6ORNLAsrtRRdT4RVvOQjU4~vB6o5c6SeNYfzclVjT3cN0oVxlqA7fwQ6VLTtvF7TlrHpl8TEU-c19z~AP4lWbNB4MousXBXQ054W66JxgAcaJlzDSrpG114WbOjWzhYnYFXlmMNDzYVBJMQeA3KIgSWO1rcGpIM0F938FOIi18ZmKykC3WwZGqp8gZ9ARdGYnmvcB15O5SdunclrRTh2pNxV4CSnDPiKgJUZtBKFDvBA__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_hawk_front.png",
      "sm2_hawk_side.png",
