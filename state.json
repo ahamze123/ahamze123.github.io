@@ -621,6 +621,7 @@
    }
   },
   "dm2_brute": {
+   "extra": {},
    "full": {
     "bytes": 7435092,
     "pictures": [
@@ -7143,7 +7144,8 @@
     "dm2_snatcher"
    ],
    "limit": 250,
-   "run": 902
+   "run": 902,
+   "spent_estimate": 210
   }
  ]
 }
