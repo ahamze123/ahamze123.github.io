@@ -3699,6 +3699,12 @@
      "sm2_ember_side.png",
      "sm2_ember_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12b94-b837-7462-8440-4dd11a927cef",
+    "made": "2026-10-11 15:28",
+    "model": "01a12b91-da4e-7507-a21f-0cf1384a89d7",
+    "status": "PENDING"
    }
   },
   "sm2_hawk": {

@@ -1285,3 +1285,4 @@
 2026-10-11 15:28:43 [sm2_hawk] rigging IN_PROGRESS 10%
 2026-10-11 15:28:44 [sm2_spike] rigging IN_PROGRESS 95%
 2026-10-11 15:28:47 [sm2_ember] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 15:28:52 [sm2_ember] rig task made 01a12b94-b837-7462-8440-4dd11a927cef
