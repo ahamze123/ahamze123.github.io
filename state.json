@@ -7226,6 +7226,19 @@
    "limit": 45,
    "run": 903,
    "spent_estimate": 35
+  },
+  {
+   "at": "2026-10-11 17:26",
+   "heroes": [
+    "sm2_sparks",
+    "sm2_roller",
+    "sm2_bruno",
+    "sm2_icebreaker",
+    "sm2_buster",
+    "sm2_maestro"
+   ],
+   "limit": 280,
+   "run": 32
   }
  ]
 }

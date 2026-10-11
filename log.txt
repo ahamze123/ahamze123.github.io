@@ -1494,3 +1494,4 @@
 2026-10-11 16:35:15 [dm3_sera] rigged: {"model": {"bytes": 5973412, "triangles": 62108, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57324, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 46736, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
 2026-10-11 16:35:18 [dm3_sera] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 7113084}
 2026-10-11 16:35:20 run finished; credits used by new tasks (estimate): 35
+2026-10-11 17:26:29 run 32 heroes ['sm2_sparks', 'sm2_roller', 'sm2_bruno', 'sm2_icebreaker', 'sm2_buster', 'sm2_maestro'] max credits 280
