@@ -4454,6 +4454,8 @@
   },
   "sm2_bruno": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12c00-7b1a-772d-b936-dedfd577e367",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 17:26",
@@ -4471,7 +4473,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12c00-7b1a-772d-b936-dedfd577e367/output/preview.png?Expires=1791999100&Signature=gkdH6z9m~-NA4Hk0QvgYZ2f3xJQcGSh-Rf2-dmGvcPIHbYcK0e1oyy9YezJr0bRDxUNYojMhhOGulqC2llftsGchGaLJtAO05QlMzR8evkxYOU6eeQfUeq6p6L7pw-vKz97EgrLWfZn8Vrb5HYJRVw466~P-T~F1IgluO-xVH4uXvO2zwTGH4ozVGvjgInpwDmdfB~RoQ-n27aDJWgblcULumPMnpD7D4AQGQ7lZ~~8XXzej5xlo6eHomzbmO6iyHAWzUwxThSsdUoNlJpf~HgXU2k24tVyKcaVZA8SAk71ydCDnbMr3MMWdHtH-OS1-3RtNST7HO8GgFN7-o5N7lQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_bruno_front.png",
      "sm2_bruno_side.png",
@@ -4481,6 +4484,8 @@
   },
   "sm2_buster": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12c00-7b1c-7057-a3be-12370e4e4e5a",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 17:26",
@@ -4498,7 +4503,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12c00-7b1c-7057-a3be-12370e4e4e5a/output/preview.png?Expires=1791999092&Signature=gQGboJGmz2u~OERSCth1~Fj~DClZeuR62QxmGiVhAe~LNuzyDqiJhh9BiIRk-3-2GQ6UML016D2YjeDw2Ps7vb1urJ~pdTWncFWmBV6U~GV~vbmMiO-YfqJFypy5OoX~3DJ6SdxXtYPWa-wCmlDtXhszUv4O7ASoNnuO6whNKWoewyVCXNKNeEQNeSTto-eq~Ktz3C6mZDr81lrm7xutags4yy0X6PUluknLkuZmLe3aoEdWb~ipWxDtK0GdPsFedYSlJgRFddDRXUUrs1EWumqhbDKp4~7DStPGtx~GNONXoEq6QOKMkuwVA~C34BX5LdxiUg9KFc8nzNv1aRT~0g__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_buster_front.png",
      "sm2_buster_side.png",
@@ -4650,6 +4656,8 @@
   },
   "sm2_icebreaker": {
    "model": {
+    "credits": 35,
+    "error": null,
     "id": "01a12c00-7b18-7416-b849-0ce58e577750",
     "kind": "multi-image-to-3d",
     "made": "2026-10-11 17:26",
@@ -4667,7 +4675,8 @@
      "texture_resolution": "4k",
      "topology": "triangle"
     },
-    "status": "PENDING",
+    "status": "SUCCEEDED",
+    "thumb_url": "https://assets.meshy.ai/d494f1e5-8ff8-4759-b96d-45721358ae5e/tasks/01a12c00-7b18-7416-b849-0ce58e577750/output/preview.png?Expires=1791999098&Signature=CmN2OlhQUsHdexk~OHRrMe5hD5xdMMuBzbtNM4WvLvtYwI~dFubdgtbbwgtBir3jgoZJpWuX~PSFaB8WV6BVEcmkij4-KD7hOs~CCdBoNnE3-O6DmPolQOn46Hs6xmBx85KrjalpGP5Y9cKGZ2R~FFqSlY-t51SIPQXPn7lxFMFcajSJH1Xm1XGW3D092YPLGuk-KaZS2ytjV4H-wYbTZewg8g7k3sAMFj55cYJOD9rKWXAhkYBVp1XQqShGK6TBjg1UezJLcjnjj~BMVoPUgUWOjh~rJJj9YuGgqPR9KbHxA96xx~Yu1CVeG0yKhsna7AvKYndQwgCyGj7MQFfO9A__&Key-Pair-Id=K1VGYTHIYLM9UM",
     "views": [
      "sm2_icebreaker_front.png",
      "sm2_icebreaker_side.png",

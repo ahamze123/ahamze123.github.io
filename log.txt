@@ -1522,3 +1522,7 @@
 2026-10-11 17:30:51 [sm2_roller] multi-image-to-3d IN_PROGRESS 80%
 2026-10-11 17:31:32 [sm2_sparks] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 17:31:37 [sm2_sparks] rig task made 01a12c05-17a9-70c8-b5fc-47138f531f4a
+2026-10-11 17:31:38 [sm2_sparks] rigging IN_PROGRESS 10%
+2026-10-11 17:31:42 [sm2_bruno] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 17:31:42 [sm2_icebreaker] multi-image-to-3d SUCCEEDED 100%
+2026-10-11 17:31:42 [sm2_buster] multi-image-to-3d SUCCEEDED 100%
