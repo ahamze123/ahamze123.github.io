@@ -3813,6 +3813,33 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm2_king": {
+   "model": {
+    "id": "01a12b99-494d-71b1-9224-f7a20c35f052",
+    "kind": "multi-image-to-3d",
+    "made": "2026-10-11 15:33",
+    "run": 30,
+    "settings": {
+     "ai_model": "latest",
+     "enable_pbr": false,
+     "geometry_resolution": "2k",
+     "image_enhancement": false,
+     "pose_mode": "a-pose",
+     "remove_lighting": true,
+     "should_remesh": true,
+     "should_texture": true,
+     "target_polycount": 60000,
+     "texture_resolution": "4k",
+     "topology": "triangle"
+    },
+    "status": "PENDING",
+    "views": [
+     "sm2_king_front.png",
+     "sm2_king_side.png",
+     "sm2_king_back.png"
+    ]
+   }
+  },
   "sm2_spike": {
    "extra": {},
    "full": {
@@ -3884,6 +3911,8 @@
     "status": "SUCCEEDED"
    }
   },
+  "sm2_tank": {},
+  "sm2_viper": {},
   "sm2_volt": {
    "extra": {},
    "full": {
