@@ -1,6 +1,6 @@
 # Iron Monsoon
 
-An original run-and-gun adventure in bright painted worlds. Two heroes, Volt and Ember, fight the robot army of the Overseer. **Play:** https://ahamze123.github.io/iron-monsoon/
+An original run-and-gun adventure in bright painted worlds, for 1 to 4 players. Two heroes, Volt and Ember, fight the robot army of the Overseer. **Play:** https://ahamze123.github.io/iron-monsoon/
 
 ## Story and missions
 Pick **STORY MODE** on the title screen to play the whole adventure, with Volt, Ember, Colonel Hawk, Dr. Nova and the little helper drone Bolt talking between missions. You can also pick any mission you have reached and play it on its own.
@@ -23,7 +23,7 @@ Pick **STORY MODE** on the title screen to play the whole adventure, with Volt, 
 Every child can have their own hero (up to 8). Pick **MY HERO** on the title screen:
 - Type a **name**, and choose the **armour** colour, the **scarf** colour and a **helmet** extra (antenna, fin, horns, cat ears, star or crown).
 - **Outfits** unlock with the stars you earn in missions: Night Ops, Arctic, Lava, Chrome, Ghost, Rainbow and the Golden Hero.
-- Each hero keeps their own coins, stars, story chapter, shop upgrades and trophies. With 2 players, each player picks their own hero.
+- Each hero keeps their own coins, stars, story chapter, shop upgrades and trophies. With 2, 3 or 4 players, each player picks their own hero (◂ ▸ on **EDITING** switches between the players).
 
 ## Coins and the shop
 Robots drop **coins**, freed Bolt bots give a few more, and every boss bursts into a shower of coins that flies straight to you. Spend them in the **SHOP**:
@@ -41,8 +41,8 @@ The **TROPHIES** wall has 22 trophies to win, like beating a boss without gettin
 Pick **MORE MODES** on the title screen:
 - **BOSS RUSH:** all 13 bosses in a row against the clock. Your health comes back between bosses, and every third boss gives an extra life. Each hero keeps their best time.
 - **SURVIVAL:** endless waves of robots in the world you pick (◂ ▸). Every fifth wave brings that world's mini-boss. Each hero keeps their best wave for every world.
-- **SCORE BATTLE:** two players, three minutes. The higher score wins (the leader wears a crown).
-- **COIN RACE:** two players, two minutes. Robots drop double coins, and the most coins wins.
+- **SCORE BATTLE:** 2 to 4 players, three minutes. The highest score wins (the leader wears a crown).
+- **COIN RACE:** 2 to 4 players, two minutes. Robots drop double coins, and the most coins wins.
 
 Online, the host can pick any of these under **GAME** in the lobby.
 
@@ -56,19 +56,20 @@ Halfway through every mission a mini-boss blocks the way: the **CRAB TANK**, **H
 ## Boss fights
 Every boss fights in three stages. When its health bar passes a white mark, it goes into **FURY**: it roars, blows you back, gets faster and calls in flying robots. In the last stage (**FINAL FURY**) red marks appear on the floor, and rocks crash down on them a moment later, so keep moving.
 
-## Online co-op
-Play together on two computers, phones or tablets, anywhere.
-1. Both players open https://ahamze123.github.io/iron-monsoon/ and pick **ONLINE CO-OP** on the title screen.
+## Online co-op (up to 4 players)
+Play together on up to four computers, phones or tablets, anywhere.
+1. Everyone opens https://ahamze123.github.io/iron-monsoon/ and picks **ONLINE CO-OP** on the title screen.
 2. One player picks **HOST A GAME** and gets a 4-letter room code.
-3. The other player picks **JOIN A GAME** and types that code (or taps the arrows on a phone).
-4. The host picks the mission, mode and health, then presses **START!**
+3. Up to three friends pick **JOIN A GAME** and type that code (or tap the arrows on a phone). The lobby shows who is in the room.
+4. The host picks the game, mission, mode and health, then presses **START!** (as soon as one friend is there).
 
-Each player brings their own hero, with their name, colours and shop upgrades; coins and trophies go to the hero on your own screen. Both screens show the same game. Pause opens a small menu while the game keeps running. Online play needs an internet connection and works in Chrome, Edge, Firefox and Safari.
+Each player brings their own hero, with their name, colours and shop upgrades; coins and trophies go to the hero on your own screen, and your own panel has a bright edge. Every screen shows the same game. Two heroes that look the same, or have the same name, get told apart automatically. Pause opens a small menu while the game keeps running. If a friend leaves in the middle, their hero leaves too and the game goes on. Online play needs an internet connection and works in Chrome, Edge, Firefox and Safari.
 
 ## Controls
 - **Keyboard (1 player):** arrows or WASD to move and aim, **J** or **Z** to fire, **K**, **X** or **Space** to jump (press again in the air to double jump), **Q** to switch guns, **E** for Super Soldier, **L** or **Shift** to lock your aim, **P** to pause.
 - **Slide:** run, hold down and press jump. You slide under bullets and kick small enemies.
 - **2 players on one keyboard:** P1 uses WASD + F fire + G jump + R switch gun + T super. P2 uses the arrows + J fire + K jump + U switch gun + I super.
+- **3 or 4 players on one computer:** set **PLAYERS** to 3 or 4. P1 and P2 share the keyboard as above, P3 plays with the first gamepad and P4 with the second (more gamepads go to P1 and P2). Press a button on each gamepad so the game can see it. The panels of all heroes sit in a row at the top; with more heroes, ambushes bring more robots and bosses get tougher.
 - **Gamepad:** stick or d-pad moves, **A** jumps, **X** fires, **Y** switches guns, **B** is Super Soldier, **RB** locks your aim, **Start** pauses.
 - **Touch:** left thumb moves and aims. On the right are FIRE, JUMP, the gun button (switch guns), SUPER, and AUTO (auto-fire).
 

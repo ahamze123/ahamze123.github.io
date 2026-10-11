@@ -203,6 +203,14 @@ function readPad(p) {
   }
   return { l, r, u, d, jump: b(0), fire: b(2) || b(7), lock: b(5) || b(6), swap: b(3) || b(4), sup: b(1), pause: b(9) || b(8) };
 }
+// which gamepad a player on this computer uses. With three or four players, players 3 and 4 get the first
+// gamepads (players 1 and 2 have the keyboard halves, and use any gamepads after those)
+function padFor(i, n) {
+  if (n <= 1) return i === 0 ? Pads[0] || null : null;
+  if (n === 2) return Pads[i] || null;
+  if (i >= n) return null;
+  return Pads[(n === 3 ? [1, 2, 0] : [2, 3, 0, 1])[i]] || null;
+}
 function pollPads() {
   Pads.length = 0;
   let list = null;
@@ -293,21 +301,22 @@ if ((('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.match
 
 const mkIn = () => ({ l: false, r: false, u: false, d: false, fire: false, jump: false, lock: false, swap: false, sup: false, pause: false });
 const Input = {
-  p: [mkIn(), mkIn()],
+  p: [mkIn(), mkIn(), mkIn(), mkIn()], // up to four players (see padFor for the gamepads)
   menu: { up: false, down: false, left: false, right: false, ok: false, back: false, pause: false },
   _m: { up: false, down: false, left: false, right: false, ok: false, back: false, pause: false },
   _rep: 0,
-  update(twoP, dt) {
+  update(n, dt) { // n: how many players share this computer
     pollPads();
-    for (let i = 0; i < 2; i++) {
+    n = n === true ? 2 : n === false || !n ? 1 : n;
+    for (let i = 0; i < 4; i++) {
       const s = this.p[i];
-      const km = twoP ? (i === 0 ? KM_P1 : KM_P2) : KM_SOLO;
+      const km = n > 1 ? (i === 0 ? KM_P1 : KM_P2) : KM_SOLO;
       s.l = s.r = s.u = s.d = s.fire = s.jump = s.lock = s.swap = s.sup = s.pause = false;
-      if (i === 0 || twoP) {
+      if (i === 0 || (i === 1 && n > 1)) {
         s.l = anyKey(km.l); s.r = anyKey(km.r); s.u = anyKey(km.u); s.d = anyKey(km.d);
         s.fire = anyKey(km.fire); s.jump = anyKey(km.jump); s.lock = anyKey(km.lock); s.swap = anyKey(km.swap); s.sup = anyKey(km.sup);
       }
-      const pad = twoP ? Pads[i] : (i === 0 ? Pads[0] : null);
+      const pad = padFor(i, n);
       if (pad) { s.l ||= pad.l; s.r ||= pad.r; s.u ||= pad.u; s.d ||= pad.d; s.fire ||= pad.fire; s.jump ||= pad.jump; s.lock ||= pad.lock; s.swap ||= pad.swap; s.sup ||= pad.sup; s.pause ||= pad.pause; }
       if (i === 0 && lastDevice === 'touch') {
         s.l ||= Touch.l; s.r ||= Touch.r; s.u ||= Touch.u; s.d ||= Touch.d; s.jump ||= Touch.jump || Touch.jumpTap;
@@ -315,16 +324,16 @@ const Input = {
       }
       if (s.l && s.r) { s.l = s.r = false; }
     }
-    // menu edges
-    const pad0 = Pads[0];
+    // menu edges (any gamepad works the menus)
+    const pd = k => Pads.some(q => q && q[k]);
     const cur = {
-      up: !!(Keys.ArrowUp || Keys.KeyW || (pad0 && pad0.u)),
-      down: !!(Keys.ArrowDown || Keys.KeyS || (pad0 && pad0.d)),
-      left: !!(Keys.ArrowLeft || Keys.KeyA || (pad0 && pad0.l)),
-      right: !!(Keys.ArrowRight || Keys.KeyD || (pad0 && pad0.r)),
-      ok: !!(Keys.Enter || Keys.Space || Keys.KeyJ || Keys.KeyZ || Keys.KeyK || Keys.KeyX || Keys.KeyF || Keys.KeyG || (pad0 && (pad0.jump || pad0.fire))),
+      up: !!(Keys.ArrowUp || Keys.KeyW || pd('u')),
+      down: !!(Keys.ArrowDown || Keys.KeyS || pd('d')),
+      left: !!(Keys.ArrowLeft || Keys.KeyA || pd('l')),
+      right: !!(Keys.ArrowRight || Keys.KeyD || pd('r')),
+      ok: !!(Keys.Enter || Keys.Space || Keys.KeyJ || Keys.KeyZ || Keys.KeyK || Keys.KeyX || Keys.KeyF || Keys.KeyG || pd('jump') || pd('fire')),
       back: !!(Keys.Escape || Keys.Backspace),
-      pause: !!(Keys.Escape || Keys.KeyP || Keys.Enter || (pad0 && pad0.pause) || (Pads[1] && Pads[1].pause)),
+      pause: !!(Keys.Escape || Keys.KeyP || Keys.Enter || Pads.some(q => q && q.pause)),
     };
     const held = cur.up || cur.down || cur.left || cur.right;
     this._rep = held ? this._rep + dt : 0;
@@ -3718,7 +3727,7 @@ class Player {
   updateOut(inp) {
     const jp = inp.jump && !this.prevJump; this.prevJump = inp.jump;
     if (!jp || Game.state !== 'play') return;
-    const mate = Game.players.find(q => q !== this && q.state === 'alive' && q.lives > 0);
+    const mate = Game.lifeDonor(this);
     if (mate) Game.revive(this, mate);
   }
   addKill() {
@@ -4312,7 +4321,7 @@ function superBlast(p) { // turning Super Soldier: a golden shockwave hits every
   for (const [rgb, end, life] of [[SUPER.rgb, VW * 0.9, 0.7], ['255,255,240', VW * 0.6, 0.5]]) { const r = P('ring', p.x, p.y - 20, 0, 0, life, 8, rgb); r.end = end; }
   sparks(p.x, p.y - 20, 30, -Math.PI / 2, TAU, 320, SUPER.rgb, 160);
 }
-const localKeys = p => Game.twoP && !Net.on ? (p.i === 0 ? ['R', 'T'] : ['U', 'I']) : ['Q', 'E'];
+const localKeys = p => Game.twoP && !Net.on ? (p.i === 0 ? ['R', 'T'] : p.i === 1 ? ['U', 'I'] : ['Y', 'B']) : ['Q', 'E']; // (players 3 and 4: gamepad buttons)
 function swapHint(p) { return lastDevice === 'touch' ? 'Tap the gun button to switch guns' : lastDevice === 'pad' ? 'Press Y to switch guns' : 'Press ' + localKeys(p)[0] + ' to switch guns'; }
 function superHint(p) { return lastDevice === 'touch' ? 'Tap SUPER to power up' : lastDevice === 'pad' ? 'Press B to power up' : 'Press ' + localKeys(p)[1] + ' to power up'; }
 class NovaBolt { // the Super Soldier's golden bolt: big, fast, goes through everything
@@ -6115,7 +6124,7 @@ class MiniBoss extends Enemy {
     super(x, y);
     const d = this.d = MINI[kind]; this.kind = kind;
     this.isMini = true; this.noDrop = true; this.contact = true; this.score = 6000;
-    this.maxHp = this.hp = Math.round(d.hp * (Game.diff === 'veteran' ? 1.25 : 1) * (Game.players.length > 1 ? 1.35 : 1));
+    this.maxHp = this.hp = Math.round(d.hp * (Game.diff === 'veteran' ? 1.25 : 1) * (1 + 0.35 * Math.max(0, Game.players.length - 1)));
     this.face = -1; this.state = 'enter'; this.st = 0; this.cd = 1.2; this.bob = 0; this.tilt = 0; this.kickT = 0; this.weakT = 0; this.tele = 0; this.fury = false; this.roarT = 0;
     this.W = d.h * (ART.img[d.art] ? ART.aspect(d.art) : 1.2);
     this.w = this.W * d.box[2] * 0.8; this.h = d.h * d.box[3]; // (for walking into walls and floors)
@@ -9852,13 +9861,18 @@ const Game = {
     this.sinceDrop = 0; this.lastDrop = this.simT;
     const k = new Pickup(e.cx, e.cy, this.randomItem()); k.vx = rand(-40, 40); k.vy = -200; this.pickups.push(k);
   },
+  lifeDonor(p) { // the friend with the most lives to share (co-op)
+    let best = null; for (const q of this.players) if (q !== p && q.state === 'alive' && q.lives > 0 && (!best || q.lives > best.lives)) best = q;
+    return best;
+  },
   revive(p, mate) { // a knocked-out player borrows a life from the partner
     mate.lives--;
     const sp = this.findSpawnPoint(mate.x), keep = { score: p.score, nextLife: p.nextLife, bestCombo: p.bestCombo };
     p.spawn(sp.x, sp.y); Object.assign(p, keep); p.lives = 0; p.resetGuns(); p.invuln = 2.6;
     Sfx.charge(); this.banner(p.tag + ' IS BACK', mate.tag + ' shared a life', p.style.vrgb);
   },
-  localPlayer() { return Net.on ? this.players[Net.role === 'host' ? 0 : 1] : this.players[0]; },
+  localPlayer() { return Net.on ? this.players[Net.mySlot()] : this.players[0]; },
+  numLocal() { return clamp(Math.floor(Store.data.players) || 1, 1, 4); }, // how many players share this computer (from the title menu)
   autoPause() { if (Net.on) return; if (this.state === 'play') this.setState('pause'); },
   togglePause() { if (Net.on) { Net.menu = !Net.menu; Net.menuSel = 0; return; } if (this.state === 'play') this.setState('pause'); else if (this.state === 'pause') this.setState('play'); },
   setState(s) {
@@ -9885,10 +9899,11 @@ const Game = {
     Music.play('title'); Ambience.set('jungle'); Sfx.flame(false);
   },
   startGame(story = false, li = Store.data.mission, mode = null) {
-    this.twoP = Store.data.players === 2; this.diff = Store.data.diff; this.storyMode = story; this.mode = mode || (story ? 'story' : 'mission');
-    if (!Net.on) this.loadouts = [0, 1].map(i => Heroes.loadout(Heroes.of(i), i)); // online: both computers got the same ones from the host
-    this.players = [new Player(0)];
-    if (this.twoP) this.players.push(new Player(1));
+    const n = this.numLocal(); // (online: the number of computers in the room)
+    this.twoP = n > 1; this.diff = Store.data.diff; this.storyMode = story; this.mode = mode || (story ? 'story' : 'mission');
+    if (!Net.on) { Heroes.ensure(n); this.loadouts = [0, 1, 2, 3].map(i => Heroes.loadout(Heroes.of(i), i)); } // online: every computer got the same ones from the host
+    this.players = [];
+    for (let i = 0; i < n; i++) this.players.push(new Player(i));
     this.checkpoint = null;
     if (this.modeBegin(li)) this.setState('play'); // boss rush and survival start at a boss yard
     else if (story) this.playScene(STORY.brief[li], li, () => { this.loadLevel(li, false); this.setState('play'); });
@@ -9916,13 +9931,14 @@ const Game = {
       const sp = this.findSpawnPoint(Cam.x + 50 + i * 30);
       p.spawn(sp.x, sp.y); Object.assign(p, keep);
       if (!cp) { p.coins0 = p.coins; if (p.lo && p.lo.shield) p.shield = BUFFS.shield.t; } // START SHIELD from the shop
+      if (p.left) { p.state = 'out'; p.lives = 0; } // (online: a friend who left the game stays gone)
     });
     Music.play(L.theme.song); Ambience.set(L.theme.ambience);
     this.cardT = 3.4;
     if (this.surv) { if (this.surv.k) this.surv.wave--; this.surv.k = null; this.surv.t = 2.5; } // (a reload starts the wave again)
   },
   continueGame() {
-    for (const p of this.players) { p.lives = DIFF[this.diff].lives + (p.lo ? p.lo.life : 0); p.resetGuns(); p.state = 'alive'; }
+    for (const p of this.players) if (!p.left) { p.lives = DIFF[this.diff].lives + (p.lo ? p.lo.life : 0); p.resetGuns(); p.state = 'alive'; }
     this.loadLevel(this.li, true);
     this.cardT = 2; this.setState('play');
   },
@@ -9947,7 +9963,7 @@ const Game = {
   onBossDead() {
     this.bossDone = true; this.clearT = 3.4; this.saveHi();
     const B = this.boss, x = clamp(B ? B.x : Cam.x + VW / 2, Cam.x + 60, Cam.x + VW - 60), y = clamp(B ? B.y - 60 : Cam.y + 120, Cam.y + 40, Cam.y + VH - 70);
-    dropCoins(x, y, 40, 8, true); // a shower of coins that flies to the heroes
+    dropCoins(x, y, Math.max(40, 20 * this.players.length), 8, true); // a shower of coins that flies to the heroes (a bigger one for three or four)
     for (const p of this.players) if (p.state !== 'out') { Trophies.ev(p, 'bosses', 1); if (!p.bossHits && p.alive()) Trophies.ev(p, 'nohit', 1); }
   },
   startBoss() {
@@ -9955,7 +9971,7 @@ const Game = {
     const L = this.level, aL = Cam.x, aR = Cam.x + VW, fy = L.floorBelow(Cam.x + VW / 2, Cam.y + 20, true);
     for (const p of this.players) p.bossHits = 0;
     this.boss = new L.def.boss(aL, aR, isFinite(fy) ? fy : Cam.y + 226);
-    this.boss.furyInit(1.5 * (this.players.length > 1 ? 1.3 : 1)); // tougher bosses (more so for two heroes)
+    this.boss.furyInit(1.5 * (1 + 0.3 * (this.players.length - 1))); // tougher bosses (more so for each extra hero)
     this.bossIntroT = 3.4; Scr.barsT = 1; Sfx.warning(); Music.play(this.boss.song || 'boss');
     this.checkpoint = { li: this.li, k: Cam.k, p: Cam.p, x: Cam.x + VW / 2 };
   },
@@ -10001,9 +10017,12 @@ const Game = {
   },
   nextWave(k) {
     k.wave++; k.t = 0;
-    const W = k.waves[k.wave] || [];
+    const W = k.waves[k.wave] || [], np = this.players.length;
     let i = 0;
-    for (const d of W) for (let j = 0; j < (d.n || 1); j++, i++) {
+    // three or four heroes: groups of robots get one or two more
+    const MULTI = ['miniboss', 'brute', 'drone', 'firebat', 'robohawk', 'paratrooper', 'skymine'];
+    const count = d => (d.n || 1) + (np > 2 && (d.n || 1) >= 2 && !MULTI.includes(d.type) ? np - 2 : 0);
+    for (const d of W) for (let j = 0; j < count(d); j++, i++) {
       const side = d.side || (i % 2 ? 'left' : 'right');
       let x = side === 'left' ? Cam.x - 18 - j * 30 : Cam.x + VW + 18 + j * 30, y;
       if (d.type === 'drone' || d.type === 'jettrooper' || d.type === 'firebat' || d.type === 'robohawk' || d.type === 'skymine') { x = side === 'left' ? Cam.x - 30 - j * 40 : Cam.x + VW + 30 + j * 40; y = Cam.y + 60 + (j % 2) * 24; }
@@ -10416,19 +10435,19 @@ const Game = {
     switch (id) {
       case 'story': { const ch = this.storyPick ?? this.heroStory(); return ['STORY MODE', ch > 0 ? 'CHAPTER ' + (ch + 1) : 'NEW STORY']; }
       case 'play': { const n = Heroes.of(0).stars[d.mission] || 0; return ['PLAY MISSION', `${d.mission + 1} · ${LEVELS[d.mission].name}  ${'★'.repeat(n)}${'☆'.repeat(3 - n)}`]; }
-      case 'online': return ['ONLINE CO-OP', 'PLAY WITH A FRIEND'];
-      case 'hero': return ['MY HERO', d.players === 2 ? Heroes.of(0).name + ' & ' + Heroes.of(1).name : Heroes.of(0).name];
-      case 'shop': return ['SHOP', '◎ ' + Heroes.of(0).coins + (d.players === 2 ? '  ·  ◎ ' + Heroes.of(1).coins : '')];
+      case 'online': return ['ONLINE CO-OP', 'UP TO 4 PLAYERS'];
+      case 'hero': { const n = this.numLocal(); return ['MY HERO', n > 2 ? n + ' HEROES' : n === 2 ? Heroes.of(0).name + ' & ' + Heroes.of(1).name : Heroes.of(0).name]; }
+      case 'shop': { const n = this.numLocal(); return ['SHOP', Array.from({ length: n }, (_, i) => '◎ ' + Heroes.of(i).coins).join(n > 2 ? ' · ' : '  ·  ')]; }
       case 'trophies': return ['TROPHIES', Trophies.count(Heroes.of(0)) + ' OF ' + TROPHIES.length];
       case 'options': return ['OPTIONS', ''];
       case 'modes': return ['MORE MODES', 'RUSH · SURVIVAL · VERSUS'];
       case 'rush': { const b = Heroes.of(0).best.rush; return ['BOSS RUSH', b ? 'BEST ' + fmtTime(b) : '13 BOSSES']; }
       case 'surv': { const w = d.survWorld || 0, b = (Heroes.of(0).best.surv || {})[w] || 0; return ['SURVIVAL', `${LEVELS[w].name}${b ? ' · BEST ' + b : ''}`]; }
-      case 'battle': return ['SCORE BATTLE', '2 PLAYERS · 3 MIN'];
-      case 'race': return ['COIN RACE', '2 PLAYERS · 2 MIN'];
+      case 'battle': return ['SCORE BATTLE', '2-4 PLAYERS · 3 MIN'];
+      case 'race': return ['COIN RACE', '2-4 PLAYERS · 2 MIN'];
       case 'mback': return ['BACK', ''];
       case 'oback': return ['BACK', ''];
-      case 'players': return ['PLAYERS', d.players === 2 ? '2 · CO-OP' : '1'];
+      case 'players': { const n = this.numLocal(); return ['PLAYERS', n === 1 ? '1' : n === 2 ? '2 · CO-OP' : n + ' · CO-OP']; }
       case 'mode': return ['MODE', d.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
       case 'health': return ['HEALTH', d.inf ? 'UNLIMITED' : 'NORMAL'];
       case 'sound': return ['SOUND', d.sound ? 'ON' : 'OFF'];
@@ -10446,12 +10465,11 @@ const Game = {
     if (id === 'story') { const mx = this.heroStory(); this.storyPick = ((this.storyPick ?? mx) + dir + mx + 1) % (mx + 1); Sfx.select(); return true; }
     if (id === 'mission' || id === 'play') d.mission = (d.mission + dir + LEVELS.length) % LEVELS.length;
     else if (id === 'surv') d.survWorld = ((d.survWorld || 0) + dir + LEVELS.length) % LEVELS.length;
-    else if (id === 'hero') { // quick switch of player 1's hero (never the one player 2 has)
-      const n = Heroes.list().length, other = d.players === 2 && n > 1 ? d.heroP[1] : -1;
-      let v = (d.heroP[0] + dir + n) % n; if (v === other) v = (v + dir + n) % n;
+    else if (id === 'hero') { // quick switch of player 1's hero (never one the other players have)
+      const v = Heroes.nextFree(0, dir); if (v < 0) { Sfx.nope(); return true; }
       d.heroP[0] = v; this.storyPick = null;
     }
-    else if (id === 'players') { d.players = d.players === 2 ? 1 : 2; if (d.players === 2 && d.heroP[1] === d.heroP[0] && Heroes.list().length > 1) d.heroP[1] = (d.heroP[0] + 1) % Heroes.list().length; }
+    else if (id === 'players') { d.players = (this.numLocal() - 1 + dir + 4) % 4 + 1; Heroes.ensure(d.players); } // 1 to 4 (3 and 4: more heroes are made when needed)
     else if (id === 'mode') d.diff = d.diff === 'recruit' ? 'veteran' : 'recruit';
     else if (id === 'health') { d.inf = !d.inf; if (d.inf) for (const p of this.players) if (p.state === 'alive') p.hp = p.maxHp; }
     else if (id === 'sound') { d.sound = !d.sound; AU.apply(); Ambience.restart(); }
@@ -10625,7 +10643,7 @@ const Game = {
       g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,20,40,0.2)'); this.vig = g; this.vigW = VW;
     }
     c.fillStyle = this.vig; c.fillRect(0, 0, VW, VH);
-    const low = this.players.some(p => p.state === 'alive' && p.maxHp > 1 && p.hp === 1);
+    const low = (Net.on ? [this.localPlayer()] : this.players).some(p => p && p.state === 'alive' && p.maxHp > 1 && p.hp === 1); // (online: only your own hero)
     if (low && this.state === 'play') {
       const a = 0.18 + 0.1 * Math.sin(this.rt * 6);
       const g = c.createRadialGradient(VW / 2, VH / 2, VH * 0.4, VW / 2, VH / 2, VW * 0.6);
@@ -10634,7 +10652,16 @@ const Game = {
     if (Scr.flash > 0.01) { c.fillStyle = `rgba(${Scr.flashRGB},${Scr.flash * (REDUCED ? 0.4 : 0.85)})`; c.fillRect(0, 0, VW, VH); }
     if (Scr.bars > 0.01) { const h = 24 * easeInOut(Math.min(1, Scr.bars)); c.fillStyle = '#000'; c.fillRect(0, 0, VW, h); c.fillRect(0, VH - h, VW, h); }
   },
-  bannerTop() { return this.state === 'clear' || this.state === 'results' ? 4 : (this.rush || this.surv || this.vs) ? 44 : 24; }, // (below the mode's line at the top)
+  bannerTop() { return this.state === 'clear' || this.state === 'results' ? 4 : ((this.rush || this.surv || this.vs) ? 44 : 24) + this.hudDY(); }, // (below the mode's line at the top)
+  // the player panels: two players use the top corners; three or four share the top row (a bit smaller)
+  panelK() { const n = this.players.length; return n <= 2 ? 1 : Math.min(0.8, (VW - 16 - (n - 1) * 6) / (n * 114)); },
+  panelPos(i) {
+    const n = this.players.length;
+    if (n <= 2) return { x: i === 1 ? VW - 122 : 8, y: 6, k: 1 };
+    const k = this.panelK(), w = 114 * k;
+    return { x: 8 + i * (VW - 16 - w) / (n - 1), y: 5, k };
+  },
+  hudDY() { return this.players.length > 2 ? Math.round(58 * this.panelK() - 9) : 0; }, // the middle of the top (mode line, letters) moves below a full row of panels
   drawBanners(c) {
     let y = this.bannerTop();
     for (const b of this.banners) {
@@ -10663,9 +10690,13 @@ const Game = {
       setFont(c, 16, FONT_DISP, 400); c.fillStyle = '#ffd23f'; c.strokeStyle = '#3a2200'; c.lineWidth = 3; c.lineJoin = 'round'; c.textAlign = 'right';
       c.strokeText('GO ▸', VW - 16, VH * 0.45); c.fillText('GO ▸', VW - 16, VH * 0.45);
     }
-    setFont(c, 7, FONT_MONO, 400); c.fillStyle = 'rgba(232,238,247,0.7)';
-    c.textAlign = 'center'; c.fillText('HI ' + pad(Math.max(Store.data.hi, ...this.players.map(p => p.score)), 7), VW / 2, 14);
-    if (!this.drawModeHud(c)) this.drawLetterRow(c, this.vs ? 48 : 25);
+    const dy = this.hudDY();
+    if (!dy) { setFont(c, 7, FONT_MONO, 400); c.fillStyle = 'rgba(232,238,247,0.7)'; c.textAlign = 'center'; c.fillText('HI ' + pad(Math.max(Store.data.hi, ...this.players.map(p => p.score)), 7), VW / 2, 14); }
+    if (this.state !== 'results' && this.state !== 'clear') { // (the end screens have their own)
+      c.save(); c.translate(0, dy); // (below the panels when three or four play)
+      if (!this.drawModeHud(c)) this.drawLetterRow(c, this.vs ? 48 : 25);
+      c.restore();
+    }
     const B = this.boss;
     if (B && this.bossIntroT < 1.2 && !B.dead) {
       const w = Math.min(250, VW - 150), x = (VW - w) / 2, y = VH - 16, f = clamp(B.hp / B.hpMax, 0, 1);
@@ -10695,16 +10726,24 @@ const Game = {
     if (this.bossIntroT > 0 && this.boss) this.drawWarning(c);
   },
   drawPlayerPanel(c, p, i) {
-    const right = i === 1, x0 = right ? VW - 122 : 8, y0 = 6, st = p.style;
+    const P = this.panelPos(i);
+    c.save(); c.translate(P.x, P.y); c.scale(P.k, P.k);
+    this.drawPanelBody(c, p, i);
+    c.restore();
+  },
+  drawPanelBody(c, p, i) { // (drawn at 0, 0: drawPlayerPanel moves and sizes it)
+    const x0 = 0, y0 = 0, st = p.style;
     c.fillStyle = 'rgba(5,9,16,0.5)'; rrect(c, x0, y0, 114, 41, 3); c.fill();
-    c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 0.6; c.stroke();
-    c.fillStyle = st.visor; c.fillRect(x0, y0 + 3, 1.6, 35);
-    setFont(c, 7, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = st.visor; const tagW = spaced(c, p.tag, x0 + 6, y0 + 10, 1);
+    const mine = Net.on && i === Net.mySlot(); // online: your own panel has a bright edge
+    c.strokeStyle = mine ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.08)'; c.lineWidth = mine ? 0.9 : 0.6; c.stroke();
+    const ui = st.ui || st.visor; // the hero's own colour
+    c.fillStyle = ui; c.fillRect(x0, y0 + 3, 1.6, 35);
+    setFont(c, 7, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = ui; const tagW = spaced(c, p.tag, x0 + 6, y0 + 10, 1);
     if (this.vsLeader() === i) drawCrown(c, x0 + 14 + tagW, y0 + 6.5, 0.7); // ahead in a versus game
     setFont(c, 9, FONT_MONO, 400); c.fillStyle = '#f2f5fa'; c.textAlign = 'right'; c.fillText(pad(p.score, 7), x0 + 109, y0 + 10.5);
     if (p.state === 'out') {
-      setFont(c, 7, FONT_UI, 700); c.fillStyle = 'rgba(255,120,100,0.9)'; c.textAlign = 'left'; c.fillText('DOWN', x0 + 6, y0 + 25);
-      const mate = this.players.find(q => q !== p && q.state === 'alive' && q.lives > 0);
+      setFont(c, 7, FONT_UI, 700); c.fillStyle = 'rgba(255,120,100,0.9)'; c.textAlign = 'left'; c.fillText(p.left ? 'LEFT THE GAME' : 'DOWN', x0 + 6, y0 + 25);
+      const mate = !p.left && this.lifeDonor(p);
       if (mate) { setFont(c, 5.5, FONT_UI, 700); c.fillStyle = `rgba(255,236,170,${0.6 + 0.4 * Math.sin(this.rt * 5)})`; c.fillText(lastDevice === 'touch' ? 'TAP JUMP TO REJOIN' : 'PRESS JUMP TO REJOIN', x0 + 36, y0 + 25); }
       return;
     }
@@ -10723,7 +10762,7 @@ const Game = {
     if (Store.data.inf) { // unlimited health: one long golden bar
       c.fillStyle = '#ffd75a'; c.fillRect(x0 + 6, y0 + 28, 22, 1.6);
       setFont(c, 7.5, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = '#ffd75a'; c.fillText('∞', x0 + 30, y0 + 31.2);
-    } else if (p.maxHp > 1) for (let k = 0; k < p.maxHp; k++) { c.fillStyle = k < p.hp ? (p.hp === 1 ? '#ff5a4a' : st.visor) : 'rgba(255,255,255,0.15)'; c.fillRect(x0 + 6 + k * 8, y0 + 28, 6, 1.6); }
+    } else if (p.maxHp > 1) for (let k = 0; k < p.maxHp; k++) { c.fillStyle = k < p.hp ? (p.hp === 1 ? '#ff5a4a' : ui) : 'rgba(255,255,255,0.15)'; c.fillRect(x0 + 6 + k * 8, y0 + 28, 6, 1.6); }
     // the guns you carry: the one in your hands has a ring
     if (p.guns.length > 1) p.guns.forEach((g, k) => {
       const gx = x0 + 106 - (p.guns.length - 1 - k) * 8.5, gy = y0 + 29, on = g === p.weapon, W = WEAPONS[g];
@@ -10745,7 +10784,8 @@ const Game = {
     }
     if (ready && !on) {
       c.globalAlpha = 0.45 + 0.35 * Math.sin(this.rt * 8); c.fillStyle = '#fff6c8'; c.fillRect(sx, sy - 0.8, sw, 2.6); c.globalAlpha = 1;
-      const key = lastDevice === 'touch' ? 'TAP SUPER' : lastDevice === 'pad' ? 'PRESS B' : this.twoP && !Net.on ? (i === 0 ? 'PRESS T' : 'PRESS I') : 'PRESS E';
+      const shared = !Net.on && this.players.length > 1; // players on one computer have their own keys (3 and 4: gamepads)
+      const key = lastDevice === 'touch' ? 'TAP SUPER' : lastDevice === 'pad' || (shared && i >= 2) ? 'PRESS B' : shared ? (i === 0 ? 'PRESS T' : 'PRESS I') : 'PRESS E';
       setFont(c, 4.6, FONT_UI, 700); c.fillStyle = '#3a2200'; c.textAlign = 'center'; c.fillText('READY · ' + key, sx + sw / 2, sy + 1.4);
     }
     // active power-ups: little badges under the panel with a draining ring
@@ -10868,14 +10908,17 @@ const Game = {
     if (selId === 'health') note = d.inf ? 'Unlimited health: hits and falls never cost a life' : 'Normal health: hits and falls cost lives';
     else if (selId === 'story') note = 'The whole adventure with the story · ◂ ▸ picks a chapter you reached';
     else if (selId === 'play') note = 'Play any mission on its own · ◂ ▸ picks the mission';
-    else if (selId === 'players') note = d.players === 2 ? 'Two players on one computer: keyboard halves or two gamepads' : 'Press ◂ ▸ for two players on one computer';
-    else if (selId === 'online') note = 'Play together on two computers, phones or tablets';
+    else if (selId === 'players') {
+      const n = this.numLocal(), np = Pads.length, pads = np ? ` (${np} gamepad${np === 1 ? '' : 's'} found)` : ' · press a button on each gamepad so the game sees it';
+      note = n === 1 ? 'Press ◂ ▸ for 2, 3 or 4 players on one computer' : n === 2 ? 'Two players on one computer: keyboard halves or two gamepads' : n === 3 ? 'P1 and P2 share the keyboard · P3 plays with a gamepad' + pads : 'P1 and P2 share the keyboard · P3 and P4 play with gamepads' + pads;
+    }
+    else if (selId === 'online') note = 'Play together on up to four computers, phones or tablets';
     else if (selId === 'hero') note = 'Name, colours, helmet and outfits · ◂ ▸ switches hero';
     else if (selId === 'shop') note = 'Robots drop coins · spend them on upgrades and guns';
     else if (selId === 'trophies') note = 'Every hero has their own trophy wall';
     else if (selId === 'options') note = 'Mode, health, sound and music';
     else if (selId === 'modes') note = 'Boss Rush, Survival, Score Battle and Coin Race';
-    else if (MODES[selId]) note = MODES[selId].sub + (MODES[selId].vs && d.players !== 2 ? ' (switches to 2 players)' : '');
+    else if (MODES[selId]) note = MODES[selId].sub + (MODES[selId].vs && this.numLocal() < 2 ? ' (switches to 2 players)' : '');
     else if (selId === 'mback') note = 'Esc goes back';
     else if (selId === 'sound' || selId === 'music' || selId === 'fullscreen' || selId === 'oback') note = 'Esc goes back';
     else if (d.inf) note = 'Unlimited health is on · practice as long as you like';
@@ -10883,6 +10926,7 @@ const Game = {
     let hint;
     if (lastDevice === 'touch') hint = 'Left thumb: move & aim  ·  FIRE  ·  JUMP (again in the air = double jump)  ·  ⇄ switch gun  ·  SUPER when the bar is full';
     else if (lastDevice === 'pad') hint = 'Stick: move & aim · A jump · X fire · Y switch gun · B super (when the bar is full) · RB aim lock · Start pause';
+    else if (this.numLocal() > 2) hint = 'P1  WASD · F fire · G jump      P2  Arrows · J fire · K jump      ' + (this.numLocal() > 3 ? 'P3 & P4  gamepads 1 and 2' : 'P3  gamepad') + ' · A jump · X fire · B super';
     else if (d.players === 2) hint = 'P1  WASD · F fire · G jump · R gun · T super        P2  Arrows · J fire · K jump · U gun · I super';
     else hint = 'Move Arrows/WASD · Fire J/Z · Jump K/X/Space (twice = double jump) · Switch gun Q · Super E · Aim lock L · Pause P';
     const hw = c.measureText(hint).width + 14;
@@ -10928,7 +10972,7 @@ const Game = {
     c.fillText(`TIME ${mm}:${String(ss).padStart(2, '0')}   ·   ENEMIES ${S.kills}   ·   BOTS FREED ${S.rescued}/${S.rescueTotal}   ·   LETTERS ${nl}/7   ·   LIVES LOST ${S.deaths}`, VW / 2, VH * 0.5);
     (this.tally || []).forEach((t, i) => {
       const y = VH * 0.6 + i * 16, k = clamp((this.stateT - 0.6 - i * 0.3) / 0.8, 0, 1);
-      setFont(c, 8, FONT_UI, 700); c.fillStyle = t.style.visor; c.textAlign = 'right'; c.fillText(t.tag, VW / 2 - 50, y);
+      setFont(c, 8, FONT_UI, 700); c.fillStyle = t.style.ui || t.style.visor; c.textAlign = 'right'; c.fillText(t.tag, VW / 2 - 50, y);
       setFont(c, 9, FONT_MONO, 400); c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(pad(t.score + t.bonus * k, 7), VW / 2 - 40, y);
       setFont(c, 7, FONT_UI, 700); c.fillStyle = '#ffd08a'; const bt = '+' + t.bonus + ' BONUS'; c.fillText(bt, VW / 2 + 24, y);
       let tx = VW / 2 + 24 + c.measureText(bt).width + 12;
@@ -10950,7 +10994,7 @@ const Game = {
     c.fillText('The Iron Heart is offline and every Iron Legion robot has stopped.', VW / 2, VH * 0.5);
     c.fillText('Volt and Ember fly home under a bright blue sky.', VW / 2, VH * 0.5 + 10);
     this.players.forEach((p, i) => {
-      setFont(c, 8, FONT_UI, 700); c.fillStyle = p.style.visor; c.textAlign = 'right'; c.fillText(p.tag, VW / 2 - 10, VH * 0.66 + i * 14);
+      setFont(c, 8, FONT_UI, 700); c.fillStyle = p.style.ui || p.style.visor; c.textAlign = 'right'; c.fillText(p.tag, VW / 2 - 10, VH * 0.66 + i * 14);
       setFont(c, 9, FONT_MONO, 400); c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(pad(p.score, 7), VW / 2, VH * 0.66 + i * 14);
     });
     if (this.stateT > 2) { setFont(c, 7, FONT_UI, 500); c.fillStyle = 'rgba(230,236,246,0.7)'; c.textAlign = 'center'; c.fillText(Net.on ? 'Back to the lobby in a moment…' : lastDevice === 'touch' ? 'Tap to return to the title' : 'Press fire to return to the title', VW / 2, VH * 0.88); }
@@ -11040,7 +11084,7 @@ function frame(now) {
     Perf.acc = 0; Perf.n = 0; Perf.t = 0;
   }
   if (Net.on) Net.frame(rdt);
-  else { Input.update(Game.twoP, rdt); Game.update(rdt); }
+  else { Input.update(Math.max(1, Game.players.length), rdt); Game.update(rdt); }
   Game.render();
   Touch.taps.length = 0;
 }
@@ -11093,6 +11137,7 @@ const OUTFITS = [ // need = stars to unlock
 ];
 
 /* ---------------- heroes: every child has their own saved hero ---------------- */
+const HERO_NAMES = ['VOLT', 'EMBER', 'JADE', 'SKY'], HERO_LOOKS = [{ armor: 0, scarf: 0 }, { armor: 1, scarf: 7 }, { armor: 2, scarf: 2 }, { armor: 7, scarf: 5 }];
 const Heroes = {
   blank(name, look) {
     return { name, look: Object.assign({ armor: 0, scarf: 0, top: 0, outfit: 0 }, look), coins: 0, up: {}, guns: [], stars: {}, story: 0, letters: {}, troph: {}, stat: {}, best: {} };
@@ -11108,6 +11153,20 @@ const Heroes = {
     for (let i = 0; i < 4; i++) if (!(d.heroP[i] >= 0 && d.heroP[i] < d.heroes.length)) d.heroP[i] = Math.min(i, d.heroes.length - 1);
   },
   list() { return Store.data.heroes; },
+  // enough heroes for n players on this computer, and no two of them share one
+  ensure(n) {
+    const d = Store.data, L = d.heroes;
+    while (L.length < Math.min(n, 8)) { const k = L.length; L.push(this.blank(HERO_NAMES[k] || 'HERO ' + (k + 1), HERO_LOOKS[k] || { armor: k % ARMOR.length, scarf: (k * 3) % SCARF.length })); }
+    for (let i = 1; i < n; i++) { const used = d.heroP.slice(0, i); if (used.includes(d.heroP[i])) { const v = L.findIndex((h, j) => !used.includes(j)); if (v >= 0) d.heroP[i] = v; } }
+    Store.save();
+  },
+  // the next hero player i can switch to (one nobody else is playing), or -1
+  nextFree(i, dir) {
+    const d = Store.data, n = d.heroes.length, np = clamp(Math.floor(d.players) || 1, 1, 4), others = d.heroP.slice(0, np).filter((v, j) => j !== i);
+    let v = d.heroP[i];
+    for (let k = 0; k < n; k++) { v = (v + dir + n) % n; if (!others.includes(v)) return v; }
+    return -1;
+  },
   of(i) { return Store.data.heroes[Store.data.heroP[i]] || Store.data.heroes[0]; }, // the hero local player i is using
   starsOf(h) { let n = 0; for (const k in h.stars) n += h.stars[k] || 0; return n; },
   // the hero saved on this computer for a player in the game (online: only your own player)
@@ -11166,7 +11225,8 @@ function heroStyle(look) {
   const sig = JSON.stringify([L.a, L.s]);
   let e = LOOKS.get(sig);
   if (!e) {
-    const style = Object.assign({}, STYLE_P1, { helmet: hsvHex(L.a, 0.62, 0.8), armor: hsvHex(L.a, 0.6, 1), suit: hsvHex(L.a, 0.7, 0.62), scarf: hsvHex(L.s, 0.85, 1) });
+    const style = Object.assign({}, STYLE_P1, { helmet: hsvHex(L.a, 0.62, 0.8), armor: hsvHex(L.a, 0.6, 1), suit: hsvHex(L.a, 0.7, 0.62), scarf: hsvHex(L.s, 0.85, 1),
+      ui: hsvHex({ h: L.a.h, s: L.a.s }, 0.55, 1) }); // ui: a bright colour of the armour for the hero's name on the screen (the visor stays cyan)
     const key = 'sol_hero' + LOOKS.size;
     if (ART.img.sol_volt && ART.meta.sol_volt) { ART.img[key] = recolorSoldier(ART.img.sol_volt, L.a, L.s); ART.meta[key] = ART.meta.sol_volt; SOL_SHEET.set(style, key); }
     e = { style }; LOOKS.set(sig, e);
@@ -11319,7 +11379,7 @@ function cleanLoadout(lo, i) {
   const num = (v, mx) => (Number.isFinite(v) ? clamp(Math.floor(v), 0, mx) : 0);
   const lk = lo.look && typeof lo.look === 'object' ? lo.look : {};
   let name = String(lo.name || '').toUpperCase().split('').filter(ch => NAME_CHARS.includes(ch)).join('').trim().slice(0, 8);
-  if (!name) name = i ? 'EMBER' : 'VOLT';
+  if (!name) name = HERO_NAMES[i] || 'HERO';
   const guns = Array.isArray(lo.guns) ? lo.guns.filter((g, k, a) => typeof g === 'string' && WEAPONS[g] && g !== 'pulse' && a.indexOf(g) === k).slice(0, 7) : [];
   return { name, look: { armor: num(lk.armor, ARMOR.length - 1), scarf: num(lk.scarf, SCARF.length - 1), top: num(lk.top, TOPPER.length - 1), outfit: num(lk.outfit, OUTFITS.length - 1) },
     hp: num(lo.hp, 2), sup: num(lo.sup, 2), veh: num(lo.veh, 2), life: num(lo.life, 2), magnet: num(lo.magnet, 2), shield: num(lo.shield, 1), guns };
@@ -11468,12 +11528,13 @@ const Trophies = {
 /* ---------------- screens: MY HERO, SHOP, TROPHIES ---------------- */
 const NAME_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
 const Meta = {
-  page: 'hero', sel: 0, slot: 0, who: 0, editing: false, nameBuf: [], nameSlot: 0, msg: '', msgT: 0, shopSel: 0, shopTop: 0, trSel: 0, preview: null, prevT: 0,
+  page: 'hero', sel: 0, slot: 0, who: 0, editing: false, np() { return clamp(Math.floor(Store.data.players) || 1, 1, 4); },
+  nextWho(dir = 1) { const n = this.np(); this.who = (this.who + dir + n) % n; Sfx.select(); }, // which player's hero, shop or trophies are showing nameBuf: [], nameSlot: 0, msg: '', msgT: 0, shopSel: 0, shopTop: 0, trSel: 0, preview: null, prevT: 0,
   open(page) { this.page = page; this.sel = 0; this.who = 0; this.editing = false; this.msg = ''; this.shopSel = 0; this.shopTop = 0; this.trSel = 0; Game.setState('meta'); Sfx.confirm(); },
   hero() { return Heroes.of(this.who); },
   heroItems() {
     const it = [{ id: 'pick' }, { id: 'name' }, { id: 'armor' }, { id: 'scarf' }, { id: 'top' }, { id: 'outfit' }];
-    if (Store.data.players === 2) it.push({ id: 'who' });
+    if (this.np() > 1) it.push({ id: 'who' });
     it.push({ id: 'new' }, { id: 'back' });
     return it;
   },
@@ -11486,7 +11547,7 @@ const Meta = {
       case 'scarf': return ['SCARF', OUTFITS[lk.outfit].scarf || OUTFITS[lk.outfit].fx ? '(OUTFIT)' : SCARF[lk.scarf].name];
       case 'top': return ['HELMET', TOPPER[lk.top]];
       case 'outfit': { const o = OUTFITS[lk.outfit]; return ['OUTFIT', o.name]; }
-      case 'who': return ['EDITING', this.who === 0 ? 'PLAYER 1' : 'PLAYER 2'];
+      case 'who': return ['EDITING', 'PLAYER ' + (this.who + 1)];
       case 'new': return ['+ NEW HERO', ''];
       case 'back': return ['BACK', ''];
     }
@@ -11494,9 +11555,9 @@ const Meta = {
   },
   heroChange(id, dir) {
     const d = Store.data, h = this.hero(), lk = h.look, cyc = (v, n) => (v + dir + n) % n;
-    if (id === 'pick') { // the two players never share one hero
-      const n = Heroes.list().length, other = d.players === 2 && n > 1 ? d.heroP[1 - this.who] : -1;
-      let v = cyc(d.heroP[this.who], n); if (v === other) v = cyc(v, n);
+    if (id === 'pick') { // players never share one hero
+      const v = Heroes.nextFree(this.who, dir);
+      if (v < 0) { this.say('Every hero is taken · make one with + NEW HERO'); Sfx.nope(); return true; }
       d.heroP[this.who] = v; Game.storyPick = null;
     }
     else if (id === 'armor') { lk.armor = cyc(lk.armor, ARMOR.length); lk.outfit = 0; }
@@ -11508,7 +11569,7 @@ const Meta = {
       if (o === lk.outfit) { this.say('Earn stars in missions to unlock outfits'); Sfx.nope(); return true; }
       lk.outfit = o;
     }
-    else if (id === 'who') this.who = 1 - this.who;
+    else if (id === 'who') { this.who = (this.who + dir + this.np()) % this.np(); }
     else return false;
     Store.save(); Sfx.select(); return true;
   },
@@ -11590,7 +11651,7 @@ const Meta = {
     const h = Heroes.of(this.who), n = SHOP.length + 1;
     if (M.up) { this.shopSel = (this.shopSel - 1 + n) % n; Sfx.select(); }
     if (M.down) { this.shopSel = (this.shopSel + 1) % n; Sfx.select(); }
-    if ((M.left || M.right) && Store.data.players === 2) { this.who = 1 - this.who; Sfx.select(); }
+    if ((M.left || M.right) && this.np() > 1) this.nextWho(M.left ? -1 : 1);
     const vis = 7;
     if (this.shopSel < this.shopTop) this.shopTop = this.shopSel; if (this.shopSel >= this.shopTop + vis) this.shopTop = this.shopSel - vis + 1;
     const buy = i => {
@@ -11603,14 +11664,14 @@ const Meta = {
     if (M.ok) buy(this.shopSel);
     for (const t of taps) {
       for (let r = 0; r < vis; r++) { const i = this.shopTop + r, y = 70 + r * 22; if (i < n && t.y > y - 11 && t.y < y + 10 && Math.abs(t.x - VW / 2) < 170) { if (this.shopSel === i) buy(i); else { this.shopSel = i; Sfx.select(); } } }
-      if (t.y < 60 && t.y > 40 && Store.data.players === 2) { this.who = 1 - this.who; Sfx.select(); }
+      if (t.y < 60 && t.y > 40 && this.np() > 1) this.nextWho(t.x < VW / 2 ? -1 : 1);
       if (t.y > 236 && Math.abs(t.x - VW / 2) < 60) { Game.toTitle(true); Sfx.select(); }
     }
   },
   updateTrophies(M, taps) {
     if (M.back) { Game.toTitle(true); return; }
     const n = TROPHIES.length, cols = 6;
-    if (Store.data.players === 2 && (Keys.Tab || Keys.KeyQ) && !this.tabHeld) { this.who = 1 - this.who; Sfx.select(); }
+    if (this.np() > 1 && (Keys.Tab || Keys.KeyQ) && !this.tabHeld) this.nextWho(1);
     this.tabHeld = !!(Keys.Tab || Keys.KeyQ);
     if (M.left) { this.trSel = (this.trSel - 1 + n) % n; Sfx.select(); }
     if (M.right) { this.trSel = (this.trSel + 1) % n; Sfx.select(); }
@@ -11619,7 +11680,7 @@ const Meta = {
     if (M.ok) { Game.toTitle(true); Sfx.select(); }
     for (const t of taps) {
       for (let i = 0; i < n; i++) { const [x, y] = this.trPos(i); if (Math.abs(t.x - x) < this.trW() / 2 - 2 && Math.abs(t.y - y) < 20) { this.trSel = i; Sfx.select(); } }
-      if (t.y > 34 && t.y < 48 && Store.data.players === 2) { this.who = 1 - this.who; Sfx.select(); }
+      if (t.y > 34 && t.y < 48 && this.np() > 1) this.nextWho(t.x < VW / 2 ? -1 : 1);
       if (t.y > 246) { Game.toTitle(true); Sfx.select(); }
     }
   },
@@ -11651,7 +11712,7 @@ const Meta = {
   },
   drawHero(c) {
     const h = this.hero();
-    this.panel(c, 'MY HERO', Store.data.players === 2 ? 'Each player picks their own hero · coins, stars and trophies are saved per hero' : 'Coins, stars, trophies and upgrades are saved for each hero');
+    this.panel(c, 'MY HERO', this.np() > 1 ? 'Each player picks their own hero · coins, stars and trophies are saved per hero' : 'Coins, stars, trophies and upgrades are saved for each hero');
     const px = VW * 0.27;
     c.fillStyle = 'rgba(255,255,255,0.05)'; rrect(c, px - 62, 52, 124, 168, 6); c.fill();
     this.drawPreview(c, h, px, 196, 2.6);
@@ -11694,7 +11755,8 @@ const Meta = {
     const h = Heroes.of(this.who);
     this.panel(c, 'SHOP', '');
     setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffd23f';
-    fillIconText(c, `${Store.data.players === 2 ? '◂ ' : ''}${h.name}   ◎ ${h.coins} COINS${Store.data.players === 2 ? ' ▸' : ''}`, VW / 2, 50, 'center');
+    const many = this.np() > 1;
+    fillIconText(c, `${many ? '◂ P' + (this.who + 1) + ' · ' : ''}${h.name}   ◎ ${h.coins} COINS${many ? ' ▸' : ''}`, VW / 2, 50, 'center');
     const vis = 7, w = Math.min(340, VW - 60), x0 = VW / 2 - w / 2;
     for (let r = 0; r < vis; r++) {
       const i = this.shopTop + r; if (i > SHOP.length) break;
@@ -11729,8 +11791,8 @@ const Meta = {
   },
   trW() { return Math.min(68, (Math.min(440, VW - 24) - 20) / 6); }, // width of one trophy tile
   drawTrophies(c) {
-    const h = Heroes.of(this.who), two = Store.data.players === 2, gw = this.trW(), stars = Heroes.starsOf(h);
-    this.panel(c, 'TROPHIES', `${two ? '◂ ' : ''}${h.name} has ${Trophies.count(h)} of ${TROPHIES.length} trophies${two ? (lastDevice === 'touch' ? ' ▸  (tap here to switch)' : ' ▸  (Q switches)') : ''}`);
+    const h = Heroes.of(this.who), two = this.np() > 1, gw = this.trW(), stars = Heroes.starsOf(h);
+    this.panel(c, 'TROPHIES', `${two ? '◂ P' + (this.who + 1) + ' · ' : ''}${h.name} has ${Trophies.count(h)} of ${TROPHIES.length} trophies${two ? (lastDevice === 'touch' ? ' ▸  (tap here to switch)' : ' ▸  (Q switches)') : ''}`);
     TROPHIES.forEach((t, i) => {
       const [x, y] = this.trPos(i), got = !!h.troph[t.id], on = i === this.trSel;
       const prog = t.stars ? Math.min(1, stars / t.stars) : Math.min(1, (h.stat[t.stat] || 0) / t.n);
@@ -11767,15 +11829,15 @@ Heroes.init();
    07c_modes.js : MORE MODES
    BOSS RUSH     all 13 bosses in a row, against the clock
    SURVIVAL      endless robot waves in the world you pick (a mini-boss every 5th wave)
-   SCORE BATTLE  two players, three minutes: the higher score wins
-   COIN RACE     two players, two minutes: the most coins wins (coins drop double)
+   SCORE BATTLE  two to four players, three minutes: the highest score wins
+   COIN RACE     two to four players, two minutes: the most coins wins (coins drop double)
    All of it runs inside the shared world in online games (gameplay dice only).
    ===================================================================== */
 const MODES = {
   rush:   { name: 'BOSS RUSH',    sub: 'All 13 bosses in a row · how fast can you beat them?' },
   surv:   { name: 'SURVIVAL',     sub: 'Endless robot waves · ◂ ▸ picks the world' },
-  battle: { name: 'SCORE BATTLE', sub: 'Two players · the higher score after 3 minutes wins', time: 180, vs: true },
-  race:   { name: 'COIN RACE',    sub: 'Two players · the most coins after 2 minutes wins', time: 120, vs: true },
+  battle: { name: 'SCORE BATTLE', sub: '2 to 4 players · the highest score after 3 minutes wins', time: 180, vs: true },
+  race:   { name: 'COIN RACE',    sub: '2 to 4 players · the most coins after 2 minutes wins', time: 120, vs: true },
 };
 const fmtTime = t => { const m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); };
 // the enemy kinds a world's ambushes use (for survival waves), and its mini-boss
@@ -11794,7 +11856,7 @@ Object.assign(Game, {
   mode: 'mission', rush: null, surv: null, vs: null, results: null,
   // start one of the extra modes (li: the world for survival, the mission for the versus modes)
   startMode(mode, li = Store.data.mission) {
-    if (MODES[mode].vs) Store.data.players = 2;
+    if (MODES[mode].vs && !Net.on && this.numLocal() < 2) Store.data.players = 2; // versus needs at least two
     if (mode === 'rush') li = 0;
     this.startGame(false, li, mode);
   },
@@ -11834,7 +11896,7 @@ Object.assign(Game, {
     if (S.k) { S.k.list = S.k.list.filter(e => !e.dead); if (S.k.list.length) return; S.k = null; S.t = 2.6; if (S.wave > 0) { this.banner('WAVE ' + S.wave + ' CLEAR', 'Next wave in a moment', '120,255,170'); Sfx.confirm(); for (const p of this.players) if (p.alive() && p.hp < p.maxHp) p.hp++; } }
     S.t -= dt; if (S.t > 0) return;
     S.wave++;
-    const L = this.level, kinds = worldEnemies(L), n = Math.min(3 + S.wave, 13), W = [];
+    const L = this.level, kinds = worldEnemies(L), np = this.players.length, n = Math.min(3 + S.wave + (np - 1) * 2, 13 + (np - 1) * 2), W = []; // (bigger waves for more heroes)
     for (let i = 0; i < n; i++) W.push(Object.assign({}, kinds[Math.floor(rand(kinds.length))], { side: chance(0.5) ? 'left' : 'right' }));
     if (S.wave % 4 === 0) W.push({ type: 'brute', side: 'right' });
     if (S.wave % 5 === 0) W.push({ type: 'miniboss', kind: worldMini(L), side: 'right' });
@@ -11861,10 +11923,11 @@ Object.assign(Game, {
       R.title = 'SURVIVAL'; R.lines.push('You survived ' + w + (w === 1 ? ' wave' : ' waves') + ' in ' + LEVELS[this.surv.li].name);
       for (const h of new Set(local.filter(Boolean))) { const b = h.best.surv || (h.best.surv = {}); Trophies.add(h, 'survWave', w, true); if (w > (b[this.surv.li] || 0)) { b[this.surv.li] = w; R.record = 'NEW RECORD!'; } }
     } else if (this.vs) {
-      const race = this.mode === 'race', val = p => race ? (p.coins || 0) : p.score, a = val(this.players[0]), b = this.players[1] ? val(this.players[1]) : -1;
-      R.win = a > b ? 0 : b > a ? 1 : -1;
+      const race = this.mode === 'race', v = this.vsScores();
+      R.win = this.vsLeader();
       R.title = R.win < 0 ? "IT'S A DRAW!" : this.players[R.win].tag + ' WINS!';
-      R.lines.push(this.players.map(p => p.tag + '  ' + (race ? val(p) + ' coins' : pad(val(p), 7))).join('      '));
+      const parts = this.players.map((p, i) => p.tag + '  ' + (race ? v[i] + ' coins' : pad(v[i], 7)));
+      for (let i = 0; i < parts.length; i += 2) R.lines.push(parts.slice(i, i + 2).join('      ')); // (two to a line)
       if (R.win >= 0) { const h = local[R.win]; if (h) Trophies.add(h, 'wins', 1); }
     }
     Store.save();
@@ -11883,7 +11946,7 @@ Object.assign(Game, {
     setFont(c, 8, FONT_UI, 700); c.fillStyle = 'rgba(230,236,246,0.92)'; c.textAlign = 'center';
     R.lines.forEach((l, i) => c.fillText(l, VW / 2, VH * 0.52 + i * 13));
     if (R.record) { setFont(c, 11, FONT_DISP, 400); c.fillStyle = `rgba(255,214,63,${0.7 + 0.3 * Math.sin(this.rt * 6)})`; spaced(c, R.record, VW / 2, VH * 0.66, 2, 'center'); }
-    if (R.win >= 0) { const p = this.players[R.win]; drawCrown(c, VW / 2, VH * 0.16, 1.6); setFont(c, 7, FONT_UI, 700); c.fillStyle = p.style.visor; c.textAlign = 'center'; c.fillText('★ ' + p.tag + ' ★', VW / 2, VH * 0.21); }
+    if (R.win >= 0) { const p = this.players[R.win]; drawCrown(c, VW / 2, VH * 0.16, 1.6); setFont(c, 7, FONT_UI, 700); c.fillStyle = p.style.ui || p.style.visor; c.textAlign = 'center'; c.fillText('★ ' + p.tag + ' ★', VW / 2, VH * 0.21); }
     if (this.stateT > 1.5) { setFont(c, 7, FONT_UI, 500); c.fillStyle = `rgba(230,236,246,${0.5 + 0.3 * Math.sin(this.rt * 4)})`; c.textAlign = 'center'; c.fillText(Net.on ? 'Back to the lobby in a moment…' : lastDevice === 'touch' ? 'Tap to go back to the title' : 'Press fire to go back to the title', VW / 2, VH * 0.84); }
     c.globalAlpha = 1;
   },
@@ -11904,11 +11967,12 @@ Object.assign(Game, {
     }
     return false;
   },
-  // who is ahead in a versus game (for the crown)
+  vsScores() { return this.players.map(p => this.mode === 'race' ? (p.coins || 0) : p.score); },
+  // who is ahead in a versus game (for the crown): -1 while two or more share the lead
   vsLeader() {
     if (!this.vs || this.players.length < 2) return -1;
-    const val = p => this.mode === 'race' ? (p.coins || 0) : p.score, a = val(this.players[0]), b = val(this.players[1]);
-    return a > b ? 0 : b > a ? 1 : -1;
+    const v = this.vsScores(), m = Math.max(...v);
+    return v.filter(x => x === m).length === 1 ? v.indexOf(m) : -1;
   },
 });
 function drawCrown(c, x, y, s = 1) {
@@ -11920,17 +11984,19 @@ function drawCrown(c, x, y, s = 1) {
 }
 
 /* =====================================================================
-   08_net.js : ONLINE CO-OP (web version) — two computers, one game.
-   Lockstep: both computers run the same world. Every tick needs both
-   players' buttons; each computer sends its own buttons a few ticks ahead.
-   Gameplay dice are seeded the same on both sides, and the trig/exp maths
+   08_net.js : ONLINE CO-OP (web version) — up to four computers, one game.
+   Lockstep: every computer runs the same world. Every tick needs every
+   player's buttons; each computer sends its own buttons a few ticks ahead.
+   The host's computer is the hub: friends send their buttons to the host,
+   and the host passes them on to everyone else (with its own).
+   Gameplay dice are seeded the same everywhere, and the trig/exp maths
    used while the world steps is done in plain arithmetic so every browser
    gets exactly the same numbers. A checksum every second catches any drift;
-   if the two worlds ever disagree, both reload from the last checkpoint.
+   if the worlds ever disagree, all of them reload from the last checkpoint.
    Connections go through PeerJS (WebRTC); a 4-letter room code joins them.
    ===================================================================== */
-const NET_VERSION = 'iron-monsoon-15a';
-const NET_TICK = 1 / 60, NET_DELAY = 4, NET_MAXDELAY = 18;
+const NET_VERSION = 'iron-monsoon-16a';
+const NET_TICK = 1 / 60, NET_DELAY = 4, NET_MAXDELAY = 18, NET_MAXP = 4;
 const NET_LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
 
 // mulberry32 whose state can be read (for the checksum)
@@ -12011,19 +12077,24 @@ const NET_OFF_RNG = () => { Net.offCalls++; return Math.random(); };
 const NET_STATE = { play: 1, clear: 2, continue: 3, victory: 4, results: 5 };
 const NET_GAMES = ['mission', 'rush', 'surv', 'battle', 'race']; // what the host can pick to play
 
+
 Object.assign(Net, {
   available: !!window.IM_WEB, on: false, role: null, phase: 'menu', sel: 0,
-  peer: null, conn: null, code: '', codeIn: ['A', 'A', 'A', 'A'], slot: 0, status: '', error: '', notice: '', noticeT: 0,
-  lobby: { li: 0, diff: 'recruit', inf: false, gm: 'mission' }, saved: null, gid: 0, rng: null, theirLo: null,
-  tick: 0, acc: 0, mine: new Map(), theirs: new Map(), sums: new Map(), rsums: new Map(), outK: -1, out: [],
-  delay: NET_DELAY, sched: -1, pend: 0, theirsMax: -1, rbuf: null, rtts: [], heard: 0, winMin: 99, winT: 0, calm: 0,
+  peer: null, conn: null, links: [], testCh: null, code: '', codeIn: ['A', 'A', 'A', 'A'], slot: 0, status: '', error: '', notice: '', noticeT: 0,
+  lobby: { li: 0, diff: 'recruit', inf: false, gm: 'mission' }, seats: [null, null, null, null], seat: 0, saved: null, gid: 0, rng: null,
+  // the shared game: n players, me = my player number; ins[i] = player i's buttons by tick; gone[i] = the tick player i left at
+  n: 2, me: 0, ins: [], insMax: [], reps: [], gone: [], tick: 0, acc: 0, sums: new Map(), rsums: [], outK: -1, out: [],
+  delay: NET_DELAY, sched: -1, pend: 0, rtts: [], heard: 0, winMin: 99, winT: 0, calm: 0,
   stallT: 0, stalls: 0, menu: false, menuSel: 0, desyncs: 0, mismatches: 0, resyncAt: -1, resyncMsg: null, syncFrom: 0, youT: 0, rtt: 0, pingT: 0,
   offCalls: 0, snaps: null, tests: null,
 
   /* ---------- lobby ---------- */
   open() { this.phase = 'menu'; this.sel = 0; this.error = ''; Game.setState('online'); Sfx.confirm(); },
-  mySlot() { return this.role === 'host' ? 0 : 1; }, // the host plays player 1, the friend who joined plays player 2
-  myLoadout() { return Heroes.loadout(Heroes.of(0), this.mySlot()); },
+  mySlot() { return this.me; }, // my player number in the game (the host plays player 1)
+  myLoadout() { return Heroes.loadout(Heroes.of(0), Math.max(0, this.seat)); },
+  seatInfo(lo) { return { name: lo.name, look: lo.look }; },
+  friends() { return this.links.filter(L => L.seat >= 0).length; },
+  note(msg) { this.notice = msg; this.noticeT = 3; },
   items() {
     switch (this.phase) {
       case 'menu': return [{ id: 'host' }, { id: 'join' }, { id: 'back' }];
@@ -12047,7 +12118,7 @@ Object.assign(Net, {
       case 'nmission': return [L.gm === 'surv' ? 'WORLD' : 'MISSION', L.gm === 'rush' ? 'ALL 13 BOSSES' : `${L.li + 1} · ${LEVELS[L.li].name}`];
       case 'nmode': return ['MODE', L.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'];
       case 'nhealth': return ['HEALTH', L.inf ? 'UNLIMITED' : 'NORMAL'];
-      case 'nstart': return ['START!', ''];
+      case 'nstart': return [this.friends() ? `START!  (${this.friends() + 1} PLAYERS)` : 'START!', ''];
     }
     return [id, ''];
   },
@@ -12058,7 +12129,7 @@ Object.assign(Net, {
     else if (id === 'nmode') L.diff = L.diff === 'recruit' ? 'veteran' : 'recruit';
     else if (id === 'nhealth') L.inf = !L.inf;
     else return false;
-    Sfx.select(); this.send({ t: 'lobby', li: L.li, diff: L.diff, inf: L.inf, gm: L.gm }); return true;
+    Sfx.select(); this.sendRoom(); return true;
   },
   choose(id) {
     if (id === 'host') this.host();
@@ -12067,11 +12138,11 @@ Object.assign(Net, {
     else if (id === 'nstart') this.start();
     else if (id === 'back' || id === 'cancel' || id === 'leave') {
       if (this.phase === 'menu') { this.close(); Game.toTitle(); }
-      else { if (this.conn) this.send({ t: 'bye' }); this.close(); this.phase = 'menu'; this.sel = 0; }
+      else { this.send({ t: 'bye', why: this.role === 'host' ? 'closed' : '' }); this.close(); this.phase = 'menu'; this.sel = 0; }
       Sfx.select();
     }
   },
-  geom(n) { return { x: VW / 2, w: Math.min(250, VW * 0.6), top: this.phase === 'lobby' && this.role === 'guest' ? 164 : 150, h: 15, n }; },
+  geom(n) { return { x: VW / 2, w: Math.min(250, VW * 0.6), top: this.phase === 'lobby' ? (this.role === 'guest' ? 196 : 146) : 150, h: 15, n }; },
   updateLobby(dt, M, taps) {
     Game.updateTitleScene(dt);
     if (this.noticeT > 0) this.noticeT -= dt;
@@ -12123,11 +12194,19 @@ Object.assign(Net, {
     if (ch.length === 1 && NET_LETTERS.includes(ch)) { this.codeIn[this.slot] = ch; Sfx.select(); if (this.slot < 3) this.slot++; }
     else if (code === 'Backspace') { this.slot = Math.max(0, this.slot - 1); }
   },
-  // pings keep the round-trip time fresh; a friend we have not heard from for a long time is gone
+  // pings keep the round-trip times fresh; a computer we have not heard from for a long time is gone
   keepAlive(dt) {
-    if (!this.conn || this.phase === 'connecting' || this.phase === 'hosting') return;
-    this.pingT -= dt; if (this.pingT <= 0) { this.pingT = 1; this.send({ t: 'ping', s: performance.now() }); }
-    if (this.heard && performance.now() - this.heard > 12000) this.lost('The connection to your friend was lost.');
+    const now = performance.now();
+    if (this.role === 'host') {
+      for (const L of this.links.slice()) {
+        L.pingT -= dt; if (L.pingT <= 0) { L.pingT = 1; this.sendTo(L, { t: 'ping', s: now }); }
+        if (now - L.heard > 12000) this.dropLink(L, 'lost');
+      }
+      return;
+    }
+    if (!this.conn || this.phase === 'connecting') return;
+    this.pingT -= dt; if (this.pingT <= 0) { this.pingT = 1; this.send({ t: 'ping', s: now }); }
+    if (this.heard && now - this.heard > 12000) this.lost('The connection to the host was lost.');
   },
 
   /* ---------- connecting (PeerJS) ---------- */
@@ -12143,25 +12222,30 @@ Object.assign(Net, {
   },
   newCode() { let s = ''; for (let i = 0; i < 4; i++) s += NET_LETTERS[(Math.random() * NET_LETTERS.length) | 0]; return s; },
   host() {
-    this.close(); this.role = 'host'; this.phase = 'hosting'; this.code = this.newCode(); this.status = 'Opening a room…'; this.sel = 0; Sfx.confirm();
+    this.close(); this.role = 'host'; this.phase = 'hosting'; this.code = this.newCode(); this.status = 'Opening a room…'; this.sel = 0; this.seat = 0; this.me = 0;
+    this.seats = [this.seatInfo(this.myLoadout()), null, null, null];
+    this.lobby = { li: Store.data.mission, diff: Store.data.diff, inf: Store.data.inf, gm: NET_GAMES.includes(this.lobby.gm) ? this.lobby.gm : 'mission' };
+    Sfx.confirm();
     if (window.IM_NETTEST) return this.testLink('host');
     this.loadPeer(() => {
       if (this.phase !== 'hosting') return;
       const P = this.PeerC(), peer = this.peer = new P('ironmonsoon-' + this.code.toLowerCase(), { debug: 0 });
-      peer.on('open', () => { this.status = 'Tell your friend this code. Waiting for them to join…'; });
-      peer.on('connection', conn => { if (this.conn) { conn.close(); return; } this.attach(conn); });
-      peer.on('error', err => { if (err && err.type === 'unavailable-id') { if (this.phase === 'hosting') this.host(); } else if (!this.on && !this.conn) this.fail(this.errText(err)); });
-      peer.on('disconnected', () => { try { if (!peer.destroyed && this.phase === 'hosting') peer.reconnect(); } catch (e) { /* ignore */ } });
+      peer.on('open', () => { if (this.phase === 'hosting' && this.peer === peer) this.openRoom(); });
+      peer.on('connection', conn => { if (this.peer === peer) this.welcomeConn(conn); else try { conn.close(); } catch (e) { /* ignore */ } });
+      peer.on('error', err => { if (this.peer !== peer) return; if (err && err.type === 'unavailable-id') { if (this.phase === 'hosting') this.host(); } else if (this.phase === 'hosting') this.fail(this.errText(err)); });
+      peer.on('disconnected', () => { try { if (!peer.destroyed && this.peer === peer) peer.reconnect(); } catch (e) { /* ignore */ } });
     });
   },
+  openRoom() { this.phase = 'lobby'; this.sel = 0; this.status = ''; }, // (host) the room is open: friends can join with the code
   join(code) {
-    this.close(); this.role = 'guest'; this.phase = 'connecting'; this.code = code; this.status = 'Looking for room ' + code + '…'; this.sel = 0; Sfx.confirm();
+    this.close(); this.role = 'guest'; this.phase = 'connecting'; this.code = code; this.status = 'Looking for room ' + code + '…'; this.sel = 0; this.seat = -1;
+    Sfx.confirm();
     if (window.IM_NETTEST) return this.testLink('guest');
     this.loadPeer(() => {
       if (this.phase !== 'connecting') return;
       const P = this.PeerC(), peer = this.peer = new P({ debug: 0 });
-      peer.on('open', () => { if (this.phase === 'connecting') this.attach(peer.connect('ironmonsoon-' + code.toLowerCase(), { reliable: true, serialization: 'json' })); });
-      peer.on('error', err => { if (!this.on && this.phase === 'connecting') this.fail(err && err.type === 'peer-unavailable' ? 'There is no game with the code ' + code + '. Check the code with your friend.' : this.errText(err)); });
+      peer.on('open', () => { if (this.phase === 'connecting' && this.peer === peer) this.attach(peer.connect('ironmonsoon-' + code.toLowerCase(), { reliable: true, serialization: 'json' })); });
+      peer.on('error', err => { if (this.peer === peer && !this.on && this.phase === 'connecting') this.fail(err && err.type === 'peer-unavailable' ? 'There is no game with the code ' + code + '. Check the code with your friend.' : this.errText(err)); });
       setTimeout(() => { if (this.phase === 'connecting' && this.peer === peer) this.fail('Could not connect to room ' + code + '. Check the code, or try again.'); }, 20000);
     });
   },
@@ -12171,77 +12255,171 @@ Object.assign(Net, {
     if (t === 'browser-incompatible') return 'This browser cannot play online. Try Chrome, Edge, Firefox or Safari.';
     return 'Something went wrong with the connection. Please try again.';
   },
-  attach(conn) {
+  // (host) a friend's computer knocks: let them in (they say hello next), or tell them the room is full or busy
+  welcomeConn(conn) {
+    if (this.role !== 'host' || this.phase !== 'lobby' || this.on || this.links.length >= NET_MAXP - 1) {
+      const why = this.on ? 'busy' : 'full'; let done = false;
+      const no = () => { if (done) return; done = true; try { conn.send({ t: 'bye', why }); } catch (e) { /* ignore */ } setTimeout(() => { try { conn.close(); } catch (e) { /* ignore */ } }, 500); };
+      conn.on('open', no); if (conn.open === true) setTimeout(no, 0);
+      return;
+    }
+    const L = { conn, seat: -1, lo: null, heard: performance.now(), rtts: [], rtt: 0, pingT: 0.5, pi: -1 };
+    this.links.push(L);
+    conn.on('data', d => { if (this.links.includes(L)) this.onData(d, L); });
+    conn.on('close', () => { if (this.links.includes(L)) this.dropLink(L, 'left'); });
+    conn.on('error', () => { if (this.links.includes(L)) this.dropLink(L, 'lost'); });
+  },
+  attach(conn) { // (friend) the line to the host
     this.conn = conn; this.heard = 0;
     let said = false;
     const hello = () => { if (said || this.conn !== conn) return; said = true; this.heard = performance.now(); this.send({ t: 'hello', v: NET_VERSION, lo: this.myLoadout() }); };
     conn.on('open', hello);
-    if (conn.open === true) setTimeout(hello, 0); // already open (can happen on the host side)
-    conn.on('data', d => { if (this.conn === conn) this.onData(d); });
-    conn.on('close', () => { if (this.conn === conn) this.lost('Your friend left the game.'); });
-    conn.on('error', () => { if (this.conn === conn) this.lost('The connection to your friend was lost.'); });
+    if (conn.open === true) setTimeout(hello, 0); // already open
+    conn.on('data', d => { if (this.conn === conn) this.onData(d, null); });
+    conn.on('close', () => { if (this.conn === conn) this.lost('The host left the game.'); });
+    conn.on('error', () => { if (this.conn === conn) this.lost('The connection to the host was lost.'); });
   },
-  testLink(role) { // two tabs of the test page talk through a BroadcastChannel (used by the automatic tests)
-    const ch = new BroadcastChannel('im-nettest'), lag = window.IM_NETLAG || 0, handlers = {};
-    let last = 0;
-    const conn = { open: true, on(ev, f) { handlers[ev] = f; },
-      send(m) { if (!this.open) return; const s = JSON.stringify(m); if (!lag) { ch.postMessage(s); return; } last = Math.max(last, performance.now() + lag + Math.random() * lag * 0.6); const at = last; setTimeout(() => { if (this.open) ch.postMessage(s); }, at - performance.now()); },
-      close() { this.open = false; ch.close(); } };
-    ch.onmessage = e => {
-      const m = JSON.parse(e.data);
-      if (m.t === 'knock' && role === 'host' && !this.conn) { this.attach(conn); conn.send({ t: 'knock-ok' }); handlers.open && handlers.open(); return; }
-      if (m.t === 'knock-ok' && role === 'guest') { handlers.open && handlers.open(); return; }
-      if (m.t === 'knock' || m.t === 'knock-ok') return;
-      handlers.data && handlers.data(m);
+  // (automatic tests only) several tabs of the test page talk through one BroadcastChannel, each message addressed to one tab
+  testLink(role) {
+    const ch = this.testCh = new BroadcastChannel('im-nettest'), lag = window.IM_NETLAG || 0, me = Math.random().toString(36).slice(2, 10);
+    const mk = (to, open) => {
+      let last = 0;
+      return { to, open, h: {}, on(ev, f) { this.h[ev] = f; },
+        send(m) { if (!this.open) return; const s = JSON.stringify({ from: me, to: this.to, m }); if (!lag) { ch.postMessage(s); return; } last = Math.max(last, performance.now() + lag + Math.random() * lag * 0.6); const at = last; setTimeout(() => { if (this.open) try { ch.postMessage(s); } catch (e) { /* closed */ } }, at - performance.now()); },
+        close() { if (!this.open) return; this.open = false; try { ch.postMessage(JSON.stringify({ from: me, to: this.to, bye: 1 })); } catch (e) { /* closed */ } } };
     };
-    if (role === 'guest') { this.attach(conn); conn.send({ t: 'knock' }); }
-    this.status = role === 'host' ? 'Tell your friend this code. Waiting for them to join…' : 'Connecting…';
+    const conns = new Map(); let guest = null;
+    ch.onmessage = e => {
+      const w = JSON.parse(e.data);
+      if (w.knock) { if (role === 'host' && !conns.has(w.from)) { const c = mk(w.from, true); conns.set(w.from, c); this.welcomeConn(c); ch.postMessage(JSON.stringify({ from: me, to: w.from, ok: 1 })); } return; }
+      if (w.to !== me) return;
+      if (role === 'guest' && w.ok) { if (guest && !guest.to) { guest.to = w.from; guest.open = true; guest.h.open && guest.h.open(); } return; }
+      const c = role === 'host' ? conns.get(w.from) : guest;
+      if (!c || (role === 'guest' && w.from !== c.to)) return;
+      if (w.bye) { if (c.open) { c.open = false; c.h.close && c.h.close(); } return; }
+      if (c.open) c.h.data && c.h.data(w.m);
+    };
+    if (role === 'guest') { guest = mk(null, false); this.attach(guest); ch.postMessage(JSON.stringify({ from: me, knock: 1 })); this.status = 'Connecting…'; }
+    else this.openRoom();
   },
-  send(m) { if (this.conn && this.conn.open !== false) { try { this.conn.send(m); } catch (e) { /* closed */ } } },
+  // (friend: to the host · host: to every friend in the room)
+  send(m) {
+    if (this.role === 'host') { for (const L of this.links) if (L.seat >= 0) this.sendTo(L, m); return; }
+    if (this.conn && this.conn.open !== false) { try { this.conn.send(m); } catch (e) { /* closed */ } }
+  },
+  sendTo(L, m) { if (L.conn && L.conn.open !== false) { try { L.conn.send(m); } catch (e) { /* closed */ } } },
+  sendRoom() { if (this.role === 'host') this.send({ t: 'room', seats: this.roomSeats(), lobby: this.lobby }); },
+  roomSeats() { // (host) who is in the room, with heroes told apart just like they will be in the game
+    if (this.role !== 'host') return this.seats;
+    const occ = []; for (let i = 0; i < NET_MAXP; i++) if (this.seats[i]) occ.push(i);
+    const lo = this.gameLoadouts({ lo: occ.map(i => this.seats[i]) }, occ.length), out = [null, null, null, null];
+    occ.forEach((s, k) => { out[s] = { name: lo[k].name, look: lo[k].look }; });
+    return out;
+  },
   close() {
-    const c = this.conn, p = this.peer; this.conn = null; this.peer = null;
+    const c = this.conn, p = this.peer, ls = this.links, ch = this.testCh;
+    this.conn = null; this.peer = null; this.links = []; this.testCh = null; this.seats = [null, null, null, null];
     if (c) { try { c.close(); } catch (e) { /* ignore */ } }
+    for (const L of ls) { try { L.conn.close(); } catch (e) { /* ignore */ } }
     if (p) { try { p.destroy(); } catch (e) { /* ignore */ } }
+    if (ch) setTimeout(() => { try { ch.close(); } catch (e) { /* ignore */ } }, 200); // (after the goodbyes went out)
   },
   fail(msg) { this.close(); if (this.on) { this.stop(); Game.setState('online'); } this.phase = 'error'; this.error = msg; this.sel = 0; Sfx.hurt(); },
-  lost(msg) {
+  lost(msg) { // (friend) the line to the host is gone
     if (!this.conn && !this.on) return;
     const was = this.on; this.close();
     if (was) { this.stop(); Game.setState('online'); }
     this.phase = 'error'; this.error = msg; this.sel = 0;
   },
-  onData(m) {
+  // (host) a friend left or their line went quiet: free their seat; in a game their hero leaves at an agreed tick
+  dropLink(L, why) {
+    const i = this.links.indexOf(L); if (i < 0) return;
+    this.links.splice(i, 1);
+    try { L.conn.close(); } catch (e) { /* ignore */ }
+    if (L.seat >= 0) this.seats[L.seat] = null;
+    if (why !== 'quiet' && L.lo) this.note(L.lo.name + (why === 'lost' ? ' lost the connection' : ' left'));
+    if (this.on && L.pi > 0) this.dropPlayer(L.pi);
+    else if (!this.on) this.sendRoom();
+    this.rtt = this.links.reduce((a, o) => Math.max(a, o.rtt || 0), 0);
+  },
+  dropPlayer(p) {
+    if (!(p > 0 && p < this.n) || this.gone[p] !== Infinity) return;
+    const at = Math.max(this.insMax[p] + 1, this.tick); // every button of theirs we have was passed on before this message
+    this.send({ t: 'drop', g: this.gid, p, at });
+    this.gone[p] = at;
+  },
+  onData(m, L) {
     if (!m || typeof m !== 'object') return;
-    this.heard = performance.now();
+    if (L) L.heard = performance.now(); else this.heard = performance.now();
     if (m.g !== undefined && (!this.on || m.g !== this.gid)) return; // left over from an earlier game
+    if (L) this.hostData(m, L); else this.guestData(m);
+  },
+  hostData(m, L) {
     switch (m.t) {
-      case 'hello':
-        if (m.v !== NET_VERSION) { this.send({ t: 'bye' }); this.fail('Your friend has a different version of the game. Both of you, please reload the page.'); return; }
-        this.theirLo = cleanLoadout(m.lo, 1 - this.mySlot());
-        this.phase = 'lobby'; this.sel = 0; Sfx.confirm(); this.notice = this.role === 'host' ? this.theirLo.name + ' joined!' : 'Connected!'; this.noticeT = 3;
-        if (this.role === 'host') { this.lobby = { li: Store.data.mission, diff: Store.data.diff, inf: Store.data.inf, gm: this.lobby.gm || 'mission' }; this.send(Object.assign({ t: 'lobby' }, this.lobby)); }
+      case 'hello': {
+        if (L.seat >= 0) return;
+        if (m.v !== NET_VERSION) { this.sendTo(L, { t: 'bye', why: 'version' }); this.dropLink(L, 'quiet'); return; }
+        if (this.on) { this.sendTo(L, { t: 'bye', why: 'busy' }); this.dropLink(L, 'quiet'); return; }
+        let seat = 1; while (seat < NET_MAXP && this.seats[seat]) seat++;
+        if (seat >= NET_MAXP) { this.sendTo(L, { t: 'bye', why: 'full' }); this.dropLink(L, 'quiet'); return; }
+        L.seat = seat; L.lo = cleanLoadout(m.lo, seat); this.seats[seat] = this.seatInfo(L.lo);
+        this.sendTo(L, { t: 'welcome', v: NET_VERSION, seat });
+        this.sendRoom(); Sfx.confirm(); this.note(L.lo.name + ' joined!');
         break;
-      case 'lobby': if (this.role === 'guest') this.lobby = { li: m.li, diff: m.diff, inf: m.inf, gm: NET_GAMES.includes(m.gm) ? m.gm : 'mission' }; break;
-      case 'start': if (this.role === 'guest' && !this.on) this.begin(m); break;
-      case 'in':
-        for (let i = 0; i < m.d.length; i++) this.theirs.set(m.k + i, m.d[i]);
-        this.theirsMax = Math.max(this.theirsMax, m.k + m.d.length - 1); this.rbuf = m.b;
+      }
+      case 'in': { // a friend's buttons: keep them, and pass them on to everyone else
+        if (!this.on || L.pi <= 0) return;
+        this.takeIn(L.pi, m);
+        const fw = { t: 'in', g: this.gid, k: m.k, d: m.d, b: m.b, p: L.pi };
+        for (const o of this.links) if (o !== L && o.pi > 0) this.sendTo(o, fw);
         break;
-      case 'sum': this.rsums.set(m.k, m.h); this.checkSum(m.k); break;
-      case 'resync': if (this.role === 'guest' && m.at > this.tick) { this.resyncAt = m.at; this.resyncMsg = m; } break;
-      case 'desync': if (this.role === 'host' && m.k >= this.syncFrom) this.planResync(); break;
+      }
+      case 'sum': if (this.on && L.pi > 0 && this.rsums[L.pi]) { this.rsums[L.pi].set(m.k, m.h); this.checkSum(m.k); } break;
+      case 'ping': this.sendTo(L, { t: 'pong', s: m.s }); break;
+      case 'pong': { const r = performance.now() - m.s; if (r >= 0 && r < 5000) { L.rtt = r; L.rtts.push(r); if (L.rtts.length > 7) L.rtts.shift(); this.rtt = this.links.reduce((a, o) => Math.max(a, o.rtt || 0), 0); } break; }
+      case 'bye': this.dropLink(L, 'left'); break;
+    }
+  },
+  guestData(m) {
+    switch (m.t) {
+      case 'welcome':
+        if (m.v !== NET_VERSION) { this.send({ t: 'bye' }); this.fail('The host has a different version of the game. Everyone, please reload the page.'); return; }
+        this.seat = clamp(m.seat | 0, 1, NET_MAXP - 1); this.phase = 'lobby'; this.sel = 0; Sfx.confirm(); this.note('Connected!');
+        break;
+      case 'room': {
+        const S = Array.isArray(m.seats) ? m.seats : [], Lb = m.lobby && typeof m.lobby === 'object' ? m.lobby : {};
+        this.seats = [0, 1, 2, 3].map(i => S[i] && typeof S[i] === 'object' ? (lo => ({ name: lo.name, look: lo.look }))(cleanLoadout(S[i], i)) : null);
+        this.lobby = { li: clamp(Math.floor(Lb.li) || 0, 0, LEVELS.length - 1), diff: Lb.diff === 'veteran' ? 'veteran' : 'recruit', inf: !!Lb.inf, gm: NET_GAMES.includes(Lb.gm) ? Lb.gm : 'mission' };
+        break;
+      }
+      case 'start': if (!this.on && this.phase === 'lobby') this.begin(m); break;
+      case 'in': if (this.on && m.p >= 0 && m.p < this.n && m.p !== this.me) this.takeIn(m.p, m); break;
+      case 'resync': if (this.on && m.at > this.tick) { this.resyncAt = m.at; this.resyncMsg = m; } break;
+      case 'drop': if (this.on && m.p > 0 && m.p < this.n && this.gone[m.p] === Infinity) this.gone[m.p] = Math.max(m.at | 0, this.tick); break;
       case 'tolobby': if (this.on) { this.stop(); Game.setState('online'); this.phase = 'lobby'; this.sel = 0; } break;
       case 'ping': this.send({ t: 'pong', s: m.s }); break;
       case 'pong': { const r = performance.now() - m.s; if (r >= 0 && r < 5000) { this.rtt = r; this.rtts.push(r); if (this.rtts.length > 7) this.rtts.shift(); } break; }
-      case 'bye': this.lost('Your friend left the game.'); break;
+      case 'bye': this.lost(m.why === 'version' ? 'The host has a different version of the game. Everyone, please reload the page.'
+        : m.why === 'full' ? 'That room is full (four players at most).'
+        : m.why === 'busy' ? 'That game has already started. Ask the host to go back to the lobby, then join again.'
+        : m.why === 'closed' ? 'The host closed the room.' : 'The host left the game.'); break;
     }
   },
-  // buttons are sent a few ticks ahead. The head start grows when buttons arrive late on either side
+  takeIn(p, m) {
+    if (!Array.isArray(m.d) || !(m.k >= 0)) return;
+    const mp = this.ins[p]; if (!mp) return;
+    for (let i = 0; i < m.d.length; i++) if (m.k + i >= this.tick) mp.set(m.k + i, m.d[i] | 0);
+    this.insMax[p] = Math.max(this.insMax[p], m.k + m.d.length - 1);
+    if (Array.isArray(m.b)) this.reps[p] = m.b;
+  },
+  // buttons are sent a few ticks ahead. The head start grows when buttons arrive late anywhere
   // and shrinks again slowly when there is plenty of room; it never drops below what the ping needs.
   delayFloor() {
-    if (!this.rtts.length) return 2;
-    const s = this.rtts.slice().sort((a, b) => a - b), med = s[s.length >> 1];
-    return clamp(Math.ceil((med * 0.5 + 18) / (NET_TICK * 1000)), 2, NET_MAXDELAY);
+    const med = a => { const s = a.slice().sort((x, y) => x - y); return s[s.length >> 1]; };
+    let r;
+    if (this.role === 'host') { const ms = this.links.filter(L => L.rtts.length).map(L => med(L.rtts)); if (!ms.length) return 2; r = Math.max(...ms) * 0.5; }
+    else { if (!this.rtts.length) return 2; r = med(this.rtts) * (this.n > 2 ? 1 : 0.5); } // (other friends' buttons come through the host: two trips)
+    return clamp(Math.ceil((r + 18) / (NET_TICK * 1000)), 2, NET_MAXDELAY);
   },
   adapt() {
     const floor = this.delayFloor();
@@ -12254,16 +12432,24 @@ Object.assign(Net, {
 
   /* ---------- starting and stopping a shared game ---------- */
   start() {
-    if (!this.conn) return;
-    const L = this.lobby, m = { t: 'start', li: L.li, diff: L.diff, inf: L.inf, gm: L.gm, seed: (Math.random() * 2 ** 31) | 0, lo: [this.myLoadout(), this.theirLo] };
+    const ready = this.links.filter(L => L.seat >= 0).sort((a, b) => a.seat - b.seat);
+    if (!ready.length) { this.note('Wait for a friend to join first'); Sfx.nope(); return; }
+    ready.forEach((L, i) => { L.pi = i + 1; });
+    const L0 = this.lobby, m = { t: 'start', li: L0.li, diff: L0.diff, inf: L0.inf, gm: L0.gm, seed: (Math.random() * 2 ** 31) | 0,
+      seats: [0].concat(ready.map(L => L.seat)), lo: [this.myLoadout()].concat(ready.map(L => L.lo)) };
     this.send(m); this.begin(m);
   },
-  // both heroes, cleaned the same way on both computers; two heroes that look the same get told apart
-  gameLoadouts(m) {
-    const lo = [0, 1].map(i => cleanLoadout(m.lo && m.lo[i], i)), a = lo[0], b = lo[1];
-    if (a.look.armor === b.look.armor && a.look.scarf === b.look.scarf && a.look.outfit === b.look.outfit) Object.assign(b.look, { armor: a.look.armor === 1 ? 0 : 1, scarf: a.look.armor === 1 ? 0 : 7, outfit: 0 });
-    if (a.name === b.name) b.name = a.name === 'VOLT' ? 'EMBER' : (a.name.slice(0, 7) + '2');
-    return lo;
+  // every hero, cleaned the same way on every computer; heroes that look the same (or share a name) get told apart
+  gameLoadouts(m, n) {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const a = cleanLoadout(m.lo && m.lo[i], i);
+      const same = b => b.look.armor === a.look.armor && b.look.scarf === a.look.scarf && b.look.outfit === a.look.outfit;
+      if (out.some(same)) { const k = HERO_LOOKS.findIndex(L => !out.some(b => b.look.armor === L.armor && b.look.scarf === L.scarf && !b.look.outfit)); Object.assign(a.look, HERO_LOOKS[k >= 0 ? k : i % HERO_LOOKS.length], { outfit: 0 }); }
+      if (out.some(b => b.name === a.name)) a.name = HERO_NAMES.find(x => !out.some(b => b.name === x)) || a.name.slice(0, 7) + (i + 1);
+      out.push(a);
+    }
+    return out;
   },
   // run fn as part of the shared world: shared dice and exact maths
   sim(fn) {
@@ -12271,33 +12457,43 @@ Object.assign(Net, {
     try { return withDetMath(fn); } finally { SIMRNG = NET_OFF_RNG; }
   },
   begin(m) {
+    const order = Array.isArray(m.seats) ? m.seats.slice(0, NET_MAXP) : [0, 1], n = clamp(order.length, 2, NET_MAXP);
+    const me = this.role === 'host' ? 0 : order.indexOf(this.seat);
+    if (me < 0) { this.fail('Could not join that game. Please try again.'); return; }
+    this.n = n; this.me = me;
     this.saved = this.saved || { diff: Store.data.diff, inf: Store.data.inf, players: Store.data.players, mission: Store.data.mission };
-    Store.data.diff = m.diff; Store.data.inf = m.inf; Store.data.players = 2;
+    Store.data.diff = m.diff; Store.data.inf = m.inf; Store.data.players = n;
     this.on = true; this.gid = m.seed; this.tick = 0; this.acc = 0; this.stallT = 0; this.stalls = 0; this.menu = false; this.youT = 5;
     this.desyncs = 0; this.mismatches = 0; this.resyncAt = -1; this.resyncMsg = null; this.syncFrom = 0; this.offCalls = 0;
-    this.mine.clear(); this.theirs.clear(); this.sums.clear(); this.rsums.clear(); this.out = []; this.outK = -1;
-    this.delay = clamp(Math.max(this.delay || 0, this.delayFloor() + 1), 3, NET_MAXDELAY); this.pend = 0; this.rbuf = null; this.winMin = 99; this.winT = 0; this.calm = 0;
-    for (let k = 0; k < NET_DELAY; k++) { this.mine.set(k, 0); this.theirs.set(k, 0); }
-    this.sched = NET_DELAY - 1; this.theirsMax = NET_DELAY - 1;
+    this.sums.clear(); this.out = []; this.outK = -1;
+    this.ins = []; this.insMax = []; this.reps = []; this.gone = []; this.rsums = [];
+    for (let i = 0; i < n; i++) {
+      const mp = new Map(); for (let k = 0; k < NET_DELAY; k++) mp.set(k, 0);
+      this.ins.push(mp); this.insMax.push(NET_DELAY - 1); this.reps.push(null); this.gone.push(Infinity); this.rsums.push(new Map());
+    }
+    this.delay = clamp(Math.max(this.delay || 0, this.delayFloor() + 1), 3, NET_MAXDELAY); this.pend = 0; this.winMin = 99; this.winT = 0; this.calm = 0;
+    this.sched = NET_DELAY - 1;
     this.snaps = window.IM_NETTEST ? new Map() : null; this.tests = null;
     resize();
     this.rng = netRng(m.seed);
-    Game.loadouts = this.gameLoadouts(m);
+    Game.loadouts = this.gameLoadouts(m, n);
     const gm = NET_GAMES.includes(m.gm) ? m.gm : 'mission';
     this.sim(() => { Game.simT = 0; Game.god = false; Game.titleCam = 0; Game.startGame(false, gm === 'rush' ? 0 : m.li, gm === 'mission' ? null : gm); Game.stateT = 0; });
   },
   stop() {
     if (this.on) Heroes.bankAll(); // (while still online, so only your own hero gets your coins)
     this.on = false; this.menu = false;
+    for (const L of this.links) L.pi = -1;
     if (this.saved) { Object.assign(Store.data, this.saved); this.saved = null; Store.save(); }
     SIMRNG = Math.random; resize();
   },
-  leave() { this.send({ t: 'bye' }); this.stop(); this.close(); this.phase = 'menu'; Game.toTitle(); },
-  toLobby() { this.send({ t: 'tolobby' }); this.stop(); Game.setState('online'); this.phase = 'lobby'; this.sel = 0; },
+  leave() { this.send({ t: 'bye', why: this.role === 'host' ? 'closed' : '' }); this.stop(); this.close(); this.phase = 'menu'; Game.toTitle(); },
+  toLobby() { this.send({ t: 'tolobby' }); this.stop(); Game.setState('online'); this.phase = 'lobby'; this.sel = 0; this.sendRoom(); },
 
   /* ---------- the shared game, one tick at a time ---------- */
+  ready(T) { for (let i = 0; i < this.n; i++) if (T < this.gone[i] && !this.ins[i].has(T)) return false; return true; },
   frame(rdt) {
-    Input.update(false, rdt);
+    Input.update(1, rdt);
     const M = Input.menu, taps = Touch.taps;
     Game.rt += rdt; updateScreenFx(rdt);
     if (this.youT > 0) this.youT -= rdt;
@@ -12306,32 +12502,45 @@ Object.assign(Net, {
     if (!this.on) return; // left the game from the menu
     const cur = this.menu ? 0 : netEncode(Input.p[0]);
     this.pend |= cur; // a quick tap between two ticks still counts
-    const have = this.theirsMax - this.tick, rb = this.rbuf === null ? 99 : this.rbuf;
-    const ahead = have < rb - 1; // running ahead of the friend: ease off a little
+    // each friend: how many ticks of their buttons wait here, and how many of ours wait there (from their reports)
+    let ahead = false;
+    for (let j = 0; j < this.n; j++) {
+      if (j === this.me || this.gone[j] !== Infinity) continue;
+      const have = this.insMax[j] - this.tick, R = this.reps[j], rb = R && Number.isFinite(R[this.me]) ? R[this.me] : 99;
+      if (have < rb - 1) ahead = true; // running ahead of that friend: ease off a little
+      if (!(have <= 0 && rb >= this.delay)) this.winMin = Math.min(this.winMin, have, rb); // (a friend who is simply slower is not a network problem)
+    }
     this.acc = Math.min(this.acc + rdt * (ahead ? 0.9 : 1), 0.3);
-    // how close we came to running out of buttons (a friend who is simply slower is not a network problem)
-    if (!(have <= 0 && rb >= this.delay)) this.winMin = Math.min(this.winMin, have, rb);
     this.winT += rdt; if (this.winT >= 1) { this.winT = 0; this.adapt(); }
     let n = 0; const maxN = this.acc > 0.1 ? 10 : 3;
     while (this.on && this.acc >= NET_TICK && n < maxN) {
       const T = this.tick;
-      if (this.sched < T + this.delay) { const b = this.pend | cur; this.pend = 0; while (this.sched < T + this.delay) { this.sched++; this.mine.set(this.sched, b); this.queue(this.sched, b); } }
-      if (!this.theirs.has(T)) break;
-      this.simTick(T, this.mine.get(T), this.theirs.get(T));
-      this.mine.delete(T); this.theirs.delete(T);
+      if (this.sched < T + this.delay) {
+        const b = this.pend | cur, mine = this.ins[this.me]; this.pend = 0;
+        while (this.sched < T + this.delay) { this.sched++; mine.set(this.sched, b); this.queue(this.sched, b); }
+        this.insMax[this.me] = this.sched;
+      }
+      if (!this.ready(T)) break;
+      this.simTick(T);
+      for (const mp of this.ins) mp.delete(T);
       this.tick++; this.acc -= NET_TICK; n++;
     }
     if (n === 0 && this.on && this.acc >= NET_TICK) { if (this.stallT === 0) this.stalls++; this.stallT += rdt; } else this.stallT = 0;
     this.flush();
   },
   queue(k, b) { if (this.outK < 0) this.outK = k; this.out.push(b); },
-  flush() { if (this.out.length) { this.send({ t: 'in', g: this.gid, k: this.outK, d: this.out, b: this.theirsMax - this.tick }); this.out = []; this.outK = -1; } },
-  simTick(T, a, b) {
+  flush() {
+    if (!this.out.length || !this.on) return;
+    const m = { t: 'in', g: this.gid, k: this.outK, d: this.out, b: this.insMax.map((v, j) => j === this.me ? 99 : v - this.tick) };
+    if (this.role === 'host') m.p = 0;
+    this.send(m); this.out = []; this.outK = -1;
+  },
+  simTick(T) {
     if (T === this.resyncAt) this.applyResync();
-    const host = this.role === 'host';
-    netDecode(host ? a : b, Input.p[0]); netDecode(host ? b : a, Input.p[1]);
+    for (let i = 0; i < 4; i++) netDecode(i < this.n && T < this.gone[i] ? this.ins[i].get(T) : 0, Input.p[i]);
     this.sim(() => {
       Scr.hitstop = 0; Scr.slow = 1;
+      for (let i = 0; i < this.n; i++) if (T === this.gone[i]) this.heroLeft(i);
       if (this.tests && this.tests.has(T)) { this.testAct(this.tests.get(T)); this.tests.delete(T); }
       Game.stateT += NET_TICK;
       switch (Game.state) {
@@ -12342,9 +12551,25 @@ Object.assign(Net, {
         case 'results': break; // (the world waits while everyone reads the results)
       }
     });
+    const host = this.role === 'host';
     if ((Game.state === 'victory' || Game.state === 'results') && Game.stateT > 9 && host) { this.toLobby(); return; }
-    if (T % 60 === 30 && Game.state !== 'victory') { const h = this.hash(); this.sums.set(T, h); this.send({ t: 'sum', g: this.gid, k: T, h }); this.checkSum(T); }
+    if (T % 60 === 30 && Game.state !== 'victory') {
+      const h = this.hash();
+      if (host) { this.sums.set(T, h); this.checkSum(T); } else this.send({ t: 'sum', g: this.gid, k: T, h });
+    }
+    if (host && T % 600 === 0) { // forget old checksums (from friends who left)
+      for (const k of [...this.sums.keys()]) if (k < T - 600) this.sums.delete(k);
+      for (const R of this.rsums) for (const k of [...R.keys()]) if (k < T - 600) R.delete(k);
+    }
     if (this.snaps && T % 10 === 0 && Game.state !== 'victory') { this.snaps.set(T, this.snap()); this.snaps.delete(T - 1200); }
+  },
+  heroLeft(i) { // a friend left the game: their hero leaves too (the same tick on every computer)
+    const p = Game.players[i]; if (!p) return;
+    if (p.ride) p.dismount();
+    p.buddyT = 0; if (p.buddy) { p.buddy.leave(); p.buddy = null; }
+    p.supT = 0; p.flameOn = false; p.left = true; p.state = 'out'; p.lives = 0;
+    Game.flameSound(); Game.banner(p.tag + ' LEFT', 'The game goes on', '255,190,130');
+    if (Game.state === 'play' && Game.players.every(q => q.state === 'out')) Game.gameOver();
   },
   hash() {
     let h = 2166136261;
@@ -12364,7 +12589,7 @@ Object.assign(Net, {
   snap() { // the whole shared world in exact numbers (only on the automatic test page)
     const pk = (o, ks) => ks.map(k => o[k]);
     return JSON.stringify({ rng: this.rng.s, st: Game.state, stT: Game.stateT, simT: Game.simT, cam: [Cam.x, Cam.y, Cam.k, Cam.p], li: Game.li,
-      pl: Game.players.map(p => pk(p, ['x', 'y', 'vx', 'vy', 'hp', 'lives', 'state', 'mode', 'weapon', 'wlv', 'fireCd', 'invuln', 'score', 'aim', 'face', 'airJumps', 'slideT', 'sup', 'supT', 'guns', 'coins', 'tag', 'shield'])),
+      pl: Game.players.map(p => pk(p, ['x', 'y', 'vx', 'vy', 'hp', 'lives', 'state', 'mode', 'weapon', 'wlv', 'fireCd', 'invuln', 'score', 'aim', 'face', 'airJumps', 'slideT', 'sup', 'supT', 'guns', 'coins', 'tag', 'shield', 'left'])),
       co: Game.coins.map(k => pk(k, ['x', 'y', 'vx', 'vy', 'val', 'rest', 'home'])),
       en: Game.enemies.map(e => [e.constructor.name].concat(pk(e, ['x', 'y', 'vx', 'vy', 'hp', 'state', 't', 'dead']))),
       bu: Game.bullets.map(e => pk(e, ['kind', 'x', 'y', 'vx', 'vy', 'dead'])),
@@ -12373,43 +12598,47 @@ Object.assign(Net, {
       ve: Game.vehicles.map(v => pk(v, ['kind', 'x', 'y', 'vx', 'vy', 'hp', 'aim', 'face'])),
       boss: Game.boss ? [Game.boss.constructor.name].concat(pk(Game.boss, ['x', 'y', 'hp', 'state', 't'])) : null });
   },
+  // (host) every friend sends a checksum each second; any that differs from the host's means the worlds drifted
   checkSum(k) {
-    if (!this.sums.has(k) || !this.rsums.has(k)) return;
-    const same = this.sums.get(k) === this.rsums.get(k);
-    this.sums.delete(k); this.rsums.delete(k);
-    if (same || k < this.syncFrom) return;
-    this.mismatches++;
-    if (this.resyncAt >= 0) return; // a fix is already on its way
-    this.desyncs++;
-    if (this.role === 'host') this.planResync(); else this.send({ t: 'desync', g: this.gid, k });
+    if (!this.sums.has(k)) return;
+    const mine = this.sums.get(k); let all = true;
+    for (let j = 1; j < this.n; j++) {
+      if (this.gone[j] !== Infinity) continue;
+      const R = this.rsums[j]; if (!R.has(k)) { all = false; continue; }
+      const same = R.get(k) === mine; R.delete(k);
+      if (same || k < this.syncFrom) continue;
+      this.mismatches++;
+      if (this.resyncAt < 0) { this.desyncs++; this.planResync(); }
+    }
+    if (all) this.sums.delete(k);
   },
-  planResync() { // both worlds reload from the host's last checkpoint a few ticks from now
+  planResync() { // every world reloads from the host's last checkpoint a few ticks from now
     if (this.resyncAt >= 0) return;
-    const at = this.tick + this.delay + 20;
-    const pl = Game.players.map(p => ({ lives: p.lives, score: p.score, weapon: p.weapon, wlv: p.wlv, nextLife: p.nextLife, bestCombo: p.bestCombo, guns: p.guns.slice(), glv: Object.assign({}, p.glv), sup: p.sup, coins: p.coins, coins0: p.coins0 }));
+    const at = Math.max(this.sched, this.tick + this.delay) + 20; // (later than any tick a friend can reach before this message arrives)
+    const pl = Game.players.map(p => ({ lives: p.lives, score: p.score, weapon: p.weapon, wlv: p.wlv, nextLife: p.nextLife, bestCombo: p.bestCombo, guns: p.guns.slice(), glv: Object.assign({}, p.glv), sup: p.sup, coins: p.coins, coins0: p.coins0, left: !!p.left }));
     const cp = Game.checkpoint && Game.checkpoint.li === Game.li ? Game.checkpoint : null;
     const m = { t: 'resync', g: this.gid, at, seed: (Math.random() * 2 ** 31) | 0, li: Game.li, cp, pl };
     this.resyncAt = at; this.resyncMsg = m; this.send(m);
   },
-  applyResync() { // a fresh start for both worlds: new heroes, the level rebuilt, the same dice
+  applyResync() { // a fresh start for every world: new heroes, the level rebuilt, the same dice
     const m = this.resyncMsg; this.resyncAt = -1; this.resyncMsg = null; if (!m) return;
     Heroes.bankAll(); // coins so far are safe; the new heroes start with the host's count already banked
     this.rng = netRng(m.seed);
     this.sim(() => {
       Game.simT = 0; Game.checkpoint = m.cp;
-      Game.players = [new Player(0), new Player(1)];
-      Game.players.forEach((p, i) => { const s = m.pl[i]; if (s) Object.assign(p, s); p.banked = p.coins; });
+      Game.players = []; for (let i = 0; i < this.n; i++) Game.players.push(new Player(i));
+      Game.players.forEach((p, i) => { const s = m.pl && m.pl[i]; if (s) Object.assign(p, s); p.banked = p.coins; if (i < this.n && this.gone[i] <= this.tick) p.left = true; });
       if (Game.state !== 'play') Game.setState('play');
       Game.loadLevel(m.li, true);
       Game.stateT = 0;
     });
     this.syncFrom = this.tick;
     for (const k of [...this.sums.keys()]) if (k < this.tick) this.sums.delete(k);
-    for (const k of [...this.rsums.keys()]) if (k < this.tick) this.rsums.delete(k);
+    for (const R of this.rsums) for (const k of [...R.keys()]) if (k < this.tick) R.delete(k);
     Game.banner('RESYNC', 'Back to the last checkpoint', '140,200,255');
   },
 
-  // (automatic test page only) the same action applied to both worlds at the same tick
+  // (automatic test page only) the same action applied to every world at the same tick
   testAt(at, act) { if (window.IM_NETTEST) (this.tests || (this.tests = new Map())).set(at, act); },
   testAct(act) {
     const G = Game, L = G.level, B = G.boss;
@@ -12443,14 +12672,29 @@ Object.assign(Net, {
   },
 
   /* ---------- drawing ---------- */
+  drawSeats(c, y) { // the four places in the room: who is here
+    const w = Math.min(64, (Math.min(300, VW - 40) - 24) / 4), seats = this.roomSeats();
+    for (let i = 0; i < NET_MAXP; i++) {
+      const s = seats[i], x = VW / 2 + (i - 1.5) * w, mine = this.phase === 'lobby' && i === (this.role === 'host' ? 0 : this.seat);
+      c.fillStyle = s ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.03)'; rrect(c, x - w / 2 + 2, y - 10, w - 4, 19, 4); c.fill();
+      if (mine) { c.strokeStyle = 'rgba(255,154,60,0.85)'; c.lineWidth = 0.9; c.stroke(); }
+      if (s) {
+        const st = heroStyle(s.look);
+        c.fillStyle = st.ui || st.visor || '#8cf5ff'; c.beginPath(); c.arc(x - w / 2 + 9, y - 0.5, 3, 0, TAU); c.fill();
+        setFont(c, 6.5, FONT_UI, 700); c.textAlign = 'left'; c.fillStyle = '#ffffff'; c.fillText(s.name, x - w / 2 + 15, y + 2);
+      } else { setFont(c, 6, FONT_UI, 600); c.textAlign = 'center'; c.fillStyle = 'rgba(230,236,246,0.35)'; c.fillText('OPEN', x, y + 2); }
+      setFont(c, 4.8, FONT_UI, 700); c.textAlign = 'center'; c.fillStyle = mine ? '#ffb46b' : 'rgba(200,212,230,0.6)';
+      c.fillText(mine ? 'YOU' : i === 0 ? 'HOST' : 'P' + (i + 1), x, y + 16);
+    }
+  },
   drawLobby(c) {
     c.fillStyle = 'rgba(6,12,24,0.55)'; c.fillRect(0, 0, VW, VH);
     const pw = Math.min(300, VW - 40), px = VW / 2 - pw / 2;
     c.fillStyle = 'rgba(8,16,32,0.9)'; rrect(c, px, 28, pw, VH - 50, 8); c.fill(); c.strokeStyle = 'rgba(255,154,60,0.7)'; c.lineWidth = 1; c.stroke();
     setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#ff9a3c'; c.textAlign = 'center'; c.fillText('ONLINE CO-OP', VW / 2, 52);
-    setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.75)'; c.fillText('Play together on two computers, phones or tablets', VW / 2, 63);
+    setFont(c, 6.5, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.75)'; c.fillText('Up to four players on computers, phones or tablets', VW / 2, 63);
     const say = (txt, y, size = 7.5, col = '#e8eef7') => { setFont(c, size, FONT_UI, 600); c.fillStyle = col; c.textAlign = 'center'; this.wrap(c, txt, VW / 2, y, pw - 30, size + 3); };
-    if (this.phase === 'menu') say('One player hosts and gets a room code. The other player picks JOIN and types that code.', 86);
+    if (this.phase === 'menu') say('One player hosts and gets a room code. Up to three friends pick JOIN and type that code.', 86);
     if (this.phase === 'hosting') {
       say('ROOM CODE', 84, 7, '#9fb4c8');
       setFont(c, 30, FONT_DISP, 400); c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.fillText(this.code, VW / 2, 116);
@@ -12473,16 +12717,23 @@ Object.assign(Net, {
       return;
     }
     if (this.phase === 'lobby') {
-      if (this.role === 'host') say('Your friend is here! Pick a mission and press START.', 84, 7.5, '#9be06a');
-      else { say('Connected! The host picks the mission.', 84, 7.5, '#9be06a'); say(this.lobby.gm === 'rush' ? 'BOSS RUSH · ALL 13 BOSSES' : `${this.lobby.gm && this.lobby.gm !== 'mission' ? MODES[this.lobby.gm].name + ' · ' : 'MISSION '}${this.lobby.li + 1} · ${LEVELS[this.lobby.li].name}`, 113, 8.5, '#ffffff'); say(`${this.lobby.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'} · ${this.lobby.inf ? 'UNLIMITED HEALTH' : 'NORMAL HEALTH'}`, 126, 7, '#9fb4c8'); say('Waiting for the host to start…', 142, 7); }
-      say(`You play ${Heroes.of(0).name} · your friend plays ${this.theirLo ? this.theirLo.name : 'their hero'}`, 96, 6.5, this.role === 'host' ? '#8cf5ff' : '#ffb27a');
+      setFont(c, 6.5, FONT_UI, 700); c.fillStyle = '#9fb4c8'; c.textAlign = 'right'; c.fillText('ROOM CODE', VW / 2 - 6, 84);
+      setFont(c, 15, FONT_DISP, 400); c.fillStyle = '#ffffff'; c.textAlign = 'left'; c.fillText(this.code, VW / 2 + 2, 87);
+      this.drawSeats(c, 102);
+      if (this.role === 'host') say(this.friends() ? (this.friends() < NET_MAXP - 1 ? 'More friends can join with the code · pick a game and press START' : 'The room is full · pick a game and press START') : 'Tell your friends the room code · waiting for them to join…', 131, 6.5, this.friends() ? '#9be06a' : '#ffe27a');
+      else {
+        say(this.lobby.gm === 'rush' ? 'BOSS RUSH · ALL 13 BOSSES' : `${this.lobby.gm && this.lobby.gm !== 'mission' ? MODES[this.lobby.gm].name + ' · ' : 'MISSION '}${this.lobby.li + 1} · ${LEVELS[this.lobby.li].name}`, 140, 8.5, '#ffffff');
+        say(`${this.lobby.diff === 'recruit' ? 'RECRUIT' : 'VETERAN'} · ${this.lobby.inf ? 'UNLIMITED HEALTH' : 'NORMAL HEALTH'}`, 153, 7, '#9fb4c8');
+        say('Waiting for the host to start…', 170, 7);
+      }
     }
     if (this.phase === 'error') say(this.error, 96, 8, '#ffb4a0');
     const items = this.items(), g = this.geom(items.length);
     items.forEach((it, i) => {
       const y = g.top + i * g.h, on = i === this.sel, [a, b] = this.text(it.id), arrows = it.id.startsWith('n') && it.id !== 'nstart';
+      const dim = it.id === 'nstart' && !this.friends();
       if (on) { c.fillStyle = 'rgba(255,154,60,0.2)'; c.fillRect(g.x - g.w / 2, y - 10, g.w, 13); c.fillStyle = '#ff9a3c'; c.fillRect(g.x - g.w / 2, y - 10, 2, 13); }
-      setFont(c, 8, FONT_UI, 700); c.fillStyle = on ? '#ffffff' : 'rgba(232,238,247,0.8)';
+      setFont(c, 8, FONT_UI, 700); c.fillStyle = dim ? 'rgba(232,238,247,0.35)' : on ? '#ffffff' : 'rgba(232,238,247,0.8)';
       if (b) { c.textAlign = 'left'; c.fillText(a, g.x - g.w / 2 + 8, y); c.textAlign = 'right'; c.fillStyle = on ? '#ff9a3c' : 'rgba(255,154,60,0.8)'; c.fillText((arrows ? '◂ ' : '') + b + (arrows ? ' ▸' : ''), g.x + g.w / 2 - 8, y); }
       else { c.textAlign = 'center'; c.fillText(a, g.x, y); }
     });
@@ -12494,7 +12745,7 @@ Object.assign(Net, {
     if (line) c.fillText(line, x, yy);
   },
   drawGame(c) { // on top of the game: who you are, waiting, the menu
-    const me = Game.players[this.role === 'host' ? 0 : 1];
+    const me = Game.players[this.me];
     if (me && this.youT > 0 && me.state === 'alive' && Game.state === 'play') {
       const x = me.x - Cam.x, y = me.y - Cam.y - 44 + Math.sin(Game.rt * 6) * 2;
       c.globalAlpha = Math.min(1, this.youT); c.fillStyle = me.style.vrgb ? `rgb(${me.style.vrgb})` : '#fff';
@@ -12502,9 +12753,11 @@ Object.assign(Net, {
       setFont(c, 7, FONT_UI, 700); c.textAlign = 'center'; c.fillText('YOU', x, y - 2); c.globalAlpha = 1;
     }
     if (this.stallT > 0.5 && Game.state !== 'victory') {
-      const long = this.stallT > 4;
+      const long = this.stallT > 4, who = [];
+      for (let i = 0; i < this.n; i++) if (i !== this.me && this.tick < this.gone[i] && !this.ins[i].has(this.tick) && Game.players[i]) who.push(Game.players[i].tag);
+      const txt = who.length === 1 ? 'Waiting for ' + who[0] + '…' : 'Waiting for your friends…';
       c.fillStyle = 'rgba(8,16,32,0.8)'; rrect(c, VW / 2 - 110, VH / 2 - 16, 220, long ? 32 : 24, 6); c.fill();
-      setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffec78'; c.textAlign = 'center'; c.fillText('Waiting for your friend…', VW / 2, VH / 2);
+      setFont(c, 8, FONT_UI, 700); c.fillStyle = '#ffec78'; c.textAlign = 'center'; c.fillText(txt, VW / 2, VH / 2);
       if (long) { setFont(c, 6, FONT_UI, 600); c.fillStyle = 'rgba(230,236,246,0.8)'; c.fillText('Their game must stay open on their screen', VW / 2, VH / 2 + 10); }
     }
     if (this.menu) {
