@@ -1297,3 +1297,4 @@
 2026-10-11 15:29:08 [sm2_hawk] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 5414728}
 2026-10-11 15:29:14 [sm2_ember] rigging SUCCEEDED 100%
 2026-10-11 15:29:15 [sm2_ember] rigged: {"model": {"bytes": 5687336, "triangles": 62103, "joints": 24, "clips": ["Armature|clip0|baselayer"]}, "walking": {"bytes": 57688, "triangles": 0, "joints": 0, "clips": ["Armature|walking_man|baselayer"]}, "running": {"bytes": 47056, "triangles": 0, "joints": 0, "clips": ["Armature|running|baselayer"]}}
+2026-10-11 15:29:18 [sm2_ember] model with bigger pictures: {"pictures": ["4096x4096 image/jpeg"], "bytes": 6534216}

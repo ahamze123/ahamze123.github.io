@@ -3672,6 +3672,12 @@
    }
   },
   "sm2_ember": {
+   "full": {
+    "bytes": 6534216,
+    "pictures": [
+     "4096x4096 image/jpeg"
+    ]
+   },
    "model": {
     "credits": 35,
     "error": null,
