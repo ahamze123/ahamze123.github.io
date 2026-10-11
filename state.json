@@ -6706,6 +6706,19 @@
    "limit": 170,
    "run": 901,
    "spent_estimate": 140
+  },
+  {
+   "at": "2026-10-11 16:26",
+   "heroes": [
+    "dm2_ogre",
+    "dm2_raider",
+    "dm2_rogue",
+    "dm2_skeleton",
+    "dm2_brute",
+    "dm2_snatcher"
+   ],
+   "limit": 250,
+   "run": 902
   }
  ]
 }
