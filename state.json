@@ -613,6 +613,12 @@
      "dm2_draxx_side.png",
      "dm2_draxx_back.png"
     ]
+   },
+   "rig": {
+    "id": "01a12bbe-d540-739a-ac5a-cdc023add62d",
+    "made": "2026-10-11 16:14",
+    "model": "01a12bbb-ee54-745e-bacf-d65149773e0b",
+    "status": "PENDING"
    }
   },
   "dm2_korr": {

@@ -1387,3 +1387,4 @@
 2026-10-11 16:14:46 [dm2_bram] rig task made 01a12bbe-baa3-763f-8477-74a834861b96
 2026-10-11 16:14:47 [dm2_draxx] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 16:14:47 [dm2_bram] rigging IN_PROGRESS 10%
+2026-10-11 16:14:53 [dm2_draxx] rig task made 01a12bbe-d540-739a-ac5a-cdc023add62d
