@@ -1208,3 +1208,5 @@
 2026-10-11 08:59:37 [sm_viper] image-to-3d IN_PROGRESS 84%
 2026-10-11 08:59:47 [sm_viper] image-to-3d SUCCEEDED 100%
 2026-10-11 08:59:52 [sm_viper] rig task made 01a12a30-95a8-75b3-978c-e392fa88f0c7
+2026-10-11 08:59:53 [sm_viper] rigging IN_PROGRESS 10%
+2026-10-11 08:59:57 [sm_king] image-to-3d SUCCEEDED 100%
