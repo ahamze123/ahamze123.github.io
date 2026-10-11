@@ -1325,3 +1325,4 @@
 2026-10-11 15:37:05 [sm2_viper] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 15:37:05 [sm2_tank] multi-image-to-3d SUCCEEDED 100%
 2026-10-11 15:37:13 [sm2_viper] rig task made 01a12b9c-5a3e-7181-a360-3c7bf9e77827
+2026-10-11 15:37:13 [sm2_tank] rig task made 01a12b9c-5a3d-7386-853d-5144e8074c03
