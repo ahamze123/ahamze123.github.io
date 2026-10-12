@@ -14,7 +14,7 @@ A street brawler for 1 to 4 players, made from Iron Monsoon's engine. Volt, Embe
 
 ## How to play
 - **Punch** and **Kick** each have their own combo, and you can punch and kick while walking. Run (tap a direction twice) and punch or kick for a dash attack. Jump and punch or kick for a flying attack.
-- **Power finishers:** two punches then a kick, or two kicks then a punch, fire your hero's finisher: Volt's THUNDER KICK and THUNDER UPPERCUT, Ember's FIRE WHEEL and BLAZING ELBOW, Hawk's BOOT CRUSHER and BULL RUSH. A finisher dashes in, hits everyone in its path and still catches a thug who is flying from the blow before. The longer your combo, the harder every blow hits.
+- **Power finishers:** two punches then a kick, or two kicks then a punch, fire your hero's finisher: Volt's THUNDER KICK and THUNDER UPPERCUT, Ember's FIRE WHEEL and BLAZING ELBOW, Hawk's BOOT CRUSHER and BULL RUSH. A finisher dashes in, hits everyone in its path and still catches a thug who is flying from the blow before (or has only just hit the floor). The longer your combo, the harder every blow hits.
 - **Block:** hold the BLOCK button to stop blows from the front. Block at the very last moment to **PARRY**: the thug reels and your SUPER bar grows.
 - **Weapons:** baseball bats, steel pipes, frying pans, planks, hockey sticks and the odd big fish lie in the streets. Stand on one and press **Punch** to pick it up; then Punch swings it (every third swing knocks a thug down) and **Kick** throws it. It breaks after a few hits, and you drop it if you are knocked down.
 - Walk into a thug to **grab** him: punch for knee strikes, kick (or punch after two knees) to throw him into his friends.
@@ -48,7 +48,7 @@ The host's computer runs the game; friends' buttons go to it and every screen sh
 - On an iPad or iPhone, for the best full screen: open the page in Safari, tap **Share**, then **Add to Home Screen**. The game then opens like an app, full screen and sideways.
 
 ## How it was made
-The fighters and the six Part 2 bosses were drawn in ChatGPT from the front, side and back, turned into 3D models and animated with Meshy, then drawn as cel-shaded pictures for every move. Every other picture was drawn in ChatGPT too: the ten streets (skylines, buildings, floors), the lamps, benches, boats and rooftop gear, the neon signs, the crates, barrels and chests, and the food and treasure you pick up.
+Every fighter and boss is a hand-drawn 2D sprite in a comic-book and anime style: ChatGPT drew each one as sprite sheets of fighting poses (stances, walks and runs, punches, kicks, blocks, hits, falls and getting up, and the heroes' special attacks), plus one big picture of each for the menus and the story scenes. Every other picture was drawn in ChatGPT too: the ten streets (skylines, buildings, floors), the lamps, benches, boats and rooftop gear, the neon signs, the crates, barrels and chests, and the food and treasure you pick up.
 
 ## Credits
-Sound effects and the announcer voice: Kenney (kenney.nl), free CC0 packs. Fighters and bosses: ChatGPT drawings, 3D models and animation by Meshy. Backgrounds, props and pickups drawn in ChatGPT.
+Sound effects and the announcer voice: Kenney (kenney.nl), free CC0 packs. Fighters and bosses: hand-drawn sprite sheets made in ChatGPT. Backgrounds, props and pickups drawn in ChatGPT.
