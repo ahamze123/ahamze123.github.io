@@ -48,7 +48,7 @@ The host's computer runs the game; friends' buttons go to it and every screen sh
 - On an iPad or iPhone, for the best full screen: open the page in Safari, tap **Share**, then **Add to Home Screen**. The game then opens like an app, full screen and sideways.
 
 ## How it was made
-Every fighter and boss is a hand-drawn 2D sprite in a comic-book and anime style: ChatGPT drew each one as sprite sheets of fighting poses (stances, walks and runs, punches, kicks, blocks, hits, falls and getting up, and the heroes' special attacks), plus one big picture of each for the menus and the story scenes. Every other picture was drawn in ChatGPT too: the ten streets (skylines, buildings, floors), the lamps, benches, boats and rooftop gear, the neon signs, the crates, barrels and chests, and the food and treasure you pick up.
+Every fighter and boss is a hand-drawn 2D sprite in a comic-book and anime style: ChatGPT drew each one as sprite sheets of fighting poses (stances, an eight-step walk and a run, punches, kicks, blocks, hits, falls and getting up, and the heroes' special attacks); their legs move exactly as far as they walk, so their feet do not slide, plus one big picture of each for the menus and the story scenes. Every other picture was drawn in ChatGPT too: the ten streets (skylines, buildings, floors), the lamps, benches, boats and rooftop gear, the neon signs, the crates, barrels and chests, and the food and treasure you pick up.
 
 ## Credits
 Sound effects and the announcer voice: Kenney (kenney.nl), free CC0 packs. Fighters and bosses: hand-drawn sprite sheets made in ChatGPT. Backgrounds, props and pickups drawn in ChatGPT.
