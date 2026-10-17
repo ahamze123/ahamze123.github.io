@@ -176,7 +176,27 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
 .card input[type=range]{flex:1;min-width:120px;accent-color:var(--ink);height:30px;touch-action:none;cursor:pointer}
 .card select{width:100%;font:700 15px/1.2 var(--f-body);color:var(--ink);background:#f1f5fc;border:3px solid var(--ink);border-radius:12px;padding:10px 12px}
 .card label span{letter-spacing:.06em;text-transform:none;color:var(--ink)}
-@media (prefers-reduced-motion:reduce){.pop{animation-duration:.01s}}
+@media (prefers-reduced-motion:reduce){.pop{animation-duration:.01s}.chip.bump,#meter.flash{animation:none}}
+
+/* feel: flying coins and confetti canvas, the timing bar at the station, emotes, stars on the workplace cards */
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:20}
+.chip.bump{animation:bump .32s ease-out}
+@keyframes bump{40%{transform:scale(1.2)}}
+#mwrap{display:flex;flex-direction:column;align-items:center;gap:5px}
+#mwrap small{font:800 10px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--ink);border-radius:999px;padding:5px 10px 4px;white-space:nowrap}
+#meter{position:relative;width:min(250px,64vw);height:20px;background:#fff;border:3px solid var(--ink);border-radius:999px;box-shadow:0 3px 0 var(--ink);overflow:hidden}
+#mzone{position:absolute;top:0;bottom:0;background:var(--good)}
+#mmark{position:absolute;top:0;bottom:0;width:6px;margin-left:-3px;background:var(--ink);border-radius:3px}
+#meter.in #mzone{background:var(--hivis)}
+#meter.flash{animation:flash .36s}
+@keyframes flash{50%{box-shadow:0 0 0 5px var(--hivis),0 3px 0 var(--ink)}}
+#emoRow{position:absolute;left:50%;top:30%;transform:translateX(-50%);display:flex;gap:6px;background:rgba(16,32,60,.9);border-radius:16px;padding:8px}
+#emoRow button{width:48px;height:48px;border-radius:12px;border:3px solid var(--ink);background:#fff;font-size:26px;line-height:1;padding:0;cursor:pointer}
+#emoRow button:active{transform:translateY(2px)}
+.big #btnAct{width:118px;height:118px;font-size:24px}
+.big #btnDrop{right:calc(max(16px,env(safe-area-inset-right,0px)) + 140px)}
+.lvl .ls{position:absolute;right:9px;top:9px;font:400 13px/1 var(--f-display);letter-spacing:.06em;color:#b87400}
+#eMvp{white-space:pre-line}
 </style>
 
 <div id="app">
@@ -194,6 +214,7 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
       <div class="col right">
         <div class="chip"><small>Room</small><b id="roomV">----</b></div>
         <button class="chip btnchip tap" id="setBtn" aria-label="Settings" title="Settings (Esc)">⚙</button>
+        <button class="chip btnchip tap" id="emoBtn" aria-label="Emotes" title="Emotes (keys 1 to 5)">😀</button>
         <button class="chip btnchip temp tap" id="callTemp" aria-label="Call the fill-in robot">Call a fill-in</button>
         <button class="chip btnchip temp tap" id="clockOut" aria-label="End the shift" hidden>Clock out</button>
       </div>
@@ -201,9 +222,11 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
     <div id="tickets"></div>
     <div id="pops"></div>
     <div id="hint" hidden></div>
+    <div id="emoRow" hidden></div>
     <div id="info">
       <div id="say" hidden></div>
       <div id="held" hidden></div>
+      <div id="mwrap" hidden><small id="mlab">Hit the green for bonus coins</small><div id="meter"><div id="mzone"></div><div id="mmark"></div></div></div>
       <div id="prompt" hidden></div>
     </div>
     <div id="touch">
@@ -213,6 +236,7 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
     </div>
   </div>
 
+  <canvas id="fx" aria-hidden="true"></canvas>
   <div id="fsToast" role="status" hidden></div>
 
   <div id="screen">
@@ -255,6 +279,8 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
       <h3>Display</h3>
       <label>Graphics</label>
       <div class="srow"><button class="tog" id="sHD" type="button" aria-pressed="true">HD glow</button><button class="tog" id="sSD" type="button" aria-pressed="false">SD faster</button></div>
+      <label>Switch to SD by itself if the game runs slowly</label>
+      <div class="srow"><button class="tog" id="sAutoQ" type="button" aria-pressed="true">On</button></div>
       <label>Full screen</label>
       <div class="srow"><button class="btn alt" id="sFs" type="button">Full screen</button></div>
       <h3>Controls</h3>
@@ -262,6 +288,10 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
       <div class="srow"><input type="range" id="sLook" min="50" max="200" step="10" aria-label="Look speed"></div>
       <label>How-to tips at the start of a shift</label>
       <div class="srow"><button class="tog" id="sHints" type="button" aria-pressed="true">On</button></div>
+      <div id="sBigRow"><label>Large Use button</label>
+      <div class="srow"><button class="tog" id="sBig" type="button" aria-pressed="true">On</button></div></div>
+      <div id="sHapRow"><label>Vibration when you work</label>
+      <div class="srow"><button class="tog" id="sHap" type="button" aria-pressed="true">On</button></div></div>
       <div class="row2"><button class="btn full" id="sDone" type="button">Done</button></div>
       <button class="link" id="sLeave" type="button" hidden>Leave room</button>
     </div>
@@ -272,6 +302,8 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
       <div class="codebig" id="codeRow"><b id="lobbyCode">----</b><button class="btn alt" id="bCopy">Copy</button></div>
       <label>Workplace <span id="lvlNote"></span></label>
       <div class="levels" id="levelsLobby"></div>
+      <label>Pace <span id="paceNote"></span></label>
+      <div class="srow"><button class="tog" id="pace0" type="button" aria-pressed="false">Relaxed</button><button class="tog" id="pace1" type="button" aria-pressed="true">Normal</button><button class="tog" id="pace2" type="button" aria-pressed="false">Busy</button></div>
       <label>On shift</label>
       <ul class="who" id="who"></ul>
       <div class="row2"><button class="btn full" id="bStart" disabled>Clock in</button></div>
@@ -281,6 +313,7 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
         <li>The whole room works in the same workplace. The host picks it above.</li>
         <li>Each robot shows what it needs on a ticket. Grab it from your shelves, work it at the station in the middle of the floor (scan, cook, label or inspect), then hand it over.</li>
         <li>When the ticket is complete, press the button at that station to finish. The garage needs three turns.</li>
+        <li>Bonus coins: at your station a bar slides back and forth. Press while it is in the green for a Perfect. Back-to-back Perfects pay more, and a miss costs nothing.</li>
         <li>You can walk anywhere to help a coworker.</li>
         <li>No timers anywhere. Customers wait as long as it takes, and the host clocks out when the crew is done.</li>
       </ol>
@@ -297,6 +330,7 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
         <div class="stat"><b id="eServed">0</b><small>Served</small></div>
         <div class="stat"><b id="eLeft">0</b><small>Per order</small></div>
       </div>
+      <div class="note" id="eMvp"></div>
       <div class="note" id="eBest"></div>
       <div class="row2"><button class="btn full" id="bAgain">Back to break room</button></div>
       <div class="status" id="endStatus"></div>
@@ -361,17 +395,20 @@ const LEVELS=[
 ];
 /* Each workplace has its own station in the middle of the floor and its own way of working. Every item gets worked at the station before it is handed over;
    the garage also needs three wrench turns to finish the job. */
-LEVELS[0].work={name:'Scanner',verb:'Scan',doing:'Scanning',done:'Scanned',secs:0,taps:1,ringTaps:1,x:0,z:-3.9};
-LEVELS[1].work={name:'Stove',verb:'Cook',doing:'Cooking',done:'Cooked',secs:1.5,taps:1,ringTaps:1,x:0,z:-3.9};
-LEVELS[2].work={name:'Label printer',verb:'Label',doing:'Printing',done:'Labelled',secs:1.1,taps:1,ringTaps:1,x:0,z:-3.9};
-LEVELS[3].work={name:'Workbench',verb:'Inspect',doing:'Inspecting',done:'Inspected',secs:0,taps:2,ringTaps:3,x:0,z:-3.9};
+/* mg = the bonus timing bar at the station: how fast the marker slides, and how wide the green zone is (half-width, 0 to 1) */
+LEVELS[0].work={name:'Scanner',verb:'Scan',doing:'Scanning',done:'Scanned',secs:0,taps:1,ringTaps:1,x:0,z:-3.9,mg:{speed:.95,half:.17}};
+LEVELS[1].work={name:'Stove',verb:'Cook',doing:'Cooking',done:'Cooked',secs:1.5,taps:1,ringTaps:1,x:0,z:-3.9,mg:{speed:.85,half:.16}};
+LEVELS[2].work={name:'Label printer',verb:'Label',doing:'Printing',done:'Labelled',secs:1.1,taps:1,ringTaps:1,x:0,z:-3.9,mg:{speed:.9,half:.16}};
+LEVELS[3].work={name:'Workbench',verb:'Inspect',doing:'Inspecting',done:'Inspected',secs:0,taps:2,ringTaps:3,x:0,z:-3.9,mg:{speed:1.05,half:.14}};
+const PACE=[1.45,1,.7], PACE_NAME=['Relaxed','Normal','Busy'], PACE_STAR=[.7,1,1.3];
+const EMOTES=['👋','👍','🙋','🎉','😂'], EMOTE_NAME=['Wave','Thumbs up','Need help','Cheer','Laugh'];
 let LV=-1, LVL=LEVELS[0], LROOT=null;
 const PCOL=[0xff5a5f,0x2f80ff,0x23b26d,0xffb020,0x9b5de5,0x00bbf9];
 const PCSS=['#ff5a5f','#2f80ff','#23b26d','#ffb020','#9b5de5','#00bbf9'];
 const zoneOfItem=id=>id>>2;
 
 /* ---------- settings (every setting lives in the Settings screen of the main menu) ---------- */
-const SDEF={music:true,musicVol:.4,track:'auto',sfx:true,sfxVol:.8,voices:true,look:1,hints:true};
+const SDEF={music:true,musicVol:.4,track:'auto',sfx:true,sfxVol:.8,voices:true,look:1,hints:true,autoQ:true,bigBtn:true,haptics:true};
 const S=Object.assign({},SDEF);
 (function(){
   try{
@@ -410,8 +447,42 @@ const SFX={
   end:()=>{[784,659,523].forEach((f,i)=>setTimeout(()=>tone(f,.25,'triangle',.12),i*160))},
   horn:()=>{tone(330,.28,'square',.05);tone(415,.28,'square',.05)},
   tap:(n)=>tone(420+(n||1)*130,.07,'square',.07),
-  done:()=>{tone(784,.1,'triangle',.12);setTimeout(()=>tone(1175,.16,'triangle',.12),90)}
+  done:()=>{tone(784,.1,'triangle',.12);setTimeout(()=>tone(1175,.16,'triangle',.12),90)},
+  pop:()=>tone(660,.09,'sine',.09,1100),
+  /* Perfect: a rising sparkle; longer streaks climb higher */
+  perfect:(n)=>{ const b=880*Math.pow(1.122,Math.min(6,(n||1)-1)); [0,1,2].forEach(i=>setTimeout(()=>tone(b*[1,1.26,1.5][i],.14,'triangle',.09),i*60)); }
 };
+/* white noise for sizzles, printer chatter and ratchet clicks */
+let noiseBuf=null;
+function noise(d,v,ftype,f0,f1,q){
+  if(!S.sfx)return; const a=audio(); if(!a||a.state!=='running')return;
+  if(!noiseBuf||noiseBuf.sampleRate!==a.sampleRate){
+    const n=Math.floor(a.sampleRate*1.6); noiseBuf=a.createBuffer(1,n,a.sampleRate); const ch=noiseBuf.getChannelData(0);
+    for(let i=0;i<n;i++)ch[i]=Math.random()*2-1;
+  }
+  const s=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain(), t=a.currentTime;
+  s.buffer=noiseBuf; f.type=ftype||'bandpass'; f.frequency.setValueAtTime(f0,t); if(f1)f.frequency.exponentialRampToValueAtTime(f1,t+d); f.Q.value=q||1;
+  g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  s.connect(f); f.connect(g); g.connect(sfxOut(a)); s.start(t,Math.random()*.3); s.stop(t+d+.03);
+}
+/* Every workplace station has its own sound: scanner beeps, a sizzling stove with a bell, printer chatter, a ratchet and a clank. */
+function wsfx(lv,kind,n,vol){
+  const v=vol||1;
+  if(lv===0){
+    if(kind==='done'){ tone(2000,.07,'square',.045*v); setTimeout(()=>tone(2700,.13,'square',.045*v),85); }
+    else tone(1600+(n||1)*120,.06,'square',.04*v);
+  } else if(lv===1){
+    if(kind==='done'){ tone(1568,.45,'sine',.08*v); setTimeout(()=>tone(2093,.65,'sine',.06*v),120); }
+    else { noise(1.35,.2*v,'highpass',2600,7000,.7); tone(300,.08,'triangle',.06*v,200); }
+  } else if(lv===2){
+    if(kind==='done'){ noise(.14,.13*v,'bandpass',1300,500,2); setTimeout(()=>tone(1319,.15,'triangle',.07*v),95); }
+    else for(let i=0;i<6;i++)setTimeout(()=>noise(.07,.1*v,'bandpass',2000+((i*37)%5)*190,900,3),i*95);
+  } else {
+    if(kind==='done'){ tone(190,.24,'triangle',.14*v,70); noise(.14,.2*v,'bandpass',900,300,1.2); }
+    else { for(let i=0;i<3;i++)setTimeout(()=>{ noise(.04,.16*v,'bandpass',3200,1800,6); tone(1500,.03,'square',.03*v); },i*70); tone(200+(n||1)*55,.12,'sawtooth',.04*v); }
+  }
+}
+function buzz(ms){ if(S.haptics&&navigator.vibrate){ try{ navigator.vibrate(ms) }catch(e){} } }
 /* Robot voices: every robot gets its own pitch, tone and talking speed from its seed. They are made
    from bleeps and chirps, not recordings. Volume falls off with distance from you. */
 function robotSay(seed,kind,x,z){
@@ -1450,6 +1521,9 @@ function setLevel(lv,force){
   SLOTS.length=0; LVL.slots.forEach(s=>SLOTS.push({z:lv,x:s.x,sz:s.sz,name:s.name}));
   applyTheme(LVL);
   LVL.build();
+  /* a pulsing ring on the floor where you stand to work, lit while you carry something that still needs working */
+  stationRing=new THREE.Mesh(RING_GEO,RING_MAT); stationRing.rotation.x=-Math.PI/2; stationRing.position.set(LVL.work.x,.045,LVL.work.z+1.05); stationRing.visible=false; levelRoot.add(stationRing);
+  mg.speed=LVL.work.mg.speed; mg.half=LVL.work.mg.half; mg.streak=0; mgRoll();
   LVL.stockX.forEach((x,i)=>interact.push({type:'take',item:lv*4+i,x:x,z:-7.0,r:2.4,y:3.45}));
   interact.push({type:'work',x:LVL.work.x,z:LVL.work.z,r:2.4,y:1.9});
   SLOTS.forEach((s,i)=>interact.push({type:'slot',slot:i,x:s.x,z:LVL.bay?2.6:1.5,r:2.5,y:LVL.bay?2.2:2.1}));
@@ -1466,6 +1540,14 @@ function redrawSigns(){signs.forEach(s=>{s.draw(s.g,s.c.width,s.c.height);s.t.ne
 if(document.fonts&&document.fonts.load){
   Promise.all([document.fonts.load('40px Bungee'),document.fonts.load('800 30px Rubik')]).then(()=>{redrawSigns()}).catch(()=>{});
 }
+
+/* ---------- bonus timing bar at the station ---------- */
+const mg={pos:.5,c:.5,half:.16,speed:.95,streak:0};
+function mgRoll(){ mg.c=mg.half+.05+Math.random()*(1-2*mg.half-.1); }
+function mgUpdate(t){ const ph=(t*mg.speed)%2; mg.pos=ph<1?ph:2-ph; }
+let stationRing=null;
+const RING_GEO=new THREE.RingGeometry(.8,.97,40); RING_GEO.userData.keep=true;
+const RING_MAT=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,1.6,.3),transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});
 
 /* ---------- player state ---------- */
 const me={x:0,z:-1.6,yaw:Math.PI,pitch:0,vx:0,vz:0,carry:-1,bob:0,mv:0,proc:0,taps:0,work:null,ringTap:{slot:-1,n:0,t:0}};
@@ -1542,6 +1624,87 @@ function popAt(text,x,y,z,bad){
   d.style.left=((v.x+1)/2*app.clientWidth)+'px'; d.style.top=((1-v.y)/2*app.clientHeight)+'px';
   $('pops').appendChild(d); setTimeout(()=>d.remove(),1300);
 }
+function popXY(text,px,py){
+  const d=document.createElement('div'); d.className='pop'; d.textContent=text; d.style.left=px+'px'; d.style.top=py+'px';
+  $('pops').appendChild(d); setTimeout(()=>d.remove(),1300);
+}
+
+/* ---------- feel: coins that fly up to your total, confetti, sparkles, emotes, squash and bounce ---------- */
+const fxCv=$('fx'), fxg=fxCv.getContext('2d'), parts=[];
+const REDUCE=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+let fxW=0, fxH=0, fxD=1, fxDirty=false, bumpAt=0;
+function fxResize(){
+  fxD=Math.min(window.devicePixelRatio||1,2); fxW=app.clientWidth||innerWidth; fxH=app.clientHeight||innerHeight;
+  fxCv.width=Math.max(1,Math.round(fxW*fxD)); fxCv.height=Math.max(1,Math.round(fxH*fxD));
+}
+function toScreen(x,y,z){
+  const v=new THREE.Vector3(x,y,z).project(camera); if(v.z>1)return null;
+  return {x:(v.x+1)/2*(app.clientWidth||fxW||1), y:(1-v.y)/2*(app.clientHeight||fxH||1)};
+}
+function chipPos(){
+  const r=$('scoreV').getBoundingClientRect(), a=app.getBoundingClientRect();
+  return {x:r.left-a.left+r.width/2, y:r.top-a.top+r.height/2};
+}
+function chipBump(){
+  const now=performance.now(); if(now-bumpAt<140)return; bumpAt=now;
+  const c=$('scoreV').parentNode; if(!c||!c.classList)return;
+  c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
+}
+const CONF=['#ffd23f','#ff5a5f','#2f80ff','#23b26d','#9b5de5','#ffffff'];
+function fxBurst(kind,sx,sy,n){
+  if(REDUCE)n=Math.ceil(n*.35);
+  if(kind==='coin'&&hud.hidden)return;
+  for(let i=0;i<n;i++){
+    if(parts.length>280)break;
+    if(kind==='coin'){ const c=chipPos(); parts.push({k:'coin',x:sx,y:sy,x0:sx,y0:sy,tx:c.x,ty:c.y,t:-i*.07,d:.75+Math.random()*.2,r:7+Math.random()*2,arc:(Math.random()-.5)*160}); }
+    else if(kind==='confetti'){ parts.push({k:'conf',x:sx+(Math.random()-.5)*80,y:sy,vx:(Math.random()-.5)*300,vy:-(120+Math.random()*340),t:-Math.random()*.25,d:1.4+Math.random()*.9,w:6+Math.random()*5,h:3+Math.random()*4,a:Math.random()*6,va:(Math.random()-.5)*14,c:CONF[i%CONF.length]}); }
+    else { const a=Math.random()*6.283, s=60+Math.random()*150; parts.push({k:'spark',x:sx,y:sy,vx:Math.cos(a)*s,vy:Math.sin(a)*s-40,t:0,d:.45+Math.random()*.3,r:2.5+Math.random()*2.5,c:i%3?'#ffd23f':'#ffffff'}); }
+  }
+}
+function fxTick(dt){
+  if(!parts.length){ if(fxDirty){ fxg.setTransform(1,0,0,1,0,0); fxg.clearRect(0,0,fxCv.width,fxCv.height); fxDirty=false } return; }
+  fxDirty=true; fxg.setTransform(fxD,0,0,fxD,0,0); fxg.clearRect(0,0,fxW,fxH);
+  for(let i=parts.length-1;i>=0;i--){
+    const p=parts[i]; p.t+=dt;
+    if(p.t<0)continue;
+    const u=p.t/p.d;
+    if(u>=1){ if(p.k==='coin')chipBump(); parts.splice(i,1); continue; }
+    if(p.k==='coin'){
+      const e=u*u*(3-2*u), s=Math.sin(u*Math.PI);
+      p.x=lerp(p.x0,p.tx,e)+s*p.arc; p.y=lerp(p.y0,p.ty,e)-s*70;
+      fxg.globalAlpha=1; fxg.beginPath(); fxg.arc(p.x,p.y,p.r,0,6.283); fxg.fillStyle='#ffd23f'; fxg.fill();
+      fxg.lineWidth=2; fxg.strokeStyle='#10203c'; fxg.stroke();
+      fxg.beginPath(); fxg.arc(p.x-p.r*.25,p.y-p.r*.25,p.r*.4,0,6.283); fxg.fillStyle='rgba(255,255,255,.7)'; fxg.fill();
+    } else if(p.k==='conf'){
+      p.vy+=640*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=.992; p.a+=p.va*dt;
+      fxg.globalAlpha=u>.75?(1-u)/.25:1; fxg.save(); fxg.translate(p.x,p.y); fxg.rotate(p.a); fxg.fillStyle=p.c; fxg.fillRect(-p.w/2,-p.h/2,p.w,p.h); fxg.restore();
+    } else {
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=220*dt;
+      fxg.globalAlpha=1-u; fxg.beginPath(); fxg.arc(p.x,p.y,p.r*(1-u*.5),0,6.283); fxg.fillStyle=p.c; fxg.fill();
+    }
+  }
+  fxg.globalAlpha=1;
+}
+/* squash and bounce: 1 right after something happens, falling to 0 */
+function pulseK(e){ return e.pulseT?clamp(1-(performance.now()-e.pulseT)/450,0,1):0; }
+/* emotes floating above a coworker's head */
+const floaters=[];
+function floatEmote(av,i){
+  const tex=canvasTex(128,128,(g,w,h)=>{ g.clearRect(0,0,w,h); g.font='92px '+EMOJI; g.textAlign='center'; g.textBaseline='middle'; g.fillText(EMOTES[i],w/2,h/2+6); });
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex.t,color:UIC(),transparent:true,depthWrite:false}));
+  sp.scale.set(.1,.1,1); sp.position.set(0,2.65,0); av.g.add(sp);
+  floaters.push({sp:sp,tex:tex,av:av,t:0});
+  robotSay(300+i*11+(av.colIdx|0),'greet',av.g.position.x,av.g.position.z);
+}
+function floatersTick(dt){
+  for(let i=floaters.length-1;i>=0;i--){
+    const f=floaters[i]; f.t+=dt;
+    const grow=Math.min(1,f.t/.18), s=.75*(grow<1?1+Math.sin(grow*Math.PI)*.35:1)*grow;
+    f.sp.scale.set(s,s,1); f.sp.position.y=2.65+f.t*.3;
+    f.sp.material.opacity=f.t>1.9?Math.max(0,1-(f.t-1.9)/.5):1;
+    if(f.t>2.4){ f.av.g.remove(f.sp); f.tex.t.dispose(); f.sp.material.dispose(); floaters.splice(i,1); }
+  }
+}
 function entSay(e,kind,x,z){ robotSay(e.seed,kind,x,z); e.talkUntil=performance.now()+({greet:900,thanks:1100,ack:420}[kind]||500); }
 function reconcile(w){
   const fresh=!ents.size&&!gone.length;
@@ -1561,9 +1724,13 @@ function reconcile(w){
     e.want=o.w; e.given=o.g;
     if(o.st!==prevSt){
       e.st=o.st;
-      if(o.st===2){ const gain=w.sc-lastSc; if(gain>0)popAt('+'+gain,sl.x,2.3,sl.sz,false); SFX.coin(); entSay(e,'thanks',sl.x,sl.sz); leaveEnt(e,true); }
+      if(o.st===2){
+        const gain=w.sc-lastSc; if(gain>0)popAt('+'+gain,sl.x,2.3,sl.sz,false); SFX.coin(); entSay(e,'thanks',sl.x,sl.sz); leaveEnt(e,true);
+        e.pulseT=performance.now();
+        if(gain>0){ const sp=toScreen(sl.x,LVL.bay?1.6:2.0,sl.sz); if(sp){ fxBurst('spark',sp.x,sp.y,10); fxBurst('coin',sp.x,sp.y,Math.min(7,2+Math.round(gain/8))); } }
+      }
       else if(o.st===3){ entSay(e,'ack',sl.x,sl.sz); popAt('Closed',sl.x,2.3,sl.sz,false); leaveEnt(e,false); }
-    } else if(o.g.length>prevGiven){ SFX.give(); entSay(e,'ack',sl.x,sl.sz); }
+    } else if(o.g.length>prevGiven){ SFX.give(); entSay(e,'ack',sl.x,sl.sz); e.pulseT=performance.now(); }
     const k=JSON.stringify([e.want,e.given,e.st]);
     if(k!==e.key){ e.key=k; drawBubble(e); }
     const tk=e.given.join(',');
@@ -1585,9 +1752,13 @@ function stepEnt(e,dt,t){
   } else if(!e.bay&&!e.leaving){ e.mesh.rotation.y=angLerp(e.mesh.rotation.y,Math.PI,Math.min(1,dt*8)); }
   if(e.arrived&&!e.said){
     e.said=true; const sl=SLOTS[e.slot];
-    if(e.bay)SFX.horn(); entSay(e,'greet',sl.x,sl.sz);
+    if(e.bay)SFX.horn(); entSay(e,'greet',sl.x,sl.sz); e.pulseT=performance.now();
   }
-  if(e.bay){ const spin=moving?(e.leaving?1:-1)*e.speed*dt/.34:0; e.model.wheels.forEach(w=>w.rotation.x+=spin); }
+  const pk=pulseK(e);
+  if(e.bay){
+    const spin=moving?(e.leaving?1:-1)*e.speed*dt/.34:0; e.model.wheels.forEach(w=>w.rotation.x+=spin);
+    e.mesh.position.y=pk>0?Math.abs(Math.sin((1-pk)*Math.PI*3))*.08*pk:0; /* the car bounces on its springs */
+  }
   else {
     const r=e.model, ph=t*2.2+e.phase;
     r.rig.position.y=.1+Math.sin(ph)*.045+(e.leaving&&e.happy?Math.abs(Math.sin(t*9))*.2:0);
@@ -1597,6 +1768,12 @@ function stepEnt(e,dt,t){
     if(r.spin)r.spin.rotation.y+=dt*(moving?22:12);
     if(r.glow)r.glow.scale.setScalar(1+Math.sin(ph*2)*.05);
     if(r.setFace){ const now=performance.now(); r.setFace(e.leaving?'happy':(e.st===1?'hope':'wait'),((t*1000+e.seed*173)%3200)<130,now<(e.talkUntil||0)&&(((now/110)|0)%2===0)); }
+    /* squash and stretch after arriving, taking an item or paying. The head-only bots get their scale reset by setFace every frame, so it is multiplied on top; the plain screen bots are set directly and put back to 1 afterwards. */
+    if(pk>0){
+      const sy=1+.24*pk*Math.sin((1-pk)*Math.PI*3.5), sxz=1/Math.sqrt(sy);
+      if(r.size){ r.rig.scale.x*=sxz; r.rig.scale.y*=sy; r.rig.scale.z*=sxz; }
+      else { r.rig.scale.set(sxz,sy,sxz); e.sqOn=true; }
+    } else if(e.sqOn){ r.rig.scale.set(1,1,1); e.sqOn=false; }
   }
   const show=(e.arrived&&!e.leaving)||(e.leaving&&performance.now()-e.t1<1500);
   e.bubSprite.visible=show;
@@ -1656,8 +1833,8 @@ function updateTemp(dt,t){
   const sk=leg*4+stg;
   if(e.sk!==sk){
     e.sk=sk;
-    if(stg===1){ tone(560,.05,'square',.035); e.talkUntil=performance.now()+200; }
-    else if(stg===2&&tt<.5){ tone(1040,.1,'triangle',.05); }
+    if(stg===1){ wsfx(LV,'tap',1,.45); e.talkUntil=performance.now()+200; }
+    else if(stg===2&&tt<.5){ wsfx(LV,'done',1,.5); }
     else if(stg===3&&carry>=0){ robotSay(2000+z*7,'ack',px,pz); e.talkUntil=performance.now()+420; }
   }
 }
@@ -1765,11 +1942,12 @@ async function leaveRoom(){
   if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
   $('startStatus').textContent=''; refreshLevelButtons(); showScreens();
 }
-function newG(){return {lv:Math.max(0,LV),v:0,p:0,t:0,sc:0,sv:0,nid:1,o:[],ack:{},spawnIn:1.2,endT:3,tb:null,tbCool:0}}
+function newG(){return {lv:Math.max(0,LV),v:0,p:0,t:0,sc:0,sv:0,nid:1,o:[],ack:{},spawnIn:1.2,endT:3,tb:null,tbCool:0,df:1,pc:{},bn:{}}}
 function parseW(w){
   if(!w||typeof w!=='object')return null;
   const p=w.p|0; if(p<0||p>2)return null;
-  const out={lv:clamp(w.lv|0,0,LEVELS.length-1),v:w.v|0,p:p,t:clamp(+w.t||0,0,999),sc:w.sc|0,sv:w.sv|0,o:[],k:{},tb:[-1,0,0]};
+  const out={lv:clamp(w.lv|0,0,LEVELS.length-1),v:w.v|0,p:p,t:clamp(+w.t||0,0,999),sc:w.sc|0,sv:w.sv|0,o:[],k:{},tb:[-1,0,0],df:w.df===undefined?1:clamp(w.df|0,0,2),pc:{}};
+  if(w.pc&&typeof w.pc==='object'){ let c=0; for(const key in w.pc){ if(c++>=8)break; const a=w.pc[key]; if(Array.isArray(a))out.pc[key]=[clamp(a[0]|0,0,9999),clamp(a[1]|0,0,9999)]; } }
   if(Array.isArray(w.tb)&&w.tb.length>=3)out.tb=[clamp(w.tb[0]|0,-1,3),clamp(w.tb[1]|0,0,99),clamp(w.tb[2]|0,0,99)];
   const ok=x=>Array.isArray(x)?x.slice(0,4).map(v=>v|0).filter(v=>v>=0&&v<ITEMS.length):[];
   if(Array.isArray(w.o))for(const a of w.o.slice(0,SLOTS.length)){
@@ -1784,7 +1962,7 @@ function becomeHost(){
   G=newG();
   if(lastWorld){
     G.lv=lastWorld.lv; G.v=lastWorld.v; G.p=lastWorld.p; G.t=lastWorld.t; G.sc=lastWorld.sc; G.sv=lastWorld.sv;
-    G.ack=Object.assign({},lastWorld.k); G.spawnIn=3; G.endT=3;
+    G.ack=Object.assign({},lastWorld.k); G.spawnIn=3; G.endT=3; G.df=lastWorld.df; G.pc={}; for(const key in lastWorld.pc)G.pc[key]=lastWorld.pc[key].slice();
     G.o=lastWorld.o.map(o=>({id:o.id,s:o.s,w:o.w.slice(),g:o.g.slice(),st:o.st,seed:o.seed,rm:o.st>=2?2:0}));
     G.nid=lastWorld.o.reduce((m,o)=>Math.max(m,o.id+1),1);
     if(lastWorld.tb[0]>=0&&lastWorld.p===1)G.tb={z:lastWorld.tb[0],t:Math.max(5,lastWorld.tb[1]),tick:1.5};
@@ -1811,12 +1989,21 @@ function applyAct(label,a){
   G.ack[label]=n;
   if(G.p!==1||!Number.isInteger(k)||!Number.isInteger(s)||!Number.isInteger(item))return;
   if(k===3){ if(s>=0&&s<4&&!G.tb&&G.tbCool<=0)G.tb={z:G.lv,t:40,tick:1.2}; return; }
+  if(k===4){ /* Perfect at the station: bonus coins, at most one every 0.6 s per player */
+    if(G.t-(G.bn[label]===undefined?-9:G.bn[label])<.6)return;
+    G.bn[label]=G.t; G.sc+=clamp(item,1,5); pcOf(label)[1]++; return;
+  }
   const o=G.o.find(o=>o.s===s&&(o.st===0||o.st===1)); if(!o)return;
   if(k===1){
-    if(o.st===0&&o.w.indexOf(item)>=0&&o.g.indexOf(item)<0){ o.g.push(item); if(o.g.length===o.w.length)o.st=1; }
+    if(o.st===0&&o.w.indexOf(item)>=0&&o.g.indexOf(item)<0){ o.g.push(item); if(o.g.length===o.w.length)o.st=1; pcOf(label)[0]++; }
   } else if(k===2){
-    if(o.st===1)ringOrder(o);
+    if(o.st===1){ ringOrder(o); pcOf(label)[0]++; }
   }
+}
+/* who did how much this shift: [jobs done, perfects] per player, for the "top coworker" line when you clock out */
+function pcOf(label){
+  if(!G.pc[label]){ const ks=Object.keys(G.pc); if(ks.length>=8)delete G.pc[ks[0]]; G.pc[label]=[0,0]; }
+  return G.pc[label];
 }
 function ringOrder(o){
   G.sc+=JOBS[SLOTS[o.s].z].pay*o.w.length; G.sv++; o.st=2; o.rm=2.6;
@@ -1852,7 +2039,7 @@ function hostSim(dt){
     if(G.spawnIn<=0){
       const made=spawnOrder();
       const base=lerp(9,6,clamp(G.t/RAMP,0,1));
-      G.spawnIn=made?base/(1+.55*(n-1))*(.75+rnd()*.5):2;
+      G.spawnIn=made?base*PACE[G.df]/(1+.55*(n-1))*(.75+rnd()*.5):2;
     }
   } else if(G.p===2&&G.o.length){
     G.endT-=dt; if(G.endT<=0)G.o=[];
@@ -1861,7 +2048,7 @@ function hostSim(dt){
 function publishWorld(){
   const o=G.o.map(o=>[o.id,o.s,o.w,o.g,20,o.st,o.seed]);
   const live=new Set(viewers.map(p=>p.peer)); for(const k of Object.keys(G.ack))if(!live.has(k))delete G.ack[k];
-  const body={lv:G.lv,p:G.p,t:Math.floor(G.t/5)*5,sc:G.sc,sv:G.sv,o:o,k:G.ack,tb:G.tb?[G.tb.z,Math.ceil(G.tb.t),0]:[-1,0,Math.ceil(G.tbCool)]};
+  const body={lv:G.lv,p:G.p,t:Math.floor(G.t/5)*5,sc:G.sc,sv:G.sv,o:o,k:G.ack,tb:G.tb?[G.tb.z,Math.ceil(G.tb.t),0]:[-1,0,Math.ceil(G.tbCool)],df:G.df,pc:G.pc};
   const str=JSON.stringify(body);
   if(str===lastPubStr)return;
   lastPubStr=str; G.v++;
@@ -1871,7 +2058,7 @@ function publishWorld(){
 }
 function startShift(){
   if(!isHost||!G)return;
-  G.p=1; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.spawnIn=1.2; G.tb=null; G.tbCool=0; publishWorld();
+  G.p=1; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.spawnIn=1.2; G.tb=null; G.tbCool=0; G.pc={}; G.bn={}; publishWorld();
 }
 function endShift(){
   if(!isHost||!G||G.p!==1)return;
@@ -1879,7 +2066,7 @@ function endShift(){
 }
 function toLobby(){
   if(!isHost||!G)return;
-  G.p=0; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.tb=null; G.tbCool=0; publishWorld();
+  G.p=0; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.tb=null; G.tbCool=0; G.pc={}; G.bn={}; publishWorld();
 }
 function sendAct(k,slot,item){
   actSeq++; acts.push([actSeq,k,slot,item]); if(acts.length>6)acts.shift();
@@ -1931,8 +2118,9 @@ function syncAvatars(){
     live.add(p.peer);
     let a=avatars.get(p.peer);
     const ci=clamp((pr.col|0),0,PCOL.length-1), jb=jobOf(p);
-    if(!a||a.colIdx!==ci||a.job!==jb){ if(a)scene.remove(a.g); a=makeAvatar(ci,jb); a.tx=+pp[0]||0; a.tz=+pp[1]||0; a.g.position.set(a.tx,0,a.tz); a.ty=(+pp[2]||0); a.yaw=a.ty; scene.add(a.g); avatars.set(p.peer,a); }
+    if(!a||a.colIdx!==ci||a.job!==jb){ if(a)scene.remove(a.g); a=makeAvatar(ci,jb); a.tx=+pp[0]||0; a.tz=+pp[1]||0; a.g.position.set(a.tx,0,a.tz); a.ty=(+pp[2]||0); a.yaw=a.ty; scene.add(a.g); avatars.set(p.peer,a); a.emN=Array.isArray(pr.em)?(pr.em[1]|0):0; }
     a.tx=clamp(+pp[0]||0,-19,19); a.tz=clamp(+pp[1]||0,-8,8); a.ty=+pp[2]||0;
+    if(Array.isArray(pr.em)){ const en=pr.em[1]|0; if(en!==a.emN){ a.emN=en; const ei=pr.em[0]|0; if(ei>=0&&ei<EMOTES.length)floatEmote(a,ei); } }
     setLabel(a,cleanName(pr.nm)||'Coworker');
     setHeld(a,Number.isInteger(pp[3])&&pp[3]>=0&&pp[3]<ITEMS.length?pp[3]:-1);
   }
@@ -1964,6 +2152,7 @@ addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(e.code==='KeyE'||e.code==='Space'){e.preventDefault();doInteract()}
   if(e.code==='KeyQ')doDrop();
+  { const dm=/^(?:Digit|Numpad)([1-5])$/.exec(e.code); if(dm&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&mode==='fps')sendEmote(+dm[1]-1); }
   if(e.code==='KeyF'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey)toggleFs();
 });
 addEventListener('keyup',e=>{keys[e.code]=false});
@@ -2008,23 +2197,44 @@ stick.addEventListener('pointerup',endStick); stick.addEventListener('pointercan
 $('btnAct').addEventListener('pointerdown',e=>{e.preventDefault();audio();doInteract()});
 $('btnDrop').addEventListener('pointerdown',e=>{e.preventDefault();audio();doDrop()});
 
+/* Press while the marker is inside the green zone for a Perfect: bonus coins that grow with your streak. A miss costs nothing. */
+function mgPerfect(){
+  mg.streak++; const b=Math.min(5,1+mg.streak), wk=LVL.work;
+  sendAct(4,myJob,b);
+  SFX.perfect(mg.streak); buzz(30);
+  popAt((mg.streak>1?'Perfect x'+mg.streak+'! +':'Perfect! +')+b,wk.x,2.4,wk.z,false);
+  const sp=toScreen(wk.x,1.5,wk.z); if(sp){ fxBurst('spark',sp.x,sp.y,14); fxBurst('coin',sp.x,sp.y,Math.min(5,b)); }
+  const m=$('meter'); m.classList.remove('flash'); void m.offsetWidth; m.classList.add('flash');
+  mgRoll();
+}
 function doInteract(){
   if(mode!=='fps'||!target||target.disabled)return;
-  if(target.type==='take'){ me.carry=target.item; me.proc=0; me.taps=0; me.work=null; SFX.take(); }
-  else if(target.type==='give'){ sendAct(1,target.slot,me.carry); me.carry=-1; SFX.give(); }
+  if(target.type==='take'){ me.carry=target.item; me.proc=0; me.taps=0; me.work=null; SFX.take(); buzz(12); }
+  else if(target.type==='give'){ sendAct(1,target.slot,me.carry); me.carry=-1; SFX.give(); buzz(22); }
   else if(target.type==='work'){
     const w=LVL.work;
-    if(w.secs>0){ me.work={t:0,dur:w.secs}; SFX.tap(1); }
-    else { me.taps++; if(me.taps>=(w.taps||1)){ me.taps=0; me.proc=1; SFX.done(); } else SFX.tap(me.taps); }
+    if(Math.abs(mg.pos-mg.c)<=mg.half)mgPerfect(); else if(mg.streak){ mg.streak=0; mgRoll(); }
+    if(w.secs>0){ me.work={t:0,dur:w.secs}; wsfx(LV,'tap',1); }
+    else { me.taps++; if(me.taps>=(w.taps||1)){ me.taps=0; me.proc=1; wsfx(LV,'done'); buzz(20); } else wsfx(LV,'tap',me.taps); }
   }
   else if(target.type==='ring'){
     const need=LVL.work.ringTaps||1, rt=me.ringTap, now=performance.now();
     if(rt.slot!==target.slot||now-rt.t>2500){ rt.slot=target.slot; rt.n=0; }
     rt.n++; rt.t=now;
-    if(rt.n>=need){ rt.n=0; sendAct(2,target.slot,0); SFX.give(); } else SFX.tap(rt.n);
+    if(rt.n>=need){ rt.n=0; sendAct(2,target.slot,0); SFX.give(); buzz(40); } else SFX.tap(rt.n);
   }
 }
 function doDrop(){ if(mode==='fps'&&me.carry>=0){me.carry=-1;SFX.drop()} }
+/* quick chat: a floating emoji over your head for everyone in the room */
+let emoN=0, emoLast=0;
+function sendEmote(i){
+  const now=performance.now();
+  if(ui!=='room'||!W||W.p!==1||!rm||now-emoLast<900||!(i>=0&&i<EMOTES.length))return;
+  emoLast=now; emoN++;
+  rm.presence({em:[i,emoN]}).catch(()=>{});
+  SFX.pop(); buzz(12); $('emoRow').hidden=true;
+  popXY(EMOTES[i],(app.clientWidth||600)/2,(app.clientHeight||400)*.6);
+}
 
 function findTarget(){
   let best=null,bs=1e9;
@@ -2077,16 +2287,18 @@ function updateMe(dt,t){
 
 /* ---------- held item in first person ---------- */
 const heldRig=new THREE.Group(); heldRig.position.set(.34,-.3,-.62); camera.add(heldRig);
-let heldShown=-2, heldRing=null, heldProcShown=0;
+let heldShown=-2, heldRing=null, heldProcShown=0, heldPopT=0;
+const easeBack=x=>{ const c1=1.70158, c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); };
 function updateHeldRig(t){
   if(heldShown!==me.carry||heldProcShown!==me.proc){
-    heldShown=me.carry; heldProcShown=me.proc; heldRing=null; while(heldRig.children.length)heldRig.remove(heldRig.children[0]);
+    heldShown=me.carry; heldProcShown=me.proc; heldRing=null; heldPopT=performance.now(); while(heldRig.children.length)heldRig.remove(heldRig.children[0]);
     if(me.carry>=0){const m=itemMesh(me.carry); m.scale.setScalar(1.35); m.rotation.y=-.5; heldRig.add(m);
       if(me.proc){ heldRing=new THREE.Mesh(new THREE.TorusGeometry(.2,.016,8,28),GL(.4,2.4,1.4)); heldRing.rotation.x=Math.PI/2; heldRing.position.y=.02; heldRig.add(heldRing); }}
   }
   if(heldRing)heldRing.rotation.z=t*3;
   heldRig.visible=mode==='fps'&&me.carry>=0;
   heldRig.position.y=-.3+Math.sin(me.bob*2)*.012+Math.sin(t*1.6)*.004;
+  { const hp=clamp((performance.now()-heldPopT)/280,0,1); heldRig.scale.setScalar(hp<1?.4+.6*easeBack(hp):1); } /* the item pops into your hand */
 }
 
 /* ---------- camera ---------- */
@@ -2113,6 +2325,7 @@ function setViewShift(px){
 function resize(){
   const w=app.clientWidth||innerWidth, h=app.clientHeight||innerHeight;
   camera.clearViewOffset(); viewShift=0;
+  fxResize();
   renderer.setSize(w,h,false); camera.aspect=w/h; camera.fov=w/h<.8?82:72; camera.updateProjectionMatrix();
   if(gfx.hq)postSize();
 }
@@ -2166,6 +2379,7 @@ function renderTickets(){
   }
 }
 let promptKey='', heldKey=-2, scoreShown=-1, servedShown=-1, miniAcc=0, tempLabel='';
+let mgShown=false, mgZoneKey='', mgIn=false, mgLab='', lastStars=0;
 const callTemp=$('callTemp'), clockOut=$('clockOut'); let coTimer=0;
 clockOut.addEventListener('click',()=>{
   if(!isHost||!G||G.p!==1)return;
@@ -2187,6 +2401,17 @@ function hudTick(dt){
       btnAct.className='tap'+(t.disabled?' off':''); btnAct.textContent=t.type==='ring'?'Ring':(t.type==='give'?'Give':(t.type==='take'?'Take':(t.type==='work'?LVL.work.verb:'Use')));
     } else { promptEl.hidden=true; btnAct.className='tap off'; btnAct.textContent='Use'; }
   }
+  { /* the bonus timing bar shows while you can work an item at the station */
+    const show=!!(t&&t.type==='work'&&!t.disabled);
+    if(show!==mgShown){ mgShown=show; $('mwrap').hidden=!show; }
+    if(show){
+      const zk=mg.c.toFixed(3)+'|'+mg.half;
+      if(zk!==mgZoneKey){ mgZoneKey=zk; const z=$('mzone').style; z.left=((mg.c-mg.half)*100).toFixed(1)+'%'; z.width=(mg.half*200).toFixed(1)+'%'; }
+      $('mmark').style.left=(mg.pos*100).toFixed(1)+'%';
+      const inn=Math.abs(mg.pos-mg.c)<=mg.half; if(inn!==mgIn){ mgIn=inn; $('meter').classList.toggle('in',inn); }
+      const lab=mg.streak>1?'Perfect streak x'+mg.streak:(COARSE?'Tap in the green for bonus coins':'Press in the green for bonus coins'); if(lab!==mgLab){ mgLab=lab; $('mlab').textContent=lab; }
+    }
+  }
   const hk=me.carry*2+(me.proc?1:0);
   if(heldKey!==hk){
     heldKey=hk;
@@ -2207,7 +2432,7 @@ function showScreens(){
   hud.hidden=!(inRoom&&p===1);
 }
 function openSettings(){
-  settingsOpen=true; syncSettingsUI();
+  settingsOpen=true; syncSettingsUI(); $('emoRow').hidden=true;
   if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
   showScreens(); musicKick();
 }
@@ -2215,6 +2440,8 @@ function closeSettings(){ settingsOpen=false; showScreens(); }
 function syncSettingsUI(){
   const tog=(id,on,a,b)=>{ const e=$(id); if(!e)return; e.setAttribute('aria-pressed',on?'true':'false'); if(a!==undefined)e.textContent=on?a:b; };
   tog('sMusic',S.music,'On','Off'); tog('sSfx',S.sfx,'On','Off'); tog('sVoices',S.voices,'On','Off'); tog('sHints',S.hints,'On','Off');
+  tog('sAutoQ',S.autoQ,'On','Off'); tog('sBig',S.bigBtn,'On','Off'); tog('sHap',S.haptics,'On','Off');
+  $('sBigRow').hidden=!COARSE; $('sHapRow').hidden=!(COARSE&&navigator.vibrate);
   tog('sHD',!!gfx.hq); tog('sSD',!gfx.hq);
   $('sMusicVol').value=Math.round(S.musicVol*100); $('sSfxVol').value=Math.round(S.sfxVol*100);
   $('sLook').value=Math.round(S.look*100); $('sLookV').textContent=Math.round(S.look*100)+'%';
@@ -2245,8 +2472,20 @@ function syncSettingsUI(){
   on('sHD',()=>setQuality(true)); on('sSD',()=>setQuality(false));
   $('sLook').addEventListener('input',e=>{ S.look=clamp(+e.target.value/100,.5,2); saveS(); syncSettingsUI(); });
   on('sHints',()=>{ S.hints=!S.hints; saveS(); syncSettingsUI(); });
-  syncSettingsUI(); fsUI();
+  on('sAutoQ',()=>{ S.autoQ=!S.autoQ; perf.done=!S.autoQ; saveS(); syncSettingsUI(); });
+  on('sBig',()=>{ S.bigBtn=!S.bigBtn; saveS(); applyBig(); syncSettingsUI(); });
+  on('sHap',()=>{ S.haptics=!S.haptics; saveS(); buzz(40); syncSettingsUI(); });
+  applyBig(); syncSettingsUI(); fsUI();
+  /* emotes: a button on the HUD opens a row of five; keys 1 to 5 send them directly */
+  const row=$('emoRow');
+  EMOTES.forEach((em,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.textContent=em; b.setAttribute('aria-label',EMOTE_NAME[i]); b.addEventListener('click',()=>sendEmote(i)); row.appendChild(b);
+  });
+  on('emoBtn',()=>{ row.hidden=!row.hidden; audio(); });
+  /* the host picks how busy the shift is in the break room */
+  [0,1,2].forEach(i=>on('pace'+i,()=>{ if(isHost&&G&&G.p===0){ G.df=i; publishWorld(); refreshLobby(); } }));
 })();
+function applyBig(){ app.classList.toggle('big',!!(S.bigBtn&&COARSE)); }
 function refreshLobby(){
   const list=$('who'); const vs=viewers.slice().sort((a,b)=>a.peer<b.peer?-1:1);
   const key=vs.map(p=>p.peer+'|'+p.presence.nm+'|'+p.presence.col+'|'+jobOf(p)+'|'+(p.peer===myLabel)+'|'+(p.presence.w?1:0)).join('#');
@@ -2262,6 +2501,9 @@ function refreshLobby(){
     });
   }
   refreshLevelButtons();
+  { const df=W?W.df:1;
+    [0,1,2].forEach(i=>{ const b=$('pace'+i); b.setAttribute('aria-pressed',i===df?'true':'false'); b.disabled=!isHost; });
+    $('paceNote').textContent=isHost?'(you choose)':'(the host chooses)'; }
   const canStart=isHost&&W&&W.p===0;
   $('bStart').disabled=!canStart;
   $('bStart').hidden=!(isHost||!W);
@@ -2269,9 +2511,24 @@ function refreshLobby(){
 }
 function refreshEnd(){
   if(!W)return;
-  const np=Math.max(1,viewers.length), f=1+.5*(np-1);
+  const np=Math.max(1,viewers.length), f=(1+.5*(np-1))*PACE_STAR[W.df];
   let s=0; if(W.sv>=3)s=1; if(W.sv>=Math.round(6*f))s=2; if(W.sv>=Math.round(12*f))s=3;
   $('stars').innerHTML=''; for(let i=0;i<3;i++){const sp=document.createElement('span'); sp.textContent='★'; if(i>=s)sp.className='off'; $('stars').appendChild(sp)}
+  { /* keep the best stars for this workplace */
+    const wl=W.lv, was=STARS[wl]|0;
+    if(s>was){ STARS[wl]=s; store('shiftsquad.stars',JSON.stringify(STARS)); refreshLevelButtons(); }
+    lastStars=s;
+  }
+  { /* who carried the shift: jobs done and perfects per player */
+    const rows=Object.keys(W.pc||{}).map(k=>({k:k,n:W.pc[k][0],p:W.pc[k][1]})), mine=rows.find(r=>r.k===myLabel)||{n:0,p:0};
+    const top=rows.slice().sort((a,b)=>(b.n+b.p)-(a.n+a.p))[0], lines=[];
+    if(top&&rows.length>1&&top.n+top.p>0&&top.k!==myLabel){
+      const v=viewers.find(x=>x.peer===top.k);
+      lines.push('Top coworker: '+((v&&cleanName(v.presence.nm))||'A coworker')+' · '+top.n+' jobs done'+(top.p?' · '+top.p+' perfect':''));
+    } else if(top&&rows.length>1&&top.k===myLabel&&top.n+top.p>0) lines.push('You were the top coworker this shift!');
+    lines.push('You: '+mine.n+' jobs done'+(mine.p?' · '+mine.p+' perfect':''));
+    $('eMvp').textContent=lines.join('\n');
+  }
   $('eCoins').textContent=W.sc; $('eServed').textContent=W.sv; $('eLeft').textContent=Math.round(W.sc/Math.max(1,W.sv));
   const best=+store('shiftsquad.best')||0;
   if(W.sc>best){store('shiftsquad.best',String(W.sc));$('eBest').textContent=best?'New personal best on this device.':'First shift on the books.'} else $('eBest').textContent='Best on this device: '+best+' coins.';
@@ -2287,14 +2544,22 @@ function buildLevelPicker(box){
     const n=document.createElement('b'); n.textContent=lv.name;
     const t=document.createElement('i'); t.textContent=lv.tag;
     const d=document.createElement('small'); d.textContent=lv.blurb;
-    b.appendChild(e); b.appendChild(n); b.appendChild(t); b.appendChild(d);
+    const ls=document.createElement('span'); ls.className='ls'; ls.setAttribute('aria-hidden','true');
+    b.appendChild(e); b.appendChild(n); b.appendChild(t); b.appendChild(d); b.appendChild(ls);
     b.addEventListener('click',()=>chooseLevel(i));
-    box.appendChild(b); levelBtns.push({b:b,i:i});
+    box.appendChild(b); levelBtns.push({b:b,i:i,ls:ls});
   });
 }
+/* best stars per workplace on this device */
+let STARS={};
+try{ const j=JSON.parse(store('shiftsquad.stars')||'{}'); if(j&&typeof j==='object')for(let i=0;i<4;i++)STARS[i]=clamp(j[i]|0,0,3); }catch(e){}
+function starText(n){ return n>0?'★★★'.slice(0,n)+'☆☆☆'.slice(0,3-n):''; }
 function refreshLevelButtons(){
   const lock=ui==='room'&&!(isHost&&G&&G.p===0);
-  levelBtns.forEach(x=>{ x.b.setAttribute('aria-pressed',x.i===LV?'true':'false'); x.b.setAttribute('aria-disabled',lock?'true':'false'); });
+  levelBtns.forEach(x=>{
+    x.b.setAttribute('aria-pressed',x.i===LV?'true':'false'); x.b.setAttribute('aria-disabled',lock?'true':'false');
+    const st=starText(STARS[x.i]|0); if(x.ls.textContent!==st)x.ls.textContent=st;
+  });
   const n=$('lvlNote'); if(n)n.textContent=ui==='room'?(isHost?'(you choose)':'(the host chooses)'):'';
 }
 function chooseLevel(i){
@@ -2348,23 +2613,41 @@ function onPhase(p){
     announce('Clock in! Customers are rolling up.','greet');
     $('jobV').textContent=JOBS[myJob].s;
     const h=$('hint'); h.hidden=!S.hints;
-    h.textContent='You are the '+JOBS[myJob].n+'. Take each item, '+LVL.work.verb.toLowerCase()+' it at the '+LVL.work.name.toLowerCase()+' in the middle, then hand it over. '+(COARSE?'Walk with the left stick, drag to look.':'Click the view to look around. WASD to walk.');
-    setTimeout(()=>{h.hidden=true},7000);
+    h.textContent='You are the '+JOBS[myJob].n+'. Take each item, '+LVL.work.verb.toLowerCase()+' it at the '+LVL.work.name.toLowerCase()+' in the middle, then hand it over. Press while the bar is in the green for bonus coins. '+(COARSE?'Walk with the left stick, drag to look.':'Click the view to look around. WASD to walk, 1 to 5 for emotes.');
+    setTimeout(()=>{h.hidden=true},8000);
+    mg.streak=0; mgRoll();
   } else {
     if(prevP===1)SFX.end();
     mode='orbit'; me.carry=-1; spawnPoint();
     if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
     if(p===0)clearEnts();
-    if(p===2)refreshEnd();
+    if(p===2){
+      refreshEnd();
+      if(lastStars>0){ const cw=fxW||600, ch=fxH||400; fxBurst('confetti',cw*.25,ch*.35,18+lastStars*14); fxBurst('confetti',cw*.75,ch*.35,18+lastStars*14); if(lastStars===3)setTimeout(()=>{ fxBurst('confetti',cw*.5,ch*.2,50) },500); }
+    }
+    $('emoRow').hidden=true;
   }
   showScreens();
+}
+
+/* ---------- slow phones: drop from HD to SD by themselves ---------- */
+const perf={warm:1.6,n:0,sum:0,done:false};
+function perfWatch(raw){
+  if(perf.done||!S.autoQ||!gfx.hq||ui!=='room'||!W||W.p!==1||settingsOpen||raw<=0)return;
+  if(perf.warm>0){ perf.warm-=raw; return; }
+  perf.n++; perf.sum+=Math.min(raw,.5);
+  if(perf.sum>=4){
+    perf.done=true;
+    if(perf.n/perf.sum<26){ setQuality(false); fsToast('The game was running slowly, so graphics switched to SD. You can switch back in Settings.',6500); }
+  }
 }
 
 /* ---------- main loop ---------- */
 let last=performance.now(), t=0, lobbyAcc=0;
 function frame(now){
   requestAnimationFrame(frame);
-  const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
+  const raw=(now-last)/1000, dt=Math.min(.05,raw); last=now; t+=dt;
+  perfWatch(raw);
   if(netKick)netTick();
   if(soloAuto&&isHost&&G&&G.p===0&&W&&W.p===0){ soloAuto=false; startShift(); }
   musicTick(now);
@@ -2393,12 +2676,18 @@ function frame(now){
   target=(mode==='fps'&&W&&W.p===1)?findTarget():null;
   if(me.work){
     if(!target||target.type!=='work')me.work=null;
-    else { me.work.t+=dt; if(me.work.t>=me.work.dur){ me.work=null; me.proc=1; SFX.done(); } }
+    else { me.work.t+=dt; if(me.work.t>=me.work.dur){ me.work=null; me.proc=1; wsfx(LV,'done'); buzz(20); } }
+  }
+  mgUpdate(t);
+  if(stationRing){
+    const on=mode==='fps'&&me.carry>=0&&!me.proc&&!me.work, pulse=Math.sin(t*6);
+    stationRing.visible=on; if(on){ RING_MAT.opacity=.5+.3*pulse; stationRing.scale.setScalar(1+.06*pulse); }
   }
   if(target){marker.visible=markerRing.visible=!target.disabled; marker.position.set(target.x,target.y+Math.sin(t*5)*.08,target.z); markerRing.position.copy(marker.position)} else marker.visible=markerRing.visible=false;
   for(const e of ents.values())stepEnt(e,dt,t);
   for(let i=gone.length-1;i>=0;i--){const e=gone[i]; stepEnt(e,dt,t); if(performance.now()-e.t1>4200||(!e.path.length)){ freeEnt(e); gone.splice(i,1) }}
   stepAvatars(dt,t);
+  floatersTick(dt); fxTick(dt);
   updateTemp(dt,t);
   { const f=foreman, fp=f.g.position; f.rig.position.y=.12+Math.sin(t*1.8)*.05; f.handR.position.y=.62+Math.sin(t*2.6)*.04;
     { const now=performance.now(), talk=now<foremanTalk; f.setFace(talk?'happy':'hope',((t*1000)%3400)<130,talk&&(((now/110)|0)%2===0)); }
