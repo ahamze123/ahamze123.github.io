@@ -1621,26 +1621,45 @@ function updateTemp(dt,t){
   const z=W.tb[0];
   if(!tempEnt||tempEnt.zone!==z){
     if(tempEnt){scene.remove(tempEnt.g);if(tempEnt.face)tempEnt.face.t.dispose()}
-    tempEnt=makeTemp(z); tempEnt.zone=z; tempEnt.g.position.set(0,0,-5.5); tempEnt.last=-1; scene.add(tempEnt.g);
+    tempEnt=makeTemp(z); tempEnt.zone=z; tempEnt.g.position.set(LVL.stockX[0],0,-6.2); tempEnt.t0=t; tempEnt.sk=-1; tempEnt.hk=-9; scene.add(tempEnt.g);
   }
-  const e=tempEnt, cyc=4, tt=t%cyc/cyc, leg=Math.floor(t/cyc);
-  const item=z*4+(leg%4), sx=LVL.stockX[leg%4], slot=SLOTS[leg%SLOTS.length], cx=slot.x, cz=LVL.bay?.6:.55;
-  let px,pz,carry;
-  if(tt<.5){ const k=sstep(tt*2); px=lerp(sx,cx,k); pz=lerp(-6.2,cz,k); carry=item; }
-  else { const k=sstep((tt-.5)*2); px=lerp(cx,LVL.stockX[(leg+1)%4],k); pz=lerp(cz,-6.2,k); carry=-1; }
+  /* The fill-in works the same way you do: take the item from the shelf, work it at the station in the middle of the floor
+     (scan, cook, label or inspect), hand it over at the counter, then back to the shelves. */
+  const e=tempEnt, lt=t-e.t0, cyc=4.4, tt=lt%cyc/cyc, leg=Math.floor(lt/cyc);
+  const wk=LVL.work, stx=wk.x, stz=wk.z+1.05;
+  const item=z*4+(leg%4), sx=LVL.stockX[leg%4], sx2=LVL.stockX[(leg+1)%4], slot=SLOTS[leg%SLOTS.length], cx=slot.x, cz=LVL.bay?.6:.55;
+  let px,pz,carry=item,proc=0,working=false,yaw=null,stg;
+  if(tt<.2){ const k=sstep(tt/.2); px=lerp(sx,stx,k); pz=lerp(-6.2,stz,k); stg=0; }
+  else if(tt<.5){ px=stx; pz=stz; working=tt<.46; proc=tt>=.46?1:0; yaw=Math.PI; stg=tt<.46?1:2; }
+  else if(tt<.76){ const k=sstep((tt-.5)/.26); px=lerp(stx,cx,k); pz=lerp(stz,cz,k); proc=1; stg=2; }
+  else if(tt<.82){ px=cx; pz=cz; proc=1; yaw=0; stg=3; }
+  else { const k=sstep((tt-.82)/.18); px=lerp(cx,sx2,k); pz=lerp(cz,-6.2,k); carry=-1; stg=3; }
   const dx=px-e.g.position.x, dz=pz-e.g.position.z;
   e.g.position.x=px; e.g.position.z=pz;
-  if(Math.hypot(dx,dz)>.002)e.g.rotation.y=angLerp(e.g.rotation.y,Math.atan2(dx,dz),Math.min(1,dt*10));
+  if(yaw!==null)e.g.rotation.y=angLerp(e.g.rotation.y,yaw,Math.min(1,dt*9));
+  else if(Math.hypot(dx,dz)>.002)e.g.rotation.y=angLerp(e.g.rotation.y,Math.atan2(dx,dz),Math.min(1,dt*10));
   const ph=t*2.4;
-  e.rig.position.y=.1+Math.sin(ph)*.045; e.rig.rotation.x=.12;
+  e.rig.position.y=.1+Math.sin(ph)*.045+(working?Math.abs(Math.sin(lt*14))*.06:0); e.rig.rotation.x=.12+(working?Math.sin(lt*26)*.07:0);
   e.handL.position.y=.62+Math.sin(ph+1)*.05; e.handR.position.y=.62+Math.sin(ph+2)*.05;
-  if(e.spin)e.spin.rotation.y+=dt*18;
+  if(e.spin)e.spin.rotation.y+=dt*(working?34:18);
   { const now=performance.now(); e.setFace(carry>=0?'hope':'happy',((t*1000+z*173)%3200)<130,now<(e.talkUntil||0)&&(((now/110)|0)%2===0)); }
-  if(e.carry!==carry){
-    e.carry=carry; while(e.held.children.length)e.held.remove(e.held.children[0]);
-    if(carry>=0){const m=itemMesh(carry); m.position.y=-.14; e.held.add(m)}
+  /* what it holds: the item, with a glowing ring while it is being worked and after it is done (same look as your own held item) */
+  const hk=carry*4+(proc?1:0)+(working?2:0);
+  if(e.hk!==hk){
+    e.hk=hk; e.ring=null; while(e.held.children.length)e.held.remove(e.held.children[0]);
+    if(carry>=0){
+      const m=itemMesh(carry); m.position.y=-.14; e.held.add(m);
+      if(proc||working){ e.ring=new THREE.Mesh(new THREE.TorusGeometry(working?.3:.26,.02,8,28),GL(.4,2.4,1.4)); e.ring.rotation.x=Math.PI/2; e.ring.position.y=-.1; e.held.add(e.ring); }
+    }
   }
-  if(tt>=.5&&e.last!==leg){ e.last=leg; robotSay(2000+z*7,'ack',px,pz); e.talkUntil=performance.now()+420; }
+  if(e.ring)e.ring.rotation.z=lt*(working?10:3);
+  const sk=leg*4+stg;
+  if(e.sk!==sk){
+    e.sk=sk;
+    if(stg===1){ tone(560,.05,'square',.035); e.talkUntil=performance.now()+200; }
+    else if(stg===2&&tt<.5){ tone(1040,.1,'triangle',.05); }
+    else if(stg===3&&carry>=0){ robotSay(2000+z*7,'ack',px,pz); e.talkUntil=performance.now()+420; }
+  }
 }
 
 /* ---------- network ---------- */
