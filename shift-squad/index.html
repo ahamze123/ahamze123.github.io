@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#10203c">
-<meta name="description" content="Shift Squad: a 3D jobs simulator with four workplaces (shop, kitchen, office, garage), robot customers and co-op play.">
+<meta name="description" content="Shift Squad: a 3D jobs simulator with four workplaces (shop, kitchen, office, garage), robot customers and online co-op.">
 <title>Shift Squad</title>
 <style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0}</style>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -232,8 +232,8 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
       <label>How a shift works</label>
       <ol class="steps">
         <li>The whole room works in the same workplace. The host picks it above.</li>
-        <li>Each robot shows what it needs on a ticket. Grab it from your shelves and hand it over.</li>
-        <li>When the ticket says Ring up, press the button at that station.</li>
+        <li>Each robot shows what it needs on a ticket. Grab it from your shelves, work it at the station in the middle of the floor (scan, cook, label or inspect), then hand it over.</li>
+        <li>When the ticket is complete, press the button at that station to finish. The garage needs three turns.</li>
         <li>You can walk anywhere to help a coworker.</li>
         <li>No timers anywhere. Customers wait as long as it takes, and the host clocks out when the crew is done.</li>
       </ol>
@@ -310,6 +310,12 @@ const LEVELS=[
    hw:9.5,doorX:0,minZ:-6.3,maxZ:.65,bay:true,tint:'#d6e4ff',stockX:[-6.6,-2.2,2.2,6.6],slots:slotRow(4.6,['Bay A','Bay B','Bay C','Bay D']),
    sky:[0xffdcb0,0x6c9ad8],fog:[45,120],hemi:[0xfff0e0,0x9a9ab0,.58],sun:[0xffcf99,.62,-12,14,14],cloud:[1.5,1.25,1.0],orbit:{r:13,h:8.5,cz:12}}
 ];
+/* Each workplace has its own station in the middle of the floor and its own way of working. Every item gets worked at the station before it is handed over;
+   the garage also needs three wrench turns to finish the job. */
+LEVELS[0].work={name:'Scanner',verb:'Scan',doing:'Scanning',done:'Scanned',secs:0,taps:1,ringTaps:1,x:0,z:-3.9};
+LEVELS[1].work={name:'Stove',verb:'Cook',doing:'Cooking',done:'Cooked',secs:1.5,taps:1,ringTaps:1,x:0,z:-3.9};
+LEVELS[2].work={name:'Label printer',verb:'Label',doing:'Printing',done:'Labelled',secs:1.1,taps:1,ringTaps:1,x:0,z:-3.9};
+LEVELS[3].work={name:'Workbench',verb:'Inspect',doing:'Inspecting',done:'Inspected',secs:0,taps:2,ringTaps:3,x:0,z:-3.9};
 let LV=-1, LVL=LEVELS[0], LROOT=null;
 const PCOL=[0xff5a5f,0x2f80ff,0x23b26d,0xffb020,0x9b5de5,0x00bbf9];
 const PCSS=['#ff5a5f','#2f80ff','#23b26d','#ffb020','#9b5de5','#00bbf9'];
@@ -338,7 +344,9 @@ const SFX={
   ding:()=>{tone(1175,.12,'sine',.1);setTimeout(()=>tone(1568,.18,'sine',.08),90)},
   start:()=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,'triangle',.12),i*110))},
   end:()=>{[784,659,523].forEach((f,i)=>setTimeout(()=>tone(f,.25,'triangle',.12),i*160))},
-  horn:()=>{tone(330,.28,'square',.05);tone(415,.28,'square',.05)}
+  horn:()=>{tone(330,.28,'square',.05);tone(415,.28,'square',.05)},
+  tap:(n)=>tone(420+(n||1)*130,.07,'square',.07),
+  done:()=>{tone(784,.1,'triangle',.12);setTimeout(()=>tone(1175,.16,'triangle',.12),90)}
 };
 /* Robot voices: every robot gets its own pitch, tone and talking speed from its seed. They are made
    from bleeps and chirps, not recordings. Volume falls off with distance from you. */
@@ -989,6 +997,66 @@ function counterRun(body,top,trim,glass){
 }
 function ringPad(i,col,x,y,z){ ringPads[i]=cyl(.12,.12,.06,col,x,y,z); }
 
+/* ----- work stations: one in the middle of each workplace, where every item is worked before it is handed over ----- */
+function signBoth(text,w,h,bg,fg,px,x,y,z){
+  const a=textPlane(text,w,h,bg,fg,px); a.position.set(x,y,z+.03); LROOT.add(a);
+  const b=textPlane(text,w,h,bg,fg,px); b.position.set(x,y,z-.03); b.rotation.y=Math.PI; LROOT.add(b);
+}
+function benchTable(x,z,w,top,legs,trim){
+  bx(w,.12,1.0,top,x,.95,z); bx(w+.05,.05,1.05,trim,x,.88,z);
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(q=>bx(.1,.9,.1,legs,x+q[0]*(w/2-.1),.45,z+q[1]*.4));
+}
+function signPosts(x,z,w,col){ bx(.06,1.2,.06,col,x-w/2+.1,1.6,z); bx(.06,1.2,.06,col,x+w/2-.1,1.6,z); }
+function stationShop(){
+  const x=LVL.work.x, z=LVL.work.z, red=0xff5a5f;
+  benchTable(x,z,2.2,0xffffff,0x8d99ae,red);
+  bx(.85,.05,.45,0x1b2540,x-.25,1.03,z);
+  const laser=glowBox(.75,.012,.04,3.2,.3,.3,x-.25,1.065,z);
+  bx(.5,.36,.05,0x1b2540,x+.6,1.4,z-.12); bx(.42,.28,.02,0x7ee8ff,x+.6,1.42,z-.15,null,true); bx(.12,.2,.06,0x1b2540,x+.6,1.16,z-.12);
+  bx(.2,.14,.14,0x23b26d,x+.2,1.08,z+.3,null,true);
+  signPosts(x,z,2.2,0x3a4252);
+  signBoth('SCANNER',1.9,.55,'#ff5a5f','#ffffff',.62,x,2.18,z);
+  levelTick.push((dt,t)=>{ laser.scale.x=.55+Math.abs(Math.sin(t*4))*.45; });
+}
+function stationKitchen(puff){
+  const x=LVL.work.x, z=LVL.work.z, org=0xff9f1c;
+  benchTable(x,z,2.2,0xdfe6ee,0x8d99ae,0xd9482f);
+  [-.55,.55].forEach(dx=>{
+    cyl(.3,.3,.03,0x14181f,x+dx,1.02,z,null,18);
+    const r=new THREE.Mesh(new THREE.TorusGeometry(.22,.022,6,20),GL(2.6,1.2,.3)); r.rotation.x=Math.PI/2; r.position.set(x+dx,1.045,z); LROOT.add(r);
+    cyl(.24,.2,.2,0x9aa4b2,x+dx,1.15,z,null,14);
+  });
+  bx(.25,.06,.5,0xc79a62,x,1.04,z);
+  signPosts(x,z,2.2,0x3a4252);
+  signBoth('STOVE',1.5,.55,'#ff9f1c','#ffffff',.62,x,2.18,z);
+  if(puff){
+    const st=[];
+    [-.55,.55].forEach((dx,k)=>{for(let i=0;i<4;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:puff.t,color:new THREE.Color(1.3,1.3,1.3),transparent:true,depthWrite:false,opacity:.5})); LROOT.add(sp); st.push({sp:sp,k:i/4+k*.13,dx:dx})}});
+    levelTick.push((dt,t)=>{ st.forEach(q=>{const p=(t*.4+q.k)%1; q.sp.position.set(x+q.dx+Math.sin(p*5+q.k*9)*.08,1.3+p*1.2,z); q.sp.scale.setScalar(.3+p*.6); q.sp.material.opacity=(1-p)*.42;}); });
+  }
+}
+function stationOffice(){
+  const x=LVL.work.x, z=LVL.work.z, vio=0x7c5cff;
+  benchTable(x,z,2.2,0xffffff,0x8d99ae,vio);
+  bx(.95,.34,.6,0xdfe6ee,x-.3,1.18,z); bx(.97,.06,.62,0x8d99ae,x-.3,1.38,z); bx(.5,.02,.3,0x1b2540,x-.3,1.4,z+.05);
+  const sheet=bx(.42,.02,.32,0xffffff,x-.3,1.06,z+.42); sheet.rotation.x=-.15;
+  bx(.1,.06,.06,0x23b26d,x+.05,1.22,z+.31,null,true);
+  [0,1,2].forEach(k=>bx(.28,.025,.2,[0x7c5cff,0xffd23f,0x2f80ff][k],x+.65,1.03+k*.03,z+(k-1)*.04));
+  signPosts(x,z,2.2,0x3a4252);
+  signBoth('LABELS',1.6,.55,'#7c5cff','#ffffff',.62,x,2.18,z);
+  levelTick.push((dt,t)=>{ sheet.position.z=z+.42+Math.sin(t*3)*.03; });
+}
+function stationGarage(){
+  const x=LVL.work.x, z=LVL.work.z, org=0xff7b1a;
+  benchTable(x,z,2.4,0xc79a62,0x3a4252,org);
+  bx(.34,.24,.34,0x3a4252,x-.8,1.12,z); bx(.12,.3,.5,0x2b3340,x-.8,1.2,z+.05);
+  bx(.7,.08,.14,0x6b7690,x+.1,1.03,z-.28); [-.25,-.08,.09,.26].forEach((dx,i)=>bx(.05,.04,.5-.05*i,0xc7ced9,x+.1+dx,1.03,z+.1));
+  bx(.24,.1,.24,0xffd23f,x+.8,1.06,z); bx(.18,.18,.18,0xe5383b,x+.55,1.1,z+.25);
+  cyl(.03,.03,.9,0x3a4252,x+1.0,1.45,z-.3,null,6); glowBox(.4,.05,.3,3,2.5,1.5,x+.8,1.9,z-.3);
+  signPosts(x,z,2.4,0x3a4252);
+  signBoth('INSPECT',1.8,.55,'#ff7b1a','#ffffff',.62,x,2.18,z);
+}
+
 /* ----- level 1: Corner Shop (sunny street, pink checker floor, red-and-white awning) ----- */
 function buildShop(){
   const hw=LVL.hw, red=0xff5a5f;
@@ -1026,6 +1094,7 @@ function buildShop(){
   [[-14,12],[-24,14],[16,12],[26,13],[-38,2],[38,2],[0,-17],[-14,-18],[14,-17],[-30,-8],[30,-8]].forEach(p=>treeAt(p[0],p[1]));
   parkedCar(1,-8,19.6,Math.PI/2); parkedCar(4,10,19.7,-Math.PI/2); parkedCar(6,22,19.6,Math.PI/2);
   [-12,-3,6,15].forEach(x=>lampPost(x,11.6,3.6,[2.4,2.2,1.4]));
+  stationShop();
 }
 
 /* ----- level 2: Bistro Kitchen (golden-hour steel kitchen, pass window, dining room) ----- */
@@ -1086,6 +1155,7 @@ function buildKitchen(){
   [[-14,12],[-24,14],[16,12],[26,13],[-38,2],[38,2],[0,-17],[-14,-18],[14,-17]].forEach(p=>treeAt(p[0],p[1]));
   [-12,-3,6,15].forEach(x=>lampPost(x,11.6,3.6,[3,2.2,1.0]));
   parkedCar(2,-9,19.6,Math.PI/2); parkedCar(5,14,19.7,-Math.PI/2);
+  stationKitchen(puff);
 }
 
 /* ----- level 3: Downtown Office (carpet, reception desk, city skyline beyond the plaza) ----- */
@@ -1138,6 +1208,7 @@ function buildOffice(){
   [[-6,11.8],[6,11.8]].forEach(p=>{bx(2.2,.12,.6,0xc79a62,p[0],.5,p[1]); bx(2.2,.5,.1,0xc79a62,p[0],.8,p[1]+.3); bx(.1,.5,.5,0x3a4252,p[0]-.9,.25,p[1]); bx(.1,.5,.5,0x3a4252,p[0]+.9,.25,p[1])});
   cyl(2.2,2.4,.5,0xdfe6ee,0,.25,16,null,24); cyl(1.9,1.9,.2,0x4fa8ff,0,.5,16,null,24); cyl(.25,.3,1.4,0xdfe6ee,0,1.2,16,null,10); sph(.35,0x9fd3ff,0,2.0,16);
   [-12,12].forEach(x=>lampPost(x,8.6,3.8,[2.0,2.2,2.6]));
+  stationOffice();
 }
 
 /* ----- level 4: Auto Garage (concrete bays, open roller door, tool wall, late-afternoon light) ----- */
@@ -1190,6 +1261,7 @@ function buildGarage(){
   [[-10,6.3],[-2,6.3],[2,6.3],[10,6.3]].forEach(p=>{cyl(0,.2,.5,0xff7b1a,p[0],.25,p[1],null,10); cyl(.12,.14,.06,0xffffff,p[0],.26,p[1],null,10)});
   cyl(.25,.3,6,0x3a4252,-14,3,12,null,10); bx(2.6,1.3,.3,blue,-14,6.4,12); const ps=textPlane('GARAGE',2.4,1.1,'#2f80ff','#ffffff',.5); ps.position.set(-14,6.4,12.18); LROOT.add(ps);
   [[-30,-8],[30,-8],[-38,2],[38,2],[0,-17],[-14,-18],[14,-17],[24,12],[-24,13]].forEach(p=>treeAt(p[0],p[1]));
+  stationGarage();
 }
 
 LEVELS[0].build=buildShop; LEVELS[1].build=buildKitchen; LEVELS[2].build=buildOffice; LEVELS[3].build=buildGarage;
@@ -1215,14 +1287,15 @@ function setLevel(lv,force){
   applyTheme(LVL);
   LVL.build();
   LVL.stockX.forEach((x,i)=>interact.push({type:'take',item:lv*4+i,x:x,z:-7.0,r:2.4,y:3.45}));
+  interact.push({type:'work',x:LVL.work.x,z:LVL.work.z,r:2.4,y:1.9});
   SLOTS.forEach((s,i)=>interact.push({type:'slot',slot:i,x:s.x,z:LVL.bay?2.6:1.5,r:2.5,y:LVL.bay?2.2:2.1}));
   LROOT=null;
-  if(typeof foreman!=='undefined'&&foreman)foreman.g.position.set(0,0,-4.4);
+  if(typeof foreman!=='undefined'&&foreman)foreman.g.position.set(-4.4,0,-4.2);
   ticketKey=''; shownW=null;
   refreshLevelButtons();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(levelRoot&&LV===lv)redrawSigns()}).catch(()=>{});
 }
-const foreman=makeForeman(); foreman.g.position.set(0,0,-4.4); scene.add(foreman.g);
+const foreman=makeForeman(); foreman.g.position.set(-4.4,0,-4.2); scene.add(foreman.g);
 const marker=new THREE.Mesh(new THREE.ConeGeometry(.16,.34,12),BM(0xffd23f)); marker.rotation.x=Math.PI; marker.visible=false; scene.add(marker);
 const markerRing=new THREE.Mesh(new THREE.ConeGeometry(.2,.4,12),BM(0x10203c)); markerRing.rotation.x=Math.PI; markerRing.scale.setScalar(1.18); markerRing.visible=false; scene.add(markerRing);
 function redrawSigns(){signs.forEach(s=>{s.draw(s.g,s.c.width,s.c.height);s.t.needsUpdate=true})}
@@ -1231,7 +1304,7 @@ if(document.fonts&&document.fonts.load){
 }
 
 /* ---------- player state ---------- */
-const me={x:0,z:-1.6,yaw:Math.PI,pitch:0,vx:0,vz:0,carry:-1,bob:0,mv:0};
+const me={x:0,z:-1.6,yaw:Math.PI,pitch:0,vx:0,vz:0,carry:-1,bob:0,mv:0,proc:0,taps:0,work:null,ringTap:{slot:-1,n:0,t:0}};
 let mode='orbit';                // 'orbit' | 'fps'
 let myName='', myCol=0, myJob=0;
 let ui='start';                  // 'start' | 'room'
@@ -1424,6 +1497,47 @@ function filteredRoom(room,code){
     leave:()=>room.presence({rc:null,hi:null,p:null,w:null,a:null})
   };
 }
+/* Online rooms outside Claude (GitHub Pages and so on): peer-to-peer over WebRTC with Trystero. Players find each other through public
+   matchmaking relays using the room code, then talk directly. It gives the same small interface the Claude room has: peers(), presence(patch),
+   onPeers(handler), connected(), leave(). Presence is a small shared object per player; a patch with null deletes a key. */
+let trysteroLoad=null;
+function loadTrystero(){
+  if(!trysteroLoad)trysteroLoad=import('https://cdn.jsdelivr.net/npm/trystero@0.25.4/+esm');
+  return trysteroLoad;
+}
+async function makeP2PRoom(code){
+  const T=await Promise.race([loadTrystero(),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),10000))]);
+  if(!T||typeof T.joinRoom!=='function'||!T.selfId)throw new Error('no trystero');
+  const room=T.joinRoom({appId:'shift-squad-online-v1'},'r-'+String(code).toLowerCase());
+  const self={peer:T.selfId,by:null,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:{},updatedAt:Date.now()};
+  const remotes=new Map(), handlers=new Set();
+  const poke=()=>{ handlers.forEach(h=>{ try{h()}catch(e){} }); };
+  const merge=(obj,patch)=>{ for(const k in patch){ if(patch[k]===null)delete obj[k]; else obj[k]=patch[k]; } };
+  const mk=id=>({peer:id,by:null,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:{},updatedAt:Date.now()});
+  const act=room.makeAction('pres');
+  const send=(data,target)=>{ try{ const r=target?act.send(data,{target:target}):act.send(data); if(r&&r.catch)r.catch(()=>{}); }catch(e){} };
+  act.onMessage=(data,info)=>{
+    const id=typeof info==='string'?info:(info&&info.peerId); if(!id||id===self.peer||!data||typeof data!=='object')return;
+    let r=remotes.get(id); if(!r){ r=mk(id); remotes.set(id,r); }
+    merge(r.presence,data); r.updatedAt=Date.now(); poke();
+  };
+  room.onPeerJoin=id=>{
+    if(!id||id===self.peer)return;
+    if(!remotes.has(id))remotes.set(id,mk(id));
+    send(Object.assign({},self.presence),id); poke();
+  };
+  room.onPeerLeave=id=>{ remotes.delete(id); poke(); };
+  let pend=null, timer=0;
+  const flush=()=>{ timer=0; if(!pend)return; const d=pend; pend=null; send(d); };
+  return {
+    p2p:true,
+    peers:()=>[self].concat(Array.from(remotes.values())),
+    presence(patch){ merge(self.presence,patch); self.updatedAt=Date.now(); pend=pend||{}; for(const k in patch)pend[k]=patch[k]; if(!timer)timer=setTimeout(flush,25); return Promise.resolve(); },
+    onPeers(h){ handlers.add(h); return ()=>handlers.delete(h); },
+    connected:()=>true,
+    leave(){ try{ room.leave(); }catch(e){} remotes.clear(); handlers.clear(); if(timer){clearTimeout(timer);timer=0} pend=null; return Promise.resolve(); }
+  };
+}
 const roomPromise=(function(){
   try{ if(window.claude&&window.claude.use) return window.claude.use('room'); }catch(e){}
   return Promise.resolve(null);
@@ -1431,8 +1545,9 @@ const roomPromise=(function(){
 function cleanName(s){return String(s||'').replace(/[^\p{L}\p{N} _.'-]/gu,'').trim().slice(0,12)}
 function genCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=a[Math.floor(rnd()*a.length)];return s}
 const jobOf=()=>Math.max(0,LV);
-async function enterRoom(code){
-  roomCode=code;
+let graceMs=1500;
+async function enterRoom(code,joining){
+  roomCode=code; graceMs=1500;
   let room=null;
   try{ room=await Promise.race([roomPromise,new Promise(r=>setTimeout(()=>r(null),6000))]); }catch(e){room=null}
   rm=null; netMode='solo';
@@ -1444,8 +1559,9 @@ async function enterRoom(code){
       try{ rm=filteredRoom(room,code); netMode='online'; }catch(e2){rm=null}
     }
   }
+  if(!rm&&!room){ try{ rm=await makeP2PRoom(code); netMode='p2p'; if(joining)graceMs=8000; }catch(e){ rm=null; if(window.console)console.warn('online rooms unavailable',e); } }
   if(!rm){ rm=makeShim(); netMode='solo'; }
-  { const ln=$('lobbyNote'); if(ln)ln.textContent=netMode==='solo'?'You are playing solo here. Online rooms only work when the game is opened inside Claude.':'Share this code. Friends open the same page and enter it under Join.'; }
+  { const ln=$('lobbyNote'); if(ln)ln.textContent=netMode==='solo'?'You are playing solo right now. Online rooms need a connection to the matchmaking network.':'Share this code or the link. Friends open the same page and enter it under Join.'; }
   if(rm.onPeers) rm.onPeers(()=>{netKick=true});
   joinedAt=performance.now(); isHost=false; G=null; W=null; lastWorld=null; lastPubStr=''; prevP=-1; shownW=null; actSeq=0; acts=[]; lastPosKey='';
   me.carry=-1; me.vx=me.vz=0;
@@ -1598,9 +1714,9 @@ function netTick(){
   const all=rm.peers();
   viewers=all.filter(p=>p&&p.kind==='viewer'&&p.presence&&p.presence.hi);
   const meP=all.find(p=>p.isMe&&p.sameTab); if(meP)myLabel=meP.peer;
-  const holders=viewers.filter(p=>p.presence.w).map(p=>p.peer).sort();
+  const holders=viewers.filter(p=>p.presence.w).sort((a,b)=>((b.presence.w.v|0)-(a.presence.w.v|0))||(a.peer<b.peer?-1:1)).map(p=>p.peer);
   let hostLabel=holders[0]||null;
-  if(!hostLabel&&now-joinedAt>1500)hostLabel=viewers.map(p=>p.peer).sort()[0]||null;
+  if(!hostLabel&&now-joinedAt>graceMs)hostLabel=viewers.map(p=>p.peer).sort()[0]||null;
   isHost=!!myLabel&&hostLabel===myLabel;
   if(isHost&&!holders.includes(myLabel)){ becomeHost(); }
   if(!isHost&&myLabel&&holders.includes(myLabel)){ rm.presence({w:null}).catch(()=>{}); G=null; }
@@ -1708,9 +1824,19 @@ $('btnDrop').addEventListener('pointerdown',e=>{e.preventDefault();audio();doDro
 
 function doInteract(){
   if(mode!=='fps'||!target||target.disabled)return;
-  if(target.type==='take'){ me.carry=target.item; SFX.take(); }
+  if(target.type==='take'){ me.carry=target.item; me.proc=0; me.taps=0; me.work=null; SFX.take(); }
   else if(target.type==='give'){ sendAct(1,target.slot,me.carry); me.carry=-1; SFX.give(); }
-  else if(target.type==='ring'){ sendAct(2,target.slot,0); SFX.give(); }
+  else if(target.type==='work'){
+    const w=LVL.work;
+    if(w.secs>0){ me.work={t:0,dur:w.secs}; SFX.tap(1); }
+    else { me.taps++; if(me.taps>=(w.taps||1)){ me.taps=0; me.proc=1; SFX.done(); } else SFX.tap(me.taps); }
+  }
+  else if(target.type==='ring'){
+    const need=LVL.work.ringTaps||1, rt=me.ringTap, now=performance.now();
+    if(rt.slot!==target.slot||now-rt.t>2500){ rt.slot=target.slot; rt.n=0; }
+    rt.n++; rt.t=now;
+    if(rt.n>=need){ rt.n=0; sendAct(2,target.slot,0); SFX.give(); } else SFX.tap(rt.n);
+  }
 }
 function doDrop(){ if(mode==='fps'&&me.carry>=0){me.carry=-1;SFX.drop()} }
 
@@ -1720,14 +1846,27 @@ function findTarget(){
   for(const t of interact){
     const dx=t.x-me.x, dz=t.z-me.z, d=Math.hypot(dx,dz); if(d>t.r)continue;
     const dot=d<.7?1:(dx*fx+dz*fz)/d; if(dot<.25)continue;
+    if(t.type==='work'&&me.carry<0)continue;
     if(t.type==='slot'){ const o=W&&W.o.find(o=>o.s===t.slot&&o.st<2); if(!o)continue; }
     const sc=d*(2-dot); if(sc<bs){bs=sc;best=t}
   }
   if(!best)return null;
   if(best.type==='take'){ const it=ITEMS[best.item]; return Object.assign({},best,{label:'Take '+it.e+' '+it.n,disabled:false}); }
-  const t=best, o=W.o.find(o=>o.s===t.slot&&o.st<2), c=me.carry;
-  if(o.st===1) return Object.assign({},t,{type:'ring',label:JOBS[SLOTS[t.slot].z].ring,disabled:false});
-  if(c>=0&&o.w.indexOf(c)>=0&&o.g.indexOf(c)<0) return Object.assign({},t,{type:'give',label:'Hand over '+ITEMS[c].e+' '+ITEMS[c].n,disabled:false});
+  if(best.type==='work'){
+    const w=LVL.work, it=ITEMS[me.carry];
+    if(me.proc)return Object.assign({},best,{label:w.done+'. Hand it over.',disabled:true});
+    if(me.work)return Object.assign({},best,{label:w.doing+'… '+Math.min(90,Math.floor(me.work.t/me.work.dur*10)*10)+'%',disabled:true});
+    return Object.assign({},best,{label:w.verb+' '+it.e+' '+it.n+(w.taps>1?' ('+(me.taps+1)+'/'+w.taps+')':''),disabled:false});
+  }
+  const t=best, o=W.o.find(o=>o.s===t.slot&&o.st<2), c=me.carry, w=LVL.work;
+  if(o.st===1){
+    const rt=me.ringTap, n=(rt.slot===t.slot&&performance.now()-rt.t<=2500)?rt.n:0;
+    return Object.assign({},t,{type:'ring',label:JOBS[SLOTS[t.slot].z].ring+(w.ringTaps>1?' ('+(n+1)+'/'+w.ringTaps+')':''),disabled:false});
+  }
+  if(c>=0&&o.w.indexOf(c)>=0&&o.g.indexOf(c)<0){
+    if(!me.proc)return Object.assign({},t,{type:'none',label:w.verb+' it at the '+w.name+' first',disabled:true});
+    return Object.assign({},t,{type:'give',label:'Hand over '+ITEMS[c].e+' '+ITEMS[c].n,disabled:false});
+  }
   if(c>=0) return Object.assign({},t,{type:'none',label:'It does not need '+ITEMS[c].n,disabled:true});
   const need=o.w.filter(x=>o.g.indexOf(x)<0).map(x=>ITEMS[x].e).join(' ');
   return Object.assign({},t,{type:'none',label:'Needs '+need,disabled:true});
@@ -1751,12 +1890,14 @@ function updateMe(dt,t){
 
 /* ---------- held item in first person ---------- */
 const heldRig=new THREE.Group(); heldRig.position.set(.34,-.3,-.62); camera.add(heldRig);
-let heldShown=-2;
+let heldShown=-2, heldRing=null, heldProcShown=0;
 function updateHeldRig(t){
-  if(heldShown!==me.carry){
-    heldShown=me.carry; while(heldRig.children.length)heldRig.remove(heldRig.children[0]);
-    if(me.carry>=0){const m=itemMesh(me.carry); m.scale.setScalar(1.35); m.rotation.y=-.5; heldRig.add(m)}
+  if(heldShown!==me.carry||heldProcShown!==me.proc){
+    heldShown=me.carry; heldProcShown=me.proc; heldRing=null; while(heldRig.children.length)heldRig.remove(heldRig.children[0]);
+    if(me.carry>=0){const m=itemMesh(me.carry); m.scale.setScalar(1.35); m.rotation.y=-.5; heldRig.add(m);
+      if(me.proc){ heldRing=new THREE.Mesh(new THREE.TorusGeometry(.2,.016,8,28),GL(.4,2.4,1.4)); heldRing.rotation.x=Math.PI/2; heldRing.position.y=.02; heldRig.add(heldRing); }}
   }
+  if(heldRing)heldRing.rotation.z=t*3;
   heldRig.visible=mode==='fps'&&me.carry>=0;
   heldRig.position.y=-.3+Math.sin(me.bob*2)*.012+Math.sin(t*1.6)*.004;
 }
@@ -1806,6 +1947,7 @@ function drawMini(){
   g.fillStyle=LVL.tint; g.fillRect(0,0,w,h);
   if(!LVL.bay){ g.fillStyle='#10203c'; g.fillRect(sx(-8.5),sz(1),sx(8.5)-sx(-8.5),sz(2)-sz(1)); }
   g.fillStyle='#7d89a6'; LVL.stockX.forEach(x=>g.fillRect(sx(x)-4,sz(-7.6),8,3));
+  g.fillStyle='#10203c'; g.fillRect(sx(LVL.work.x)-6,sz(LVL.work.z)-3,12,6);
   SLOTS.forEach((s,i)=>{
     const o=W&&W.o.find(o=>o.s===i&&o.st<2);
     g.beginPath(); g.arc(sx(s.x),sz(s.sz),3,0,7); g.fillStyle=o?(o.st===1?'#23b26d':'#ffb020'):'rgba(255,255,255,.7)'; g.fill();
@@ -1854,12 +1996,13 @@ function hudTick(dt){
     if(t){
       promptEl.hidden=false; promptEl.className=t.disabled?'off':'';
       promptEl.innerHTML=(COARSE?'':'<kbd>E</kbd>')+'<span></span>'; promptEl.lastChild.textContent=t.label;
-      btnAct.className='tap'+(t.disabled?' off':''); btnAct.textContent=t.type==='ring'?'Ring':(t.type==='give'?'Give':(t.type==='take'?'Take':'Use'));
+      btnAct.className='tap'+(t.disabled?' off':''); btnAct.textContent=t.type==='ring'?'Ring':(t.type==='give'?'Give':(t.type==='take'?'Take':(t.type==='work'?LVL.work.verb:'Use')));
     } else { promptEl.hidden=true; btnAct.className='tap off'; btnAct.textContent='Use'; }
   }
-  if(heldKey!==me.carry){
-    heldKey=me.carry;
-    if(me.carry>=0){ heldEl.hidden=false; heldEl.textContent='Holding '+ITEMS[me.carry].e+' '+ITEMS[me.carry].n+(COARSE?'':'  ·  Q to drop'); } else heldEl.hidden=true;
+  const hk=me.carry*2+(me.proc?1:0);
+  if(heldKey!==hk){
+    heldKey=hk;
+    if(me.carry>=0){ heldEl.hidden=false; heldEl.textContent='Holding '+ITEMS[me.carry].e+' '+ITEMS[me.carry].n+(me.proc?' ('+LVL.work.done+')':'')+(COARSE?'':'  ·  Q to drop'); } else heldEl.hidden=true;
   }
   const tbl=W.tb[0]>=0?'Fill-in on duty '+W.tb[1]+'s':(W.tb[2]>0?'Fill-in back in '+W.tb[2]+'s':'Call a fill-in');
   if(tbl!==tempLabel){tempLabel=tbl;callTemp.textContent=tbl;callTemp.disabled=W.tb[0]>=0||W.tb[2]>0}
@@ -1945,24 +2088,24 @@ function chooseLevel(i){
   try{const h=(location.hash||'').replace('#','').toUpperCase(); if(/^[A-Z0-9]{3,6}$/.test(h))$('code').value=h}catch(e){}
   $('ctrlNote').textContent=COARSE?'Left stick walks. Drag the right side of the screen to look. The big button uses what you are facing.':'WASD walks, Shift runs, move the mouse to look (click the view first), E uses what you are facing, Q drops.';
 })();
-function begin(code){
+function begin(code,joining){
   myName=cleanName($('nick').value)||('Player '+(1+Math.floor(rnd()*99)));
   store('shiftsquad.name',myName); audio();
   $('bHost').disabled=true; $('bJoin').disabled=true; $('startStatus').textContent='Connecting…';
-  enterRoom(code).finally(()=>{$('bHost').disabled=false;$('bJoin').disabled=false;$('startStatus').textContent=''});
+  enterRoom(code,joining).finally(()=>{$('bHost').disabled=false;$('bJoin').disabled=false;$('startStatus').textContent=''});
 }
-$('bHost').addEventListener('click',()=>begin(genCode()));
+$('bHost').addEventListener('click',()=>begin(genCode(),false));
 $('bJoin').addEventListener('click',()=>{
   const c=($('code').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(c.length<3){$('startStatus').textContent='Enter the code your friend sees in the break room.';$('code').focus();return}
-  begin(c);
+  begin(c,true);
 });
 $('code').addEventListener('keydown',e=>{if(e.key==='Enter')$('bJoin').click()});
 $('bStart').addEventListener('click',()=>{audio();startShift()});
 $('bAgain').addEventListener('click',()=>toLobby());
 $('bLeave1').addEventListener('click',leaveRoom); $('bLeave2').addEventListener('click',leaveRoom);
 $('bCopy').addEventListener('click',()=>{
-  const t=roomCode; const done=()=>{$('bCopy').textContent='Copied';setTimeout(()=>{$('bCopy').textContent='Copy'},1400)};
+  const t=netMode==='p2p'?(location.href.split('#')[0]+'#'+roomCode):roomCode; const done=()=>{$('bCopy').textContent='Copied';setTimeout(()=>{$('bCopy').textContent='Copy'},1400)};
   try{navigator.clipboard.writeText(t).then(done,()=>{$('lobbyStatus').textContent='Room code: '+t})}catch(e){$('lobbyStatus').textContent='Room code: '+t}
 });
 
@@ -1973,7 +2116,7 @@ function onPhase(p){
     announce('Clock in! Customers are rolling up.','greet');
     $('jobV').textContent=JOBS[myJob].s;
     const h=$('hint'); h.hidden=false;
-    h.textContent='You are the '+JOBS[myJob].n+'. Robots will line up with tickets. '+(COARSE?'Walk with the left stick, drag to look.':'Click the view to look around. WASD to walk.');
+    h.textContent='You are the '+JOBS[myJob].n+'. Take each item, '+LVL.work.verb.toLowerCase()+' it at the '+LVL.work.name.toLowerCase()+' in the middle, then hand it over. '+(COARSE?'Walk with the left stick, drag to look.':'Click the view to look around. WASD to walk.');
     setTimeout(()=>{h.hidden=true},7000);
   } else {
     if(prevP===1)SFX.end();
@@ -2012,7 +2155,12 @@ function frame(now){
   lobbyAcc+=dt;
   if(ui==='room'&&!$('sLobby').hidden&&lobbyAcc>.25){lobbyAcc=0;refreshLobby()}
   updateMe(dt,t);
+  if(me.carry<0){ me.proc=0; me.taps=0; me.work=null; }
   target=(mode==='fps'&&W&&W.p===1)?findTarget():null;
+  if(me.work){
+    if(!target||target.type!=='work')me.work=null;
+    else { me.work.t+=dt; if(me.work.t>=me.work.dur){ me.work=null; me.proc=1; SFX.done(); } }
+  }
   if(target){marker.visible=markerRing.visible=!target.disabled; marker.position.set(target.x,target.y+Math.sin(t*5)*.08,target.z); markerRing.position.copy(marker.position)} else marker.visible=markerRing.visible=false;
   for(const e of ents.values())stepEnt(e,dt,t);
   for(let i=gone.length-1;i>=0;i--){const e=gone[i]; stepEnt(e,dt,t); if(performance.now()-e.t1>4200||(!e.path.length)){ freeEnt(e); gone.splice(i,1) }}
