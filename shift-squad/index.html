@@ -2,9 +2,12 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#10203c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shift Squad">
 <meta name="description" content="Shift Squad: a 3D jobs simulator with four workplaces (shop, kitchen, office, garage), robot customers and online co-op.">
 <title>Shift Squad</title>
-<style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0}</style>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +31,11 @@
   --f-body:'Rubik',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   color-scheme:light;
 }
-html,body{height:100%}
+/* Base resets. The Claude artifact page supplies these itself; they are repeated here so the same file behaves on any host (GitHub Pages, a local file). Without the [hidden] rule, panels with their own display value (#screen, #prompt, #hint...) would never hide and the menu overlay would sit on top of the HUD and block every tap. */
+[hidden]:not([hidden=until-found i]){display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
+img{max-width:100%}
+html,body{height:100%;margin:0;padding:0}
 body{background:var(--sky);color:var(--ink);font-family:var(--f-body);overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 #app{position:relative;height:100%;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--sky)}
 #view{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--sky)}
@@ -386,9 +393,9 @@ addEventListener('error',e=>{ /* never fail silently: show the first few errors 
       clearTimeout(fsTimer); fsTimer=setTimeout(()=>{el.hidden=true},9000)}catch(_){}
 });
 function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement||null}
-function fsToast(msg){
+function fsToast(msg,ms){
   const el=$('fsToast'); el.textContent=msg; el.hidden=false;
-  clearTimeout(fsTimer); fsTimer=setTimeout(()=>{el.hidden=true},5200);
+  clearTimeout(fsTimer); fsTimer=setTimeout(()=>{el.hidden=true},ms||5200);
 }
 function fsUI(){
   const on=!!fsEl();
@@ -398,7 +405,15 @@ function fsUI(){
   $('fsStart').textContent=on?'Exit full screen':'Full screen';
 }
 function fsBlocked(){
-  fsToast('Full screen is blocked inside this frame. Open the game in its own browser tab, then press F11 or tap Full screen again.');
+  /* Say why it failed, so the person knows what to do: standalone app, iPhone, a frame, or a plain refusal. */
+  let framed=false; try{framed=window.self!==window.top}catch(_){framed=true}
+  const ua=navigator.userAgent||'';
+  const iphone=/iPhone|iPod/.test(ua);
+  if(navigator.standalone){ fsToast('Already running full screen.'); return }
+  if(framed&&iphone) fsToast('Full screen is blocked inside this frame. Open the game in its own browser tab. On iPhone, tap Share, then Add to Home Screen, and open Shift Squad from there for a true full-screen app.',9000);
+  else if(framed) fsToast('Full screen is blocked inside this frame. Open the game in its own browser tab, then tap Full screen again.',7000);
+  else if(iphone) fsToast('iPhone browsers cannot go full screen. Tap Share, then Add to Home Screen, and open Shift Squad from your home screen.',8000);
+  else fsToast('Your browser refused full screen. Try F11, or the browser menu.',6000);
 }
 function toggleFs(){
   try{
