@@ -6,6 +6,10 @@ A 3D jobs simulator in the browser. Pick one of four workplaces from the menu (C
 
 Bonus coins: at your station a bar slides back and forth. Press while it is in the green for a Perfect (back-to-back Perfects pay more, a miss costs nothing). Every station has its own sound: scanner beeps, a sizzling stove, printer chatter, a ratchet and clank. Coins fly up to your total, the end of a shift throws confetti, and you keep your best stars per workplace on the menu cards. In a room the host sets the pace (Relaxed, Normal or Busy), anyone can send emotes (keys 1 to 5 or the smiley button), and the end screen names the top coworker.
 
+Upgrades: every shift's coins go into a bank saved on your device. Spend them under **Upgrades** (main menu or break room) on a wider green zone, a steadier bar, quick boots and Golden touch (Perfects pay 1 more). Special customers show up later in a shift: a 👑 VIP orders more and pays double, and a ⚡ speedy customer pays 1.5x if you serve them within 45 seconds (never a penalty if you are slower).
+
+Watch and photos: the 👁 button (or V) lets you orbit the workplace while you take a breather, and 📷 (or P) takes a polaroid photo with your coins, served count and stars that you can save or share.
+
 Main menu: **Host an online game** gives you a room code (and a link) to share, **Play solo** starts a shift right away, and friends enter a code under **Join**. **Settings** (music, song, sound effects, robot voices, graphics, automatic SD on slow phones, full screen, look speed, tips, and on phones a large Use button and vibration) is in the main menu and behind the gear button during a shift.
 
 Music: the Block Buddies songs from this site's `music` folder. Skyline Exploration is packed into the page, and the other three (Gliding Over Green Valleys, Quiet Horizons, Subtle Quests and Flying Capes) stream from `../music/`. Each workplace has its own song on Automatic, or pick one in Settings.
