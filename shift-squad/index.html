@@ -197,6 +197,28 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
 .big #btnDrop{right:calc(max(16px,env(safe-area-inset-right,0px)) + 140px)}
 .lvl .ls{position:absolute;right:9px;top:9px;font:400 13px/1 var(--f-display);letter-spacing:.06em;color:#b87400}
 #eMvp{white-space:pre-line}
+/* spectator view, photo card, upgrades, VIP and speedy tickets */
+body.spec #cross,body.spec #touch{display:none}
+#specBar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(16,32,60,.9);color:#fff;border-radius:16px;padding:10px 14px;font:700 13px/1.3 var(--f-body);text-align:center;max-width:calc(100% - 32px)}
+#specBar .btn{padding:10px 16px;font-size:13px}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:24}
+#flash.go{animation:shutter .35s ease-out}
+@keyframes shutter{0%{opacity:.85}100%{opacity:0}}
+#shotView{position:absolute;inset:0;z-index:26;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(16,32,60,.72)}
+#shotView .card{width:min(520px,100%);text-align:center}
+#shotImg{display:block;width:100%;max-height:52vh;object-fit:contain;border:3px solid var(--ink);border-radius:10px;background:#fff;-webkit-touch-callout:default;user-select:auto}
+.wallet{display:flex;align-items:center;gap:8px;font:400 22px/1 var(--f-display);margin:2px 0 8px}
+.upg{display:flex;align-items:center;gap:10px;border:3px solid var(--ink);border-radius:14px;padding:9px 10px;margin-top:8px;background:#f1f5fc}
+.upg .t{flex:1;min-width:0}
+.upg b{display:block;font:800 14px/1.2 var(--f-body)}
+.upg small{display:block;font:600 12px/1.35 var(--f-body);color:var(--mute);margin-top:2px}
+.upg .pips{font:400 13px/1 var(--f-display);letter-spacing:.12em;color:#b87400;margin-top:4px}
+.upg .btn{padding:10px 12px;font-size:12px;min-width:84px}
+.tk.vip h4{background:#c98a00}
+.tk.fast h4{background:#e8590c}
+.tk.late h4{background:#8d99ae}
+.tk.ready.vip h4,.tk.ready.fast h4,.tk.ready.late h4{background:var(--good)}
+.tk.wide{width:94px;flex-basis:94px}
 </style>
 
 <div id="app">
@@ -215,6 +237,8 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
         <div class="chip"><small>Room</small><b id="roomV">----</b></div>
         <button class="chip btnchip tap" id="setBtn" aria-label="Settings" title="Settings (Esc)">⚙</button>
         <button class="chip btnchip tap" id="emoBtn" aria-label="Emotes" title="Emotes (keys 1 to 5)">😀</button>
+        <button class="chip btnchip tap" id="watchBtn" aria-label="Watch the room from above" title="Watch the room (V)">👁</button>
+        <button class="chip btnchip tap" id="camBtn" aria-label="Take a photo" title="Take a photo (P)">📷</button>
         <button class="chip btnchip temp tap" id="callTemp" aria-label="Call the fill-in robot">Call a fill-in</button>
         <button class="chip btnchip temp tap" id="clockOut" aria-label="End the shift" hidden>Clock out</button>
       </div>
@@ -223,6 +247,7 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
     <div id="pops"></div>
     <div id="hint" hidden></div>
     <div id="emoRow" hidden></div>
+    <div id="specBar" class="tap" hidden><span>Watching the room. Drag to turn the view.</span><button class="btn" id="specBack" type="button">Back to work</button></div>
     <div id="info">
       <div id="say" hidden></div>
       <div id="held" hidden></div>
@@ -237,6 +262,15 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
   </div>
 
   <canvas id="fx" aria-hidden="true"></canvas>
+  <div id="flash"></div>
+  <div id="shotView" hidden>
+    <div class="card">
+      <h2>Photo</h2>
+      <img id="shotImg" alt="Your Shift Squad photo">
+      <div class="note" id="shotNote">Press and hold the picture to save it on a phone, or use Save.</div>
+      <div class="row2"><button class="btn" id="shotSave" type="button">Save</button><button class="btn alt" id="shotShare" type="button" hidden>Share</button><button class="btn alt" id="shotClose" type="button">Close</button></div>
+    </div>
+  </div>
   <div id="fsToast" role="status" hidden></div>
 
   <div id="screen">
@@ -261,7 +295,7 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
         <button class="btn alt" id="bJoin">Join</button>
       </div>
       <div class="status" id="startStatus"></div>
-      <button class="btn alt full" id="bSettings" style="margin-top:12px"><span class="bi">⚙</span>Settings</button>
+      <div class="row2"><button class="btn alt" id="bShop"><span class="bi">🪙</span>Upgrades</button><button class="btn alt" id="bSettings"><span class="bi">⚙</span>Settings</button></div>
     </div>
 
     <div class="card" id="sSettings" hidden>
@@ -296,6 +330,14 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
       <button class="link" id="sLeave" type="button" hidden>Leave room</button>
     </div>
 
+    <div class="card" id="sShop" hidden>
+      <h2>Upgrades</h2>
+      <p>Every shift's coins go into your bank on this device. Spend them here. Upgrades only help you, and they are never needed to win.</p>
+      <div class="wallet">🪙 <span id="bankV">0</span></div>
+      <div id="upgList"></div>
+      <div class="row2"><button class="btn full" id="shopDone" type="button">Done</button></div>
+    </div>
+
     <div class="card" id="sLobby" hidden>
       <h2>Break room</h2>
       <p id="lobbyNote">Share this code. Friends open the same page and enter it under Join.</p>
@@ -314,11 +356,13 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
         <li>Each robot shows what it needs on a ticket. Grab it from your shelves, work it at the station in the middle of the floor (scan, cook, label or inspect), then hand it over.</li>
         <li>When the ticket is complete, press the button at that station to finish. The garage needs three turns.</li>
         <li>Bonus coins: at your station a bar slides back and forth. Press while it is in the green for a Perfect. Back-to-back Perfects pay more, and a miss costs nothing.</li>
-        <li>You can walk anywhere to help a coworker.</li>
+        <li>A 👑 VIP robot orders more and pays double. A ⚡ speedy robot pays 50% extra if you finish quickly. Nobody ever leaves angry, so there is no penalty for being slow.</li>
+        <li>You can walk anywhere to help a coworker. Tap 👁 to watch the room from above, and 📷 to take a photo.</li>
         <li>No timers anywhere. Customers wait as long as it takes, and the host clocks out when the crew is done.</li>
       </ol>
       <div class="note" id="ctrlNote"></div>
       <button class="link" id="bSettings2" type="button">⚙ Settings</button>
+      <button class="link" id="bShop2" type="button">🪙 Upgrades</button>
       <button class="link" id="bLeave1">Leave room</button>
     </div>
 
@@ -331,9 +375,11 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
         <div class="stat"><b id="eLeft">0</b><small>Per order</small></div>
       </div>
       <div class="note" id="eMvp"></div>
+      <div class="note" id="eBank"></div>
       <div class="note" id="eBest"></div>
       <div class="row2"><button class="btn full" id="bAgain">Back to break room</button></div>
       <div class="status" id="endStatus"></div>
+      <button class="link" id="bPhoto" type="button">📷 Take a photo</button>
       <button class="link" id="bLeave2">Leave room</button>
     </div>
   </div>
@@ -402,6 +448,14 @@ LEVELS[2].work={name:'Label printer',verb:'Label',doing:'Printing',done:'Labelle
 LEVELS[3].work={name:'Workbench',verb:'Inspect',doing:'Inspecting',done:'Inspected',secs:0,taps:2,ringTaps:3,x:0,z:-3.9,mg:{speed:1.05,half:.14}};
 const PACE=[1.45,1,.7], PACE_NAME=['Relaxed','Normal','Busy'], PACE_STAR=[.7,1,1.3];
 const EMOTES=['👋','👍','🙋','🎉','😂'], EMOTE_NAME=['Wave','Thumbs up','Need help','Cheer','Laugh'];
+const QUICK_SECS=45; /* a speedy robot pays 50% extra if its order is finished within this long; after that it just pays normally */
+/* Upgrades bought with banked coins. They only help the player who owns them. */
+const UPG=[
+  {k:'zone',name:'Wide green zone',desc:'The green zone on the bonus bar gets wider.',max:3,cost:[80,200,400]},
+  {k:'slow',name:'Steady bar',desc:'The marker slides more slowly, so Perfects are easier.',max:3,cost:[80,200,400]},
+  {k:'boots',name:'Quick boots',desc:'You walk and run faster.',max:3,cost:[100,250,500]},
+  {k:'pay',name:'Golden touch',desc:'Every Perfect pays 1 coin more.',max:2,cost:[300,700]}
+];
 let LV=-1, LVL=LEVELS[0], LROOT=null;
 const PCOL=[0xff5a5f,0x2f80ff,0x23b26d,0xffb020,0x9b5de5,0x00bbf9];
 const PCSS=['#ff5a5f','#2f80ff','#23b26d','#ffb020','#9b5de5','#00bbf9'];
@@ -449,6 +503,7 @@ const SFX={
   tap:(n)=>tone(420+(n||1)*130,.07,'square',.07),
   done:()=>{tone(784,.1,'triangle',.12);setTimeout(()=>tone(1175,.16,'triangle',.12),90)},
   pop:()=>tone(660,.09,'sine',.09,1100),
+  shutter:()=>{ noise(.06,.2,'bandpass',3000,1200,2); setTimeout(()=>noise(.08,.16,'bandpass',2000,800,2),70); },
   /* Perfect: a rising sparkle; longer streaks climb higher */
   perfect:(n)=>{ const b=880*Math.pow(1.122,Math.min(6,(n||1)-1)); [0,1,2].forEach(i=>setTimeout(()=>tone(b*[1,1.26,1.5][i],.14,'triangle',.09),i*60)); }
 };
@@ -1523,7 +1578,7 @@ function setLevel(lv,force){
   LVL.build();
   /* a pulsing ring on the floor where you stand to work, lit while you carry something that still needs working */
   stationRing=new THREE.Mesh(RING_GEO,RING_MAT); stationRing.rotation.x=-Math.PI/2; stationRing.position.set(LVL.work.x,.045,LVL.work.z+1.05); stationRing.visible=false; levelRoot.add(stationRing);
-  mg.speed=LVL.work.mg.speed; mg.half=LVL.work.mg.half; mg.streak=0; mgRoll();
+  mg.streak=0; applyUpgrades();
   LVL.stockX.forEach((x,i)=>interact.push({type:'take',item:lv*4+i,x:x,z:-7.0,r:2.4,y:3.45}));
   interact.push({type:'work',x:LVL.work.x,z:LVL.work.z,r:2.4,y:1.9});
   SLOTS.forEach((s,i)=>interact.push({type:'slot',slot:i,x:s.x,z:LVL.bay?2.6:1.5,r:2.5,y:LVL.bay?2.2:2.1}));
@@ -1545,6 +1600,12 @@ if(document.fonts&&document.fonts.load){
 const mg={pos:.5,c:.5,half:.16,speed:.95,streak:0};
 function mgRoll(){ mg.c=mg.half+.05+Math.random()*(1-2*mg.half-.1); }
 function mgUpdate(t){ const ph=(t*mg.speed)%2; mg.pos=ph<1?ph:2-ph; }
+let BANK=Math.max(0,+store('shiftsquad.bank')||0);
+const UL={zone:0,slow:0,boots:0,pay:0};
+try{ const j=JSON.parse(store('shiftsquad.upg')||'{}'); if(j&&typeof j==='object')for(const u of UPG)UL[u.k]=clamp(j[u.k]|0,0,u.max); }catch(e){}
+function saveBank(){ store('shiftsquad.bank',String(BANK)); store('shiftsquad.upg',JSON.stringify(UL)); }
+/* the bonus bar for this workplace, with your upgrades applied */
+function applyUpgrades(){ const w=LVL.work.mg; mg.half=Math.min(.34,w.half*(1+.14*UL.zone)); mg.speed=w.speed*(1-.1*UL.slow); mgRoll(); }
 let stationRing=null;
 const RING_GEO=new THREE.RingGeometry(.8,.97,40); RING_GEO.userData.keep=true;
 const RING_MAT=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,1.6,.3),transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});
@@ -1554,7 +1615,7 @@ const me={x:0,z:-1.6,yaw:Math.PI,pitch:0,vx:0,vz:0,carry:-1,bob:0,mv:0,proc:0,ta
 let mode='orbit';                // 'orbit' | 'fps'
 let myName='', myCol=0, myJob=0;
 let ui='start';                  // 'start' | 'room'
-let settingsOpen=false, soloMode=false, soloAuto=false;
+let settingsOpen=false, soloMode=false, soloAuto=false, spec=false, specA=0, specH=1, shotOpen=false, shopOpen=false, bankedShift=false;
 let rm=null, myLabel=null, joinedAt=0, roomCode='', netMode='';
 let viewers=[], isHost=false;
 let G=null, W=null, lastWorld=null, lastPubStr='', prevP=-1, shownW=null, lastSc=0;
@@ -1575,20 +1636,30 @@ function drawBubble(e){
   g.fillStyle=ready?'#23b26d':'#ffffff';
   rr(g,6,6,w-12,h-40,26); g.fill();
   g.beginPath(); g.moveTo(w/2-16,h-36); g.lineTo(w/2,h-6); g.lineTo(w/2+16,h-36); g.closePath(); g.fill();
-  g.lineWidth=6; g.strokeStyle='#10203c'; rr(g,6,6,w-12,h-40,26); g.stroke();
+  g.lineWidth=6; g.strokeStyle=e.ty===1?'#c98a00':'#10203c'; rr(g,6,6,w-12,h-40,26); g.stroke();
   g.textAlign='center'; g.textBaseline='middle';
   if(st===3){ g.font='64px '+EMOJI; g.fillStyle='#10203c'; g.fillText('👋',w/2,56); }
   else if(st===2){ g.font='64px '+EMOJI; g.fillStyle='#10203c'; g.fillText('😊',w/2,56); }
   else if(ready){ g.fillStyle='#fff'; g.font='400 44px Bungee,Impact,sans-serif'; g.fillText('RING UP',w/2,58); }
   else {
-    const n=e.want.length, step=70, x0=w/2-(n-1)*step/2;
+    const n=e.want.length, step=n>3?58:70, x0=w/2-(n-1)*step/2;
     for(let i=0;i<n;i++){
       const id=e.want[i], done=e.given.indexOf(id)>=0;
-      g.globalAlpha=done?.28:1; g.font='56px '+EMOJI; g.fillStyle='#10203c'; g.fillText(ITEMS[id].e,x0+i*step,56); g.globalAlpha=1;
+      g.globalAlpha=done?.28:1; g.font=(n>3?'48px ':'56px ')+EMOJI; g.fillStyle='#10203c'; g.fillText(ITEMS[id].e,x0+i*step,56); g.globalAlpha=1;
       if(done){ g.fillStyle='#23b26d'; g.font='800 46px Rubik,sans-serif'; g.fillText('✓',x0+i*step,58); }
     }
   }
   e.bub.t.needsUpdate=true;
+}
+/* a floating 👑 or ⚡ over special customers (the ⚡ greys out once its quick bonus is over) */
+function setBadge(e,ty){
+  if(e.badgeTy===ty)return; e.badgeTy=ty;
+  if(e.badge){ scene.remove(e.badge.sp); e.badge.tex.t.dispose(); e.badge.sp.material.dispose(); e.badge=null; }
+  if(!ty)return;
+  const em=ty===1?'👑':'⚡';
+  const tex=canvasTex(64,64,(g,w,h)=>{ g.clearRect(0,0,w,h); g.font='46px '+EMOJI; g.textAlign='center'; g.textBaseline='middle'; g.fillText(em,w/2,h/2+3); });
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex.t,color:UIC(),transparent:true,depthWrite:false,opacity:ty===3?.35:1}));
+  sp.scale.set(.5,.5,1); scene.add(sp); e.badge={sp:sp,tex:tex};
 }
 function trayBase(s){return !LVL.bay?{x:s.x,y:1.12,z:1.6,dx:.28}:{x:s.x,y:.02,z:2.45,dx:.55}}
 function spawnEnt(s,o,instant){
@@ -1606,6 +1677,7 @@ function freeEnt(e){
   if(e.model&&e.model.face)e.model.face.t.dispose();
   scene.remove(e.mesh); scene.remove(e.tray); scene.remove(e.bubSprite);
   e.bub.t.dispose(); e.bubSprite.material.dispose();
+  if(e.badge){ scene.remove(e.badge.sp); e.badge.tex.t.dispose(); e.badge.sp.material.dispose(); e.badge=null; }
 }
 function leaveEnt(e,happy){
   e.leaving=true; e.happy=happy; e.t1=performance.now(); e.arrived=false;
@@ -1718,7 +1790,7 @@ function reconcile(w){
       const instant=fresh&&(o.st===1||o.g.length>0);
       e=spawnEnt(o.s,{id:o.id,seed:o.seed,st:o.st,want:o.w,given:o.g},instant);
       ents.set(o.s,e);
-      if(!instant&&SLOTS[o.s].z===myJob)SFX.ding();
+      if(!instant&&SLOTS[o.s].z===myJob){ SFX.ding(); if(o.ty===1)announce('A VIP robot is at '+SLOTS[o.s].name+'. Double pay!','greet'); else if(o.ty===2)announce('A speedy robot is at '+SLOTS[o.s].name+'. Quick service earns a bonus.','greet'); }
     }
     const prevSt=e.st, prevGiven=e.given.length, sl=SLOTS[o.s];
     e.want=o.w; e.given=o.g;
@@ -1731,7 +1803,8 @@ function reconcile(w){
       }
       else if(o.st===3){ entSay(e,'ack',sl.x,sl.sz); popAt('Closed',sl.x,2.3,sl.sz,false); leaveEnt(e,false); }
     } else if(o.g.length>prevGiven){ SFX.give(); entSay(e,'ack',sl.x,sl.sz); e.pulseT=performance.now(); }
-    const k=JSON.stringify([e.want,e.given,e.st]);
+    e.ty=o.ty; setBadge(e,o.ty);
+    const k=JSON.stringify([e.want,e.given,e.st,e.ty]);
     if(k!==e.key){ e.key=k; drawBubble(e); }
     const tk=e.given.join(',');
     if(tk!==e.trayKey){
@@ -1778,6 +1851,7 @@ function stepEnt(e,dt,t){
   const show=(e.arrived&&!e.leaving)||(e.leaving&&performance.now()-e.t1<1500);
   e.bubSprite.visible=show;
   if(show)e.bubSprite.position.set(e.mesh.position.x,e.top+.55,e.mesh.position.z);
+  if(e.badge){ e.badge.sp.visible=!e.leaving; e.badge.sp.position.set(e.mesh.position.x,e.top+.2+Math.sin(t*3+e.phase)*.04,e.mesh.position.z); }
 }
 
 /* ---------- helper robots: foreman announcements and the fill-in ---------- */
@@ -1938,7 +2012,7 @@ async function leaveRoom(){
   const r=rm; rm=null;
   try{ if(r&&r.leave) await r.leave(); }catch(e){}
   for(const a of avatars.values())scene.remove(a.g); avatars.clear();
-  clearEnts(); G=null; W=null; lastWorld=null; isHost=false; viewers=[]; ui='start'; mode='orbit'; prevP=-1; shownW=null; soloAuto=false; soloMode=false; settingsOpen=false;
+  clearEnts(); G=null; W=null; lastWorld=null; isHost=false; viewers=[]; ui='start'; mode='orbit'; prevP=-1; shownW=null; soloAuto=false; soloMode=false; settingsOpen=false; toggleSpec(false); closeShot(); shopOpen=false;
   if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
   $('startStatus').textContent=''; refreshLevelButtons(); showScreens();
 }
@@ -1953,7 +2027,7 @@ function parseW(w){
   if(Array.isArray(w.o))for(const a of w.o.slice(0,SLOTS.length)){
     if(!Array.isArray(a)||a.length<7)continue;
     const s=a[1]|0; if(s<0||s>=SLOTS.length)continue;
-    out.o.push({id:a[0]|0,s:s,w:ok(a[2]),g:ok(a[3]),st:clamp(a[5]|0,0,3),seed:a[6]|0});
+    out.o.push({id:a[0]|0,s:s,w:ok(a[2]),g:ok(a[3]),st:clamp(a[5]|0,0,3),seed:a[6]|0,ty:(a[4]===1||a[4]===2||a[4]===3)?a[4]:0});
   }
   if(w.k&&typeof w.k==='object')for(const key in w.k)out.k[key]=w.k[key]|0;
   return out;
@@ -1963,7 +2037,7 @@ function becomeHost(){
   if(lastWorld){
     G.lv=lastWorld.lv; G.v=lastWorld.v; G.p=lastWorld.p; G.t=lastWorld.t; G.sc=lastWorld.sc; G.sv=lastWorld.sv;
     G.ack=Object.assign({},lastWorld.k); G.spawnIn=3; G.endT=3; G.df=lastWorld.df; G.pc={}; for(const key in lastWorld.pc)G.pc[key]=lastWorld.pc[key].slice();
-    G.o=lastWorld.o.map(o=>({id:o.id,s:o.s,w:o.w.slice(),g:o.g.slice(),st:o.st,seed:o.seed,rm:o.st>=2?2:0}));
+    G.o=lastWorld.o.map(o=>({id:o.id,s:o.s,w:o.w.slice(),g:o.g.slice(),st:o.st,seed:o.seed,rm:o.st>=2?2:0,ty:o.ty,t0:G.t}));
     G.nid=lastWorld.o.reduce((m,o)=>Math.max(m,o.id+1),1);
     if(lastWorld.tb[0]>=0&&lastWorld.p===1)G.tb={z:lastWorld.tb[0],t:Math.max(5,lastWorld.tb[1]),tick:1.5};
     G.tbCool=lastWorld.tb[2];
@@ -1978,8 +2052,11 @@ function spawnOrder(){
   const pool=[z*4,z*4+1,z*4+2,z*4+3];
   let n=z===3?1+(rnd()<.45?1:0):1+(rnd()<.55?1:0)+(rnd()<.2?1:0);
   if(G.t<30)n=Math.min(n,z===3?1:2);
+  /* from 45 s on, some customers are special: a VIP orders more and pays double, a speedy robot pays extra if it is served quickly */
+  let ty=0; if(G.t>=45){ const r=rnd(); ty=r<.12?1:(r<.3?2:0); }
+  if(ty===1)n=Math.min(4,n+1+(rnd()<.35?1:0));
   const w=[]; while(n-->0)w.push(pool.splice(Math.floor(rnd()*pool.length),1)[0]);
-  G.o.push({id:G.nid++,s:s,w:w,g:[],st:0,seed:Math.floor(rnd()*1000),rm:0});
+  G.o.push({id:G.nid++,s:s,w:w,g:[],st:0,seed:Math.floor(rnd()*1000),rm:0,ty:ty,t0:G.t});
   return true;
 }
 function applyAct(label,a){
@@ -1991,7 +2068,7 @@ function applyAct(label,a){
   if(k===3){ if(s>=0&&s<4&&!G.tb&&G.tbCool<=0)G.tb={z:G.lv,t:40,tick:1.2}; return; }
   if(k===4){ /* Perfect at the station: bonus coins, at most one every 0.6 s per player */
     if(G.t-(G.bn[label]===undefined?-9:G.bn[label])<.6)return;
-    G.bn[label]=G.t; G.sc+=clamp(item,1,5); pcOf(label)[1]++; return;
+    G.bn[label]=G.t; G.sc+=clamp(item,1,7); pcOf(label)[1]++; return;
   }
   const o=G.o.find(o=>o.s===s&&(o.st===0||o.st===1)); if(!o)return;
   if(k===1){
@@ -2006,7 +2083,8 @@ function pcOf(label){
   return G.pc[label];
 }
 function ringOrder(o){
-  G.sc+=JOBS[SLOTS[o.s].z].pay*o.w.length; G.sv++; o.st=2; o.rm=2.6;
+  const mult=o.ty===1?2:(o.ty===2?1.5:1); /* VIP double; speedy only while its bonus is still on (type 3 = bonus over) */
+  G.sc+=Math.round(JOBS[SLOTS[o.s].z].pay*o.w.length*mult); G.sv++; o.st=2; o.rm=2.6;
 }
 function tempWork(){
   const z=G.tb.z;
@@ -2027,6 +2105,7 @@ function hostSim(dt){
     const n=Math.max(1,viewers.length);
     for(const o of G.o){
       if(o.st>=2)o.rm-=dt;
+      else if(o.ty===2&&G.t-o.t0>QUICK_SECS)o.ty=3;
     }
     G.o=G.o.filter(o=>!(o.st>=2&&o.rm<=0));
     if(G.tbCool>0)G.tbCool=Math.max(0,G.tbCool-dt);
@@ -2046,7 +2125,7 @@ function hostSim(dt){
   }
 }
 function publishWorld(){
-  const o=G.o.map(o=>[o.id,o.s,o.w,o.g,20,o.st,o.seed]);
+  const o=G.o.map(o=>[o.id,o.s,o.w,o.g,o.ty|0,o.st,o.seed]);
   const live=new Set(viewers.map(p=>p.peer)); for(const k of Object.keys(G.ack))if(!live.has(k))delete G.ack[k];
   const body={lv:G.lv,p:G.p,t:Math.floor(G.t/5)*5,sc:G.sc,sv:G.sv,o:o,k:G.ack,tb:G.tb?[G.tb.z,Math.ceil(G.tb.t),0]:[-1,0,Math.ceil(G.tbCool)],df:G.df,pc:G.pc};
   const str=JSON.stringify(body);
@@ -2147,8 +2226,10 @@ const joy={x:0,y:0,id:null};
 let look=null, locked=false;
 function typing(){const a=document.activeElement;return a&&a.tagName==='INPUT'}
 addEventListener('keydown',e=>{
-  if(e.code==='Escape'){ if(settingsOpen){closeSettings();return} if(ui==='room'&&W&&W.p===1){openSettings();return} }
-  if(typing()||settingsOpen)return;
+  if(e.code==='Escape'){ if(shotOpen){closeShot();return} if(shopOpen){closeShop();return} if(settingsOpen){closeSettings();return} if(ui==='room'&&W&&W.p===1){openSettings();return} }
+  if(typing()||settingsOpen||shotOpen)return;
+  if(e.code==='KeyV'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&mode==='fps'){ toggleSpec(!spec); return; }
+  if(e.code==='KeyP'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&ui==='room'){ takePhoto(); return; }
   keys[e.code]=true;
   if(e.code==='KeyE'||e.code==='Space'){e.preventDefault();doInteract()}
   if(e.code==='KeyQ')doDrop();
@@ -2157,12 +2238,12 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
-function addLook(dx,dy,s){s*=S.look; me.yaw-=dx*s; me.pitch=clamp(me.pitch-dy*s,-1.25,1.25)}
+function addLook(dx,dy,s){s*=S.look; if(spec){ specA-=dx*s*.9; specH=clamp(specH+dy*s*.55,.55,1.7); return; } me.yaw-=dx*s; me.pitch=clamp(me.pitch-dy*s,-1.25,1.25)}
 view.addEventListener('pointerdown',e=>{
   audio();
   if(mode!=='fps')return;
   if(e.pointerType==='mouse'){
-    if(!document.pointerLockElement&&view.requestPointerLock){try{const r=view.requestPointerLock();if(r&&r.catch)r.catch(()=>{})}catch(_){}}
+    if(!spec&&!document.pointerLockElement&&view.requestPointerLock){try{const r=view.requestPointerLock();if(r&&r.catch)r.catch(()=>{})}catch(_){}}
   }
   if(look)return;
   look={id:e.pointerId,x:e.clientX,y:e.clientY,touch:e.pointerType!=='mouse'};
@@ -2177,7 +2258,7 @@ view.addEventListener('pointermove',e=>{
 });
 const endLook=e=>{if(look&&look.id===e.pointerId)look=null};
 view.addEventListener('pointerup',endLook); view.addEventListener('pointercancel',endLook);
-document.addEventListener('mousemove',e=>{if(locked&&mode==='fps')addLook(e.movementX||0,e.movementY||0,.0022)});
+document.addEventListener('mousemove',e=>{if(locked&&mode==='fps'&&!spec)addLook(e.movementX||0,e.movementY||0,.0022)});
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===view});
 const stick=$('stick'), knob=$('knob');
 stick.addEventListener('pointerdown',e=>{
@@ -2199,7 +2280,7 @@ $('btnDrop').addEventListener('pointerdown',e=>{e.preventDefault();audio();doDro
 
 /* Press while the marker is inside the green zone for a Perfect: bonus coins that grow with your streak. A miss costs nothing. */
 function mgPerfect(){
-  mg.streak++; const b=Math.min(5,1+mg.streak), wk=LVL.work;
+  mg.streak++; const b=Math.min(5,1+mg.streak)+UL.pay, wk=LVL.work;
   sendAct(4,myJob,b);
   SFX.perfect(mg.streak); buzz(30);
   popAt((mg.streak>1?'Perfect x'+mg.streak+'! +':'Perfect! +')+b,wk.x,2.4,wk.z,false);
@@ -2224,7 +2305,7 @@ function doInteract(){
     if(rt.n>=need){ rt.n=0; sendAct(2,target.slot,0); SFX.give(); buzz(40); } else SFX.tap(rt.n);
   }
 }
-function doDrop(){ if(mode==='fps'&&me.carry>=0){me.carry=-1;SFX.drop()} }
+function doDrop(){ if(mode==='fps'&&!spec&&me.carry>=0){me.carry=-1;SFX.drop()} }
 /* quick chat: a floating emoji over your head for everyone in the room */
 let emoN=0, emoLast=0;
 function sendEmote(i){
@@ -2235,6 +2316,43 @@ function sendEmote(i){
   SFX.pop(); buzz(12); $('emoRow').hidden=true;
   popXY(EMOTES[i],(app.clientWidth||600)/2,(app.clientHeight||400)*.6);
 }
+/* watch the room from above without leaving your spot; Back to work returns you to first person */
+function toggleSpec(on){
+  on=!!on; if(on===spec)return;
+  if(on&&!(ui==='room'&&W&&W.p===1&&mode==='fps'))return;
+  spec=on; document.body.classList.toggle('spec',on); $('specBar').hidden=!on; me.vx=me.vz=0; me.work=null;
+  $('watchBtn').textContent=on?'🏃':'👁'; $('watchBtn').setAttribute('aria-label',on?'Back to work':'Watch the room from above');
+  if(on){ specA=0; specH=1; $('emoRow').hidden=true; if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock(); }
+}
+/* photo: a polaroid of what the camera sees, with your shift on the caption */
+let shotReq=false, shotUrl='', shotFile=null;
+function takePhoto(){ if(ui!=='room'||shotOpen)return; audio(); shotReq=true; }
+function capturePhoto(){ /* called right after a frame is drawn, while the picture is still in the canvas */
+  try{
+    const vw=view.width, vh=view.height, pad=Math.round(vw*.03), cap=Math.round(vw*.16), u=vw/1000, lv=LEVELS[Math.max(0,LV)];
+    const c=document.createElement('canvas'); c.width=vw+pad*2; c.height=vh+pad+cap; const g=c.getContext('2d');
+    g.fillStyle='#ffffff'; g.fillRect(0,0,c.width,c.height);
+    g.drawImage(view,pad,pad,vw,vh);
+    g.lineWidth=Math.max(2,Math.round(vw*.004)); g.strokeStyle='#10203c'; g.strokeRect(pad,pad,vw,vh);
+    const y1=pad+vh+Math.round(66*u), y2=pad+vh+Math.round(114*u), sv=W?W.sv:0, sc=W?W.sc:0, stars=(W&&W.p===2)?starText(lastStars):'';
+    g.textBaseline='alphabetic'; g.textAlign='left'; g.fillStyle='#10203c'; g.font='400 '+Math.round(48*u)+'px Bungee,Impact,sans-serif'; g.fillText('SHIFT SQUAD',pad,y1);
+    g.font='800 '+Math.round(28*u)+'px Rubik,system-ui,sans-serif'; g.fillStyle='#5b6b8c'; g.fillText(lv.emoji+' '+lv.name+((roomCode&&!soloMode)?'  ·  room '+roomCode:''),pad,y2);
+    g.textAlign='right'; g.fillStyle='#10203c'; g.font='400 '+Math.round(48*u)+'px Bungee,Impact,sans-serif'; g.fillText(sc+' coins',pad+vw,y1);
+    g.font='800 '+Math.round(28*u)+'px Rubik,system-ui,sans-serif'; g.fillStyle='#5b6b8c'; g.fillText(sv+' served'+(stars?'  '+stars:''),pad+vw,y2);
+    const f=$('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); SFX.shutter(); buzz(25);
+    c.toBlob(b=>{ if(!b){ fsToast('Could not save the photo on this device.'); return } showShot(b); },'image/jpeg',.92);
+  }catch(e){ fsToast('Could not take the photo on this device.'); }
+}
+function showShot(blob){
+  if(shotUrl){ try{URL.revokeObjectURL(shotUrl)}catch(e){} }
+  shotUrl=URL.createObjectURL(blob); shotFile=null;
+  try{ shotFile=new File([blob],'shift-squad.jpg',{type:'image/jpeg'}); }catch(e){}
+  $('shotImg').src=shotUrl; $('shotView').hidden=false; shotOpen=true;
+  let can=false; try{ can=!!(shotFile&&navigator.canShare&&navigator.canShare({files:[shotFile]})&&navigator.share); }catch(e){}
+  $('shotShare').hidden=!can;
+  if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
+}
+function closeShot(){ shotOpen=false; $('shotView').hidden=true; $('shotImg').removeAttribute('src'); if(shotUrl){ const u=shotUrl; shotUrl=''; setTimeout(()=>{ try{URL.revokeObjectURL(u)}catch(e){} },500); } }
 
 function findTarget(){
   let best=null,bs=1e9;
@@ -2269,14 +2387,14 @@ function findTarget(){
 }
 
 function updateMe(dt,t){
-  if(mode!=='fps'){me.vx=me.vz=0;me.mv=0;return}
+  if(mode!=='fps'||spec){me.vx=me.vz=0;me.mv=0;return}
   let ix=0,iz=0;
-  if(settingsOpen){ for(const k in keys)keys[k]=false; joy.x=joy.y=0; }
+  if(settingsOpen||shotOpen){ for(const k in keys)keys[k]=false; joy.x=joy.y=0; }
   if(keys.KeyD||keys.ArrowRight)ix+=1; if(keys.KeyA||keys.ArrowLeft)ix-=1;
   if(keys.KeyW||keys.ArrowUp)iz+=1; if(keys.KeyS||keys.ArrowDown)iz-=1;
   ix+=joy.x; iz+=-joy.y;
   const m=Math.hypot(ix,iz); if(m>1){ix/=m;iz/=m}
-  const sp=(keys.ShiftLeft||keys.ShiftRight)?6.4:4.3;
+  const sp=((keys.ShiftLeft||keys.ShiftRight)?6.4:4.3)*(1+.07*UL.boots);
   const fx=-Math.sin(me.yaw), fz=-Math.cos(me.yaw), rx=Math.cos(me.yaw), rz=-Math.sin(me.yaw);
   const tx=(fx*iz+rx*ix)*sp, tz=(fz*iz+rz*ix)*sp, k=Math.min(1,dt*10);
   me.vx+=(tx-me.vx)*k; me.vz+=(tz-me.vz)*k;
@@ -2296,7 +2414,7 @@ function updateHeldRig(t){
       if(me.proc){ heldRing=new THREE.Mesh(new THREE.TorusGeometry(.2,.016,8,28),GL(.4,2.4,1.4)); heldRing.rotation.x=Math.PI/2; heldRing.position.y=.02; heldRig.add(heldRing); }}
   }
   if(heldRing)heldRing.rotation.z=t*3;
-  heldRig.visible=mode==='fps'&&me.carry>=0;
+  heldRig.visible=mode==='fps'&&!spec&&me.carry>=0;
   heldRig.position.y=-.3+Math.sin(me.bob*2)*.012+Math.sin(t*1.6)*.004;
   { const hp=clamp((performance.now()-heldPopT)/280,0,1); heldRig.scale.setScalar(hp<1?.4+.6*easeBack(hp):1); } /* the item pops into your hand */
 }
@@ -2304,7 +2422,12 @@ function updateHeldRig(t){
 /* ---------- camera ---------- */
 const EYE_H=1.85; /* first-person eye height (was 1.62) */
 function updateCamera(t){
-  if(mode==='fps'){
+  if(mode==='fps'&&spec){
+    /* watching the room from above: drag to turn, it drifts slowly on its own */
+    const o=LVL.orbit, a=specA+Math.sin(t*.1)*.35;
+    camera.position.set(Math.sin(a)*o.r,o.h*specH,o.cz+Math.cos(a)*o.r*.3);
+    camera.lookAt(0,1.3,.6); setViewShift(0);
+  } else if(mode==='fps'){
     camera.position.set(me.x,EYE_H+Math.abs(Math.sin(me.bob))*.035,me.z);
     camera.rotation.set(me.pitch,me.yaw,0);
     setViewShift(0);
@@ -2370,8 +2493,8 @@ function renderTickets(){
   tickets.innerHTML='';
   for(const x of o){
     const sl=SLOTS[x.s], mine=sl.z===myJob, d=document.createElement('div');
-    d.className='tk z'+sl.z+(mine?'':' other')+(x.st===1?' ready':'')+(x.st>=2?' gone':'');
-    const h=document.createElement('h4'); h.textContent=x.st===1?'Ring up':(x.st===3?'Bye':(x.st===2?'Paid':sl.name)); d.appendChild(h);
+    d.className='tk z'+sl.z+(mine?'':' other')+(x.st===1?' ready':'')+(x.st>=2?' gone':'')+(x.ty===1?' vip':'')+(x.ty===2?' fast':'')+(x.ty===3?' late':'')+(x.w.length>=4?' wide':'');
+    const h=document.createElement('h4'); h.textContent=(x.ty===1?'👑 ':(x.ty>=2?'⚡ ':''))+(x.st===1?'Ring up':(x.st===3?'Bye':(x.st===2?'Paid':sl.name))); d.appendChild(h);
     const w=document.createElement('div'); w.className='w';
     for(const id of x.w){const i=document.createElement('i'); i.textContent=ITEMS[id].e; if(x.g.indexOf(id)>=0)i.className='d'; w.appendChild(i)}
     d.appendChild(w);
@@ -2422,13 +2545,14 @@ function hudTick(dt){
   miniAcc+=dt; if(miniAcc>.1){miniAcc=0;drawMini()}
 }
 function showScreens(){
-  const inRoom=ui==='room', so=settingsOpen;
+  const inRoom=ui==='room', so=settingsOpen, sh=shopOpen&&!so;
   const p=W?W.p:0;
-  $('sStart').hidden=inRoom||so;
-  $('sLobby').hidden=!(inRoom&&p===0)||so;
-  $('sEnd').hidden=!(inRoom&&p===2)||so;
+  $('sStart').hidden=inRoom||so||sh;
+  $('sLobby').hidden=!(inRoom&&p===0)||so||sh;
+  $('sEnd').hidden=!(inRoom&&p===2)||so||sh;
   $('sSettings').hidden=!so;
-  $('screen').hidden=(inRoom&&p===1)&&!so;
+  $('sShop').hidden=!sh;
+  $('screen').hidden=(inRoom&&p===1)&&!so&&!sh;
   hud.hidden=!(inRoom&&p===1);
 }
 function openSettings(){
@@ -2461,6 +2585,11 @@ function syncSettingsUI(){
 (function(){
   const on=(id,fn)=>$(id).addEventListener('click',fn);
   on('bSettings',openSettings); on('bSettings2',openSettings); on('setBtn',openSettings); on('sDone',closeSettings);
+  on('bShop',openShop); on('bShop2',openShop); on('shopDone',closeShop);
+  on('watchBtn',()=>toggleSpec(!spec)); on('specBack',()=>toggleSpec(false)); on('camBtn',takePhoto); on('bPhoto',takePhoto);
+  on('shotClose',closeShot);
+  on('shotSave',()=>{ if(!shotUrl)return; const a=document.createElement('a'); a.href=shotUrl; a.download='shift-squad.jpg'; document.body.appendChild(a); a.click(); a.remove(); });
+  on('shotShare',()=>{ try{ navigator.share({files:[shotFile],title:'Shift Squad',text:'My Shift Squad shift'}).catch(()=>{}); }catch(e){} });
   on('sLeave',()=>{ settingsOpen=false; leaveRoom(); });
   on('sMusic',()=>{ S.music=!S.music; saveS(); musicKick(); syncSettingsUI(); });
   $('sMusicVol').addEventListener('input',e=>{ S.musicVol=clamp(+e.target.value/100,0,1); if(S.musicVol>0&&!S.music)S.music=true; saveS(); musicKick(); syncSettingsUI(); });
@@ -2486,6 +2615,24 @@ function syncSettingsUI(){
   [0,1,2].forEach(i=>on('pace'+i,()=>{ if(isHost&&G&&G.p===0){ G.df=i; publishWorld(); refreshLobby(); } }));
 })();
 function applyBig(){ app.classList.toggle('big',!!(S.bigBtn&&COARSE)); }
+function openShop(){ if(ui==='room'&&W&&W.p===1)return; shopOpen=true; refreshShop(); showScreens(); audio(); }
+function closeShop(){ shopOpen=false; showScreens(); }
+function refreshShop(){
+  $('bankV').textContent=BANK;
+  const box=$('upgList'); box.innerHTML='';
+  UPG.forEach(u=>{
+    const lvl=UL[u.k], maxed=lvl>=u.max, cost=maxed?0:u.cost[lvl];
+    const row=document.createElement('div'); row.className='upg';
+    const t=document.createElement('div'); t.className='t';
+    const b=document.createElement('b'); b.textContent=u.name; const sm=document.createElement('small'); sm.textContent=u.desc;
+    const pips=document.createElement('div'); pips.className='pips'; pips.textContent='●'.repeat(lvl)+'○'.repeat(u.max-lvl);
+    t.appendChild(b); t.appendChild(sm); t.appendChild(pips);
+    const btn=document.createElement('button'); btn.className='btn'; btn.type='button';
+    btn.textContent=maxed?'Maxed':'Buy 🪙'+cost; btn.disabled=maxed||BANK<cost;
+    btn.addEventListener('click',()=>{ if(UL[u.k]>=u.max||BANK<u.cost[UL[u.k]])return; BANK-=u.cost[UL[u.k]]; UL[u.k]++; saveBank(); applyUpgrades(); SFX.coin(); buzz(20); refreshShop(); });
+    row.appendChild(t); row.appendChild(btn); box.appendChild(row);
+  });
+}
 function refreshLobby(){
   const list=$('who'); const vs=viewers.slice().sort((a,b)=>a.peer<b.peer?-1:1);
   const key=vs.map(p=>p.peer+'|'+p.presence.nm+'|'+p.presence.col+'|'+jobOf(p)+'|'+(p.peer===myLabel)+'|'+(p.presence.w?1:0)).join('#');
@@ -2519,6 +2666,7 @@ function refreshEnd(){
     if(s>was){ STARS[wl]=s; store('shiftsquad.stars',JSON.stringify(STARS)); refreshLevelButtons(); }
     lastStars=s;
   }
+  if(!bankedShift){ bankedShift=true; if(W.sc>0){ BANK+=W.sc; saveBank(); $('eBank').textContent='+'+W.sc+' coins went into your bank (total '+BANK+'). Spend them under Upgrades.'; } }
   { /* who carried the shift: jobs done and perfects per player */
     const rows=Object.keys(W.pc||{}).map(k=>({k:k,n:W.pc[k][0],p:W.pc[k][1]})), mine=rows.find(r=>r.k===myLabel)||{n:0,p:0};
     const top=rows.slice().sort((a,b)=>(b.n+b.p)-(a.n+a.p))[0], lines=[];
@@ -2615,8 +2763,9 @@ function onPhase(p){
     const h=$('hint'); h.hidden=!S.hints;
     h.textContent='You are the '+JOBS[myJob].n+'. Take each item, '+LVL.work.verb.toLowerCase()+' it at the '+LVL.work.name.toLowerCase()+' in the middle, then hand it over. Press while the bar is in the green for bonus coins. '+(COARSE?'Walk with the left stick, drag to look.':'Click the view to look around. WASD to walk, 1 to 5 for emotes.');
     setTimeout(()=>{h.hidden=true},8000);
-    mg.streak=0; mgRoll();
+    mg.streak=0; mgRoll(); bankedShift=false; $('eBank').textContent='';
   } else {
+    toggleSpec(false);
     if(prevP===1)SFX.end();
     mode='orbit'; me.carry=-1; spawnPoint();
     if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
@@ -2673,7 +2822,7 @@ function frame(now){
   if(ui==='room'&&!$('sLobby').hidden&&lobbyAcc>.25){lobbyAcc=0;refreshLobby()}
   updateMe(dt,t);
   if(me.carry<0){ me.proc=0; me.taps=0; me.work=null; }
-  target=(mode==='fps'&&W&&W.p===1)?findTarget():null;
+  target=(mode==='fps'&&!spec&&W&&W.p===1)?findTarget():null;
   if(me.work){
     if(!target||target.type!=='work')me.work=null;
     else { me.work.t+=dt; if(me.work.t>=me.work.dur){ me.work=null; me.proc=1; wsfx(LV,'done'); buzz(20); } }
@@ -2700,6 +2849,7 @@ function frame(now){
   sky.position.copy(camera.position);
   for(const c of clouds){ c.a+=dt*c.s; c.sp.position.set(Math.cos(c.a)*c.r,c.y,Math.sin(c.a)*c.r); }
   if(gfx.hq)postRender(); else renderer.render(scene,camera);
+  if(shotReq){ shotReq=false; capturePhoto(); }
 }
 setLevel(clamp(+store('shiftsquad.level')||0,0,3),true);
 requestAnimationFrame(frame);
