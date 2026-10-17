@@ -794,6 +794,9 @@ function makeScreenBot(seed){
 
 /* Two helper robots of our own: the Foreman (announces the shift) and the Fill-in (works a station for 40 seconds). */
 const FOREMAN_SEED=1000;
+const CUST_SCALE=.7; /* customers and the foreman are 30% smaller than the first version */
+/* The foreman waits at the back wall, in the gap between two shelf units, outside the area the player walks in (z -6.3 to .65). */
+const FOREMAN_POS={x:-4.4,z:-7.2};
 const HELPER_LIFT=.3; /* helper models hover a little so their screens sit near counter height */
 function nameTag(text,css,y){
   const o=canvasTex(256,64,(g,w,h)=>{
@@ -808,14 +811,14 @@ function makeForeman(){
   const mb=modelBot('foreman',HELPER_LIFT);
   if(mb){ /* the Meshy foreman: hard hat is part of the model; add the clipboard floating beside it */
     bx(.3,.4,.04,0xc79a62,1.2,HELPER_LIFT+.7,.2,mb.rig); bx(.24,.32,.045,0xffffff,1.2,HELPER_LIFT+.7,.2,mb.rig);
-    mb.g.scale.setScalar(1.1); mb.g.add(nameTag('Foreman','#ffd23f',HELPER_LIFT*1.1+2.45));
+    mb.g.scale.setScalar(1.1*CUST_SCALE); { const tg=nameTag('Foreman','#ffd23f',HELPER_LIFT*1.1+2.45); tg.scale.multiplyScalar(1/CUST_SCALE); mb.g.add(tg); }
     return mb;
   }
   const r=makeScreenBot(FOREMAN_SEED);
   /* orange hard hat with a white stripe, plus a little clipboard in the hand */
   cyl(.5,.56,.2,0xff7a1a,0,1.86,0,r.rig,22); cyl(.51,.51,.05,0xffffff,0,1.9,0,r.rig,22); bx(.7,.04,.36,0xff7a1a,0,1.78,.34,r.rig);
   bx(.3,.4,.04,0xc79a62,.86,.92,.2,r.rig); bx(.24,.32,.045,0xffffff,.86,.92,.2,r.rig);
-  r.g.scale.setScalar(1.12); r.g.add(nameTag('Foreman','#ffd23f',2.55));
+  r.g.scale.setScalar(1.12*CUST_SCALE); { const tg=nameTag('Foreman','#ffd23f',2.55); tg.scale.multiplyScalar(1/CUST_SCALE); r.g.add(tg); }
   return r;
 }
 function makeTemp(zone){
@@ -867,25 +870,27 @@ const MODEL_LIB={};
 /* A head-only bot built from a Meshy model. Keeps the same handles as the procedural bots (rig, handL, handR, setFace) so
    all the walking, bobbing and talking code keeps working. */
 let blobTex=null;
-function modelBot(name,lift){
+function modelBot(name,lift,k){
   const m=MODEL_LIB[name]; if(!m)return null;
-  lift=lift||0;
+  lift=lift||0; k=k||1;
   const g=new THREE.Group(), rig=new THREE.Group(); g.add(rig);
-  const mesh=new THREE.Mesh(m.geo,m.mat); mesh.castShadow=SHADOWS; mesh.position.y=lift; rig.add(mesh);
+  const mesh=new THREE.Mesh(m.geo,m.mat); mesh.castShadow=SHADOWS; mesh.position.y=lift; mesh.scale.setScalar(k); rig.add(mesh);
   if(lift>0.2){ /* it hovers high, so keep a soft shadow on the floor to anchor it */
     if(!blobTex)blobTex=canvasTex(64,64,(c)=>{const gr=c.createRadialGradient(32,32,3,32,32,31); gr.addColorStop(0,'rgba(10,20,40,.38)'); gr.addColorStop(1,'rgba(10,20,40,0)'); c.fillStyle=gr; c.fillRect(0,0,64,64)});
     const sh=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.5),new THREE.MeshBasicMaterial({map:blobTex.t,transparent:true,depthWrite:false}));
-    sh.rotation.x=-Math.PI/2; sh.position.y=.03; g.add(sh);
+    sh.rotation.x=-Math.PI/2; sh.position.y=.03; sh.scale.setScalar(k); g.add(sh);
   }
   const handL=new THREE.Object3D(), handR=new THREE.Object3D(); rig.add(handL,handR);
   function setFace(mood,blink,talk){ const s=talk?1.05:(mood==='happy'?1.025:1); rig.scale.set(1/Math.sqrt(s),s,1/Math.sqrt(s)); }
-  return {g,rig,handL,handR,spin:null,glow:null,face:null,setFace,size:m.size,lift};
+  return {g,rig,handL,handR,spin:null,glow:null,face:null,setFace,size:m.size,lift,k,top:lift+2.2*k};
 }
 function modelNames(prefix){return Object.keys(MODEL_LIB).filter(k=>k.indexOf(prefix)===0).sort()}
 const CUSTOMER_LIFT=.85; /* customers hover so their screens sit at eye level above the counter */
 function makeCustomerBot(seed){
   const n=modelNames('cust_');
-  return (n.length&&modelBot(n[seed%n.length],CUSTOMER_LIFT))||makeScreenBot(seed);
+  let b=n.length&&modelBot(n[seed%n.length],CUSTOMER_LIFT,CUST_SCALE);
+  if(!b){ b=makeScreenBot(seed); b.g.scale.setScalar(CUST_SCALE); b.top=2.2*CUST_SCALE; }
+  return b;
 }
 
 /* ---------- the workplaces: four separate levels, picked from the menu ---------- */
@@ -1305,12 +1310,12 @@ function setLevel(lv,force){
   interact.push({type:'work',x:LVL.work.x,z:LVL.work.z,r:2.4,y:1.9});
   SLOTS.forEach((s,i)=>interact.push({type:'slot',slot:i,x:s.x,z:LVL.bay?2.6:1.5,r:2.5,y:LVL.bay?2.2:2.1}));
   LROOT=null;
-  if(typeof foreman!=='undefined'&&foreman)foreman.g.position.set(-4.4,0,-4.2);
+  if(typeof foreman!=='undefined'&&foreman)foreman.g.position.set(FOREMAN_POS.x,0,FOREMAN_POS.z);
   ticketKey=''; shownW=null;
   refreshLevelButtons();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(levelRoot&&LV===lv)redrawSigns()}).catch(()=>{});
 }
-const foreman=makeForeman(); foreman.g.position.set(-4.4,0,-4.2); scene.add(foreman.g);
+const foreman=makeForeman(); foreman.g.position.set(FOREMAN_POS.x,0,FOREMAN_POS.z); scene.add(foreman.g);
 const marker=new THREE.Mesh(new THREE.ConeGeometry(.16,.34,12),BM(0xffd23f)); marker.rotation.x=Math.PI; marker.visible=false; scene.add(marker);
 const markerRing=new THREE.Mesh(new THREE.ConeGeometry(.2,.4,12),BM(0x10203c)); markerRing.rotation.x=Math.PI; markerRing.scale.setScalar(1.18); markerRing.visible=false; scene.add(markerRing);
 function redrawSigns(){signs.forEach(s=>{s.draw(s.g,s.c.width,s.c.height);s.t.needsUpdate=true})}
@@ -1363,7 +1368,7 @@ function spawnEnt(s,o,instant){
   const sl=SLOTS[s], bay=LVL.bay, door=LVL.doorX;
   const e={slot:s,id:o.id,seed:o.seed,bay,st:o.st,want:o.want||[],given:o.given||[],arrived:false,leaving:false,said:false,t0:performance.now(),key:'',trayKey:'',tray:new THREE.Group(),path:[],speed:bay?7:2.4,phase:rnd()*6};
   if(bay){const c=makeCar(o.seed); e.model=c; e.mesh=c.g; e.mesh.rotation.y=Math.PI; e.top=2.7; e.stand={x:sl.x,z:sl.sz}; e.mesh.position.set(sl.x,0,instant?sl.sz:15); e.path=instant?[]:[[sl.x,sl.sz]];}
-  else {const p=makeCustomerBot(o.seed); e.model=p; e.mesh=p.g; e.top=2.2+(p.lift||0); e.stand={x:sl.x,z:sl.sz}; e.mesh.rotation.y=Math.PI; e.mesh.position.set(instant?sl.x:door,0,instant?sl.sz:10); e.path=instant?[]:[[door,6.3],[sl.x,sl.sz]];}
+  else {const p=makeCustomerBot(o.seed); e.model=p; e.mesh=p.g; e.top=(p.top!==undefined?p.top:2.2+(p.lift||0)); e.stand={x:sl.x,z:sl.sz}; e.mesh.rotation.y=Math.PI; e.mesh.position.set(instant?sl.x:door,0,instant?sl.sz:10); e.path=instant?[]:[[door,6.3],[sl.x,sl.sz]];}
   if(instant){e.arrived=true;e.said=true}
   scene.add(e.mesh); scene.add(e.tray);
   e.bub=canvasTex(256,150,()=>{}); e.bubSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:e.bub.t,color:UIC(),transparent:true,depthWrite:false}));
@@ -1918,9 +1923,10 @@ function updateHeldRig(t){
 }
 
 /* ---------- camera ---------- */
+const EYE_H=1.85; /* first-person eye height (was 1.62) */
 function updateCamera(t){
   if(mode==='fps'){
-    camera.position.set(me.x,1.62+Math.abs(Math.sin(me.bob))*.035,me.z);
+    camera.position.set(me.x,EYE_H+Math.abs(Math.sin(me.bob))*.035,me.z);
     camera.rotation.set(me.pitch,me.yaw,0);
     setViewShift(0);
   } else {
