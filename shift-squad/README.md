@@ -2,7 +2,7 @@
 
 Play at https://ahamze123.github.io/shift-squad/
 
-A 3D jobs simulator in the browser. Pick one of four workplaces from the menu (Corner Shop, Bistro Kitchen, Downtown Office, Auto Garage). Grab what each robot customer asks for, work it at the station in the middle of the floor (scan, cook, label or inspect), then hand it over. There is no shift timer and no customer timer.
+A 3D jobs simulator in the browser. Pick one of eight workplaces from the menu (Corner Shop, Bistro Kitchen, Downtown Office, Auto Garage, Pizza Shop, Flower Shop, Ice Cream Parlor, Pet Salon). Grab what each robot customer asks for, work it at the station in the middle of the floor (scan, cook, label, inspect, bake, wrap, top with sundae toppings or wash), then hand it over. There is no shift timer and no customer timer.
 
 Bonus coins: at your station a bar slides back and forth. Press while it is in the green for a Perfect (back-to-back Perfects pay more, a miss costs nothing). Every station has its own sound: scanner beeps, a sizzling stove, printer chatter, a ratchet and clank. Coins fly up to your total, the end of a shift throws confetti, and you keep your best stars per workplace on the menu cards. In a room the host sets the pace (Relaxed, Normal or Busy), anyone can send emotes (keys 1 to 5 or the smiley button), and the end screen names the top coworker.
 
