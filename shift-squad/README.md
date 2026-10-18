@@ -12,6 +12,8 @@ The Shop: every shift's coins go into a bank saved on your device. Spend them un
 
 **Wall of fame**: when you take a photo with 📷 press **Pin to wall**. Pinned photos (up to 20, small copies) are kept on your device and shown under **Wall of fame** (main menu and break room), where you can open, save or remove them. In Town, a board in the fountain square shows your six latest photos, and you can press the button at it to open the wall.
 
+**Be a customer**: tap 🛒 (or press C) during a shift to swap your apron for a robot and order at the counter. Pick up to three of that shop's items, or tap **Surprise me**. A robot with your name on it (your Make-a-robot design if you made one) waits at a counter, the crew sees a ticket for it, and your coworkers serve you while you look around from the customer side. It works in all eight workplaces and in Town, where you first pick which shop. If nobody else is in that shop a helper robot serves you for half pay. You can cancel or go back to work at any time. There is no timer, and nobody leaves angry.
+
 Watch and photos: the 👁 button (or V) lets you orbit the workplace while you take a breather, and 📷 (or P) takes a polaroid photo with your coins, served count and stars that you can save or share.
 
 Main menu: **Host an online game** gives you a room code (and a link) to share, **Play solo** starts a shift right away, and friends enter a code under **Join**. **Settings** (music, song, sound effects, robot voices, graphics, automatic SD on slow phones, full screen, look speed, tips, and on phones a large Use button and vibration) is in the main menu and behind the gear button during a shift.
