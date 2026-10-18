@@ -215,6 +215,21 @@ kbd{font:800 12px/1 var(--f-body);background:var(--ink);color:#fff;border-radius
 body.spec #cross,body.spec #touch{display:none}
 #specBar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(16,32,60,.9);color:#fff;border-radius:16px;padding:10px 14px;font:700 13px/1.3 var(--f-body);text-align:center;max-width:calc(100% - 32px)}
 #specBar .btn{padding:10px 16px;font-size:13px}
+/* be a customer: the order panel at the bottom of the screen */
+body.cust #cross,body.cust #touch,body.cust #info,body.cust #emoBtn,body.cust #watchBtn,body.cust #petBtn,body.cust #callTemp,body.cust #emoRow{display:none}
+#custBar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(480px,calc(100% - 24px));display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(16,32,60,.92);color:#fff;border-radius:16px;padding:12px 14px;font:700 13px/1.35 var(--f-body);text-align:center}
+#custBar h3{margin:0;font:400 20px/1.1 var(--f-display);letter-spacing:.3px}
+#custBar .cnote{font-weight:600;opacity:.92}
+#custBar .crow{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+#custBar .cit{min-width:76px;padding:6px 8px 5px;border-radius:12px;border:3px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font:700 11px/1.1 var(--f-body)}
+#custBar .cit b{font-size:26px;line-height:1.1;font-weight:400}
+#custBar .cit[aria-pressed="true"]{background:var(--hivis);box-shadow:0 0 0 3px #fff}
+#custBar .cit:active{transform:translateY(2px)}
+#custBar .cmine{display:flex;gap:8px;font-size:30px;line-height:1}
+#custBar .cmine i{font-style:normal;padding:2px 6px;border-radius:10px;background:rgba(255,255,255,.14)}
+#custBar .cmine i.d{background:#23b26d}
+#custBar .btn{padding:10px 14px;font-size:13px}
+#custBar .btn[disabled]{opacity:.45;pointer-events:none}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:24}
 #flash.go{animation:shutter .35s ease-out}
 @keyframes shutter{0%{opacity:.85}100%{opacity:0}}
@@ -273,6 +288,7 @@ body.spec #cross,body.spec #touch{display:none}
         <button class="chip btnchip tap" id="emoBtn" aria-label="Emotes" title="Emotes (keys 1 to 5)">😀</button>
         <button class="chip btnchip tap" id="watchBtn" aria-label="Watch the room from above" title="Watch the room (V)">👁</button>
         <button class="chip btnchip tap" id="camBtn" aria-label="Take a photo" title="Take a photo (P)">📷</button>
+        <button class="chip btnchip tap" id="custBtn" aria-label="Be a customer" title="Be a customer (C)" hidden>🛒</button>
         <button class="chip btnchip temp tap" id="callTemp" aria-label="Call the fill-in robot">Call a fill-in</button>
         <button class="chip btnchip temp tap" id="petBtn" aria-label="Send your robot dog to fetch an item" title="Send your robot dog to fetch (R)" hidden>🐕 Fetch</button>
         <button class="chip btnchip temp tap" id="clockOut" aria-label="End the shift" hidden>Clock out</button>
@@ -283,6 +299,7 @@ body.spec #cross,body.spec #touch{display:none}
     <div id="hint" hidden></div>
     <div id="emoRow" hidden></div>
     <div id="specBar" class="tap" hidden><span>Watching the room. Drag to turn the view.</span><button class="btn" id="specBack" type="button">Back to work</button></div>
+    <div id="custBar" class="tap" hidden></div>
     <div id="info">
       <div id="say" hidden></div>
       <div id="held" hidden></div>
@@ -440,6 +457,7 @@ body.spec #cross,body.spec #touch{display:none}
         <li>A 👑 VIP robot orders more and pays double. A ⚡ speedy robot pays 50% extra if you finish quickly. Nobody ever leaves angry, so there is no penalty for being slow.</li>
         <li>Spend banked coins in the 🪙 Shop. Upgrades help only you. A robot dog fetches items for you (press R), and decorations are seen by everyone in the room.</li>
         <li>You can walk anywhere to help a coworker. Tap 👁 to watch the room from above, and 📷 to take a photo.</li>
+        <li>Tap 🛒 (or press C) to be a customer: pick up to three things and your crew serves you while you look around. In Town you pick the shop. If nobody else is there, a helper robot serves you for half pay.</li>
         <li>No timers anywhere. Customers wait as long as it takes, and the host clocks out when the crew is done.</li>
       </ol>
       <div class="note" id="ctrlNote"></div>
@@ -2503,14 +2521,14 @@ function trayBase(s){return !LVL.bay?{x:s.x,y:1.12,z:1.6,dx:.28}:{x:s.x,y:.02,z:
 function spawnEnt(s,o,instant){
   const sl=SLOTS[s], bay=LVL.bay, door=LVL.doorX;
   const rbt=roomBotOf(o.seed);
-  const e={slot:s,id:o.id,seed:o.seed,rb:rbt,x:-1,xg:0,bay,st:o.st,want:o.want||[],given:o.given||[],arrived:false,leaving:false,said:false,t0:performance.now(),key:'',trayKey:'',tray:new THREE.Group(),path:[],speed:bay?7:2.4,phase:rnd()*6};
+  const e={slot:s,id:o.id,seed:o.seed,rb:rbt,hc:!!o.hc,mine:!!o.mine,x:-1,xg:0,bay,st:o.st,want:o.want||[],given:o.given||[],arrived:false,leaving:false,said:false,t0:performance.now(),key:'',trayKey:'',tray:new THREE.Group(),path:[],speed:bay?7:2.4,phase:rnd()*6};
   if(bay){const c=makeCar(o.seed,rbt?rbt.d:null); e.model=c; e.mesh=c.g; e.mesh.rotation.y=Math.PI; e.top=2.7; e.stand={x:sl.x,z:sl.sz}; e.mesh.position.set(sl.x,0,instant?sl.sz:15); e.path=instant?[]:[[sl.x,sl.sz]];}
   else {const p=makeCustomerBot(o.seed); e.model=p; e.mesh=p.g; e.top=(p.top!==undefined?p.top:2.2+(p.lift||0)); e.stand={x:sl.x,z:sl.sz}; e.mesh.rotation.y=Math.PI; e.mesh.position.set(instant?sl.x:door,0,instant?sl.sz:10); e.path=instant?[]:[[door,6.3],[sl.x,sl.sz]];}
   if(instant){e.arrived=true;e.said=true}
   scene.add(e.mesh); scene.add(e.tray);
   e.bub=canvasTex(256,150,()=>{}); e.bubSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:e.bub.t,color:UIC(),transparent:true,depthWrite:false}));
   e.bubSprite.scale.set(2.0,1.17,1); e.bubSprite.visible=false; scene.add(e.bubSprite);
-  if(rbt){ e.tag=nameTag(rbt.nm+"'s bot",cssHex(BOT_BODY[rbt.d.b]),0); e.tag.visible=false; scene.add(e.tag); }
+  if(rbt){ e.tag=nameTag(rbt.nm+(o.hc?' · customer':"'s bot"),cssHex(BOT_BODY[rbt.d.b]),0); e.tag.visible=false; scene.add(e.tag); }
   return e;
 }
 function freeEnt(e){
@@ -2629,8 +2647,10 @@ function reconcile(w){
     if(!e){
       if(w.p===2)continue;
       const instant=fresh&&(o.st===1||o.g.length>0);
-      e=spawnEnt(o.s,{id:o.id,seed:o.seed,st:o.st,want:o.w,given:o.g},instant);
+      const mineO=!!(o.hc&&o.own===myLabel);
+      e=spawnEnt(o.s,{id:o.id,seed:o.seed,st:o.st,want:o.w,given:o.g,hc:o.hc,mine:mineO},instant||mineO);
       ents.set(o.s,e);
+      if(o.hc&&!mineO&&!instant){ const pv=viewers.find(p=>p.peer===o.own); popAt(((pv&&cleanName(pv.presence.nm))||'A coworker')+' is ordering!',SLOTS[o.s].x,2.9,SLOTS[o.s].sz,false); if(LV<TOWN)SFX.ding(); }
       if(e.rb&&!instant&&ROBOT.on&&e.rb.code===botCode(ROBOT)&&e.rb.nm===String(myName).slice(0,12))popAt('Your robot is here!',SLOTS[o.s].x,2.9,SLOTS[o.s].sz,false);
       if(!instant&&SLOTS[o.s].z===myJob){ SFX.ding(); if(o.ty===1)announce('A VIP robot is at '+SLOTS[o.s].name+'. Double pay!','greet'); else if(o.ty===2)announce('A speedy robot is at '+SLOTS[o.s].name+'. Quick service earns a bonus.','greet'); }
     }
@@ -2695,6 +2715,7 @@ function stepEnt(e,dt,t){
   if(show)e.bubSprite.position.set(e.mesh.position.x,e.top+.55,e.mesh.position.z);
   if(e.tag){ e.tag.visible=show||!e.leaving; e.tag.position.set(e.mesh.position.x,e.top+1.38,e.mesh.position.z); if(e.leaving&&performance.now()-e.t1>1500)e.tag.visible=false; }
   if(e.badge){ e.badge.sp.visible=!e.leaving; e.badge.sp.position.set(e.mesh.position.x,e.top+.2+Math.sin(t*3+e.phase)*.04,e.mesh.position.z); }
+  if(e.mine){ e.mesh.visible=false; e.bubSprite.visible=false; if(e.tag)e.tag.visible=false; if(e.badge)e.badge.sp.visible=false; } /* you are the customer: no robot in front of your own eyes */
 }
 
 /* ---------- helper robots: foreman announcements and the fill-in ---------- */
@@ -2772,7 +2793,7 @@ function filteredRoom(room,code){
     peers:()=>room.peers().filter(p=>p.presence&&p.presence.rc===code),
     presence:(patch)=>room.presence(Object.assign({rc:code},patch)),
     onPeers:(h)=>room.onPeers(h), connected:()=>room.connected(),
-    leave:()=>room.presence({rc:null,hi:null,p:null,w:null,a:null,dc:null,pt:null,rb:null,sc:null,ar:null})
+    leave:()=>room.presence({rc:null,hi:null,p:null,w:null,a:null,dc:null,pt:null,rb:null,sc:null,ar:null,cu:null})
   };
 }
 /* Online rooms outside Claude (GitHub Pages and so on): peer-to-peer over WebRTC with Trystero. Players find each other through public
@@ -2856,7 +2877,7 @@ async function leaveRoom(){
   const r=rm; rm=null; const wasTown=!!W&&W.lv===TOWN;
   try{ if(r&&r.leave) await r.leave(); }catch(e){}
   for(const a of avatars.values())scene.remove(a.g); avatars.clear();
-  clearEnts(); ROOM_BOTS.length=0; rbKey=''; G=null; W=null; lastWorld=null; isHost=false; viewers=[]; ui='start'; mode='orbit'; prevP=-1; shownW=null; soloAuto=false; soloMode=false; settingsOpen=false; toggleSpec(false); closeShot(); shopOpen=false; robotOpen=false; lastWLv=-1; if(wasTown&&LV!==TOWN)setLevel(TOWN);
+  clearEnts(); ROOM_BOTS.length=0; rbKey=''; G=null; W=null; lastWorld=null; isHost=false; viewers=[]; ui='start'; mode='orbit'; prevP=-1; shownW=null; soloAuto=false; soloMode=false; settingsOpen=false; toggleSpec(false); custReset(); closeShot(); shopOpen=false; robotOpen=false; lastWLv=-1; if(wasTown&&LV!==TOWN)setLevel(TOWN);
   if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
   $('startStatus').textContent=''; refreshLevelButtons(); showScreens();
 }
@@ -2869,7 +2890,7 @@ function projectW(gw){
 }
 function setWorld(gw){ lastWorld=gw; W=projectW(gw); }
 const townWait=k=>lastWorld?lastWorld.o.filter(o=>(o.s>>2)===k&&o.st<2).length:0;
-function newG(){return {lv:Math.max(0,LV),er:1,v:0,p:0,t:0,sc:0,sv:0,nid:1,o:[],ack:{},spawnIn:1.2,endT:3,tb:null,tbCool:0,df:1,pc:{},bn:{},rb:[],rbLast:{}}}
+function newG(){return {lv:Math.max(0,LV),er:1,v:0,p:0,t:0,sc:0,sv:0,nid:1,o:[],ack:{},spawnIn:1.2,endT:3,tb:null,tbCool:0,df:1,pc:{},bn:{},rb:[],rbLast:{},cq:[],cuN:{}}}
 /* the robots designed by players: the host lists them in the world, an order with seed BOT_SEED+k shows entry k */
 let rbKey='';
 function syncRoomBots(rb){
@@ -2877,20 +2898,25 @@ function syncRoomBots(rb){
   ROOM_BOTS.length=0;
   if(Array.isArray(rb))for(const a of rb)ROOM_BOTS.push(a?{d:botFromCode(a[0]),nm:a[1]||'Robot',code:a[0]}:null);
 }
+/* the index of a design in the room's robot list, adding it when it is new (a free place, or the least recently used one that is not in an order) */
+function hostBotSlot(c,nm){
+  let i=G.rb.findIndex(a=>a&&a[0]===c&&a[1]===nm);
+  if(i>=0)return i;
+  i=G.rb.findIndex(a=>!a);
+  if(i<0&&G.rb.length<40)i=G.rb.length;
+  if(i<0){ const busy=new Set(G.o.map(o=>o.seed-BOT_SEED)); let best=-1; G.rb.forEach((a,j)=>{ if(busy.has(j))return; if(best<0||(G.rbLast[j]||0)<(G.rbLast[best]||0))best=j; }); i=best; }
+  if(i<0)return -1;
+  G.rb[i]=[c,nm]; delete G.rbLast[i];
+  return i;
+}
 function hostBotsActive(){
-  const act=[], busy=new Set(G.o.map(o=>o.seed-BOT_SEED));
+  const act=[];
   for(const v of viewers){
     const pr=v.presence, c=pr&&pr.rb;
     if(!Number.isInteger(c)||c<0||c>=BOT_CODES)continue;
     const nm=String(pr.nm==null?'Player':pr.nm).slice(0,12);
-    let i=G.rb.findIndex(a=>a&&a[0]===c&&a[1]===nm);
-    if(i<0){
-      i=G.rb.findIndex(a=>!a);
-      if(i<0&&G.rb.length<40)i=G.rb.length;
-      if(i<0){ let best=-1; G.rb.forEach((a,j)=>{ if(busy.has(j))return; if(best<0||(G.rbLast[j]||0)<(G.rbLast[best]||0))best=j; }); i=best; }
-      if(i<0)continue;
-      G.rb[i]=[c,nm]; delete G.rbLast[i];
-    }
+    const i=hostBotSlot(c,nm);
+    if(i<0)continue;
     if(act.indexOf(i)<0)act.push(i);
   }
   return act;
@@ -2912,7 +2938,8 @@ function parseW(w){
     const s=a[1]|0; if(s<0||s>=nSlots)continue;
     let x=-1, xg=0;
     if(out.lv===TOWN&&Number.isInteger(a[7])&&a[7]>=1&&a[7]<=ITEMS.length&&((a[7]-1)>>2)!==(s>>2)){ x=a[7]-1; xg=a[8]?1:0; }
-    out.o.push({id:a[0]|0,s:s,w:ok(a[2]),g:ok(a[3]),st:clamp(a[5]|0,0,3),seed:a[6]|0,ty:(a[4]===1||a[4]===2||a[4]===3)?a[4]:0,x:x,xg:xg});
+    const hc=a[9]===1&&typeof a[10]==='string'&&a[10].length>0&&a[10].length<=64;
+    out.o.push({id:a[0]|0,s:s,w:ok(a[2]),g:ok(a[3]),st:clamp(a[5]|0,0,3),seed:a[6]|0,ty:(a[4]===1||a[4]===2||a[4]===3)?a[4]:0,x:x,xg:xg,hc:hc?1:0,own:hc?a[10]:''});
   }
   if(w.k&&typeof w.k==='object')for(const key in w.k)out.k[key]=w.k[key]|0;
   return out;
@@ -2922,7 +2949,7 @@ function becomeHost(){
   if(lastWorld){
     G.lv=lastWorld.lv; G.er=lastWorld.er; G.v=lastWorld.v; G.p=lastWorld.p; G.t=lastWorld.t; G.sc=lastWorld.sc; G.sv=lastWorld.sv;
     G.ack=Object.assign({},lastWorld.k); G.spawnIn=3; G.endT=3; G.df=lastWorld.df; G.pc={}; for(const key in lastWorld.pc)G.pc[key]=lastWorld.pc[key].slice();
-    G.o=lastWorld.o.map(o=>({id:o.id,s:o.s,w:o.w.slice(),g:o.g.slice(),st:o.st,seed:o.seed,rm:o.st>=2?2:0,ty:o.ty,x:o.x,xg:o.xg,t0:G.t}));
+    G.o=lastWorld.o.map(o=>({id:o.id,s:o.s,w:o.w.slice(),g:o.g.slice(),st:o.st,seed:o.seed,rm:o.st>=2?2:0,ty:o.ty,x:o.x,xg:o.xg,t0:G.t,hc:o.hc?1:0,own:o.hc?o.own:''}));
     G.nid=lastWorld.o.reduce((m,o)=>Math.max(m,o.id+1),1);
     G.rb=lastWorld.rb.map(a=>a?a.slice():null);
     if(lastWorld.tb[0]>=0&&lastWorld.p===1)G.tb={z:lastWorld.tb[0],t:Math.max(5,lastWorld.tb[1]),tick:1.5};
@@ -3005,7 +3032,7 @@ function pcOf(label){
 }
 const errandPay=item=>Math.round(JOBS[item>>2].pay*1.5)+8;
 function ringOrder(o){
-  const mult=o.ty===1?2:(o.ty===2?1.5:1); /* VIP double; speedy only while its bonus is still on (type 3 = bonus over) */
+  const mult=(o.ty===1?2:(o.ty===2?1.5:1))*(o.half?.5:1); /* VIP double; speedy only while its bonus is still on (type 3 = bonus over); a helper robot serving a lone customer pays half */
   G.sc+=Math.round(JOBS[G.lv===TOWN?(o.s>>2):SLOTS[o.s].z].pay*o.w.length*mult); G.sv++; o.st=2; o.rm=2.6;
 }
 function tempWork(){
@@ -3014,6 +3041,53 @@ function tempWork(){
   if(o){ ringOrder(o); return; }
   o=G.o.filter(o=>o.st===0&&SLOTS[o.s].z===z).sort((a,b)=>a.id-b.id)[0];
   if(o){ const need=o.w.find(x=>o.g.indexOf(x)<0); if(need!==undefined){ o.g.push(need); if(o.g.length===o.w.length)o.st=1; } }
+}
+/* Be a customer. A player asks for an order through their presence: cu = [serial, shop, item mask, robot design]; shop -1 means "just looking" or "cancel".
+   The host seats them at a free counter (waiting in a short queue when all four are busy), cancels the order when they go back to work or leave,
+   and when nobody else is in that shop a helper robot serves them, for half pay. */
+function hostFreeSlot(z){
+  const used=new Set(G.o.map(o=>o.s)), base=G.lv===TOWN?z*4:0;
+  const free=[0,1,2,3].map(i=>base+i).filter(i=>!used.has(i));
+  return free.length?pick(free):-1;
+}
+function hostCustomers(dt){
+  if(G.p!==1){ G.cq.length=0; return; }
+  const by=new Map(viewers.map(p=>[p.peer,p]));
+  const live=p=>{ const cu=p&&p.presence&&p.presence.cu; return Array.isArray(cu)&&Number.isInteger(cu[1])&&cu[1]>=0; };
+  for(const k of Object.keys(G.cuN))if(!by.has(k))delete G.cuN[k];
+  G.o=G.o.filter(o=>!(o.hc&&o.st<2&&!live(by.get(o.own))));
+  G.cq=G.cq.filter(q=>live(by.get(q.who)));
+  for(const p of viewers){
+    const cu=p.presence&&p.presence.cu; if(!Array.isArray(cu)||cu.length<4)continue;
+    const n=cu[0], z=cu[1], mask=cu[2], code=cu[3];
+    if(!Number.isInteger(n)||!(n>(G.cuN[p.peer]||0)))continue;
+    G.cuN[p.peer]=n;
+    if(!Number.isInteger(z)||z<0||!Number.isInteger(mask))continue;
+    if(G.o.some(o=>o.hc&&o.own===p.peer&&o.st<2)||G.cq.some(q=>q.who===p.peer))continue;
+    const sz=G.lv===TOWN?z:G.lv; if(sz<0||sz>=TOWN)continue;
+    const w=[]; for(let i=0;i<4&&w.length<3;i++)if((mask>>i)&1)w.push(sz*4+i);
+    if(!w.length)continue;
+    G.cq.push({who:p.peer,z:sz,w:w,code:(Number.isInteger(code)&&code>=0&&code<BOT_CODES)?code:0,nm:String(p.presence.nm==null?'Player':p.presence.nm).slice(0,12)});
+  }
+  for(let qi=0;qi<G.cq.length;){
+    const q=G.cq[qi], s=hostFreeSlot(q.z);
+    if(s<0){ qi++; continue; }
+    const bi=hostBotSlot(q.code,q.nm);
+    G.cq.splice(qi,1);
+    if(bi<0)continue;
+    G.o.push({id:G.nid++,s:s,w:q.w,g:[],st:0,seed:BOT_SEED+bi,rm:0,ty:0,x:-1,xg:0,t0:G.t,hc:1,own:q.who});
+  }
+  for(const o of G.o){
+    if(!o.hc||o.st>=2)continue;
+    const k=G.lv===TOWN?(o.s>>2):-1;
+    let others=0; for(const p of viewers){ if(p.peer===o.own)continue; if(k>=0&&p.presence.ar!==k)continue; others++; }
+    if(others>0){ o.ha=3; continue; }
+    o.ha=(o.ha===undefined?3:o.ha)-dt;
+    if(o.ha>0)continue;
+    o.ha=2.4;
+    if(o.st===1){ o.half=1; ringOrder(o); }
+    else { const need=o.w.find(x=>o.g.indexOf(x)<0); if(need!==undefined){ o.g.push(need); if(o.g.length===o.w.length)o.st=1; } }
+  }
 }
 function hostReadActions(){
   for(const p of viewers){
@@ -3037,6 +3111,7 @@ function hostSim(dt){
       if(G.tb.t<=0){ G.tb=null; G.tbCool=25; }
     }
     G.spawnIn-=dt;
+    if(G.spawnIn<=0&&G.cq.length)G.spawnIn=.8; /* a customer is waiting for a free counter: let one open up first */
     if(G.spawnIn<=0){
       const made=spawnOrder();
       const base=lerp(9,6,clamp(G.t/RAMP,0,1));
@@ -3047,7 +3122,11 @@ function hostSim(dt){
   }
 }
 function publishWorld(){
-  const o=G.o.map(o=>G.lv===TOWN?[o.id,o.s,o.w,o.g,o.ty|0,o.st,o.seed,o.x+1,o.xg|0]:[o.id,o.s,o.w,o.g,o.ty|0,o.st,o.seed]);
+  const o=G.o.map(o=>{
+    const a=G.lv===TOWN?[o.id,o.s,o.w,o.g,o.ty|0,o.st,o.seed,o.x+1,o.xg|0]:[o.id,o.s,o.w,o.g,o.ty|0,o.st,o.seed];
+    if(o.hc){ while(a.length<9)a.push(0); a.push(1,o.own); }
+    return a;
+  });
   const live=new Set(viewers.map(p=>p.peer)); for(const k of Object.keys(G.ack))if(!live.has(k))delete G.ack[k];
   const body={lv:G.lv,p:G.p,t:Math.floor(G.t/5)*5,sc:G.sc,sv:G.sv,o:o,k:G.ack,tb:G.tb?[G.tb.z,Math.ceil(G.tb.t),0]:[-1,0,Math.ceil(G.tbCool)],df:G.df,er:G.er,pc:G.pc,rb:G.rb};
   const str=JSON.stringify(body);
@@ -3059,7 +3138,7 @@ function publishWorld(){
 }
 function startShift(){
   if(!isHost||!G)return;
-  G.p=1; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.spawnIn=1.2; G.tb=null; G.tbCool=0; G.pc={}; G.bn={}; publishWorld();
+  G.p=1; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.cq=[]; G.spawnIn=1.2; G.tb=null; G.tbCool=0; G.pc={}; G.bn={}; publishWorld();
 }
 function endShift(){
   if(!isHost||!G||G.p!==1)return;
@@ -3067,7 +3146,7 @@ function endShift(){
 }
 function toLobby(){
   if(!isHost||!G)return;
-  G.p=0; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.tb=null; G.tbCool=0; G.pc={}; G.bn={}; publishWorld();
+  G.p=0; G.t=0; G.sc=0; G.sv=0; G.o=[]; G.cq=[]; G.tb=null; G.tbCool=0; G.pc={}; G.bn={}; publishWorld();
 }
 function sendAct(k,slot,item){
   if(W&&W.lv===TOWN&&(k===1||k===2)&&LV<TOWN)slot+=LV*4;
@@ -3095,7 +3174,7 @@ function netTick(){
   if(isHost&&!holders.includes(myLabel)){ becomeHost(); }
   if(!isHost&&myLabel&&holders.includes(myLabel)){ rm.presence({w:null}).catch(()=>{}); G=null; }
   if(isHost&&G){
-    hostReadActions(); hostSim(dt); publishWorld();
+    hostReadActions(); hostCustomers(dt); hostSim(dt); publishWorld();
   } else if(hostLabel){
     const hp=viewers.find(p=>p.peer===hostLabel);
     if(hp&&hp.presence.w){ const pw=hp.presence.w; if(!W||W.v!==(pw.v|0)||!lastWorld){ const nw=parseW(pw); if(nw)setWorld(nw); } }
@@ -3136,6 +3215,7 @@ function syncAvatars(){
   for(const p of viewers){
     if(p.isMe&&p.sameTab)continue;
     const pr=p.presence; const pp=pr.p; if(!Array.isArray(pp)||pp.length<5)continue;
+    if(pr.cu)continue; /* at the counter as a customer: the robot there is them */
     if(W&&W.lv===TOWN&&Number.isInteger(pr.ar)&&pr.ar!==LV)continue;
     live.add(p.peer);
     let a=avatars.get(p.peer);
@@ -3244,7 +3324,7 @@ function petHandOver(){
 }
 function petArrive(d){ if(me.carry<0)petHandOver(); }
 function petFetch(){
-  const d=myPet; if(!d||mode!=='fps'||!W||W.p!==1)return;
+  const d=myPet; if(!d||CU.on||mode!=='fps'||!W||W.p!==1)return;
   if(LV>=TOWN){ fsToast('Your dog fetches inside the shops.'); return; }
   if(d.route.length)return;
   if(d.bag.length&&me.carry<0){ if(petHandOver())return; }
@@ -3308,10 +3388,11 @@ const joy={x:0,y:0,id:null};
 let look=null, locked=false;
 function typing(){const a=document.activeElement;return a&&a.tagName==='INPUT'}
 addEventListener('keydown',e=>{
-  if(e.code==='Escape'){ if(wallOpen){ if(wallSel>=0)wallBack(); else closeWall(); return } if(shotOpen){closeShot();return} if(shopOpen){closeShop();return} if(robotOpen){closeRobot();return} if(settingsOpen){closeSettings();return} if(ui==='room'&&W&&W.p===1){openSettings();return} }
+  if(e.code==='Escape'){ if(wallOpen){ if(wallSel>=0)wallBack(); else closeWall(); return } if(shotOpen){closeShot();return} if(shopOpen){closeShop();return} if(robotOpen){closeRobot();return} if(settingsOpen){closeSettings();return} if(CU.on){custLeave();return} if(ui==='room'&&W&&W.p===1){openSettings();return} }
   if(typing()||settingsOpen||shotOpen||wallOpen)return;
   if(e.code==='KeyV'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&mode==='fps'){ toggleSpec(!spec); return; }
   if(e.code==='KeyP'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&ui==='room'){ takePhoto(); return; }
+  if(e.code==='KeyC'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&ui==='room'){ if(CU.on)custLeave(); else custEnter(); return; }
   keys[e.code]=true;
   if(e.code==='KeyE'||e.code==='Space'){e.preventDefault();doInteract()}
   if(e.code==='KeyQ')doDrop();
@@ -3321,12 +3402,12 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
-function addLook(dx,dy,s){s*=S.look; if(spec){ specA-=dx*s*.9; specH=clamp(specH+dy*s*.55,.55,1.7); return; } me.yaw-=dx*s; me.pitch=clamp(me.pitch-dy*s,-1.25,1.25)}
+function addLook(dx,dy,s){s*=S.look; if(spec){ specA-=dx*s*.9; specH=clamp(specH+dy*s*.55,.55,1.7); return; } me.yaw-=dx*s; me.pitch=clamp(me.pitch-dy*s,-1.25,1.25); if(CU.on){ me.yaw=clamp(me.yaw,-1.5,1.5); me.pitch=clamp(me.pitch,-.7,.6); } }
 view.addEventListener('pointerdown',e=>{
   audio();
   if(mode!=='fps')return;
   if(e.pointerType==='mouse'){
-    if(!spec&&!document.pointerLockElement&&view.requestPointerLock){try{const r=view.requestPointerLock();if(r&&r.catch)r.catch(()=>{})}catch(_){}}
+    if(!spec&&!CU.on&&!document.pointerLockElement&&view.requestPointerLock){try{const r=view.requestPointerLock();if(r&&r.catch)r.catch(()=>{})}catch(_){}}
   }
   if(look)return;
   look={id:e.pointerId,x:e.clientX,y:e.clientY,touch:e.pointerType!=='mouse'};
@@ -3403,7 +3484,7 @@ function doDrop(){ if(mode==='fps'&&!spec&&me.carry>=0){me.carry=-1;SFX.drop()} 
 let emoN=0, emoLast=0;
 function sendEmote(i){
   const now=performance.now();
-  if(ui!=='room'||!W||W.p!==1||!rm||now-emoLast<900||!(i>=0&&i<EMOTES.length))return;
+  if(ui!=='room'||CU.on||!W||W.p!==1||!rm||now-emoLast<900||!(i>=0&&i<EMOTES.length))return;
   emoLast=now; emoN++;
   rm.presence({em:[i,emoN]}).catch(()=>{});
   SFX.pop(); buzz(12); $('emoRow').hidden=true;
@@ -3412,10 +3493,137 @@ function sendEmote(i){
 /* watch the room from above without leaving your spot; Back to work returns you to first person */
 function toggleSpec(on){
   on=!!on; if(on===spec)return;
-  if(on&&!(ui==='room'&&W&&W.p===1&&mode==='fps'))return;
+  if(on&&(CU.on||!(ui==='room'&&W&&W.p===1&&mode==='fps')))return;
   spec=on; document.body.classList.toggle('spec',on); $('specBar').hidden=!on; me.vx=me.vz=0; me.work=null;
   $('watchBtn').textContent=on?'🏃':'👁'; $('watchBtn').setAttribute('aria-label',on?'Back to work':'Watch the room from above');
   if(on){ specA=0; specH=1; $('emoRow').hidden=true; if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock(); }
+}
+/* ---------- be a customer: swap the apron for a robot, order at the counter and let the crew serve you ---------- */
+const CU={on:false,n:0,st:'pick',z:-1,sel:0,seen:false,seat:false,skip:-1,oid:-1,sentAt:0,key:''};
+const custOpen=()=>ui==='room'&&!!W&&W.p===1&&!!rm&&!!myLabel;
+const custCount=m=>(m&1)+((m>>1)&1)+((m>>2)&1)+((m>>3)&1);
+/* your own robot design if you made one, otherwise one built from your name and badge color */
+function custCode(){
+  if(ROBOT.set)return botCode(ROBOT);
+  let h=7; const nm=String(myName||'Player'); for(let i=0;i<nm.length;i++)h=(h*31+nm.charCodeAt(i))>>>0;
+  return botCode({b:clamp(myCol|0,0,BOT_BODY.length-1),f:h%BOT_EYE.length,s:(h>>>3)%BOT_SHAPES.length,t:(h>>>6)%BOT_TOPS.length});
+}
+function custSend(z,mask){
+  if(!rm)return;
+  CU.n=Math.max(CU.n+1,(Date.now()/1000)|0); CU.sentAt=performance.now(); CU.z=z;
+  rm.presence({cu:[CU.n,z,mask|0,custCode()]}).catch(()=>{});
+}
+function custStand(x){ /* the customer side of the counter, facing the crew */
+  me.x=clamp(x,-LVL.hw+1.5,LVL.hw-1.5); me.z=LVL.slots[0].sz+.2; me.yaw=0; me.pitch=-.04; me.vx=me.vz=0; CU.seat=true;
+}
+function custBtnSync(){ const b=$('custBtn'); b.textContent=CU.on?'🏃':'🛒'; b.setAttribute('aria-label',CU.on?'Back to work':'Be a customer'); b.title=CU.on?'Back to work (C)':'Be a customer (C)'; }
+function custEnter(){
+  if(CU.on||spec||mode!=='fps'||!custOpen())return;
+  CU.on=true; CU.st='pick'; CU.sel=0; CU.seen=false; CU.seat=false; CU.skip=-1; CU.oid=-1; CU.key='';
+  document.body.classList.add('cust'); me.carry=-1; me.proc=0; me.taps=0; me.work=null; me.vx=me.vz=0;
+  for(const k in keys)keys[k]=false; joy.x=joy.y=0;
+  if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
+  if(LV<TOWN)custStand(0);
+  custSend(-1,0); custBtnSync(); SFX.tap(2); custRender();
+}
+function custLeave(){
+  if(!CU.on)return;
+  CU.on=false; document.body.classList.remove('cust'); $('custBar').hidden=true; CU.key='';
+  if(rm)rm.presence({cu:null}).catch(()=>{});
+  if(CU.seat&&mode==='fps'&&LV<TOWN)spawnPoint();
+  CU.seat=false; custBtnSync();
+}
+function custReset(){ CU.on=false; CU.st='pick'; CU.seat=false; CU.seen=false; CU.key=''; document.body.classList.remove('cust'); $('custBar').hidden=true; custBtnSync(); }
+function custToggle(i){
+  if(!CU.on||CU.st!=='pick'||LV>=TOWN)return;
+  const b=1<<i;
+  if(CU.sel&b)CU.sel&=~b; else if(custCount(CU.sel)<3)CU.sel|=b; else { fsToast('Three items at most.'); return; }
+  SFX.tap(1); custRender();
+}
+function custOrder(){
+  if(!CU.on||CU.st!=='pick'||!CU.sel||LV>=TOWN)return;
+  CU.st='wait'; CU.seen=false; custSend(LV,CU.sel); SFX.give(); buzz(18); custRender();
+}
+function custSurprise(){
+  if(!CU.on||CU.st!=='pick'||LV>=TOWN)return;
+  const n=1+(rnd()<.5?1:0)+(rnd()<.2?1:0); let m=0; while(custCount(m)<n)m|=1<<Math.floor(rnd()*4);
+  CU.sel=m; custOrder();
+}
+function custCancel(){ if(!CU.on||CU.st!=='wait')return; CU.st='pick'; CU.seen=false; custSend(-1,0); SFX.drop(); custRender(); }
+function custAgain(){ if(!CU.on||CU.st!=='done')return; CU.st='pick'; CU.sel=0; CU.seen=false; SFX.tap(2); custRender(); }
+function custShop(k){
+  if(!CU.on||LV!==TOWN||!(k>=0&&k<TOWN))return;
+  enterShop(k); custStand(0); CU.st='pick'; CU.sel=0; CU.seen=false; custRender();
+}
+function custOtherShop(){ if(!CU.on||LV>=TOWN||CU.st==='wait')return; exitShop(); CU.seat=false; CU.st='pick'; CU.sel=0; custRender(); }
+function custDone(id){ CU.st='done'; CU.skip=id; CU.seen=false; custSend(-1,0); custRender(); }
+function custAlone(){
+  if(!W)return true;
+  for(const p of viewers){ if(p.peer===myLabel)continue; if(W.lv===TOWN&&p.presence.ar!==LV)continue; return false; }
+  return true;
+}
+function custTick(){
+  if(!CU.on)return;
+  if(!custOpen()||mode!=='fps'){ custLeave(); return; }
+  if(CU.st==='wait'){
+    const mine=W.o.filter(o=>o.hc&&o.own===myLabel), open=mine.find(o=>o.st<2);
+    if(open){ if(!CU.seen){ CU.seen=true; CU.oid=open.id; const sl=SLOTS[open.s]; if(sl)custStand(sl.x); SFX.ding(); } }
+    else {
+      const paid=mine.find(o=>o.st===2&&o.id!==CU.skip);
+      if(paid)custDone(paid.id);
+      else if(CU.seen)custDone(CU.oid);
+      else if(performance.now()-CU.sentAt>4000)custSend(CU.z,CU.sel); /* the host may have changed: ask again, it ignores a repeat */
+    }
+  }
+  custRender();
+}
+function custRender(){
+  const bar=$('custBar');
+  if(!CU.on){ bar.hidden=true; return; }
+  const town=LV===TOWN;
+  const mine=W?W.o.filter(o=>o.hc&&o.own===myLabel):[];
+  const open=CU.st==='wait'?mine.find(o=>o.st<2):null;
+  const alone=custAlone();
+  const key=[CU.st,LV,CU.sel,alone?1:0,open?open.w.join('.')+'/'+open.g.join('.')+'/'+open.st:'-'].join('|');
+  if(key===CU.key&&!bar.hidden)return;
+  CU.key=key; bar.hidden=false; bar.textContent='';
+  const el=(tag,cls,txt)=>{ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!==undefined)e.textContent=txt; return e; };
+  const btn=(label,cls,fn,dis)=>{ const b=el('button','btn'+(cls?' '+cls:''),label); b.type='button'; if(dis)b.disabled=true; b.addEventListener('click',()=>{ audio(); fn(); }); return b; };
+  const row=()=>el('div','crow');
+  if(CU.st==='pick'&&town){
+    bar.appendChild(el('h3','ctitle','Which shop?'));
+    const r=row();
+    for(let k=0;k<TOWN;k++){ const b=el('button','cit'); b.type='button'; b.appendChild(el('b','',JOBS[k].e)); b.appendChild(document.createTextNode(TOWN_SHORT[k])); b.addEventListener('click',()=>{ audio(); custShop(k); }); r.appendChild(b); }
+    bar.appendChild(r);
+    bar.appendChild(el('div','cnote','Pick a counter to order at. The crew in that shop serves you.'));
+    const r2=row(); r2.appendChild(btn('Back to work','alt',custLeave)); bar.appendChild(r2);
+  } else if(CU.st==='pick'){
+    bar.appendChild(el('h3','ctitle','What would you like?'));
+    const r=row();
+    for(let i=0;i<4;i++){ const it=ITEMS[LV*4+i], b=el('button','cit'); b.type='button'; b.setAttribute('aria-pressed',((CU.sel>>i)&1)?'true':'false'); b.appendChild(el('b','',it.e)); b.appendChild(document.createTextNode(it.n)); b.addEventListener('click',()=>{ audio(); custToggle(i); }); r.appendChild(b); }
+    bar.appendChild(r);
+    const c=custCount(CU.sel);
+    bar.appendChild(el('div','cnote',c?(c+' of 3 chosen. Your crew will bring it.'):'Tap up to three things, then order.'));
+    const r2=row();
+    r2.appendChild(btn('Order','',custOrder,!c)); r2.appendChild(btn('Surprise me','alt',custSurprise));
+    if(W&&W.lv===TOWN)r2.appendChild(btn('Other shop','alt',custOtherShop));
+    r2.appendChild(btn('Back to work','alt',custLeave));
+    bar.appendChild(r2);
+  } else if(CU.st==='wait'){
+    if(!open){
+      bar.appendChild(el('h3','ctitle','Getting in line...'));
+      bar.appendChild(el('div','cnote','The counter is full for a moment. You are next.'));
+    } else {
+      bar.appendChild(el('h3','ctitle','Your order'));
+      const m=el('div','cmine'); for(const id of open.w)m.appendChild(el('i',open.g.indexOf(id)>=0?'d':'',ITEMS[id].e)); bar.appendChild(m);
+      bar.appendChild(el('div','cnote',open.st===1?'Everything is ready. Waiting for the hand over.':(alone?'Nobody else is here, so a helper robot is serving you.':'Your crew is on it. Look around while you wait.')));
+    }
+    const r2=row(); r2.appendChild(btn(open?'Cancel order':'Cancel','alt',custCancel)); r2.appendChild(btn('Back to work','alt',custLeave)); bar.appendChild(r2);
+  } else {
+    bar.appendChild(el('h3','ctitle','Thank you!'));
+    bar.appendChild(el('div','cnote','Order complete. The shift earned coins from it.'));
+    const r2=row(); r2.appendChild(btn('Order again','',custAgain)); r2.appendChild(btn('Back to work','alt',custLeave)); bar.appendChild(r2);
+  }
 }
 /* photo: a polaroid of what the camera sees, with your shift on the caption */
 let shotReq=false, shotUrl='', shotFile=null, shotBlob=null;
@@ -3533,7 +3741,7 @@ function findTarget(){
 }
 
 function updateMe(dt,t){
-  if(mode!=='fps'||spec){me.vx=me.vz=0;me.mv=0;return}
+  if(mode!=='fps'||spec||CU.on){me.vx=me.vz=0;me.mv=0;return}
   let ix=0,iz=0;
   if(settingsOpen||shotOpen||wallOpen){ for(const k in keys)keys[k]=false; joy.x=joy.y=0; }
   if(keys.KeyD||keys.ArrowRight)ix+=1; if(keys.KeyA||keys.ArrowLeft)ix-=1;
@@ -3623,7 +3831,7 @@ function drawTownMini(){
     if(n){ g.fillStyle='#fff'; g.beginPath(); g.arc(sx(shopDoorX(k)),k<4?sz(-5):sz(5),3.2,0,7); g.fill(); g.lineWidth=1.2; g.strokeStyle='#10203c'; g.stroke(); }
   }
   for(const p of viewers){
-    if(p.isMe&&p.sameTab)continue; const pp=p.presence.p; if(!Array.isArray(pp)||p.presence.ar!==TOWN)continue;
+    if(p.isMe&&p.sameTab||p.presence.cu)continue; const pp=p.presence.p; if(!Array.isArray(pp)||p.presence.ar!==TOWN)continue;
     g.beginPath(); g.arc(sx(+pp[0]||0),sz(+pp[1]||0),2.6,0,7); g.fillStyle=PCSS[clamp((p.presence.col|0),0,5)]; g.fill(); g.strokeStyle='#10203c'; g.lineWidth=1.2; g.stroke();
   }
   const mx=sx(me.x), mz=sz(me.z);
@@ -3645,7 +3853,7 @@ function drawMini(){
     g.lineWidth=1.2; g.strokeStyle='#10203c'; g.stroke();
   });
   for(const p of viewers){
-    if(p.isMe&&p.sameTab)continue; const pp=p.presence.p; if(!Array.isArray(pp))continue;
+    if(p.isMe&&p.sameTab||p.presence.cu)continue; const pp=p.presence.p; if(!Array.isArray(pp))continue;
     g.beginPath(); g.arc(sx(+pp[0]||0),sz(+pp[1]||0),2.6,0,7); g.fillStyle=PCSS[clamp((p.presence.col|0),0,5)]; g.fill(); g.strokeStyle='#10203c'; g.lineWidth=1.2; g.stroke();
   }
   const mx=sx(me.x), mz=sz(me.z);
@@ -3683,7 +3891,7 @@ function renderTickets(){
   for(const x of o){
     const sl=SLOTS[x.s], mine=sl.z===myJob, d=document.createElement('div');
     d.className='tk z'+sl.z+(mine?'':' other')+(x.st===1?' ready':'')+(x.st>=2?' gone':'')+(x.ty===1?' vip':'')+(x.ty===2?' fast':'')+(x.ty===3?' late':'')+(x.w.length>=4?' wide':'');
-    const h=document.createElement('h4'); h.textContent=(x.ty===1?'👑 ':(x.ty>=2?'⚡ ':''))+(x.st===1?'Ring up':(x.st===3?'Bye':(x.st===2?'Paid':sl.name))); d.appendChild(h);
+    const h=document.createElement('h4'); h.textContent=(x.hc?'👤 ':'')+(x.ty===1?'👑 ':(x.ty>=2?'⚡ ':''))+(x.st===1?'Ring up':(x.st===3?'Bye':(x.st===2?'Paid':sl.name))); d.appendChild(h);
     const w=document.createElement('div'); w.className='w';
     for(const id of x.w){const i=document.createElement('i'); i.textContent=ITEMS[id].e; if(x.g.indexOf(id)>=0)i.className='d'; w.appendChild(i)}
     d.appendChild(w);
@@ -3704,7 +3912,7 @@ function hudTick(dt){
   if(!W)return;
   if(scoreShown!==W.sc){scoreShown=W.sc;$('scoreV').textContent=W.sc}
   if(servedShown!==W.sv){servedShown=W.sv;$('servedV').textContent=W.sv}
-  clockOut.hidden=!isHost;
+  clockOut.hidden=!isHost; $('custBtn').hidden=W.p!==1;
   const t=target, pk=t?t.label+'|'+t.disabled+'|'+t.type:'';
   if(pk!==promptKey){
     promptKey=pk;
@@ -3785,7 +3993,7 @@ function syncSettingsUI(){
   on('botRand',()=>{ const r=n=>Math.floor(Math.random()*n); ROBOT.b=r(BOT_BODY.length); ROBOT.f=r(BOT_EYE.length); ROBOT.s=r(BOT_SHAPES.length); ROBOT.t=r(BOT_TOPS.length); ROBOT.set=true; ROBOT.on=true; saveRobot(); refreshRobot(); SFX.tap(3); });
   on('tabUpg',()=>{ shopTab='upg'; refreshShop(); }); on('tabDec',()=>{ shopTab='dec'; refreshShop(); });
   on('decPrev',()=>{ if(LV>=TOWN)decIdx=(decIdx+TOWN-1)%TOWN; else chooseLevel((LV+TOWN-1)%TOWN); refreshShop(); }); on('decNext',()=>{ if(LV>=TOWN)decIdx=(decIdx+1)%TOWN; else chooseLevel((LV+1)%TOWN); refreshShop(); });
-  on('watchBtn',()=>toggleSpec(!spec)); on('specBack',()=>toggleSpec(false)); on('camBtn',takePhoto); on('bPhoto',takePhoto);
+  on('custBtn',()=>{ if(CU.on)custLeave(); else custEnter(); }); on('watchBtn',()=>toggleSpec(!spec)); on('specBack',()=>toggleSpec(false)); on('camBtn',takePhoto); on('bPhoto',takePhoto);
   on('shotClose',closeShot);
   on('shotSave',async()=>{ if(!shotUrl)return;
     /* inside the Claude artifact viewer a plain download link does nothing; the page asks the viewer to save through the downloads capability instead */
@@ -4129,9 +4337,10 @@ function frame(now){
   }
   lobbyAcc+=dt;
   if(ui==='room'&&!$('sLobby').hidden&&lobbyAcc>.25){lobbyAcc=0;refreshLobby()}
+  custTick();
   updateMe(dt,t);
   if(me.carry<0){ me.proc=0; me.taps=0; me.work=null; }
-  target=(mode==='fps'&&!spec&&W&&W.p===1)?findTarget():null;
+  target=(mode==='fps'&&!spec&&!CU.on&&W&&W.p===1)?findTarget():null;
   if(me.work){
     if(!target||target.type!=='work')me.work=null;
     else { me.work.t+=dt; if(me.work.t>=me.work.dur){ me.work=null; me.proc=1; wsfx(LV,'done'); buzz(20); } }
