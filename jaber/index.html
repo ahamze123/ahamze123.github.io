@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Jaber Expenses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#1d1d1f; --muted:#6b6b70; --line:#e7e5e0;
+    --accent:#0f766e; --accent-soft:#e6f4f2; --warn:#b45309; --bad:#b91c1c; --bad-soft:#fdecec;
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#141416; --card:#1e1e21; --ink:#f2f2f3; --muted:#9a9aa1; --line:#2d2d31;
+      --accent:#2dd4bf; --accent-soft:#16312e; --warn:#f59e0b; --bad:#f87171; --bad-soft:#3a1f1f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.4}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .monthnav{display:flex;align-items:center;gap:6px}
+  .monthnav button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:18px;cursor:pointer}
+  .monthnav .label{min-width:120px;text-align:center;font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+  .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .stat .v{font-size:22px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:14px}
+  .bar > div{height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+  .bar.over > div{background:var(--bad)}
+  .budgetline{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--muted)}
+  .link{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;font-weight:600}
+  h2{font-size:14px;margin:0 0 12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  form.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+  .full{grid-column:1/-1}
+  .btn{white-space:nowrap;padding:11px 16px;border-radius:10px;border:0;background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+  @media (prefers-color-scheme: dark){ .btn{color:#062b27} }
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .row{display:flex;gap:8px;align-items:center}
+  .cats .c{margin-bottom:10px}
+  .cats .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+  .cats .top span:last-child{font-variant-numeric:tabular-nums;color:var(--muted)}
+  .cats .b{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+  .cats .b > div{height:100%;border-radius:99px}
+  .day{font-size:12px;color:var(--muted);font-weight:600;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+  .day:first-child{margin-top:0}
+  .item{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .day + .item{border-top:0}
+  .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .item .mid{flex:1;min-width:0}
+  .item .t{font-weight:600}
+  .item .n{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .item .acts{display:flex;gap:4px}
+  .icon{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:14px}
+  .icon.danger{color:var(--bad)}
+  .confirm{display:flex;gap:6px}
+  .confirm button{padding:6px 10px;border-radius:8px;border:0;font:inherit;font-size:13px;cursor:pointer}
+  .confirm .yes{background:var(--bad);color:#fff}
+  .confirm .no{background:var(--line);color:var(--ink)}
+  .empty{color:var(--muted);text-align:center;padding:18px 0}
+  .note{font-size:13px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--ink);margin-bottom:14px;display:none}
+  .note.show{display:block}
+  .note.err{background:var(--bad-soft)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .toolbar select{width:auto}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+  .modal.show{display:flex}
+  .modal .card{width:100%;max-width:420px;margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{padding:5px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--line);font-size:13px;display:flex;gap:6px;align-items:center}
+  .chip button{background:none;border:0;color:var(--muted);cursor:pointer;padding:0;font-size:14px}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  @media (max-width:520px){
+    .summary{grid-template-columns:1fr 1fr}
+    .summary .stat:last-child{grid-column:1/-1}
+    .stat .v{font-size:19px}
+    form.grid{grid-template-columns:1fr 1fr}
+    header{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Jaber Expenses</h1>
+    <div class="monthnav">
+      <button id="prev" aria-label="Previous month">‹</button>
+      <div class="label" id="monthLabel"></div>
+      <button id="next" aria-label="Next month">›</button>
+    </div>
+  </header>
+
+  <div class="note" id="note"></div>
+
+  <section class="card">
+    <div class="summary">
+      <div class="stat"><div class="k">Spent</div><div class="v" id="sSpent">–</div><div class="s" id="sCount"></div></div>
+      <div class="stat"><div class="k">Remaining</div><div class="v" id="sLeft">–</div><div class="s" id="sBudget"></div></div>
+      <div class="stat"><div class="k">vs last month</div><div class="v" id="sPrev">–</div><div class="s" id="sPrevAbs"></div></div>
+    </div>
+    <div class="bar" id="bar"><div style="width:0"></div></div>
+    <div class="budgetline">
+      <span id="budgetText">No budget set for this month</span>
+      <button class="link" id="setBudget">Set budget</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 id="formTitle">Add expense</h2>
+    <form class="grid" id="form" autocomplete="off">
+      <div><label for="fAmount">Amount</label><input id="fAmount" type="number" inputmode="decimal" step="0.01" min="0" required placeholder="0.00"></div>
+      <div><label for="fDate">Date</label><input id="fDate" type="date" required></div>
+      <div><label for="fCat">Category</label><select id="fCat"></select></div>
+      <div><label for="fWho">Paid by</label><input id="fWho" list="whoList" placeholder="e.g. Amer"><datalist id="whoList"></datalist></div>
+      <div class="full"><label for="fNote">Note</label><input id="fNote" placeholder="What was it for? (optional)"></div>
+      <div class="full row">
+        <button class="btn" type="submit" id="submitBtn">Add</button>
+        <button class="btn ghost" type="button" id="cancelEdit" style="display:none">Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>By category</h2>
+    <div class="cats" id="cats"><div class="empty">Nothing yet this month</div></div>
+  </section>
+
+  <section class="card">
+    <div class="toolbar">
+      <h2 style="margin:0">Expenses</h2>
+      <div class="row">
+        <select id="filterCat"><option value="">All categories</option></select>
+        <button class="btn ghost" id="copyCsv" type="button">Copy CSV</button>
+        <button class="btn ghost" id="openSettings" type="button" aria-label="Settings">⚙︎</button>
+      </div>
+    </div>
+    <div id="list"><div class="empty">Loading…</div></div>
+  </section>
+</div>
+
+<div class="modal" id="budgetModal">
+  <div class="card">
+    <h2 id="budgetModalTitle">Monthly budget</h2>
+    <label for="budgetInput">Budget for this month</label>
+    <input id="budgetInput" type="number" inputmode="decimal" min="0" step="1" placeholder="e.g. 8000">
+    <div class="row" style="margin-top:14px;justify-content:flex-end">
+      <button class="btn ghost" id="budgetCancel" type="button">Cancel</button>
+      <button class="btn" id="budgetSave" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="card">
+    <h2>Settings</h2>
+    <label for="currencyInput">Currency</label>
+    <input id="currencyInput" maxlength="6" placeholder="SAR">
+    <div style="margin-top:14px">
+      <label>Categories</label>
+      <div class="chips" id="catChips"></div>
+      <div class="row" style="margin-top:10px">
+        <input id="newCat" placeholder="New category">
+        <button class="btn ghost" id="addCat" type="button">Add</button>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+      <label>Backup &amp; move data</label>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn ghost" id="backupBtn" type="button">Download backup</button>
+        <label class="btn ghost" style="margin:0;color:var(--ink);font-size:15px">Restore backup<input id="restoreFile" type="file" accept=".json,application/json" style="display:none"></label>
+      </div>
+      <label for="csvIn" style="margin-top:12px">Or paste CSV (Date, Category, Amount, Currency, Paid by, Note)</label>
+      <textarea id="csvIn" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px"></textarea>
+      <button class="btn ghost" id="csvImport" type="button" style="margin-top:8px">Import CSV</button>
+    </div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end">
+      <button class="btn ghost" id="settingsCancel" type="button">Close</button>
+      <button class="btn" id="settingsSave" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center;font-size:12px;color:var(--muted);max-width:760px;margin:0 auto 30px;padding:0 16px">Your expenses are saved privately on this device only. Use ⚙︎ → Download backup to keep a copy or move them to another phone.</p>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const DEFAULT_CATS = ["Groceries","Housing & Rent","Utilities","Transport & Fuel","Dining Out","Health","Education","Kids","Shopping","Entertainment","Bills & Subscriptions","Travel","Other"];
+  const PALETTE = ["#0f766e","#2563eb","#d97706","#7c3aed","#db2777","#059669","#dc2626","#0891b2","#65a30d","#9333ea","#ea580c","#4f46e5","#78716c","#0d9488","#be123c"];
+
+  const $ = id => document.getElementById(id);
+  const state = {
+    db: null, mode: "loading", month: monthKey(new Date()),
+    expenses: [], prevTotal: null, budget: null,
+    settings: { currency: "SAR", categories: DEFAULT_CATS.slice() },
+    editingId: null, confirmId: null, readOnly: false,
+    unsubMonth: null, unsubBudget: null
+  };
+
+  function monthKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+  function shiftMonth(key, n){ const [y,m]=key.split("-").map(Number); return monthKey(new Date(y, m-1+n, 1)); }
+  function monthName(key){ const [y,m]=key.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long",year:"numeric"}); }
+  function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function fmt(n){ const v = Number(n)||0; return v.toLocaleString(undefined,{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2})+" "+state.settings.currency; }
+  function catColor(c){ const i = state.settings.categories.indexOf(c); return PALETTE[(i<0? state.settings.categories.length : i) % PALETTE.length]; }
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); }
+  function note(msg, err){ const n=$("note"); n.textContent=msg||""; n.classList.toggle("show",!!msg); n.classList.toggle("err",!!err); }
+  const NS="jaber:";
+  function lsGet(k,d){ try{ const v=localStorage.getItem(NS+k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+  function lsSet(k,v){ try{ localStorage.setItem(NS+k,JSON.stringify(v)); }catch(e){} }
+
+  // ---------- Local fallback store (used only if shared storage is unavailable) ----------
+  const local = {
+    all(){ return lsGet("exp.items", []); },
+    save(items){ lsSet("exp.items", items); },
+    budgets(){ return lsGet("exp.budgets", {}); }
+  };
+
+  // ---------- Data layer ----------
+  function subscribeMonth(){
+    if(state.unsubMonth){ state.unsubMonth(); state.unsubMonth=null; }
+    if(state.unsubBudget){ state.unsubBudget(); state.unsubBudget=null; }
+    state.expenses=[]; state.budget=null; state.prevTotal=null; state.confirmId=null;
+    render();
+    if(state.mode==="local"){
+      state.expenses = local.all().filter(e=>e.month===state.month);
+      state.budget = local.budgets()[state.month] ?? null;
+      state.prevTotal = local.all().filter(e=>e.month===shiftMonth(state.month,-1)).reduce((s,e)=>s+(+e.amount||0),0);
+      render(); return;
+    }
+    if(!state.db) return;
+    const m = state.month;
+    let timer = setTimeout(()=>note("Can't reach your saved expenses yet — check your connection.", true), 10000);
+    state.unsubMonth = state.db.collection("expenses").where("month","==",m).onSnapshot(snap=>{
+      if(m!==state.month) return;
+      state.expenses = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+      if(!snap.metadata.fromCache){ clearTimeout(timer); note(""); }
+      render();
+    }, err=>{ clearTimeout(timer); note("Couldn't load expenses ("+err.code+").", true); });
+    state.unsubBudget = state.db.doc("budgets/"+m).onSnapshot(s=>{
+      if(m!==state.month) return;
+      state.budget = s.exists ? (Number(s.data().amount)||null) : null; render();
+    }, ()=>{});
+    state.db.collection("expenses").where("month","==",shiftMonth(m,-1)).get().then(s=>{
+      if(m!==state.month) return;
+      state.prevTotal = s.docs.reduce((t,d)=>t+(Number(d.data().amount)||0),0); render();
+    }).catch(()=>{});
+  }
+
+  async function saveExpense(data, id){
+    if(state.mode==="local"){
+      const items = local.all();
+      if(id){ const i=items.findIndex(e=>e.id===id); if(i>=0) items[i]=Object.assign({},items[i],data); }
+      else items.push(Object.assign({id:"l"+Date.now()+Math.random().toString(36).slice(2,6), createdAt:Date.now()}, data));
+      local.save(items); subscribeMonth(); return;
+    }
+    if(id) await state.db.doc("expenses/"+id).update(data);
+    else await state.db.collection("expenses").add(Object.assign({createdAt:Date.now()}, data));
+  }
+  async function deleteExpense(id){
+    if(state.mode==="local"){ local.save(local.all().filter(e=>e.id!==id)); subscribeMonth(); return; }
+    await state.db.doc("expenses/"+id).delete();
+  }
+  async function saveBudget(amount){
+    if(state.mode==="local"){ const b=local.budgets(); if(amount) b[state.month]=amount; else delete b[state.month]; lsSet("exp.budgets",b); subscribeMonth(); return; }
+    if(amount) await state.db.doc("budgets/"+state.month).set({amount});
+    else await state.db.doc("budgets/"+state.month).delete();
+  }
+  async function saveSettings(s){
+    state.settings = s; render(); fillCats();
+    if(state.mode==="local"){ lsSet("exp.settings", s); return; }
+    await state.db.doc("settings/main").set(s);
+  }
+
+  // ---------- Rendering ----------
+  function fillCats(){
+    const cur = $("fCat").value, curF = $("filterCat").value;
+    $("fCat").innerHTML = state.settings.categories.map(c=>`<option>${esc(c)}</option>`).join("");
+    $("filterCat").innerHTML = `<option value="">All categories</option>` + state.settings.categories.map(c=>`<option>${esc(c)}</option>`).join("");
+    if(cur && state.settings.categories.includes(cur)) $("fCat").value=cur;
+    if(curF) $("filterCat").value=curF;
+  }
+  function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+  function render(){
+    $("monthLabel").textContent = monthName(state.month);
+    const total = state.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+    $("sSpent").textContent = fmt(total);
+    $("sCount").textContent = state.expenses.length+" expense"+(state.expenses.length===1?"":"s");
+
+    const bar=$("bar"), b=state.budget;
+    if(b){
+      const left=b-total, pct=Math.min(100, total/b*100);
+      $("sLeft").textContent = fmt(left);
+      $("sLeft").style.color = left<0? "var(--bad)" : "";
+      $("sBudget").textContent = "of "+fmt(b);
+      bar.firstElementChild.style.width = pct+"%";
+      bar.classList.toggle("over", left<0);
+      $("budgetText").textContent = left<0 ? `Over budget by ${fmt(-left)}` : `${Math.round(total/b*100)}% of budget used`;
+      $("setBudget").textContent = "Edit budget";
+    } else {
+      $("sLeft").textContent = "–"; $("sLeft").style.color="";
+      $("sBudget").textContent = "no budget";
+      bar.firstElementChild.style.width="0"; bar.classList.remove("over");
+      $("budgetText").textContent = "No budget set for this month";
+      $("setBudget").textContent = "Set budget";
+    }
+
+    if(state.prevTotal===null){ $("sPrev").textContent="–"; $("sPrevAbs").textContent=""; }
+    else if(state.prevTotal===0){ $("sPrev").textContent="–"; $("sPrevAbs").textContent="nothing last month"; $("sPrev").style.color=""; }
+    else{
+      const d = (total-state.prevTotal)/state.prevTotal*100;
+      $("sPrev").textContent = (d>0?"+":"")+Math.round(d)+"%";
+      $("sPrev").style.color = d>0 ? "var(--warn)" : "var(--accent)";
+      $("sPrevAbs").textContent = "last: "+fmt(state.prevTotal);
+    }
+
+    // categories
+    const byCat = {};
+    state.expenses.forEach(e=>{ byCat[e.category||"Other"]=(byCat[e.category||"Other"]||0)+(Number(e.amount)||0); });
+    const rows = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+    const max = rows.length? rows[0][1] : 1;
+    $("cats").innerHTML = rows.length ? rows.map(([c,v])=>`
+      <div class="c"><div class="top"><span>${esc(c)}</span><span>${fmt(v)} · ${total?Math.round(v/total*100):0}%</span></div>
+      <div class="b"><div style="width:${v/max*100}%;background:${catColor(c)}"></div></div></div>`).join("")
+      : `<div class="empty">Nothing yet this month</div>`;
+
+    // list
+    const f = $("filterCat").value;
+    const items = state.expenses.filter(e=>!f||e.category===f)
+      .sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+    if(state.mode==="loading"){ $("list").innerHTML=`<div class="empty">Loading…</div>`; }
+    else if(!items.length){ $("list").innerHTML=`<div class="empty">${f?"No expenses in this category":"No expenses yet — add your first one above"}</div>`; }
+    else{
+      let html="", last="";
+      items.forEach(e=>{
+        if(e.date!==last){ last=e.date;
+          const dt=new Date((e.date||"")+"T00:00");
+          html+=`<div class="day">${isNaN(dt)?esc(e.date):dt.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}</div>`; }
+        const acts = state.readOnly ? "" : (state.confirmId===e.id
+          ? `<div class="confirm"><button class="yes" data-del="${esc(e.id)}">Delete</button><button class="no" data-cancel="1">Keep</button></div>`
+          : `<div class="acts"><button class="icon" title="Edit" data-edit="${esc(e.id)}">✎</button><button class="icon danger" title="Delete" data-ask="${esc(e.id)}">✕</button></div>`);
+        html+=`<div class="item"><span class="dot" style="background:${catColor(e.category)}"></span>
+          <div class="mid"><div class="t">${esc(e.category||"Other")}</div><div class="n">${esc([e.note,e.paidBy?("paid by "+e.paidBy):""].filter(Boolean).join(" · ")||"—")}</div></div>
+          <div class="amt">${fmt(e.amount)}</div>${acts}</div>`;
+      });
+      $("list").innerHTML=html;
+    }
+
+    // who list
+    const names = [...new Set(state.expenses.map(e=>e.paidBy).filter(Boolean).concat(lsGet("exp.who",[])))];
+    $("whoList").innerHTML = names.map(n=>`<option value="${esc(n)}">`).join("");
+
+    $("submitBtn").disabled = state.readOnly || state.mode==="loading";
+  }
+
+  // ---------- Form ----------
+  function resetForm(){
+    state.editingId=null;
+    $("form").reset();
+    $("fDate").value = state.month===monthKey(new Date()) ? today() : state.month+"-01";
+    $("fWho").value = lsGet("exp.lastWho","");
+    $("formTitle").textContent="Add expense"; $("submitBtn").textContent="Add";
+    $("cancelEdit").style.display="none";
+  }
+  $("form").addEventListener("submit", async ev=>{
+    ev.preventDefault();
+    const amount = Math.round(parseFloat($("fAmount").value)*100)/100;
+    const date = $("fDate").value;
+    if(!(amount>0) || !date){ toast("Enter an amount and a date"); return; }
+    const who = $("fWho").value.trim();
+    const data = { amount, date, month: date.slice(0,7), category: $("fCat").value, note: $("fNote").value.trim().slice(0,200), paidBy: who.slice(0,40) };
+    if(who){ lsSet("exp.lastWho", who); const w=lsGet("exp.who",[]); if(!w.includes(who)){ w.push(who); lsSet("exp.who", w.slice(-10)); } }
+    $("submitBtn").disabled=true;
+    try{
+      const wasEdit = !!state.editingId;
+      await saveExpense(data, state.editingId);
+      toast(wasEdit?"Expense updated":"Expense added");
+      if(data.month!==state.month){ toast("Saved to "+monthName(data.month)); }
+      const keepCat = $("fCat").value;
+      resetForm(); $("fCat").value = keepCat; $("fAmount").focus();
+    }catch(e){
+      if(e && e.code==="invalid_argument"){ state.readOnly=true; note("You have view-only access to this tracker.", true); }
+      else note("Couldn't save — "+(e&&e.code||"try again")+".", true);
+    }finally{ render(); }
+  });
+  $("cancelEdit").addEventListener("click", resetForm);
+
+  $("list").addEventListener("click", async ev=>{
+    const t = ev.target.closest("button"); if(!t) return;
+    if(t.dataset.ask){ state.confirmId=t.dataset.ask; render(); }
+    else if(t.dataset.cancel){ state.confirmId=null; render(); }
+    else if(t.dataset.del){
+      const id=t.dataset.del; state.confirmId=null;
+      try{ await deleteExpense(id); toast("Deleted"); if(state.editingId===id) resetForm(); }
+      catch(e){ note("Couldn't delete ("+(e&&e.code)+").", true); }
+      render();
+    }
+    else if(t.dataset.edit){
+      const e = state.expenses.find(x=>x.id===t.dataset.edit); if(!e) return;
+      state.editingId=e.id;
+      $("fAmount").value=e.amount; $("fDate").value=e.date;
+      if(!state.settings.categories.includes(e.category)){ state.settings.categories.push(e.category); fillCats(); }
+      $("fCat").value=e.category; $("fNote").value=e.note||""; $("fWho").value=e.paidBy||"";
+      $("formTitle").textContent="Edit expense"; $("submitBtn").textContent="Save changes";
+      $("cancelEdit").style.display="";
+      $("form").scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  });
+
+  $("filterCat").addEventListener("change", render);
+  $("prev").addEventListener("click", ()=>{ state.month=shiftMonth(state.month,-1); resetForm(); subscribeMonth(); });
+  $("next").addEventListener("click", ()=>{ state.month=shiftMonth(state.month,1); resetForm(); subscribeMonth(); });
+
+  // CSV
+  $("copyCsv").addEventListener("click", async ()=>{
+    const rows=[["Date","Category","Amount","Currency","Paid by","Note"]].concat(
+      state.expenses.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")).map(e=>[e.date,e.category,e.amount,state.settings.currency,e.paidBy||"",e.note||""]));
+    const csv = rows.map(r=>r.map(v=>{ const s=String(v??""); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }).join(",")).join("\n");
+    try{ await navigator.clipboard.writeText(csv); toast("CSV copied — paste into Excel or Sheets"); }
+    catch(e){ toast("Couldn't access the clipboard"); }
+  });
+
+  // Budget modal
+  $("setBudget").addEventListener("click", ()=>{
+    if(state.readOnly) return;
+    $("budgetModalTitle").textContent = "Budget · "+monthName(state.month);
+    $("budgetInput").value = state.budget||""; $("budgetModal").classList.add("show"); $("budgetInput").focus();
+  });
+  $("budgetCancel").addEventListener("click", ()=>$("budgetModal").classList.remove("show"));
+  $("budgetSave").addEventListener("click", async ()=>{
+    const v = parseFloat($("budgetInput").value); $("budgetModal").classList.remove("show");
+    try{ await saveBudget(v>0? Math.round(v*100)/100 : null); toast("Budget saved"); }catch(e){ note("Couldn't save budget ("+(e&&e.code)+").", true); }
+  });
+
+  // Settings modal
+  let draftCats=[];
+  function drawChips(){
+    $("catChips").innerHTML = draftCats.map((c,i)=>`<span class="chip"><span class="dot" style="background:${PALETTE[i%PALETTE.length]}"></span>${esc(c)}<button data-rm="${i}" aria-label="Remove">×</button></span>`).join("");
+  }
+  $("openSettings").addEventListener("click", ()=>{
+    draftCats = state.settings.categories.slice();
+    $("currencyInput").value = state.settings.currency; drawChips();
+    $("settingsModal").classList.add("show");
+  });
+  $("catChips").addEventListener("click", ev=>{ const b=ev.target.closest("button[data-rm]"); if(!b) return; draftCats.splice(+b.dataset.rm,1); drawChips(); });
+  function addCat(){ const v=$("newCat").value.trim().slice(0,30); if(v && !draftCats.includes(v)){ draftCats.push(v); drawChips(); } $("newCat").value=""; }
+  $("addCat").addEventListener("click", addCat);
+  $("newCat").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); addCat(); } });
+  $("settingsCancel").addEventListener("click", ()=>$("settingsModal").classList.remove("show"));
+  $("settingsSave").addEventListener("click", async ()=>{
+    if(!draftCats.length){ toast("Keep at least one category"); return; }
+    $("settingsModal").classList.remove("show");
+    try{ await saveSettings({ currency: ($("currencyInput").value.trim()||"SAR").slice(0,6), categories: draftCats.slice() }); toast("Settings saved"); }
+    catch(e){ note("Couldn't save settings ("+(e&&e.code)+").", true); }
+  });
+  document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("show"); }));
+
+  // ---------- Backup / restore / CSV import (local mode) ----------
+  $("backupBtn").addEventListener("click", ()=>{
+    const data = { app:"monthly-expenses", version:1, exportedAt:new Date().toISOString(), settings: lsGet("exp.settings", state.settings), items: local.all(), budgets: local.budgets() };
+    const blob = new Blob([JSON.stringify(data,null,1)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="jaber-expenses-backup-"+today()+".json";
+    document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500);
+  });
+  $("restoreFile").addEventListener("change", async ev=>{
+    const f=ev.target.files[0]; if(!f) return;
+    try{
+      const d=JSON.parse(await f.text());
+      if(!Array.isArray(d.items)) throw 0;
+      local.save(d.items); lsSet("exp.budgets", d.budgets||{}); if(d.settings){ lsSet("exp.settings", d.settings); state.settings=d.settings; fillCats(); }
+      $("settingsModal").classList.remove("show"); toast("Restored "+d.items.length+" expenses"); subscribeMonth();
+    }catch(e){ toast("That file isn't a valid backup"); }
+    ev.target.value="";
+  });
+  function parseCsv(text){
+    const rows=[]; let row=[], f="", q=false;
+    for(let i=0;i<text.length;i++){ const c=text[i];
+      if(q){ if(c=='"'){ if(text[i+1]=='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+      else if(c=='"') q=true; else if(c==','){ row.push(f); f=""; }
+      else if(c=='\n'||c=='\r'){ if(c=='\r'&&text[i+1]=='\n') i++; row.push(f); rows.push(row); row=[]; f=""; }
+      else f+=c; }
+    if(f||row.length){ row.push(f); rows.push(row); }
+    return rows.filter(r=>r.some(x=>x.trim()));
+  }
+  $("csvImport").addEventListener("click", ()=>{
+    const rows=parseCsv($("csvIn").value); if(!rows.length){ toast("Paste some CSV first"); return; }
+    if(/date/i.test(rows[0][0])) rows.shift();
+    const items=local.all(); let n=0; const cats=state.settings.categories;
+    rows.forEach((r,i)=>{ const date=(r[0]||"").trim(), amount=parseFloat(r[2]);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!(amount>0)) return;
+      const category=(r[1]||"Other").trim()||"Other"; if(!cats.includes(category)) cats.push(category);
+      items.push({id:"c"+Date.now()+"-"+i, createdAt:Date.now()+i, date, month:date.slice(0,7), category, amount, paidBy:(r[4]||"").trim(), note:(r[5]||"").trim()}); n++; });
+    local.save(items); lsSet("exp.settings", state.settings); fillCats();
+    $("csvIn").value=""; $("settingsModal").classList.remove("show");
+    toast(n? "Imported "+n+" expenses" : "Nothing imported — check the format"); subscribeMonth();
+  });
+
+  // ---------- Boot ----------
+  fillCats(); resetForm(); render();
+
+  function startLocal(){
+    state.mode="local";
+    const s=lsGet("exp.settings",null); if(s) state.settings=s;
+    fillCats();
+    
+    subscribeMonth();
+  }
+
+  (async ()=>{
+    let db=null, user=null;
+    try{
+      if(window.claude && claude.use){
+        [db, user] = await Promise.all([claude.use("db"), claude.use("user").catch(()=>null)]);
+      }
+    }catch(e){ db=null; }
+    if(!db){ startLocal(); return; }
+    state.db=db; state.mode="db";
+    try{
+      if(user && user.can){ const w = await user.can("data.write"); if(w===false){ state.readOnly=true; note("You have view-only access to this tracker."); } }
+    }catch(e){}
+    db.doc("settings/main").onSnapshot(s=>{
+      if(s.exists){ const d=s.data(); state.settings = { currency: d.currency||"SAR", categories: Array.isArray(d.categories)&&d.categories.length? d.categories.slice() : DEFAULT_CATS.slice() }; fillCats(); render(); }
+    }, ()=>{});
+    subscribeMonth();
+  })();
+})();
+</script>
+</body>
+</html>
