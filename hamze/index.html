@@ -89,6 +89,8 @@
     header{flex-direction:column;align-items:flex-start}
   }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -119,7 +121,7 @@
   <section class="card">
     <h2 id="formTitle">Add expense</h2>
     <form class="grid" id="form" autocomplete="off">
-      <div><label for="fAmount">Amount</label><input id="fAmount" type="number" inputmode="decimal" step="0.01" min="0" required placeholder="0.00"></div>
+      <div><label for="fAmount">Amount</label><input id="fAmount" type="text" inputmode="decimal" placeholder="0.00"></div>
       <div><label for="fDate">Date</label><input id="fDate" type="date" required></div>
       <div><label for="fCat">Category</label><select id="fCat"></select></div>
       <div><label for="fWho">Paid by</label><input id="fWho" list="whoList" placeholder="e.g. Amer"><datalist id="whoList"></datalist></div>
@@ -153,7 +155,7 @@
   <div class="card">
     <h2 id="budgetModalTitle">Monthly budget</h2>
     <label for="budgetInput">Budget for this month</label>
-    <input id="budgetInput" type="number" inputmode="decimal" min="0" step="1" placeholder="e.g. 8000">
+    <input id="budgetInput" type="text" inputmode="decimal" placeholder="e.g. 8000">
     <div class="row" style="margin-top:14px;justify-content:flex-end">
       <button class="btn ghost" id="budgetCancel" type="button">Cancel</button>
       <button class="btn" id="budgetSave" type="button">Save</button>
@@ -175,6 +177,14 @@
       </div>
     </div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+      <label for="syncInput">Sync code (same code on every phone = same expenses)</label>
+      <div class="row">
+        <input id="syncInput" placeholder="Paste your sync code" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button class="btn ghost" id="syncConnect" type="button">Connect</button>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="btn ghost" id="syncCopy" type="button">Copy sync link</button></div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
       <label>Backup &amp; move data</label>
       <div class="row" style="flex-wrap:wrap">
         <button class="btn ghost" id="backupBtn" type="button">Download backup</button>
@@ -191,7 +201,7 @@
   </div>
 </div>
 
-<p style="text-align:center;font-size:12px;color:var(--muted);max-width:760px;margin:0 auto 30px;padding:0 16px">Your expenses are saved privately on this device only. Use ⚙︎ → Download backup to keep a copy or move them to another phone.</p>
+<p id="footNote" style="text-align:center;font-size:12px;color:var(--muted);max-width:760px;margin:0 auto 30px;padding:0 16px"></p>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -211,14 +221,16 @@
   function monthKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
   function shiftMonth(key, n){ const [y,m]=key.split("-").map(Number); return monthKey(new Date(y, m-1+n, 1)); }
   function monthName(key){ const [y,m]=key.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long",year:"numeric"}); }
+  function num(v){ v=String(v||"").trim().replace(/[\u0660-\u0669]/g,c=>c.charCodeAt(0)-0x660).replace(/[\u06F0-\u06F9]/g,c=>c.charCodeAt(0)-0x6F0).replace(/[\u066B,]/g,".").replace(/[^0-9.]/g,""); return parseFloat(v); }
   function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
   function fmt(n){ const v = Number(n)||0; return v.toLocaleString(undefined,{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2})+" "+state.settings.currency; }
   function catColor(c){ const i = state.settings.categories.indexOf(c); return PALETTE[(i<0? state.settings.categories.length : i) % PALETTE.length]; }
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); }
   function note(msg, err){ const n=$("note"); n.textContent=msg||""; n.classList.toggle("show",!!msg); n.classList.toggle("err",!!err); }
   const NS="hamze:";
-  function lsGet(k,d){ try{ const v=localStorage.getItem(NS+k); return v?JSON.parse(v):d; }catch(e){ return d; } }
-  function lsSet(k,v){ try{ localStorage.setItem(NS+k,JSON.stringify(v)); }catch(e){} }
+  const MEM={}; let storageOk=true;
+  function lsGet(k,d){ if(!storageOk) return (k in MEM)? JSON.parse(MEM[k]) : d; try{ const v=localStorage.getItem(NS+k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+  function lsSet(k,v){ const j=JSON.stringify(v); MEM[k]=j; try{ localStorage.setItem(NS+k,j); if(localStorage.getItem(NS+k)!==j) throw 0; return true; }catch(e){ if(storageOk){ storageOk=false; if(state.mode!=="db") note("This browser is blocking saving (private/incognito mode or an in-app browser). Open the link in normal Safari or Chrome, otherwise expenses vanish when you close the page.", true); } return false; } }
 
   // ---------- Local fallback store (used only if shared storage is unavailable) ----------
   const local = {
@@ -374,11 +386,12 @@
     $("formTitle").textContent="Add expense"; $("submitBtn").textContent="Add";
     $("cancelEdit").style.display="none";
   }
-  $("form").addEventListener("submit", async ev=>{
+  $("form").setAttribute("novalidate",""); $("form").addEventListener("submit", async ev=>{
     ev.preventDefault();
-    const amount = Math.round(parseFloat($("fAmount").value)*100)/100;
+    const amount = Math.round(num($("fAmount").value)*100)/100;
     const date = $("fDate").value;
-    if(!(amount>0) || !date){ toast("Enter an amount and a date"); return; }
+    if(!(amount>0)){ toast("Enter an amount"); $("fAmount").focus(); return; }
+    if(!date){ toast("Pick a date"); return; }
     const who = $("fWho").value.trim();
     const data = { amount, date, month: date.slice(0,7), category: $("fCat").value, note: $("fNote").value.trim().slice(0,200), paidBy: who.slice(0,40) };
     if(who){ lsSet("exp.lastWho", who); const w=lsGet("exp.who",[]); if(!w.includes(who)){ w.push(who); lsSet("exp.who", w.slice(-10)); } }
@@ -440,7 +453,7 @@
   });
   $("budgetCancel").addEventListener("click", ()=>$("budgetModal").classList.remove("show"));
   $("budgetSave").addEventListener("click", async ()=>{
-    const v = parseFloat($("budgetInput").value); $("budgetModal").classList.remove("show");
+    const v = num($("budgetInput").value); $("budgetModal").classList.remove("show");
     try{ await saveBudget(v>0? Math.round(v*100)/100 : null); toast("Budget saved"); }catch(e){ note("Couldn't save budget ("+(e&&e.code)+").", true); }
   });
 
@@ -468,8 +481,32 @@
   document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("show"); }));
 
   // ---------- Backup / restore / CSV import (local mode) ----------
-  $("backupBtn").addEventListener("click", ()=>{
-    const data = { app:"monthly-expenses", version:1, exportedAt:new Date().toISOString(), settings: lsGet("exp.settings", state.settings), items: local.all(), budgets: local.budgets() };
+  async function allItems(){
+    if(state.mode!=="db") return local.all();
+    const s = await state.db.collection("expenses").get();
+    return s.docs.map(d=>Object.assign({id:d.id}, d.data()));
+  }
+  async function allBudgets(){
+    if(state.mode!=="db") return local.budgets();
+    const s = await state.db.collection("budgets").get(); const b={};
+    s.docs.forEach(d=>{ b[d.id]=Number(d.data().amount)||0; }); return b;
+  }
+  // Writes many expenses (keeps their ids, so re-importing never duplicates)
+  async function bulkPut(items, budgets){
+    if(state.mode!=="db"){
+      const m={}; local.all().concat(items).forEach(e=>{ m[e.id]=e; });
+      local.save(Object.values(m)); if(budgets) lsSet("exp.budgets", Object.assign(local.budgets(), budgets)); return;
+    }
+    const ops=[];
+    items.forEach(e=>{ const d=Object.assign({},e); delete d.id; ops.push(["expenses/"+String(e.id).replace(/\//g,"_"), d]); });
+    Object.entries(budgets||{}).forEach(([m,a])=>{ if(a) ops.push(["budgets/"+m,{amount:Number(a)}]); });
+    for(let i=0;i<ops.length;i+=400){
+      const b=state.fs.batch(); ops.slice(i,i+400).forEach(([p,d])=>b.set(state.db.doc(p), d)); await b.commit();
+    }
+  }
+
+  $("backupBtn").addEventListener("click", async ()=>{
+    const data = { app:"monthly-expenses", version:1, exportedAt:new Date().toISOString(), settings: state.settings, items: await allItems(), budgets: await allBudgets() };
     const blob = new Blob([JSON.stringify(data,null,1)],{type:"application/json"});
     const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="hamze-expenses-backup-"+today()+".json";
     document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500);
@@ -479,7 +516,7 @@
     try{
       const d=JSON.parse(await f.text());
       if(!Array.isArray(d.items)) throw 0;
-      local.save(d.items); lsSet("exp.budgets", d.budgets||{}); if(d.settings){ lsSet("exp.settings", d.settings); state.settings=d.settings; fillCats(); }
+      await bulkPut(d.items, d.budgets||{}); if(d.settings){ await saveSettings(d.settings); }
       $("settingsModal").classList.remove("show"); toast("Restored "+d.items.length+" expenses"); subscribeMonth();
     }catch(e){ toast("That file isn't a valid backup"); }
     ev.target.value="";
@@ -494,15 +531,15 @@
     if(f||row.length){ row.push(f); rows.push(row); }
     return rows.filter(r=>r.some(x=>x.trim()));
   }
-  $("csvImport").addEventListener("click", ()=>{
+  $("csvImport").addEventListener("click", async ()=>{
     const rows=parseCsv($("csvIn").value); if(!rows.length){ toast("Paste some CSV first"); return; }
     if(/date/i.test(rows[0][0])) rows.shift();
-    const items=local.all(); let n=0; const cats=state.settings.categories;
+    const items=[]; let n=0; const cats=state.settings.categories.slice();
     rows.forEach((r,i)=>{ const date=(r[0]||"").trim(), amount=parseFloat(r[2]);
       if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!(amount>0)) return;
       const category=(r[1]||"Other").trim()||"Other"; if(!cats.includes(category)) cats.push(category);
       items.push({id:"c"+Date.now()+"-"+i, createdAt:Date.now()+i, date, month:date.slice(0,7), category, amount, paidBy:(r[4]||"").trim(), note:(r[5]||"").trim()}); n++; });
-    local.save(items); lsSet("exp.settings", state.settings); fillCats();
+    try{ await bulkPut(items); await saveSettings(Object.assign({}, state.settings, {categories:cats})); }catch(e){ note("Couldn't import ("+(e&&e.code)+").", true); return; }
     $("csvIn").value=""; $("settingsModal").classList.remove("show");
     toast(n? "Imported "+n+" expenses" : "Nothing imported — check the format"); subscribeMonth();
   });
@@ -510,30 +547,68 @@
   // ---------- Boot ----------
   fillCats(); resetForm(); render();
 
+  const FB_CONFIG = {apiKey:"AIzaSyA8s-susS-7p8ZojwPTsSyAAU-rtdt3w9k",authDomain:"household-expenses-2b077.firebaseapp.com",projectId:"household-expenses-2b077",storageBucket:"household-expenses-2b077.firebasestorage.app",messagingSenderId:"319234877530",appId:"1:319234877530:web:0fcf1c301811a1cc1ad063"};
+  function syncLink(code){ return location.origin+location.pathname+"#sync="+code; }
+  function footer(){
+    $("footNote").textContent = state.mode==="db"
+      ? "Synced online — every phone that opened your sync link sees the same expenses."
+      : "Not synced yet: expenses are saved only on this device. Open your sync link (or ⚙︎ → Sync code) to share them across phones.";
+  }
   function startLocal(){
     state.mode="local";
     const s=lsGet("exp.settings",null); if(s) state.settings=s;
-    fillCats();
-    
+    fillCats(); footer();
     subscribeMonth();
   }
 
-  (async ()=>{
-    let db=null, user=null;
-    try{
-      if(window.claude && claude.use){
-        [db, user] = await Promise.all([claude.use("db"), claude.use("user").catch(()=>null)]);
-      }
-    }catch(e){ db=null; }
-    if(!db){ startLocal(); return; }
-    state.db=db; state.mode="db";
-    try{
-      if(user && user.can){ const w = await user.can("data.write"); if(w===false){ state.readOnly=true; note("You have view-only access to this tracker."); } }
-    }catch(e){}
+  async function connect(code){
+    if(!window.firebase || !firebase.firestore) throw {code:"offline"};
+    if(!firebase.apps.length){
+      firebase.initializeApp(FB_CONFIG);
+      try{ await firebase.firestore().enablePersistence({synchronizeTabs:true}); }catch(e){}
+    }
+    const fs = firebase.firestore(), base = "households/"+code+"/";
+    const db = { collection: p=>fs.collection(base+p), doc: p=>fs.doc(base+p) };
+    await db.doc("settings/main").get();  // checks the code works
+    const wasLocal = state.mode==="local";
+    state.fs=fs; state.db=db; state.mode="db"; state.readOnly=false;
+    // First time on this device: move expenses saved only here into the shared list
+    if(!lsGet("exp.uploaded."+code, false)){
+      const items=local.all(), budgets=local.budgets();
+      if(items.length || Object.keys(budgets).length){ await bulkPut(items, budgets); toast("Uploaded "+items.length+" expenses from this phone"); }
+      const rs = await db.doc("settings/main").get();
+      if(!rs.exists && lsGet("exp.settings",null)) await db.doc("settings/main").set(lsGet("exp.settings",null));
+      lsSet("exp.uploaded."+code, true);
+    }
+    lsSet("exp.sync", code);
     db.doc("settings/main").onSnapshot(s=>{
       if(s.exists){ const d=s.data(); state.settings = { currency: d.currency||"SAR", categories: Array.isArray(d.categories)&&d.categories.length? d.categories.slice() : DEFAULT_CATS.slice() }; fillCats(); render(); }
     }, ()=>{});
-    subscribeMonth();
+    note(""); footer(); subscribeMonth();
+  }
+
+  $("syncConnect").addEventListener("click", async ()=>{
+    const code=$("syncInput").value.trim().replace(/^.*#sync=/,"");
+    if(code.length<24){ toast("That code looks too short"); return; }
+    $("syncConnect").disabled=true;
+    try{ await connect(code); $("settingsModal").classList.remove("show"); toast("Synced"); }
+    catch(e){ note("Couldn't connect ("+(e&&e.code||"error")+"). Check the code and your internet.", true); }
+    finally{ $("syncConnect").disabled=false; }
+  });
+  $("syncCopy").addEventListener("click", async ()=>{
+    const code=lsGet("exp.sync",""); if(!code){ toast("Connect a sync code first"); return; }
+    try{ await navigator.clipboard.writeText(syncLink(code)); toast("Sync link copied — open it on the other phone"); }
+    catch(e){ $("syncInput").value=syncLink(code); $("syncInput").select(); toast("Copy the link from the box"); }
+  });
+  $("openSettings").addEventListener("click", ()=>{ $("syncInput").value = lsGet("exp.sync",""); });
+
+  (async ()=>{
+    const m = location.hash.match(/sync=([A-Za-z0-9_-]{24,})/);
+    if(m){ lsSet("exp.sync", m[1]); history.replaceState(null,"",location.pathname+location.search); }
+    const code = lsGet("exp.sync","");
+    if(!code){ startLocal(); return; }
+    try{ await connect(code); }
+    catch(e){ startLocal(); note("Couldn't reach the online sync ("+(e&&e.code||"offline")+"). Showing what's saved on this phone.", true); }
   })();
 })();
 </script>
