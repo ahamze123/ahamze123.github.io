@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Monthly Expenses">
 <title>Monthly Expenses</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -104,6 +107,15 @@
   </header>
 
   <div class="note" id="note"></div>
+
+  <section class="card" id="syncCard" style="display:none;border-color:var(--accent)">
+    <h2 style="margin-top:0">Connect to your shared expenses</h2>
+    <div class="s" style="color:var(--muted);margin-bottom:10px" id="syncCardText">This copy isn't synced yet. Paste your sync link (or code) from the other phone, then tap Connect.</div>
+    <div class="row">
+      <input id="syncInput2" placeholder="Paste sync link or code" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button class="btn" id="syncConnect2" type="button">Connect</button>
+    </div>
+  </section>
 
   <section class="card">
     <div class="summary">
@@ -550,6 +562,7 @@
   function syncLink(code){ return location.origin+location.pathname+"?sync="+code; }
   function keepCodeInUrl(code){ try{ history.replaceState(null,"",location.pathname+"?sync="+code); }catch(e){} }
   function footer(){
+    const sc=$("syncCard"); if(sc) sc.style.display = state.mode==="db" ? "none" : "";
     $("footNote").textContent = state.mode==="db"
       ? "Synced online — every phone that opened your sync link sees the same expenses."
       : "Not synced yet: expenses are saved only on this device. Open your sync link (or ⚙︎ → Sync code) to share them across phones.";
@@ -569,7 +582,7 @@
     }
     const fs = firebase.firestore(), base = "households/"+code+"/";
     const db = { collection: p=>fs.collection(base+p), doc: p=>fs.doc(base+p) };
-    await db.doc("settings/main").get();  // checks the code works
+    await Promise.race([ db.doc("settings/main").get(), new Promise((_,rej)=>setTimeout(()=>rej({code:"timeout"}),15000)) ]);  // checks the code works
     const wasLocal = state.mode==="local";
     state.fs=fs; state.db=db; state.mode="db"; state.readOnly=false;
     // First time on this device: move expenses saved only here into the shared list
@@ -588,12 +601,20 @@
   }
 
   $("syncConnect").addEventListener("click", async ()=>{
-    const code=$("syncInput").value.trim().replace(/^.*[#?&]sync=/,"");
+    const code=$("syncInput").value.trim().replace(/^.*[#?&]sync=/,"").replace(/[^A-Za-z0-9_-].*$/,"");
     if(code.length<24){ toast("That code looks too short"); return; }
     $("syncConnect").disabled=true;
     try{ await connect(code); $("settingsModal").classList.remove("show"); toast("Synced"); }
     catch(e){ note("Couldn't connect ("+(e&&e.code||"error")+"). Check the code and your internet.", true); }
     finally{ $("syncConnect").disabled=false; }
+  });
+  $("syncConnect2").addEventListener("click", async ()=>{
+    const code=$("syncInput2").value.trim().replace(/^.*[#?&]sync=/,"").replace(/[^A-Za-z0-9_-].*$/,"");
+    if(code.length<24){ toast("That code looks too short"); return; }
+    $("syncConnect2").disabled=true; $("syncConnect2").textContent="Connecting…";
+    try{ await connect(code); toast("Synced"); }
+    catch(e){ note("Couldn't connect ("+(e&&e.code||"error")+"). Check the code and your internet.", true); }
+    finally{ $("syncConnect2").disabled=false; $("syncConnect2").textContent="Connect"; }
   });
   $("syncCopy").addEventListener("click", async ()=>{
     const code=lsGet("exp.sync",""); if(!code){ toast("Connect a sync code first"); return; }
