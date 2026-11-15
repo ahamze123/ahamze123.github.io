@@ -548,7 +548,8 @@
   fillCats(); resetForm(); render();
 
   const FB_CONFIG = {apiKey:"AIzaSyA8s-susS-7p8ZojwPTsSyAAU-rtdt3w9k",authDomain:"household-expenses-2b077.firebaseapp.com",projectId:"household-expenses-2b077",storageBucket:"household-expenses-2b077.firebasestorage.app",messagingSenderId:"319234877530",appId:"1:319234877530:web:0fcf1c301811a1cc1ad063"};
-  function syncLink(code){ return location.origin+location.pathname+"#sync="+code; }
+  function syncLink(code){ return location.origin+location.pathname+"?sync="+code; }
+  function keepCodeInUrl(code){ try{ history.replaceState(null,"",location.pathname+"?sync="+code); }catch(e){} }
   function footer(){
     $("footNote").textContent = state.mode==="db"
       ? "Synced online — every phone that opened your sync link sees the same expenses."
@@ -580,7 +581,7 @@
       if(!rs.exists && lsGet("exp.settings",null)) await db.doc("settings/main").set(lsGet("exp.settings",null));
       lsSet("exp.uploaded."+code, true);
     }
-    lsSet("exp.sync", code);
+    lsSet("exp.sync", code); keepCodeInUrl(code);
     db.doc("settings/main").onSnapshot(s=>{
       if(s.exists){ const d=s.data(); state.settings = { currency: d.currency||"SAR", categories: Array.isArray(d.categories)&&d.categories.length? d.categories.slice() : DEFAULT_CATS.slice() }; fillCats(); render(); }
     }, ()=>{});
@@ -588,7 +589,7 @@
   }
 
   $("syncConnect").addEventListener("click", async ()=>{
-    const code=$("syncInput").value.trim().replace(/^.*#sync=/,"");
+    const code=$("syncInput").value.trim().replace(/^.*[#?&]sync=/,"");
     if(code.length<24){ toast("That code looks too short"); return; }
     $("syncConnect").disabled=true;
     try{ await connect(code); $("settingsModal").classList.remove("show"); toast("Synced"); }
@@ -604,9 +605,12 @@
 
   window.addEventListener("hashchange", ()=>{ if(/sync=/.test(location.hash)) location.reload(); });
   (async ()=>{
-    const m = location.hash.match(/sync=([A-Za-z0-9_-]{24,})/);
-    if(m){ lsSet("exp.sync", m[1]); history.replaceState(null,"",location.pathname+location.search); }
-    const code = lsGet("exp.sync","");
+    // Keep the sync code in the address (?sync=...) so "Add to Home Screen" saves it —
+    // iPhone home-screen apps don't share storage with Safari.
+    const m = (location.search+location.hash).match(/sync=([A-Za-z0-9_-]{24,})/);
+    if(m) lsSet("exp.sync", m[1]);
+    const code = (m && m[1]) || lsGet("exp.sync","");
+    if(code) keepCodeInUrl(code);
     if(!code){ startLocal(); return; }
     try{ await connect(code); }
     catch(e){ startLocal(); note("Couldn't reach the online sync ("+(e&&e.code||"offline")+"). Showing what's saved on this phone.", true); }
