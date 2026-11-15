@@ -602,6 +602,7 @@
   });
   $("openSettings").addEventListener("click", ()=>{ $("syncInput").value = lsGet("exp.sync",""); });
 
+  window.addEventListener("hashchange", ()=>{ if(/sync=/.test(location.hash)) location.reload(); });
   (async ()=>{
     const m = location.hash.match(/sync=([A-Za-z0-9_-]{24,})/);
     if(m){ lsSet("exp.sync", m[1]); history.replaceState(null,"",location.pathname+location.search); }
