@@ -27,7 +27,12 @@
   h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
   .monthnav{display:flex;align-items:center;gap:6px}
   .monthnav button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:18px;cursor:pointer}
-  .monthnav .label{min-width:120px;text-align:center;font-weight:600}
+  .monthnav .label{min-width:150px;text-align:center;font-weight:600;line-height:1.2}
+.monthnav .label small{display:block;font-size:11px;font-weight:500;color:var(--muted)}
+.monthnav button:disabled{opacity:.35;cursor:default}
+.newmonth{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:14px}
+.link.danger{color:var(--bad)}
+.modal p{font-size:14px;color:var(--muted);margin:0 0 12px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
   .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
@@ -108,6 +113,11 @@
 
   <div class="note" id="note"></div>
 
+<div class="newmonth" id="newMonthBar" style="display:none">
+<span id="newMonthText">Salary in? Start your new month from the day it arrived.</span>
+<button class="btn" id="openNewMonth" type="button">Start new month</button>
+</div>
+
   <section class="card" id="syncCard" style="display:none;border-color:var(--accent)">
     <h2 style="margin-top:0">Connect to your shared expenses</h2>
     <div class="s" style="color:var(--muted);margin-bottom:10px" id="syncCardText">This copy isn't synced yet. Paste your sync link (or code) from the other phone, then tap Connect.</div>
@@ -161,6 +171,23 @@
     </div>
     <div id="list"><div class="empty">Loading…</div></div>
   </section>
+</div>
+
+<div class="modal" id="newMonthModal">
+<div class="card">
+<h2>Start a new month</h2>
+<p>Pick the day your salary arrived. The current month closes the day before, and everything from this date on goes into the new month.</p>
+<label for="newMonthDate">New month starts on</label>
+<input id="newMonthDate" type="date">
+<div class="row" style="margin-top:14px;justify-content:space-between;flex-wrap:wrap">
+<button class="link danger" id="undoMonth" type="button" style="display:none"></button>
+<span></span>
+<div class="row">
+<button class="btn ghost" id="newMonthCancel" type="button">Cancel</button>
+<button class="btn" id="newMonthSave" type="button">Start</button>
+</div>
+</div>
+</div>
 </div>
 
 <div class="modal" id="budgetModal">
@@ -227,7 +254,8 @@
     expenses: [], prevTotal: null, budget: null,
     settings: { currency: "SAR", categories: DEFAULT_CATS.slice() },
     editingId: null, confirmId: null, readOnly: false,
-    unsubMonth: null, unsubBudget: null
+    unsubMonth: null, unsubBudget: null, unsubPeriods: null,
+allExp: [], periods: [], budgets: {}, segIdx: null, seg: null, _segs: [], _idx: 0
   };
 
   function monthKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
@@ -251,35 +279,74 @@
   };
 
   // ---------- Data layer ----------
-  function subscribeMonth(){
-    if(state.unsubMonth){ state.unsubMonth(); state.unsubMonth=null; }
-    if(state.unsubBudget){ state.unsubBudget(); state.unsubBudget=null; }
-    state.expenses=[]; state.budget=null; state.prevTotal=null; state.confirmId=null;
-    render();
-    if(state.mode==="local"){
-      state.expenses = local.all().filter(e=>e.month===state.month);
-      state.budget = local.budgets()[state.month] ?? null;
-      state.prevTotal = local.all().filter(e=>e.month===shiftMonth(state.month,-1)).reduce((s,e)=>s+(+e.amount||0),0);
-      render(); return;
-    }
-    if(!state.db) return;
-    const m = state.month;
-    let timer = setTimeout(()=>note("Can't reach your saved expenses yet — check your connection.", true), 10000);
-    state.unsubMonth = state.db.collection("expenses").where("month","==",m).onSnapshot(snap=>{
-      if(m!==state.month) return;
-      state.expenses = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
-      if(!snap.metadata.fromCache){ clearTimeout(timer); note(""); }
-      render();
-    }, err=>{ clearTimeout(timer); note("Couldn't load expenses ("+err.code+").", true); });
-    state.unsubBudget = state.db.doc("budgets/"+m).onSnapshot(s=>{
-      if(m!==state.month) return;
-      state.budget = s.exists ? (Number(s.data().amount)||null) : null; render();
-    }, ()=>{});
-    state.db.collection("expenses").where("month","==",shiftMonth(m,-1)).get().then(s=>{
-      if(m!==state.month) return;
-      state.prevTotal = s.docs.reduce((t,d)=>t+(Number(d.data().amount)||0),0); render();
-    }).catch(()=>{});
-  }
+  // ---------- Months follow the salary day ----------
+// Before the first "Start new month", months are calendar months.
+// After that, each month runs from its start day until the day before the next start.
+function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addDays(s,n){ const d=new Date(s+"T00:00"); d.setDate(d.getDate()+n); return iso(d); }
+function dShort(s, withYear){ const d=new Date(s+"T00:00"); return d.toLocaleDateString(undefined, withYear?{day:"numeric",month:"short",year:"numeric"}:{day:"numeric",month:"short"}); }
+function segments(){
+const starts = [...new Set(state.periods)].sort();
+const t = today();
+let earliest = t;
+state.allExp.forEach(e=>{ if(e.date && e.date<earliest) earliest=e.date; });
+if(starts.length && starts[0]<earliest) earliest=starts[0];
+const segs = [], stop = starts.length ? starts[0] : null;
+let mk = earliest.slice(0,7);
+const lastCal = stop ? stop.slice(0,7) : t.slice(0,7);
+while(mk<=lastCal){
+const s = mk+"-01";
+if(stop && s>=stop) break;
+segs.push({start:s, cal:true, key:mk});
+mk = shiftMonth(mk,1);
+}
+starts.forEach(s=>segs.push({start:s, cal:false, key:"p"+s}));
+segs.forEach((g,i)=>{ g.end = segs[i+1] ? segs[i+1].start : null; });
+return segs;
+}
+function inSeg(e,g){ return !!(e.date && e.date>=g.start && (!g.end || e.date<g.end)); }
+function segLabel(g){
+if(!g) return {main:monthName(monthKey(new Date())), sub:""};
+const naturalEnd = g.cal && (!g.end || g.end===shiftMonth(g.key,1)+"-01");
+if(naturalEnd) return {main: monthName(g.key), sub: ""};
+const last = g.end ? addDays(g.end,-1) : null;
+const yr = (last||g.start).slice(0,4);
+return {main: dShort(g.start)+" – "+(last ? dShort(last) : "now"), sub: g.end ? yr : "since salary · "+yr};
+}
+function segName(g){ return segLabel(g).main; }
+function isLatest(){ return !state._segs.length || state._idx===state._segs.length-1; }
+function refresh(){
+if(state.mode==="local"){ state.allExp=local.all(); state.budgets=local.budgets(); state.periods=lsGet("exp.periods",[]); }
+const segs = segments();
+let idx = state.segIdx===null ? segs.length-1 : Math.min(state.segIdx, segs.length-1);
+if(idx<0) idx=0;
+const g = segs[idx];
+state.seg=g; state._segs=segs; state._idx=idx;
+state.expenses = g ? state.allExp.filter(e=>inSeg(e,g)) : [];
+const p = segs[idx-1];
+state.prevTotal = p ? state.allExp.filter(e=>inSeg(e,p)).reduce((s,e)=>s+(Number(e.amount)||0),0) : null;
+state.budget = g ? (state.budgets[g.key] ?? null) : null;
+render();
+}
+function subscribeMonth(){ state.confirmId=null; refresh(); }
+function startStreams(){
+["unsubMonth","unsubBudget","unsubPeriods"].forEach(k=>{ if(state[k]){ state[k](); state[k]=null; } });
+state.allExp=[]; state.budgets={}; state.periods=[];
+const db = state.db;
+let timer = setTimeout(()=>note("Can't reach your saved expenses yet — check your connection.", true), 10000);
+state.unsubMonth = db.collection("expenses").onSnapshot(snap=>{
+state.allExp = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+if(!snap.metadata.fromCache){ clearTimeout(timer); note(""); }
+refresh();
+}, err=>{ clearTimeout(timer); note("Couldn't load expenses ("+err.code+").", true); });
+state.unsubBudget = db.collection("budgets").onSnapshot(snap=>{
+const b={}; snap.docs.forEach(d=>{ b[d.id]=Number(d.data().amount)||null; }); state.budgets=b; refresh();
+}, ()=>{});
+state.unsubPeriods = db.collection("periods").onSnapshot(snap=>{
+state.periods = snap.docs.map(d=>d.data().start||d.id).filter(Boolean); refresh();
+}, ()=>{});
+}
+
 
   async function saveExpense(data, id){
     if(state.mode==="local"){
@@ -296,10 +363,19 @@
     await state.db.doc("expenses/"+id).delete();
   }
   async function saveBudget(amount){
-    if(state.mode==="local"){ const b=local.budgets(); if(amount) b[state.month]=amount; else delete b[state.month]; lsSet("exp.budgets",b); subscribeMonth(); return; }
-    if(amount) await state.db.doc("budgets/"+state.month).set({amount});
-    else await state.db.doc("budgets/"+state.month).delete();
-  }
+const key = state.seg ? state.seg.key : monthKey(new Date());
+if(state.mode==="local"){ const b=local.budgets(); if(amount) b[key]=amount; else delete b[key]; lsSet("exp.budgets",b); subscribeMonth(); return; }
+if(amount) await state.db.doc("budgets/"+key).set({amount});
+else await state.db.doc("budgets/"+key).delete();
+}
+async function addPeriod(date){
+if(state.mode==="local"){ const p=lsGet("exp.periods",[]); if(!p.includes(date)) p.push(date); lsSet("exp.periods",p); subscribeMonth(); return; }
+await state.db.doc("periods/"+date).set({start:date, createdAt:Date.now()});
+}
+async function removePeriod(date){
+if(state.mode==="local"){ lsSet("exp.periods", lsGet("exp.periods",[]).filter(d=>d!==date)); subscribeMonth(); return; }
+await state.db.doc("periods/"+date).delete();
+}
   async function saveSettings(s){
     state.settings = s; render(); fillCats();
     if(state.mode==="local"){ lsSet("exp.settings", s); return; }
@@ -317,7 +393,13 @@
   function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
   function render(){
-    $("monthLabel").textContent = monthName(state.month);
+    const lab = segLabel(state.seg);
+$("monthLabel").innerHTML = esc(lab.main) + (lab.sub?"<small>"+esc(lab.sub)+"</small>":"");
+$("prev").disabled = state._idx<=0;
+$("next").disabled = isLatest();
+const latest = state._segs[state._segs.length-1];
+$("newMonthText").textContent = (latest && !latest.cal) ? "Current month started "+dShort(latest.start, true)+". Salary in again? Start the next one." : "Salary in? Start your new month from the day it arrived.";
+$("newMonthBar").style.display = (state.readOnly || state.mode==="loading") ? "none" : "";
     const total = state.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
     $("sSpent").textContent = fmt(total);
     $("sCount").textContent = state.expenses.length+" expense"+(state.expenses.length===1?"":"s");
@@ -392,7 +474,7 @@
   function resetForm(){
     state.editingId=null;
     $("form").reset();
-    $("fDate").value = state.month===monthKey(new Date()) ? today() : state.month+"-01";
+    $("fDate").value = (!state.seg || isLatest()) ? today() : state.seg.start;
     $("fWho").value = lsGet("exp.lastWho","");
     $("formTitle").textContent="Add expense"; $("submitBtn").textContent="Add";
     $("cancelEdit").style.display="none";
@@ -410,8 +492,8 @@
     try{
       const wasEdit = !!state.editingId;
       await saveExpense(data, state.editingId);
-      toast(wasEdit?"Expense updated":"Expense added");
-      if(data.month!==state.month){ toast("Saved to "+monthName(data.month)); }
+      if(state.seg && !inSeg(data, state.seg)){ const tg=state._segs.find(s=>inSeg(data,s)); toast("Saved to "+(tg?segName(tg):"another month")); }
+else toast(wasEdit?"Expense updated":"Expense added");
       const keepCat = $("fCat").value;
       resetForm(); $("fCat").value = keepCat; $("fAmount").focus();
     }catch(e){
@@ -444,8 +526,34 @@
   });
 
   $("filterCat").addEventListener("change", render);
-  $("prev").addEventListener("click", ()=>{ state.month=shiftMonth(state.month,-1); resetForm(); subscribeMonth(); });
-  $("next").addEventListener("click", ()=>{ state.month=shiftMonth(state.month,1); resetForm(); subscribeMonth(); });
+  $("prev").addEventListener("click", ()=>{ if(state._idx>0){ state.segIdx=state._idx-1; subscribeMonth(); resetForm(); } });
+$("next").addEventListener("click", ()=>{ const n=state._idx+1; if(n<state._segs.length){ state.segIdx = n===state._segs.length-1 ? null : n; subscribeMonth(); resetForm(); } });
+
+// Start new month (salary day)
+$("openNewMonth").addEventListener("click", ()=>{
+const latest = state._segs[state._segs.length-1];
+$("newMonthDate").value = today();
+$("newMonthDate").min = latest ? addDays(latest.start,1) : "";
+const u = $("undoMonth");
+if(latest && !latest.cal){ u.style.display=""; u.textContent="Undo "+dShort(latest.start)+" start"; u.dataset.date=latest.start; }
+else u.style.display="none";
+$("newMonthModal").classList.add("show");
+});
+$("newMonthCancel").addEventListener("click", ()=>$("newMonthModal").classList.remove("show"));
+$("newMonthSave").addEventListener("click", async ()=>{
+const d = $("newMonthDate").value, latest = state._segs[state._segs.length-1];
+if(!d){ toast("Pick the day your salary arrived"); return; }
+if(latest && d<=latest.start){ toast("Pick a day after "+dShort(latest.start, true)); return; }
+$("newMonthModal").classList.remove("show");
+try{ await addPeriod(d); state.segIdx=null; subscribeMonth(); resetForm(); toast("New month started on "+dShort(d, true)); }
+catch(e){ note("Couldn't start the new month ("+(e&&e.code)+").", true); }
+});
+$("undoMonth").addEventListener("click", async ()=>{
+const d = $("undoMonth").dataset.date; if(!d) return;
+$("newMonthModal").classList.remove("show");
+try{ await removePeriod(d); state.segIdx=null; subscribeMonth(); resetForm(); toast("Removed — those expenses went back to the previous month"); }
+catch(e){ note("Couldn't undo ("+(e&&e.code)+").", true); }
+});
 
   // CSV
   $("copyCsv").addEventListener("click", async ()=>{
@@ -459,7 +567,7 @@
   // Budget modal
   $("setBudget").addEventListener("click", ()=>{
     if(state.readOnly) return;
-    $("budgetModalTitle").textContent = "Budget · "+monthName(state.month);
+    $("budgetModalTitle").textContent = "Budget · "+segName(state.seg);
     $("budgetInput").value = state.budget||""; $("budgetModal").classList.add("show"); $("budgetInput").focus();
   });
   $("budgetCancel").addEventListener("click", ()=>$("budgetModal").classList.remove("show"));
@@ -597,7 +705,7 @@
     db.doc("settings/main").onSnapshot(s=>{
       if(s.exists){ const d=s.data(); state.settings = { currency: d.currency||"SAR", categories: Array.isArray(d.categories)&&d.categories.length? d.categories.slice() : DEFAULT_CATS.slice() }; fillCats(); render(); }
     }, ()=>{});
-    note(""); footer(); subscribeMonth();
+    note(""); footer(); startStreams(); subscribeMonth();
   }
 
   $("syncConnect").addEventListener("click", async ()=>{
